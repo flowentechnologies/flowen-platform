@@ -21,7 +21,7 @@ export default function WaitlistPage() {
           </span>
           <h1 className="text-4xl font-extrabold text-white tracking-tight">Join the Flowen Waitlist</h1>
           <p className="text-slate-400 text-sm max-w-lg mx-auto">
-            Secure priority allocation for our neural speech fluency engine.
+            Secure priority allocation for our neural speech fluency engine and clinical monitoring platform.
           </p>
         </div>
 
@@ -34,7 +34,7 @@ export default function WaitlistPage() {
         ) : (
           <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 p-8 rounded-3xl space-y-4">
             <div>
-              <label className="block text-xs font-mono uppercase text-slate-400 mb-2">Email Address</label>
+              <label className="block text-xs font-mono uppercase text-slate-400 mb-2">Work or Personal Email</label>
               <input
                 type="email"
                 required
