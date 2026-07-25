@@ -15,7 +15,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
-      {/* Top Header Navigation */}
       <header className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -36,7 +35,7 @@ export default function HomePage() {
             <Link href="/admin" className="hover:text-emerald-400 transition">Governments</Link>
             <Link href="/telemetry" className="hover:text-emerald-400 transition">Telemetry</Link>
             <Link href="/admin/audit" className="hover:text-emerald-400 transition">Security Audit</Link>
-            <Link href="/legal" className="hover:text-emerald-400 transition">Legal & Compliance</Link>
+            <Link href="/legal" className="hover:text-emerald-400 transition">Legal &amp; Compliance</Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -44,7 +43,7 @@ export default function HomePage() {
               href="/dashboard"
               className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 transition"
             >
-              Dashboard →
+              Dashboard &rarr;
             </Link>
             <Link
               href="/waitlist"
@@ -57,25 +56,22 @@ export default function HomePage() {
       </header>
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-12 md:py-16 space-y-16">
-        
-        {/* Backronym Banner */}
         <div className="p-4 rounded-2xl bg-slate-900/80 border border-emerald-500/30 flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs">
           <div className="flex items-center gap-3">
             <span className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase tracking-wider">
               THE BACKRONYM
             </span>
             <div className="text-slate-300">
-              <strong className="text-emerald-400">F</strong>luency & <strong class="text-emerald-400">L</strong>anguage <strong class="text-emerald-400">O</strong>ptimization <strong class="text-sky-400">W</strong>ith <strong class="text-sky-400">E</strong>mpathic <strong class="text-sky-400">N</strong>eurofeedback
+              <strong className="text-emerald-400">F</strong>luency &amp; <strong className="text-emerald-400">L</strong>anguage <strong className="text-emerald-400">O</strong>ptimization <strong className="text-sky-400">W</strong>ith <strong className="text-sky-400">E</strong>mpathic <strong className="text-sky-400">N</strong>eurofeedback
             </div>
           </div>
-          <span className="text-slate-400 italic">"Every word gets there."</span>
+          <span className="text-slate-400 italic">&ldquo;Every word gets there.&rdquo;</span>
         </div>
 
-        {/* Hero Section */}
         <div className="flex flex-col items-center text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            FOUNDING MEMBER COHORT ACTIVE • #WaitlistHero
+            FOUNDING MEMBER COHORT ACTIVE &bull; #WaitlistHero
           </div>
 
           <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight leading-tight max-w-4xl">
@@ -83,15 +79,14 @@ export default function HomePage() {
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl font-normal leading-relaxed">
-            AI Speech Coordination for School, Workplace & Daily Life. Private, patient, and available 24/7.
+            AI Speech Coordination for School, Workplace &amp; Daily Life. Private, patient, and available 24/7.
           </p>
 
-          {/* Compliance Badges */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs font-mono font-semibold text-slate-400">
-            <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-emerald-400">✓ DTAC Aligned</span>
-            <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-sky-400">✓ DCB0129 Clinical Safety</span>
-            <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-purple-400">✓ UK GDPR Secured</span>
-            <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-amber-400">✓ WCAG 2.2 AA Target</span>
+            <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-emerald-400">&check; DTAC Aligned</span>
+            <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-sky-400">&check; DCB0129 Clinical Safety</span>
+            <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-purple-400">&check; UK GDPR Secured</span>
+            <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-amber-400">&check; WCAG 2.2 AA Target</span>
           </div>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center gap-4">
@@ -99,7 +94,7 @@ export default function HomePage() {
               href="/waitlist"
               className="px-8 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition shadow-xl shadow-emerald-500/20 w-full sm:w-auto"
             >
-              Join Waitlist / Lock 50% Off →
+              Join Waitlist / Lock 50% Off &rarr;
             </Link>
             <Link
               href="/dashboard/practice"
@@ -110,32 +105,30 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Video Demo Placeholder Widget */}
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-4">
           <div className="flex justify-between items-center text-xs font-mono text-slate-400 border-b border-slate-800 pb-4">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-red-500"></span>
-              PRODUCT DEMO & 3D GUIDE SHOWCASE
+              PRODUCT DEMO &amp; 3D GUIDE SHOWCASE
             </span>
             <span className="text-emerald-400">VIDEO_ASSET_PLACEHOLDER [1080p MP4]</span>
           </div>
           <div className="relative aspect-video bg-slate-950 border border-slate-800 rounded-2xl flex flex-col items-center justify-center space-y-3 overflow-hidden group">
             <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-2xl group-hover:scale-110 transition">
-              ▶
+              &#9654;
             </div>
             <p className="text-xs font-mono text-slate-400">Click to Play Product Overview Video</p>
             <span className="text-[10px] font-mono text-slate-600">ASSET_ID: vid_flowen_demo_2026.mp4</span>
           </div>
         </div>
 
-        {/* Interactive Telemetry Simulator */}
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-8 shadow-2xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
             <div>
               <span className="text-xs font-mono font-bold text-slate-400 uppercase">INTERACTIVE ENGINE DEMOS</span>
               <h3 className="text-xl font-bold text-white mt-1">Disfluent Voice Telemetry Simulator</h3>
               <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-                Standard speech engines timeout during vocal blocks. Flowen's real-time engine operates with sub-150ms feedback latency to prevent speech freeze.
+                Standard speech engines timeout during vocal blocks. Flowen&apos;s real-time engine operates with sub-150ms feedback latency to prevent speech freeze.
               </p>
             </div>
             <button
@@ -163,7 +156,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Real-time Spectrum Feed Graphic */}
           <div className="p-6 bg-slate-950 border border-slate-800 rounded-2xl space-y-4">
             <div className="flex justify-between items-center text-xs font-mono text-slate-400">
               <span>REAL-TIME SPECTRUM FEED</span>
@@ -181,7 +173,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Placeholders for 3D Guide Canvas & Camera Mirror Mode */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="p-6 bg-slate-900 border border-slate-800 rounded-3xl space-y-4">
             <div className="flex justify-between items-center text-xs font-mono text-slate-400">
@@ -190,7 +181,7 @@ export default function HomePage() {
             </div>
             <div className="h-64 bg-slate-950 border border-slate-800 rounded-2xl flex flex-col items-center justify-center space-y-2 text-center p-4">
               <div className="w-16 h-16 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 text-2xl font-bold">
-                🤖
+                &#129302;
               </div>
               <p className="text-xs font-mono text-slate-300">3D Animated Viseme Avatar Viewport</p>
               <span className="text-[10px] font-mono text-slate-600">CANVAS_ID: canvas_3d_viseme_guide</span>
@@ -204,7 +195,7 @@ export default function HomePage() {
             </div>
             <div className="h-64 bg-slate-950 border border-slate-800 rounded-2xl flex flex-col items-center justify-center space-y-2 text-center p-4">
               <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 text-2xl font-bold">
-                📷
+                &#128247;
               </div>
               <p className="text-xs font-mono text-slate-300">Camera Mouth Tracking Overlay</p>
               <span className="text-[10px] font-mono text-slate-600">CANVAS_ID: webcam_mirror_overlay</span>
@@ -214,7 +205,6 @@ export default function HomePage() {
 
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950 py-12">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8 text-xs font-mono">
           <div className="space-y-3">
@@ -251,8 +241,8 @@ export default function HomePage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-6 mt-12 pt-6 border-t border-slate-900/80 flex flex-col md:flex-row justify-between items-center text-slate-600 text-[11px] font-mono">
-          <span>© 2026 Flowen Technologies Ltd. London, UK. All rights reserved.</span>
-          <a href="#" className="hover:text-slate-400 mt-2 md:mt-0">Back to Top ↑</a>
+          <span>&copy; 2026 Flowen Technologies Ltd. London, UK. All rights reserved.</span>
+          <a href="#" className="hover:text-slate-400 mt-2 md:mt-0">Back to Top &uarr;</a>
         </div>
       </footer>
     </div>
