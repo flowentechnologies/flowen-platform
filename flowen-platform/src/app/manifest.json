@@ -1,0 +1,16 @@
+{
+  "name": "Flowen AI Speech Coordination",
+  "short_name": "Flowen",
+  "description": "Retraining the brain to speak freely. Sub-150ms real-time AI speech coordination.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#34d399",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
