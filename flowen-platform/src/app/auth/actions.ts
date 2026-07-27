@@ -73,7 +73,7 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/auth/verify");
+  redirect("/auth/login?message=check_email");
 }
 
 export async function logout() {
