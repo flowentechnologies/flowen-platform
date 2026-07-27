@@ -21,7 +21,7 @@ CREATE TABLE public.profiles (
 
 -- 3. ORGANIZATIONS (For Government / NHS / Access to Work Block Contracts)
 CREATE TABLE public.organizations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     contract_reference TEXT UNIQUE NOT NULL,
     total_allocated_seats INT NOT NULL DEFAULT 20000,
@@ -39,7 +39,7 @@ FOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON DELETE SET 
 
 -- 4. PRACTICE SESSIONS
 CREATE TABLE public.practice_sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     brand app_brand NOT NULL,
     duration_seconds INT NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE public.practice_sessions (
 
 -- 5. TELEMETRY LOGS (Asynchronous Model Data Flywheel)
 CREATE TABLE public.telemetry_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES public.practice_sessions(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     audio_clip_r2_path TEXT,
