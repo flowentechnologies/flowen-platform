@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useRef, useEffect } from 'react';
 import { submitContactForm, FormState } from './actions/submit-form';
 import { LegalPoliciesModal } from '@/components/LegalPoliciesModal';
 
@@ -34,6 +34,47 @@ export default function LandingPage() {
     setModalOpen(true);
   };
 
+  const videoRef        = useRef<HTMLVideoElement>(null);
+  const heroRef         = useRef<HTMLElement>(null);
+  const heroContentRef  = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const video   = videoRef.current;
+    const hero    = heroRef.current;
+    const content = heroContentRef.current;
+    if (!video || !hero) return;
+
+    const onScroll = () => {
+      const heroTop       = hero.offsetTop;
+      const heroScrollable = hero.offsetHeight - window.innerHeight;
+      const scrolled      = window.scrollY - heroTop;
+      const progress      = heroScrollable > 0
+        ? Math.max(0, Math.min(1, scrolled / heroScrollable))
+        : 0;
+
+      // Scrub video position
+      if (video.readyState >= 2 && video.duration) {
+        video.currentTime = progress * video.duration;
+      }
+
+      // Fade + lift hero content out as user scrolls through
+      if (content) {
+        const opacity     = Math.max(0, 1 - progress * 2.2);
+        const translateY  = progress * -70;
+        content.style.opacity   = String(opacity);
+        content.style.transform = `translateY(${translateY}px)`;
+      }
+    };
+
+    video.addEventListener('loadedmetadata', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      video.removeEventListener('loadedmetadata', onScroll);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-black">
       
@@ -62,33 +103,67 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section id="hero" className="pt-36 pb-20 px-6 max-w-7xl mx-auto text-center relative">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-8">
-          Sub-80ms Neural Biofeedback Engine
-        </div>
+      {/* Hero Section — 200vh tall; inner viewport is sticky so video scrubs as user scrolls */}
+      <section ref={heroRef} id="hero" className="relative" style={{ height: '200vh' }}>
+        <div className="sticky top-0 h-screen overflow-hidden">
 
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight">
-          The Neural Standard for <span className="bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">Speech Coordination</span>
-        </h1>
-
-        <p className="mt-6 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          Flowen converts real-time acoustic telemetry into instantaneous viseme feedback and easy-onset coaching. Built for individuals, clinical SLTs, and institutional public funding programs.
-        </p>
-
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button 
-            onClick={() => scrollToSection('pricing')}
-            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base transition-all shadow-lg shadow-emerald-500/25"
+          {/* Scroll-scrubbed background video */}
+          <video
+            ref={videoRef}
+            muted
+            playsInline
+            preload="auto"
+            className="absolute inset-0 w-full h-full object-cover"
           >
-            View Subscription Tiers
-          </button>
-          <button 
-            onClick={() => scrollToSection('contact')}
-            className="w-full sm:w-auto px-8 py-4 rounded-xl border border-slate-700 hover:border-slate-500 text-slate-200 font-semibold text-base bg-slate-900/50 transition-all"
+            <source src="/assets/videos/Flowen_Hero.mp4" type="video/mp4" />
+          </video>
+
+          {/* Gradient overlays — darken edges for nav legibility, keep centre clear */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#06080F]/75 via-[#06080F]/20 to-[#06080F]/85 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#06080F]/50 via-transparent to-[#06080F]/50 pointer-events-none" />
+
+          {/* Hero content — fades and lifts as the user scrolls through the 200vh section */}
+          <div
+            ref={heroContentRef}
+            className="relative z-10 h-full flex flex-col items-center justify-center px-6 text-center"
+            style={{ paddingTop: '80px' }}
           >
-            Inquire for Public Funds (Access to Work / NHS)
-          </button>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-8 backdrop-blur-sm">
+              Sub-80ms Neural Biofeedback Engine
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight drop-shadow-2xl">
+              The Neural Standard for{' '}
+              <span className="bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">
+                Speech Coordination
+              </span>
+            </h1>
+
+            <p className="mt-6 text-lg md:text-xl text-slate-200 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
+              Flowen converts real-time acoustic telemetry into instantaneous viseme feedback and easy-onset coaching. Built for individuals, clinical SLTs, and institutional public funding programs.
+            </p>
+
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button
+                onClick={() => scrollToSection('pricing')}
+                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base transition-all shadow-lg shadow-emerald-500/30"
+              >
+                View Subscription Tiers
+              </button>
+              <button
+                onClick={() => scrollToSection('contact')}
+                className="w-full sm:w-auto px-8 py-4 rounded-xl border border-white/25 hover:border-white/50 text-white font-semibold text-base bg-white/5 backdrop-blur-sm transition-all"
+              >
+                Inquire for Public Funds (Access to Work / NHS)
+              </button>
+            </div>
+
+            {/* Scroll indicator */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40 select-none">
+              <span className="text-xs font-mono uppercase tracking-widest">Scroll</span>
+              <div className="w-px h-10 bg-gradient-to-b from-white/50 to-transparent animate-pulse" />
+            </div>
+          </div>
         </div>
       </section>
 
