@@ -363,6 +363,49 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Platform Demo Video */}
+      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-slate-800/60">
+        <div className="text-center mb-10">
+          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-teal-500/10 text-teal-400 border border-teal-500/20">
+            PLATFORM WALKTHROUGH
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mt-4">See Flowen in Action</h2>
+          <p className="mt-3 text-slate-400 text-sm max-w-xl mx-auto">
+            Multi-angle walkthrough of the real-time neural biofeedback interface, viseme alignment, and clinical analytics suite.
+          </p>
+        </div>
+
+        <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-2xl shadow-black/60 bg-slate-900">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            poster="/assets/videos/flowen_demo_poster.jpg"
+            className="w-full aspect-video object-cover"
+          >
+            <source src="/assets/videos/flowen_demo.mp4" type="video/mp4" />
+          </video>
+
+          {/* Subtle gradient border glow */}
+          <div className="absolute inset-0 rounded-2xl ring-1 ring-emerald-500/10 pointer-events-none" />
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { label: 'Real-Time Biofeedback', desc: 'Sub-80ms acoustic processing with live laryngeal tension overlay' },
+            { label: 'Viseme Alignment', desc: '42-state 3D avatar driven by formant analysis and phoneme prediction' },
+            { label: 'Clinical Analytics', desc: 'Disfluency telemetry, session trends, and SLT remote monitoring' },
+          ].map(item => (
+            <div key={item.label} className="bg-slate-900/60 border border-slate-800 rounded-xl px-5 py-4">
+              <div className="text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider mb-1">{item.label}</div>
+              <div className="text-slate-400 text-sm">{item.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Form Submission Section */}
       <section id="contact" className="py-20 px-6 max-w-4xl mx-auto border-t border-slate-800/60">
         <div className="bg-[#0A0D14] border border-slate-800 rounded-3xl p-8 md:p-12 shadow-2xl">
