@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { FlowenLogo } from './FlowenLogo';
 
 interface Props {
   isAuthenticated?: boolean;
@@ -14,12 +15,8 @@ export function Header({ isAuthenticated = false }: Props) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-40 bg-[#06080F]/85 backdrop-blur-md border-b border-slate-800/80">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center font-black text-black text-xl shadow-lg shadow-emerald-500/20">
-            F
-          </div>
-          <span className="text-2xl font-black tracking-tight text-white">FLOWEN</span>
-        </Link>
+        {/* Clickable New Logo Redirecting to Landing Page (/) */}
+        <FlowenLogo className="h-8" />
 
         {isAuthenticated ? (
           <div className="flex items-center space-x-6 text-sm font-medium">
