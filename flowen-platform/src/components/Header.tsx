@@ -20,21 +20,21 @@ export function Header({ isAuthenticated = false }: Props) {
 
         {isAuthenticated ? (
           <div className="flex items-center space-x-6 text-sm font-medium">
-            <Link 
-              href="/app" 
-              className={`transition-colors ${pathname === '/app' ? 'text-emerald-400 font-semibold' : 'text-slate-300 hover:text-emerald-400'}`}
+            <Link
+              href="/dashboard"
+              className={`transition-colors ${pathname === '/dashboard' ? 'text-emerald-400 font-semibold' : 'text-slate-300 hover:text-emerald-400'}`}
             >
               Dashboard
             </Link>
-            <Link 
-              href="/app/practice" 
-              className={`transition-colors ${pathname === '/app/practice' ? 'text-emerald-400 font-semibold' : 'text-slate-300 hover:text-emerald-400'}`}
+            <Link
+              href="/dashboard/practice"
+              className={`transition-colors ${pathname === '/dashboard/practice' ? 'text-emerald-400 font-semibold' : 'text-slate-300 hover:text-emerald-400'}`}
             >
               Practice Engine
             </Link>
-            <Link 
-              href="/app/analytics" 
-              className={`transition-colors ${pathname === '/app/analytics' ? 'text-emerald-400 font-semibold' : 'text-slate-300 hover:text-emerald-400'}`}
+            <Link
+              href="/dashboard/analytics"
+              className={`transition-colors ${pathname === '/dashboard/analytics' ? 'text-emerald-400 font-semibold' : 'text-slate-300 hover:text-emerald-400'}`}
             >
               Telemetry Analytics
             </Link>

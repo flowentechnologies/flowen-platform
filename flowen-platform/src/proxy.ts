@@ -70,7 +70,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   // 3. Auth routing
   const isAuthRoute      = pathname.startsWith('/auth');
-  const isDashboardRoute = pathname.startsWith('/app') || pathname.startsWith('/dashboard');
+  const isDashboardRoute = pathname.startsWith('/dashboard');
   const isPortalRoute    = pathname.startsWith('/portal');
 
   if (isDashboardRoute && !user) {
@@ -78,7 +78,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   }
 
   if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL('/app', request.url));
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   // 4. Portal identity guard

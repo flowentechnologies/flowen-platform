@@ -66,8 +66,8 @@ Sent from Flowen Global Landing Page (${new Date().toISOString()})
   } catch (error) {
     console.error('Mail Dispatch Error:', error);
     return {
-      success: true,
-      message: 'Your inquiry was recorded. We will contact you shortly via flowenspeech@outlook.com.',
+      success: false,
+      message: 'Unable to send your message right now. Please email us directly at flowenspeech@outlook.com.',
     };
   }
 }
