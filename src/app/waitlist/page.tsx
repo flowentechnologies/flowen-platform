@@ -1,14 +1,26 @@
 'use client';
-import React, { useState } from 'react';
+
+import React, { useState, useTransition } from 'react';
 import MainNavbar from '@/components/MainNavbar';
+import { joinWaitlist } from '@/app/actions/join-waitlist';
 
 export default function WaitlistPage() {
   const [submitted, setSubmitted] = useState(false);
-  const [email, setEmail] = useState('');
+  const [email,     setEmail]     = useState('');
+  const [error,     setError]     = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) setSubmitted(true);
+    setError(null);
+    startTransition(async () => {
+      const result = await joinWaitlist(email);
+      if (result.success) {
+        setSubmitted(true);
+      } else {
+        setError(result.message);
+      }
+    });
   };
 
   return (
@@ -44,8 +56,19 @@ export default function WaitlistPage() {
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
-            <button type="submit" className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm rounded-xl transition shadow-lg shadow-emerald-500/20">
-              Request Priority Access
+
+            {error && (
+              <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isPending}
+              className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm rounded-xl transition shadow-lg shadow-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isPending ? 'Registering…' : 'Request Priority Access'}
             </button>
           </form>
         )}
