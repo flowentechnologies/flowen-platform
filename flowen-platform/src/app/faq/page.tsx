@@ -1,4 +1,4 @@
-import MainNavbar from '@/components/MainNavbar';
+import MarketingNavbar from '@/components/MarketingNavbar';
 import MarketingFooter from '@/components/MarketingFooter';
 import type { Metadata } from 'next';
 
@@ -100,8 +100,8 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      <MainNavbar />
+    <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
+      <MarketingNavbar />
 
       <main className="flex-1 max-w-4xl mx-auto px-6 py-16">
         <div className="text-center mb-14">

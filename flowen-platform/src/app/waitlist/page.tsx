@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import MainNavbar from '@/components/MainNavbar';
+import MarketingNavbar from '@/components/MarketingNavbar';
+import MarketingFooter from '@/components/MarketingFooter';
 import { joinWaitlist } from '@/app/actions/join-waitlist';
 
 export default function WaitlistPage() {
@@ -24,8 +25,8 @@ export default function WaitlistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      <MainNavbar />
+    <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
+      <MarketingNavbar />
       <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-12 flex flex-col justify-center">
         <div className="text-center space-y-4 mb-8">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -53,7 +54,7 @@ export default function WaitlistPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="alexander@flowen.digital"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="w-full bg-[#06080F] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
 
@@ -73,6 +74,7 @@ export default function WaitlistPage() {
           </form>
         )}
       </main>
+      <MarketingFooter />
     </div>
   );
 }

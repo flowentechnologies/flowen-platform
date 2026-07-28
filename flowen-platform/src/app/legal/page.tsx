@@ -1,4 +1,4 @@
-import MainNavbar from '@/components/MainNavbar';
+import MarketingNavbar from '@/components/MarketingNavbar';
 import MarketingFooter from '@/components/MarketingFooter';
 import Link from 'next/link';
 import type { Metadata } from 'next';
@@ -44,8 +44,8 @@ const RELATED_PAGES = [
 
 export default function LegalPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      <MainNavbar />
+    <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
+      <MarketingNavbar />
 
       <main className="flex-1 max-w-4xl mx-auto px-6 py-16">
         <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">

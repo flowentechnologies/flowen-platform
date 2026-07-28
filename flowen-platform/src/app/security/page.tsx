@@ -1,4 +1,4 @@
-import MainNavbar from '@/components/MainNavbar';
+import MarketingNavbar from '@/components/MarketingNavbar';
 import MarketingFooter from '@/components/MarketingFooter';
 import type { Metadata } from 'next';
 
@@ -48,8 +48,8 @@ const CONTROLS = [
 
 export default function SecurityPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      <MainNavbar />
+    <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
+      <MarketingNavbar />
 
       <main className="flex-1">
         {/* Header */}
