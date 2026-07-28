@@ -158,9 +158,10 @@ CREATE INDEX IF NOT EXISTS idx_profiles_tier_brand
 CREATE INDEX IF NOT EXISTS idx_sessions_user_created
     ON public.practice_sessions (user_id, created_at DESC);
 
--- practice_sessions — daily aggregation (expression index on time bucket)
+-- practice_sessions — daily aggregation bucketed to UTC day.
+-- AT TIME ZONE 'UTC' returns timestamp (not timestamptz) which is IMMUTABLE.
 CREATE INDEX IF NOT EXISTS idx_sessions_day_bucket
-    ON public.practice_sessions (date_trunc('day', created_at));
+    ON public.practice_sessions (date_trunc('day', created_at AT TIME ZONE 'UTC'));
 
 -- telemetry_logs — session-scoped lookup with time ordering
 CREATE INDEX IF NOT EXISTS idx_telemetry_session_time
