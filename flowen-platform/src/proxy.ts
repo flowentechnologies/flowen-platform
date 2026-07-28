@@ -68,29 +68,66 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // 3. Auth routing
-  const isAuthRoute      = pathname.startsWith('/auth');
-  const isDashboardRoute = pathname.startsWith('/dashboard');
-  const isPortalRoute    = pathname.startsWith('/portal');
+  // 3. Route classification
+  const isAuthRoute       = pathname.startsWith('/auth');
+  const isDashboardRoute  = pathname.startsWith('/dashboard');
+  const isAdminRoute      = pathname.startsWith('/admin');
+  const isPortalRoute     = pathname.startsWith('/portal');
+  const isOnboardingRoute = pathname.startsWith('/onboarding');
 
-  if (isDashboardRoute && !user) {
-    return NextResponse.redirect(new URL('/auth/login', request.url));
+  // 4. Auth gates — unauthenticated users bounce to login
+  if ((isDashboardRoute || isAdminRoute || isPortalRoute || isOnboardingRoute) && !user) {
+    const loginUrl = new URL('/auth/login', request.url);
+    loginUrl.searchParams.set('returnTo', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
+  // 5. Redirect already-authed users away from auth pages
   if (isAuthRoute && user) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // 4. Portal identity guard
-  //    Only runs for authenticated users on /portal paths.
-  //    Unauthenticated users on /portal are redirected to login first.
-  if (isPortalRoute) {
-    if (!user) {
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set('returnTo', pathname);
-      return NextResponse.redirect(loginUrl);
+  // 6. Admin gate — restrict /admin to users with is_admin = true
+  if (isAdminRoute && user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!profile?.is_admin) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+  }
+
+  // 7. Onboarding gate — redirect new users to profile setup on first dashboard visit.
+  //    Uses a cookie (flowen_ob) so the DB is only queried once per device.
+  if (isDashboardRoute && user && !request.cookies.get('flowen_ob')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_complete')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profile && !profile.onboarding_complete) {
+      return NextResponse.redirect(new URL('/onboarding', request.url));
     }
 
+    // Mark as checked — set a 1-year cookie so we skip this query on future visits.
+    const next = NextResponse.next({ request });
+    next.cookies.set('flowen_ob', '1', {
+      path:     '/',
+      maxAge:   60 * 60 * 24 * 365,
+      sameSite: 'lax',
+      httpOnly: true,
+      secure:   process.env.NODE_ENV === 'production',
+    });
+    return next;
+  }
+
+  // 8. Portal identity guard
+  //    Only runs for authenticated users on /portal paths.
+  if (isPortalRoute && user) {
     const guardRedirect = await applyIdentityGuard(request, supabase as any, user.id);
     if (guardRedirect) return guardRedirect;
   }
