@@ -1,12 +1,27 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const ipCache = new Map<string, { count: number; reset: number }>();
+
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+  const ip = request.headers.get("x-forwarded-for") || "anonymous";
+  const now = Date.now();
+  const windowMs = 60 * 1000;
+  const limit = request.nextUrl.pathname.startsWith("/api") ? 60 : 120;
+
+  const record = ipCache.get(ip) || { count: 0, reset: now + windowMs };
+  if (now > record.reset) {
+    record.count = 0;
+    record.reset = now + windowMs;
+  }
+  record.count += 1;
+  ipCache.set(ip, record);
+
+  if (record.count > limit) {
+    return new NextResponse("Too Many Requests (Rate limit exceeded)", { status: 429 });
+  }
+
+  let response = NextResponse.next({ request: { headers: request.headers } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,9 +33,7 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({
-            request,
-          });
+          response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );

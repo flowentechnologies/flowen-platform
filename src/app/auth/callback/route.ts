@@ -1,25 +1,27 @@
-import { NextResponse } from "next/server";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
 
-export const runtime = "edge";
-
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/app";
+  const code = searchParams.get('code');
+  const next = searchParams.get('next') ?? '/app';
 
   if (code) {
-    const cookieStore = new Map();
+    const cookieStore = request.cookies;
+    let response = NextResponse.redirect(`${origin}${next}`);
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           getAll() {
-            return Array.from(cookieStore.entries()).map(([name, value]) => ({ name, value }));
+            return cookieStore.getAll();
           },
           setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
-            cookiesToSet.forEach(({ name, value }) => cookieStore.set(name, value));
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            );
           },
         },
       }
@@ -27,9 +29,9 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      return response;
     }
   }
 
-  return NextResponse.redirect(`${origin}/auth/login?error=auth_failed`);
+  return NextResponse.redirect(`${origin}/auth/login?error=auth_callback_failed`);
 }

@@ -1,16 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
-export const runtime = "edge";
-
-type CookieToSet = {
-  name: string;
-  value: string;
-  options?: CookieOptions;
-};
-
-export async function GET(req: NextRequest) {
-  let response = NextResponse.next({ request: req });
+export async function GET() {
+  const cookieStore = await cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,49 +11,31 @@ export async function GET(req: NextRequest) {
     {
       cookies: {
         getAll() {
-          return req.cookies.getAll();
-        },
-        setAll(cookiesToSet: CookieToSet[]) {
-          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value));
-          response = NextResponse.next({ request: req });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
+          return cookieStore.getAll();
         },
       },
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (error || !user) {
+    return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("brand, tier, daily_practice_limit_mins")
-    .eq("id", user.id)
-    .single();
-
-  const wsAuthToken = {
+  // Generate short-lived Base64 WS token (30-minute expiration)
+  const payload = {
     sub: user.id,
-    brand: profile?.brand || "flowen",
-    tier: profile?.tier || "standard",
-    exp: Math.floor(Date.now() / 1000) + 60 * 30,
+    email: user.email,
+    exp: Math.floor(Date.now() / 1000) + (30 * 60),
+    iss: 'flowen-edge-gateway',
   };
 
-  const jsonString = JSON.stringify(wsAuthToken);
-  const tokenBytes = new TextEncoder().encode(jsonString);
-  let binary = "";
-  for (let i = 0; i < tokenBytes.length; i++) {
-    binary += String.fromCharCode(tokenBytes[i]);
-  }
-  const tokenBase64 = btoa(binary);
+  const token = Buffer.from(JSON.stringify(payload)).toString('base64');
 
   return NextResponse.json({
-    token: tokenBase64,
-    gateway_url: process.env.INFERENCE_GATEWAY_WS_URL || "wss://edge-inference.flowen.app/v1/stream",
-    profile,
+    token,
+    endpoint: 'wss://edge-inference.flowen.app/v1/stream',
+    expiresIn: 1800,
   });
 }
