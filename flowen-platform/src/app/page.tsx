@@ -44,38 +44,69 @@ export default function LandingPage() {
     const content = heroContentRef.current;
     if (!video || !hero) return;
 
+    // Autoplay immediately — first frame shows before any scroll.
+    // On first scroll we pause and take manual control of currentTime.
+    let scrubbing  = false;
+    let rafPending = false;
+    let targetTime = 0;
+
+    const startPlay = () => { video.play().catch(() => {}); };
+    if (video.readyState >= 3) {
+      startPlay();
+    } else {
+      video.addEventListener('canplay', startPlay, { once: true });
+    }
+
+    const applyFrame = () => {
+      rafPending = false;
+      if (video.readyState >= 2 && Math.abs(video.currentTime - targetTime) > 0.008) {
+        video.currentTime = targetTime;
+      }
+    };
+
     const onScroll = () => {
-      const heroTop       = hero.offsetTop;
       const heroScrollable = hero.offsetHeight - window.innerHeight;
-      const scrolled      = window.scrollY - heroTop;
-      const progress      = heroScrollable > 0
+      const scrolled       = window.scrollY - hero.offsetTop;
+      const progress       = heroScrollable > 0
         ? Math.max(0, Math.min(1, scrolled / heroScrollable))
         : 0;
 
-      // Scrub video position
-      if (video.readyState >= 2 && video.duration) {
-        video.currentTime = progress * video.duration;
+      if (!scrubbing && window.scrollY > 0) {
+        scrubbing = true;
+        video.pause();
       }
 
-      // Fade + lift hero content out as user scrolls through
+      if (scrubbing) {
+        targetTime = progress * (video.duration || 0);
+        if (!rafPending) {
+          rafPending = true;
+          requestAnimationFrame(applyFrame);
+        }
+      }
+
       if (content) {
-        const opacity     = Math.max(0, 1 - progress * 2.2);
-        const translateY  = progress * -70;
+        const opacity    = Math.max(0, 1 - progress * 2.2);
+        const translateY = progress * -70;
         content.style.opacity   = String(opacity);
         content.style.transform = `translateY(${translateY}px)`;
       }
     };
 
-    video.addEventListener('loadedmetadata', onScroll);
     window.addEventListener('scroll', onScroll, { passive: true });
 
-    return () => {
-      video.removeEventListener('loadedmetadata', onScroll);
-      window.removeEventListener('scroll', onScroll);
-    };
+    return () => { window.removeEventListener('scroll', onScroll); };
   }, []);
 
   return (
+    <>
+    {/* Preload the hero video at highest browser priority */}
+    {/* eslint-disable-next-line @next/next/no-head-element */}
+    <link
+      rel="preload"
+      href="/assets/videos/Flowen_Hero.mp4"
+      as="video"
+      type="video/mp4"
+    />
     <div className="min-h-screen bg-[#06080F] text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-black">
       
       {/* Navigation Header */}
@@ -107,12 +138,14 @@ export default function LandingPage() {
       <section ref={heroRef} id="hero" className="relative" style={{ height: '200vh' }}>
         <div className="sticky top-0 h-screen overflow-hidden">
 
-          {/* Scroll-scrubbed background video */}
+          {/* Scroll-scrubbed background video — autoplays to show first frame immediately,
+              switches to manual currentTime control on first scroll */}
           <video
             ref={videoRef}
             muted
             playsInline
             preload="auto"
+            poster="/assets/videos/Flowen_Hero_poster.jpg"
             className="absolute inset-0 w-full h-full object-cover"
           >
             <source src="/assets/videos/Flowen_Hero.mp4" type="video/mp4" />
@@ -481,11 +514,12 @@ export default function LandingPage() {
       </footer>
 
       {/* Legal Policy Modal */}
-      <LegalPoliciesModal 
-        isOpen={modalOpen} 
-        initialTab={modalTab} 
-        onClose={() => setModalOpen(false)} 
+      <LegalPoliciesModal
+        isOpen={modalOpen}
+        initialTab={modalTab}
+        onClose={() => setModalOpen(false)}
       />
     </div>
+    </>
   );
 }
