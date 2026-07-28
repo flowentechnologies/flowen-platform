@@ -3,11 +3,11 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Flowen — Retraining the Brain to Speak Freely',
-  description: 'AI Speech Coordination for School, Workplace & Daily Life. Sub-150ms real-time vocal retraining engine.',
+  description: 'AI Speech Coordination for School, Workplace & Daily Life. Sub-80ms real-time vocal retraining engine.',
   metadataBase: new URL('https://flowen.digital'),
   openGraph: {
     title: 'Flowen — AI Speech Coordination',
-    description: 'Every word gets there. Sub-150ms real-time vocal retraining and clinical supervision platform.',
+    description: 'Every word gets there. Sub-80ms real-time vocal retraining and clinical supervision platform.',
     url: 'https://flowen.digital',
     siteName: 'Flowen',
     images: [
