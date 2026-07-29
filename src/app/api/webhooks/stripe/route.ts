@@ -1,6 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { stripe, stripeWebhookSecret } from '@/lib/stripe';
+import {
+  sendPaymentConfirmation,
+  sendAdminPaymentAlert,
+  sendPaymentFailedUser,
+  sendAdminPaymentFailedAlert,
+} from '@/lib/email';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -103,6 +109,23 @@ async function resolveUserId(
   return (authUser?.id as string) ?? null;
 }
 
+// Fetch the auth email + display_name for a given user ID.
+async function getUserDetails(
+  admin: AdminClient,
+  userId: string,
+): Promise<{ email: string; displayName: string } | null> {
+  const [authResult, profileResult] = await Promise.all([
+    admin.schema('auth').from('users').select('email').eq('id', userId).maybeSingle(),
+    admin.from('profiles').select('display_name').eq('id', userId).maybeSingle(),
+  ]);
+  const email = (authResult.data as { email: string } | null)?.email;
+  if (!email) return null;
+  return {
+    email,
+    displayName: (profileResult.data as { display_name: string } | null)?.display_name ?? email.split('@')[0],
+  };
+}
+
 // Idempotent link between internal UUID and Stripe customer ID.
 async function ensureCustomerRecord(
   admin: AdminClient,
@@ -194,23 +217,52 @@ async function handleCheckoutSessionCompleted(
 
   await ensureCustomerRecord(admin, userId, stripeCustomerId);
 
+  let tier: SubscriptionTier = 'founding';
+  let cycle: BillingCycle    = 'monthly';
+  let amountPence = 0;
+  let currency    = 'gbp';
+
   if (session.subscription) {
     const subId =
       typeof session.subscription === 'string'
         ? session.subscription
         : (session.subscription as Stripe.Subscription).id;
 
-    // Retrieve full subscription — checkout.session only carries the ID.
-    const sub = await stripe.subscriptions.retrieve(subId, {
-      expand: ['items.data.price'],
-    });
+    const sub = await stripe.subscriptions.retrieve(subId, { expand: ['items.data.price'] });
+    const meta = resolvePlanMeta(sub.items.data[0]?.plan ?? ({} as Stripe.Plan));
+    tier  = meta.tier;
+    cycle = meta.cycle;
+    amountPence = sub.items.data[0]?.price.unit_amount ?? 0;
+    currency    = sub.items.data[0]?.price.currency ?? 'gbp';
 
-    const { tier } = resolvePlanMeta(sub.items.data[0]?.plan ?? ({} as Stripe.Plan));
     await setProfileTier(admin, userId, tier);
     await upsertSubscription(admin, sub, userId);
   } else {
-    // One-time payment (no recurring subscription) — grant founding tier.
     await setProfileTier(admin, userId, 'founding');
+    amountPence = session.amount_total ?? 0;
+    currency    = session.currency ?? 'gbp';
+  }
+
+  // Send emails non-blocking
+  const userDetails = await getUserDetails(admin, userId);
+  const emailForNotif = userDetails?.email ?? session.customer_email ?? null;
+  if (emailForNotif) {
+    void sendPaymentConfirmation({
+      email:       emailForNotif,
+      displayName: userDetails?.displayName ?? emailForNotif.split('@')[0],
+      tier,
+      cycle,
+      amountPence,
+      currency,
+    });
+    void sendAdminPaymentAlert({
+      email:            emailForNotif,
+      tier,
+      cycle,
+      amountPence,
+      currency,
+      stripeCustomerId,
+    });
   }
 }
 
@@ -280,6 +332,27 @@ async function handleInvoicePaymentFailed(
       attempt_count:      invoice.attempt_count,
     },
   );
+
+  // Resolve user for personalised failure email
+  const userId = await resolveUserId(admin, stripeCustomerId, null);
+  const emailForNotif = userId
+    ? (await getUserDetails(admin, userId))
+    : null;
+
+  const recipientEmail = emailForNotif?.email
+    ?? (typeof invoice.customer_email === 'string' ? invoice.customer_email : null);
+
+  if (recipientEmail) {
+    void sendPaymentFailedUser(recipientEmail, emailForNotif?.displayName ?? recipientEmail.split('@')[0]);
+  }
+
+  void sendAdminPaymentFailedAlert({
+    email:        recipientEmail ?? stripeCustomerId,
+    invoiceId:    invoice.id ?? 'unknown',
+    amountPence:  invoice.amount_due,
+    currency:     invoice.currency,
+    attemptCount: invoice.attempt_count ?? 1,
+  });
 }
 
 // ── Route handler ─────────────────────────────────────────────────────────────
