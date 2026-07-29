@@ -1,98 +1,177 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Header } from '@/components/Header';
+import React, { useState, useTransition } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
+import { login } from '../actions';
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const urlError = searchParams.get('error');
+  const urlMessage = searchParams.get('message');
+
+  const [tab, setTab] = useState<'password' | 'magic'>('password');
   const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [password, setPassword] = useState('');
+  const [magicSent, setMagicSent] = useState(false);
+  const [magicError, setMagicError] = useState<string | null>(null);
+  const [magicLoading, setMagicLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const handlePasswordLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    startTransition(() => login(fd));
+  };
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setMessage(null);
-    setError(null);
-
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      setError('Supabase credentials missing from environment variables.');
-      setIsLoading(false);
-      return;
-    }
-
-    const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
-
-    const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+    setMagicLoading(true);
+    setMagicError(null);
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
-
-    setIsLoading(false);
-
-    if (magicLinkError) {
-      setError(magicLinkError.message);
-    } else {
-      setMessage('Check your email inbox for your secure sign-in link!');
-    }
+    setMagicLoading(false);
+    if (error) setMagicError(error.message);
+    else setMagicSent(true);
   };
 
   return (
-    <div className="min-h-screen bg-[#06080F] text-slate-100 font-sans">
-      <Header isAuthenticated={false} />
+    <div className="min-h-screen bg-[#06080F] flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="flex items-center gap-2 justify-center mb-8">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center">
+            <span className="text-white font-black text-sm">F</span>
+          </div>
+          <span className="text-white font-black text-xl tracking-tight">FLOWEN</span>
+        </div>
 
-      <main className="pt-32 pb-20 px-6 max-w-md mx-auto">
-        <div className="bg-[#0A0D14] border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
-          <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold text-white">Access Portal</h1>
-            <p className="text-xs text-slate-400">
-              Sign in to your Flowen account via magic link.
-            </p>
+        <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-8 shadow-2xl">
+          <h1 className="text-xl font-bold text-white mb-1 text-center">Sign in</h1>
+          <p className="text-slate-500 text-xs text-center mb-6">Access your Flowen account</p>
+
+          {/* URL-level error/message */}
+          {urlError && (
+            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
+              {decodeURIComponent(urlError)}
+            </div>
+          )}
+          {urlMessage === 'check_email' && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
+              Account created — check your email to confirm, then sign in below.
+            </div>
+          )}
+          {urlMessage === 'password_updated' && (
+            <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
+              Password updated successfully. Sign in below.
+            </div>
+          )}
+
+          {/* Tab switcher */}
+          <div className="flex rounded-xl bg-slate-900 p-1 mb-6">
+            <button
+              onClick={() => setTab('password')}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                tab === 'password' ? 'bg-emerald-500 text-black' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Password
+            </button>
+            <button
+              onClick={() => setTab('magic')}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                tab === 'magic' ? 'bg-emerald-500 text-black' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Magic Link
+            </button>
           </div>
 
-          {message && (
-            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
-              {message}
-            </div>
+          {tab === 'password' ? (
+            <form onSubmit={handlePasswordLogin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Email
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="name@example.com"
+                  className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+                />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Password
+                  </label>
+                  <Link href="/auth/forgot-password" className="text-xs text-emerald-400 hover:text-emerald-300">
+                    Forgot password?
+                  </Link>
+                </div>
+                <input
+                  name="password"
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+              >
+                {isPending ? 'Signing in…' : 'Sign in'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleMagicLink} className="space-y-4">
+              {magicSent ? (
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 text-center">
+                  Magic link sent — check your inbox and click the link to sign in.
+                </div>
+              ) : (
+                <>
+                  {magicError && (
+                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
+                      {magicError}
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="name@example.com"
+                      className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={magicLoading}
+                    className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+                  >
+                    {magicLoading ? 'Sending…' : 'Send Magic Link'}
+                  </button>
+                </>
+              )}
+            </form>
           )}
-
-          {error && (
-            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleMagicLink} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
-            >
-              {isLoading ? 'Sending Link...' : 'Send Magic Link'}
-            </button>
-          </form>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
