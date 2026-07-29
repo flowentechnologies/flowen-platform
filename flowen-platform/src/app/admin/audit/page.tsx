@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import MainNavbar from '@/components/MainNavbar';
 
 interface AuditLog {
   id: string;
@@ -28,10 +27,7 @@ export default function SecurityAuditPage() {
   const filteredLogs = logs.filter((l) => filterSeverity === 'ALL' ? true : l.severity === filterSeverity);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      <MainNavbar />
-
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-10 space-y-8">
+    <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -74,7 +70,6 @@ export default function SecurityAuditPage() {
             </tbody>
           </table>
         </div>
-      </main>
     </div>
   );
 }
