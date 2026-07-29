@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { createBrowserClient } from '@supabase/ssr';
+import { FlowenLogo } from '@/components/FlowenLogo';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -12,17 +13,13 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError(null);
 
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
+    const supabase = createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      // Route through the PKCE callback so session cookies are set server-side,
-      // then callback redirects to /auth/reset-password via the `next` param.
+      // PKCE callback sets session server-side then forwards to /auth/reset-password
       redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
     });
 
@@ -34,11 +31,8 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-[#06080F] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center">
-            <span className="text-white font-black text-sm">F</span>
-          </div>
-          <span className="text-white font-black text-xl tracking-tight">FLOWEN</span>
+        <div className="flex justify-center mb-8">
+          <FlowenLogo />
         </div>
 
         <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-8 shadow-2xl">

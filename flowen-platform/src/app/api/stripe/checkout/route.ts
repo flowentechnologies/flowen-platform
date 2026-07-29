@@ -25,13 +25,14 @@ export async function POST(req: Request) {
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/?success=true`,
-      cancel_url: `${req.headers.get('origin')}/?canceled=true`,
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.flowen.digital'}/?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.flowen.digital'}/pricing`,
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (err: any) {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Checkout error';
     console.error('Stripe Checkout Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
