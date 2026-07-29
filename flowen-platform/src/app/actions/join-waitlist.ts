@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
+import { sendWaitlistConfirmation, sendAdminWaitlistAlert } from '@/lib/email';
 
 function adminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,19 +17,27 @@ export async function joinWaitlist(
     return { success: false, message: 'A valid email address is required.' };
   }
 
+  const normalised = email.toLowerCase().trim();
+
   try {
     const { error } = await adminClient()
       .from('waitlist_signups')
-      .insert({ email: email.toLowerCase().trim(), source: 'waitlist_page' });
+      .insert({ email: normalised, source: 'waitlist_page' });
 
     if (error) {
       if (error.code === '23505') {
-        // Unique violation — treat as success so we don't leak registration status.
+        // Unique violation — already registered; don't leak that fact but skip emails.
         return { success: true, message: 'Application received!' };
       }
       console.error('[join-waitlist] insert error:', error.message);
       return { success: false, message: 'Unable to register right now. Please try again.' };
     }
+
+    // Fire-and-forget — email failures must not block the user response.
+    void Promise.all([
+      sendWaitlistConfirmation(normalised),
+      sendAdminWaitlistAlert({ email: normalised }),
+    ]);
 
     return { success: true, message: 'Application received!' };
   } catch (err) {

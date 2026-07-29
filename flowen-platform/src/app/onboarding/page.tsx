@@ -2,12 +2,8 @@
 
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
-
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+import { createClient } from '@/lib/supabase/client';
+import { completeOnboarding } from '@/app/actions/complete-onboarding';
 
 const ROLES = [
   { value: 'pwds',          label: 'Person who stutters (PWS)' },
@@ -33,38 +29,20 @@ export default function OnboardingPage() {
     setError(null);
 
     startTransition(async () => {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/auth/login'); return; }
 
-      const consentAt = new Date().toISOString();
+      const { error: actionError } = await completeOnboarding({
+        userId:      user.id,
+        email:       user.email ?? '',
+        displayName: displayName.trim(),
+        role,
+        consentAt:   new Date().toISOString(),
+      });
 
-      const { error: dbErr } = await supabase
-        .from('profiles')
-        .update({
-          display_name:        displayName.trim(),
-          brand:               'flowen',
-          onboarding_complete: true,
-          gdpr_consent_at:     consentAt,
-          gdpr_consent_version: '2026-07-01',
-          opt_in_telemetry:    true,
-        })
-        .eq('id', user.id);
+      if (actionError) { setError(actionError); return; }
 
-      if (!dbErr) {
-        await supabase.from('consent_audit_log').insert({
-          user_id:    user.id,
-          event_type: 'gdpr_consent_granted',
-          consent_version: '2026-07-01',
-          ip_address: null,
-        });
-      }
-
-      if (dbErr) {
-        setError('Could not save your profile. Please try again.');
-        return;
-      }
-
-      // Set a cookie so proxy skips the onboarding check on subsequent visits.
       document.cookie = 'flowen_ob=1; path=/; max-age=31536000; SameSite=Lax';
       router.push('/dashboard');
     });
