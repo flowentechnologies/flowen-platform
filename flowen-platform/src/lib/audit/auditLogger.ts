@@ -1,3 +1,5 @@
+import { createClient } from '@supabase/supabase-js';
+
 export type AuditSeverity = 'INFO' | 'WARNING' | 'CRITICAL' | 'SECURITY_ALERT';
 export type AuditCategory = 'AUTH_EVENT' | 'CLINICAL_ACCESS' | 'TELEMETRY_INGEST' | 'DATA_EXPORT' | 'ADMIN_ACTION' | 'PAYMENT_EVENT';
 
@@ -16,51 +18,84 @@ export interface AuditEvent {
   hash?: string;
 }
 
-const auditBuffer: AuditEvent[] = [];
+function adminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+}
 
-async function computeAuditHash(event: Omit<AuditEvent, 'hash'>): Promise<string> {
-  const content = `${event.timestamp}|${event.severity}|${event.category}|${event.actorId}|${event.action}|${event.resourceId || ''}`;
+async function computeHash(event: Omit<AuditEvent, 'hash'>): Promise<string> {
+  const content = `${event.timestamp}|${event.severity}|${event.category}|${event.actorId}|${event.action}|${event.resourceId ?? ''}`;
   if (typeof window === 'undefined' && globalThis.crypto?.subtle) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(content);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    const data = new TextEncoder().encode(content);
+    const buf  = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
-  return `hash_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  return `hash_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
 export async function logAuditEvent(params: Omit<AuditEvent, 'timestamp' | 'hash'>): Promise<AuditEvent> {
   const timestamp = new Date().toISOString();
-  const eventBase = { ...params, timestamp };
-  const hash = await computeAuditHash(eventBase);
-  const fullEvent: AuditEvent = {
-    ...eventBase,
-    id: `aud_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+  const base = { ...params, timestamp };
+  const hash = await computeHash(base);
+  const event: AuditEvent = {
+    ...base,
+    id: `aud_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     hash,
   };
-  auditBuffer.unshift(fullEvent);
-  if (auditBuffer.length > 200) auditBuffer.pop();
-  console.log(`[AUDIT_LOG][${fullEvent.severity}][${fullEvent.category}]`, JSON.stringify(fullEvent));
-  return fullEvent;
+
+  const db = adminClient();
+  if (db) {
+    await db.from('audit_logs').insert({
+      id:          event.id,
+      timestamp:   event.timestamp,
+      severity:    event.severity,
+      category:    event.category,
+      actor_id:    event.actorId,
+      actor_role:  event.actorRole,
+      action:      event.action,
+      resource_id: event.resourceId,
+      ip_address:  event.ipAddress,
+      user_agent:  event.userAgent,
+      metadata:    event.metadata,
+      hash:        event.hash,
+    }).then(({ error }) => {
+      if (error) console.error('[AUDIT] DB write failed:', error.message);
+    });
+  }
+
+  console.log(`[AUDIT][${event.severity}][${event.category}]`, event.actorId, event.action);
+  return event;
 }
 
-export function getRecentAuditLogs(): AuditEvent[] {
-  if (auditBuffer.length === 0) {
-    return [
-      {
-        id: 'aud_1721918200_a1f',
-        timestamp: new Date().toISOString(),
-        severity: 'INFO',
-        category: 'CLINICAL_ACCESS',
-        actorId: 'usr_slp_9821',
-        actorRole: 'CLINICIAN',
-        action: 'VIEW_PATIENT_TELEMETRY',
-        resourceId: 'pat_alex_wright_28',
-        ipAddress: '198.51.100.42',
-        metadata: { patientName: 'Alexander Wright', dysfluencyMetric: 'Block Rate 1.2/min' },
-        hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-      }
-    ];
+export async function getRecentAuditLogs(limit = 100): Promise<AuditEvent[]> {
+  const db = adminClient();
+  if (!db) return [];
+
+  const { data, error } = await db
+    .from('audit_logs')
+    .select('*')
+    .order('timestamp', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('[AUDIT] Failed to fetch logs:', error.message);
+    return [];
   }
-  return [...auditBuffer];
+
+  return (data ?? []).map(row => ({
+    id:         row.id,
+    timestamp:  row.timestamp,
+    severity:   row.severity as AuditSeverity,
+    category:   row.category as AuditCategory,
+    actorId:    row.actor_id,
+    actorRole:  row.actor_role,
+    action:     row.action,
+    resourceId: row.resource_id,
+    ipAddress:  row.ip_address,
+    userAgent:  row.user_agent,
+    metadata:   row.metadata,
+    hash:       row.hash,
+  }));
 }
