@@ -14,13 +14,8 @@ export async function GET() {
   const user = await requireAdmin();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const logs = getRecentAuditLogs();
-  return NextResponse.json({
-    status: 'success',
-    total: logs.length,
-    complianceStatus: { gdpr: 'PARTIAL', dcb0129: 'IN_PROGRESS' },
-    logs,
-  });
+  const logs = await getRecentAuditLogs();
+  return NextResponse.json({ status: 'success', total: logs.length, logs });
 }
 
 export async function POST(req: Request) {
@@ -30,13 +25,13 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const event = await logAuditEvent({
-      severity: body.severity || 'INFO',
-      category: body.category || 'ADMIN_ACTION',
-      actorId: user.id,
-      actorRole: body.actorRole || 'ADMIN',
-      action: body.action || 'CUSTOM_AUDIT_EVENT',
+      severity:   body.severity  || 'INFO',
+      category:   body.category  || 'ADMIN_ACTION',
+      actorId:    user.id,
+      actorRole:  'ADMIN',
+      action:     body.action    || 'CUSTOM_AUDIT_EVENT',
       resourceId: body.resourceId,
-      metadata: body.metadata,
+      metadata:   body.metadata,
     });
     return NextResponse.json({ status: 'created', event });
   } catch {

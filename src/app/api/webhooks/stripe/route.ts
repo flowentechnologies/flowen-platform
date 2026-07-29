@@ -311,6 +311,15 @@ export async function POST(req: Request): Promise<Response> {
   // DB errors are logged internally so Stripe doesn't endlessly re-queue.
   const admin = createAdminClient();
 
+  // Idempotency — silently skip events already processed (Stripe retries on network failure)
+  const { data: existing } = await admin
+    .from('processed_webhook_events')
+    .select('event_id')
+    .eq('event_id', event.id)
+    .maybeSingle();
+
+  if (existing) return Response.json({ received: true, skipped: true });
+
   try {
     switch (event.type) {
       case 'checkout.session.completed':
@@ -342,7 +351,16 @@ export async function POST(req: Request): Promise<Response> {
     const stack = err instanceof Error ? err.stack   : undefined;
     await logError(admin, event.type, msg, { event_id: event.id, stack }).catch(() => null);
     console.error(`[stripe-webhook] ${event.type} error:`, msg);
+    return Response.json({ received: true });
   }
+
+  // Mark processed only on success so failed events can be retried
+  await admin
+    .from('processed_webhook_events')
+    .insert({ event_id: event.id, event_type: event.type })
+    .then(({ error }) => {
+      if (error) console.error('[stripe-webhook] idempotency insert failed:', error.message);
+    });
 
   return Response.json({ received: true });
 }

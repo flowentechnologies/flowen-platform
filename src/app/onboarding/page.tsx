@@ -19,29 +19,45 @@ const ROLES = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [displayName, setDisplayName] = useState('');
-  const [role,        setRole]        = useState('');
-  const [error,       setError]       = useState<string | null>(null);
-  const [isPending,   startTransition] = useTransition();
+  const [displayName,   setDisplayName]   = useState('');
+  const [role,          setRole]          = useState('');
+  const [gdprConsent,   setGdprConsent]   = useState(false);
+  const [error,         setError]         = useState<string | null>(null);
+  const [isPending,     startTransition]  = useTransition();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!displayName.trim()) { setError('Please enter your name.'); return; }
     if (!role)               { setError('Please select your role.'); return; }
+    if (!gdprConsent)        { setError('Please accept the data processing terms to continue.'); return; }
     setError(null);
 
     startTransition(async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/auth/login'); return; }
 
+      const consentAt = new Date().toISOString();
+
       const { error: dbErr } = await supabase
         .from('profiles')
         .update({
-          display_name:       displayName.trim(),
-          brand:              role,
+          display_name:        displayName.trim(),
+          brand:               'flowen',
           onboarding_complete: true,
+          gdpr_consent_at:     consentAt,
+          gdpr_consent_version: '2026-07-01',
+          opt_in_telemetry:    true,
         })
         .eq('id', user.id);
+
+      if (!dbErr) {
+        await supabase.from('consent_audit_log').insert({
+          user_id:    user.id,
+          event_type: 'gdpr_consent_granted',
+          consent_version: '2026-07-01',
+          ip_address: null,
+        });
+      }
 
       if (dbErr) {
         setError('Could not save your profile. Please try again.');
@@ -112,6 +128,27 @@ export default function OnboardingPage() {
               ))}
             </div>
           </div>
+
+          {/* GDPR consent — required under UK GDPR Article 9 for biometric data */}
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={gdprConsent}
+              onChange={e => setGdprConsent(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border border-slate-600 bg-slate-950 accent-emerald-500 flex-shrink-0"
+            />
+            <span className="text-xs text-slate-400 leading-relaxed">
+              I consent to Flowen processing my voice and speech data to provide personalised therapy, in accordance with the{' '}
+              <a href="/legal" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">
+                Privacy Policy
+              </a>
+              {' '}and{' '}
+              <a href="/legal" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">
+                Terms of Service
+              </a>
+              . You can withdraw consent at any time from account settings.
+            </span>
+          </label>
 
           {error && (
             <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
