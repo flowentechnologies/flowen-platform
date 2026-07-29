@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { FlowenLogo } from '@/components/FlowenLogo';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -13,40 +14,25 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirm) {
-      setError('Passwords do not match.');
-      return;
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
-      return;
-    }
+    if (loading) return;
+    if (password !== confirm) { setError('Passwords do not match.'); return; }
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
     setLoading(true);
     setError(null);
 
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
+    const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
 
-    if (error) {
-      setError(error.message);
-    } else {
-      router.push('/auth/login?message=password_updated');
-    }
+    if (error) setError(error.message);
+    else router.push('/auth/login?message=password_updated');
   };
 
   return (
     <div className="min-h-screen bg-[#06080F] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center">
-            <span className="text-white font-black text-sm">F</span>
-          </div>
-          <span className="text-white font-black text-xl tracking-tight">FLOWEN</span>
+        <div className="flex justify-center mb-8">
+          <FlowenLogo />
         </div>
 
         <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-8 shadow-2xl">

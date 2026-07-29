@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type BillingCycle = 'monthly' | 'quarterly' | 'six_months' | 'yearly';
 
@@ -15,6 +16,24 @@ export default function PricingSection() {
   };
 
   const currentFounding = billingDetails[cycle];
+  const router = useRouter();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handleFoundingSeat = async () => {
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interval: cycle }),
+      });
+      const { url, error } = await res.json();
+      if (error || !url) { setCheckoutLoading(false); return; }
+      window.location.href = url;
+    } catch {
+      setCheckoutLoading(false);
+    }
+  };
 
   return (
     <section className="py-16 px-4 max-w-7xl mx-auto text-slate-100">
@@ -52,7 +71,10 @@ export default function PricingSection() {
             </div>
             <p className="text-slate-400 text-sm mb-6">Baseline early access allocation without ongoing subscription commitments.</p>
           </div>
-          <button className="w-full py-3.5 px-6 rounded-xl bg-slate-800 text-white font-semibold border border-slate-700 text-sm">
+          <button
+            onClick={() => router.push('/waitlist')}
+            className="w-full py-3.5 px-6 rounded-xl bg-slate-800 text-white font-semibold border border-slate-700 text-sm hover:bg-slate-700 transition-colors"
+          >
             Join free waitlist
           </button>
         </div>
@@ -69,8 +91,12 @@ export default function PricingSection() {
               <div className="text-xs text-emerald-400 font-medium mt-1">{currentFounding.billingPeriodText}</div>
             </div>
           </div>
-          <button className="w-full py-3.5 px-6 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm">
-            Secure Founding Seat
+          <button
+            onClick={handleFoundingSeat}
+            disabled={checkoutLoading}
+            className="w-full py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {checkoutLoading ? 'Redirecting…' : 'Secure Founding Seat'}
           </button>
         </div>
 
@@ -85,9 +111,12 @@ export default function PricingSection() {
               <span className="text-slate-400 text-xs font-medium"> via institution</span>
             </div>
           </div>
-          <button className="w-full py-3.5 px-6 rounded-xl bg-slate-800 text-sky-300 font-semibold border border-slate-700 text-sm">
+          <a
+            href="mailto:flowenspeech@outlook.com?subject=Sponsored%20Entry%20Eligibility"
+            className="block w-full py-3.5 px-6 rounded-xl bg-slate-800 text-sky-300 font-semibold border border-slate-700 text-sm text-center hover:bg-slate-700 transition-colors"
+          >
             Verify Eligibility
-          </button>
+          </a>
         </div>
       </div>
     </section>

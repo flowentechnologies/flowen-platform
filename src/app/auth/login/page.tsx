@@ -3,7 +3,8 @@
 import React, { useState, useTransition, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+import { FlowenLogo } from '@/components/FlowenLogo';
+import { createClient } from '@/lib/supabase/client';
 import { login } from '../actions';
 
 function LoginForm() {
@@ -26,12 +27,10 @@ function LoginForm() {
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (magicLoading) return;
     setMagicLoading(true);
     setMagicError(null);
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
@@ -62,7 +61,6 @@ function LoginForm() {
         </div>
       )}
 
-      {/* Tab switcher */}
       <div className="flex rounded-xl bg-slate-900 p-1 mb-6">
         <button
           onClick={() => setTab('password')}
@@ -166,12 +164,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#06080F] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center">
-            <span className="text-white font-black text-sm">F</span>
-          </div>
-          <span className="text-white font-black text-xl tracking-tight">FLOWEN</span>
+        <div className="flex justify-center mb-8">
+          <FlowenLogo />
         </div>
         <Suspense fallback={
           <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-8 shadow-2xl animate-pulse">
