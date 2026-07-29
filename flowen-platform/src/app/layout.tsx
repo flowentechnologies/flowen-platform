@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import CookieConsent from '@/components/CookieConsent';
 
 export const metadata: Metadata = {
   title: 'Flowen — Retraining the Brain to Speak Freely',
@@ -43,6 +44,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
         {children}
+        <CookieConsent />
       </body>
     </html>
   );
