@@ -106,6 +106,10 @@ export async function POST(request: NextRequest) {
   const admin = serviceClient();
 
   if (action === 'toggle_admin') {
+    if (userId === adminUser.id) {
+      return NextResponse.json({ error: 'Cannot change your own admin status' }, { status: 400 });
+    }
+
     const { data: profile, error: fetchError } = await admin
       .from('profiles')
       .select('is_admin')
@@ -114,6 +118,17 @@ export async function POST(request: NextRequest) {
 
     if (fetchError || !profile) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Prevent removing the last admin
+    if (profile.is_admin) {
+      const { count } = await admin
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_admin', true);
+      if ((count ?? 0) <= 1) {
+        return NextResponse.json({ error: 'Cannot remove the last admin account' }, { status: 400 });
+      }
     }
 
     const { error: updateError } = await admin

@@ -44,9 +44,11 @@ const ENV_MANIFEST = [
   { name: 'NEXT_PUBLIC_SUPABASE_ANON_KEY',     label: 'Supabase Anon Key',        category: 'Supabase',    required: true  },
   { name: 'SUPABASE_SERVICE_ROLE_KEY',         label: 'Service Role Key',         category: 'Supabase',    required: true  },
   { name: 'SUPABASE_JWT_SECRET',               label: 'JWT Secret',               category: 'Supabase',    required: false },
-  { name: 'STRIPE_SECRET_KEY',                 label: 'Stripe Secret Key',        category: 'Stripe',      required: true  },
+  { name: 'STRIPE_LIVE_SECRET_KEY',            label: 'Stripe Live Secret Key',   category: 'Stripe',      required: false },
+  { name: 'STRIPE_TEST_SECRET_KEY',            label: 'Stripe Test Secret Key',   category: 'Stripe',      required: false },
   { name: 'STRIPE_WEBHOOK_SECRET',             label: 'Webhook Secret',           category: 'Stripe',      required: true  },
   { name: 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',label: 'Publishable Key',          category: 'Stripe',      required: true  },
+  { name: 'NEXT_PUBLIC_STRIPE_ENV',            label: 'Stripe Environment',       category: 'Stripe',      required: false },
   { name: 'EMAIL_SERVER_HOST',                 label: 'SMTP Host',                category: 'Email',       required: false },
   { name: 'EMAIL_SERVER_USER',                 label: 'SMTP User',                category: 'Email',       required: false },
   { name: 'EMAIL_SERVER_PASSWORD',             label: 'SMTP Password',            category: 'Email',       required: true  },
@@ -56,6 +58,7 @@ const ENV_MANIFEST = [
   { name: 'SENTRY_ORG',                        label: 'Sentry Org',               category: 'Monitoring',  required: false },
   { name: 'SENTRY_PROJECT',                    label: 'Sentry Project',           category: 'Monitoring',  required: false },
   { name: 'NEXT_PUBLIC_SITE_URL',              label: 'Site URL',                 category: 'App',         required: true  },
+  { name: 'CRON_SECRET',                       label: 'Cron Secret',              category: 'App',         required: true  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -205,9 +208,9 @@ export default async function SystemPage() {
           },
           {
             label:  'Stripe',
-            status: process.env.STRIPE_SECRET_KEY ? 'CONFIGURED' : 'MISSING KEY',
+            status: (process.env.STRIPE_LIVE_SECRET_KEY || process.env.STRIPE_TEST_SECRET_KEY) ? 'CONFIGURED' : 'MISSING KEY',
             detail: `${totalWebhooks} events processed`,
-            ok:     Boolean(process.env.STRIPE_SECRET_KEY),
+            ok:     Boolean(process.env.STRIPE_LIVE_SECRET_KEY || process.env.STRIPE_TEST_SECRET_KEY),
           },
           {
             label:  'Email (SMTP)',

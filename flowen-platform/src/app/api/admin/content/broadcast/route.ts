@@ -27,13 +27,18 @@ function transport() {
   });
 }
 
+function escHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function buildHtml(subject: string, body: string): string {
   const paragraphs = body
     .split('\n')
     .map(l => l.trim())
     .filter(Boolean)
-    .map(l => `<p style="margin:12px 0;font-size:15px;color:#94a3b8;line-height:1.65;">${l}</p>`)
+    .map(l => `<p style="margin:12px 0;font-size:15px;color:#94a3b8;line-height:1.65;">${escHtml(l)}</p>`)
     .join('\n');
+  const safeSubject = escHtml(subject);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -52,7 +57,7 @@ function buildHtml(subject: string, body: string): string {
         </tr>
         <tr>
           <td style="padding:32px 40px;">
-            <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#f8fafc;letter-spacing:-0.5px;">${subject}</h1>
+            <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#f8fafc;letter-spacing:-0.5px;">${safeSubject}</h1>
             ${paragraphs}
           </td>
         </tr>

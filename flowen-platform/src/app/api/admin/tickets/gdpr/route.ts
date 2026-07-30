@@ -61,18 +61,42 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === 'apply_erasure') {
-    const { id, user_id } = body as Record<string, string>;
-    if (!id || !user_id) return NextResponse.json({ error: 'id and user_id required' }, { status: 400 });
+    const { id } = body as Record<string, string>;
+    if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
-    // Run the existing apply_gdpr_erasure stored procedure
-    const { error: rpcError } = await supabase.rpc('apply_gdpr_erasure', { target_user_id: user_id });
+    // Fetch user_id from the DB row — never trust client-supplied user_id
+    const { data: gdprRow, error: fetchError } = await supabase
+      .from('gdpr_requests')
+      .select('user_id, status')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !gdprRow) {
+      return NextResponse.json({ error: 'GDPR request not found' }, { status: 404 });
+    }
+    if (!gdprRow.user_id) {
+      return NextResponse.json({ error: 'No user_id on this request — cannot erase' }, { status: 400 });
+    }
+
+    // Idempotency: refuse if already completed
+    if (gdprRow.status === 'completed') {
+      return NextResponse.json({ error: 'Erasure already completed for this request' }, { status: 409 });
+    }
+
+    const userId = gdprRow.user_id as string;
+
+    // Mark in-progress first to prevent concurrent double-erasure
+    await supabase.from('gdpr_requests').update({
+      status: 'in_progress',
+      updated_at: new Date().toISOString(),
+    }).eq('id', id).eq('status', gdprRow.status);
+
+    const { error: rpcError } = await supabase.rpc('apply_gdpr_erasure', { target_user_id: userId });
     if (rpcError) return NextResponse.json({ error: rpcError.message }, { status: 500 });
 
-    // Delete from auth.users (permanent account removal)
-    const { error: authError } = await supabase.auth.admin.deleteUser(user_id);
+    const { error: authError } = await supabase.auth.admin.deleteUser(userId);
     if (authError) return NextResponse.json({ error: authError.message }, { status: 500 });
 
-    // Mark request completed
     const { error } = await supabase.from('gdpr_requests').update({
       status: 'completed',
       completed_at: new Date().toISOString(),

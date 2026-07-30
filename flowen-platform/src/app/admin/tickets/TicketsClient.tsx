@@ -242,7 +242,7 @@ function TicketDrawer({ ticket, adminEmail, onUpdate, onClose }: {
     const body = reply.trim();
     setReply('');
     startTransition(async () => {
-      const res = await api('add_message', { ticket_id: ticket.id, body, from_admin: 'true', author: adminEmail });
+      const res = await api('add_message', { ticket_id: ticket.id, body, from_admin: true, author: adminEmail });
       if (res.data) {
         onUpdate(ticket.id, {
           status: ticket.status === 'open' ? 'in_progress' : ticket.status,

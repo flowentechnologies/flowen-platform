@@ -46,14 +46,39 @@ export async function POST(req: NextRequest) {
     try { formData = await req.formData(); }
     catch { return NextResponse.json({ error: 'Invalid form data' }, { status: 400 }); }
 
+    const ALLOWED_MIME_TYPES = new Set([
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain',
+      'text/csv',
+      'image/png',
+      'image/jpeg',
+      'image/gif',
+      'image/webp',
+    ]);
+
+    const ALLOWED_CATEGORIES = new Set([
+      'pitch', 'legal', 'financial', 'technical', 'general', 'investor-updates',
+    ]);
+
     const file        = formData.get('file') as File | null;
     const title       = (formData.get('title') as string | null)?.trim();
-    const category    = formData.get('category') as string | null;
+    const rawCategory = formData.get('category') as string | null;
+    const category    = ALLOWED_CATEGORIES.has(rawCategory ?? '') ? rawCategory : null;
     const description = (formData.get('description') as string | null)?.trim() ?? null;
     const version     = (formData.get('version') as string | null)?.trim() ?? 'v1';
 
     if (!file || !title || !category) {
       return NextResponse.json({ error: 'file, title, and category are required' }, { status: 400 });
+    }
+
+    if (!ALLOWED_MIME_TYPES.has(file.type)) {
+      return NextResponse.json({ error: `File type not allowed: ${file.type}` }, { status: 400 });
     }
 
     const ext = file.name.split('.').pop() ?? '';
