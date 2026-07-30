@@ -1,37 +1,105 @@
-export default function CronPage() {
+import { createClient } from '@supabase/supabase-js';
+import { assertAdmin } from '@/lib/admin/guard';
+import { CronClient } from './CronClient';
+
+// ── DB client ─────────────────────────────────────────────────────────────────
+
+function adminDb() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+export type CronRunStatus = 'running' | 'success' | 'failed' | 'skipped';
+
+export interface CronRun {
+  id: string;
+  job_id: string;
+  status: CronRunStatus;
+  triggered_by: string;
+  duration_ms: number | null;
+  result: Record<string, unknown> | null;
+  error: string | null;
+  started_at: string;
+  finished_at: string | null;
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default async function CronPage() {
+  const admin = await assertAdmin();
+
+  const db = adminDb();
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [allRunsRes, failed7dRes] = await Promise.all([
+    db
+      .from('cron_runs')
+      .select('id,job_id,status,triggered_by,duration_ms,result,error,started_at,finished_at')
+      .order('started_at', { ascending: false })
+      .limit(200),
+    db
+      .from('cron_runs')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'failed')
+      .gte('started_at', sevenDaysAgo),
+  ]);
+
+  const allRuns    = (allRunsRes.data ?? []) as CronRun[];
+  const failed7d   = failed7dRes.count ?? 0;
+  const lastRun    = allRuns[0] ?? null;
+
+  const generatedAt = new Date().toLocaleString('en-GB', {
+    timeZone: 'Europe/London',
+    day: '2-digit', month: 'short',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+
   return (
     <div className="space-y-8">
+
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
         <div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Cron</h1>
-          <p className="text-slate-400 text-sm mt-1">Scheduled jobs, manual trigger, logs</p>
+          <p className="text-slate-400 text-sm mt-1">Scheduled jobs · Manual triggers · Run history</p>
         </div>
-        <span className="self-start sm:self-auto px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-sky-500/10 text-sky-400 border border-sky-500/30">
-          UNDER CONSTRUCTION
-        </span>
+        <span className="text-[10px] text-slate-500 font-mono hidden sm:block">{generatedAt} (London)</span>
       </div>
 
+      {/* KPI strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[
-          { label: 'Scheduled Jobs', value: '—' },
-          { label: 'Last Run Status', value: '—' },
-          { label: 'Failed Jobs (7d)', value: '—' },
-        ].map((stat) => (
-          <div key={stat.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <p className="text-xs font-mono text-slate-400 uppercase tracking-wide mb-2">{stat.label}</p>
-            <p className="text-4xl font-black text-slate-600">{stat.value}</p>
-          </div>
-        ))}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Total Jobs</p>
+          <p className="text-4xl font-black text-white">5</p>
+        </div>
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Last Run</p>
+          <p className={`text-2xl font-black ${lastRun ? 'text-white' : 'text-slate-600'}`}>
+            {lastRun
+              ? new Date(lastRun.started_at).toLocaleString('en-GB', {
+                  day: '2-digit', month: 'short',
+                  hour: '2-digit', minute: '2-digit',
+                })
+              : '—'}
+          </p>
+          {lastRun && (
+            <p className="text-[10px] font-mono text-slate-500 mt-1">{lastRun.job_id}</p>
+          )}
+        </div>
+        <div className={`bg-slate-900 border rounded-2xl p-6 ${failed7d > 0 ? 'border-red-500/30' : 'border-slate-800'}`}>
+          <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Failed (7d)</p>
+          <p className={`text-4xl font-black ${failed7d > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{failed7d}</p>
+        </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
-        <h2 className="text-lg font-bold text-white mb-3">Coming soon</h2>
-        <p className="text-slate-400 text-sm leading-relaxed">
-          This section will display all scheduled cron jobs with their schedules, last run times,
-          success/failure history, execution logs, and manual trigger controls for jobs like
-          subscription renewals, audit log archiving, data anonymisation passes, and health pings.
-        </p>
-      </div>
+      {/* Client-rendered cron job list */}
+      <CronClient initialRuns={allRuns} adminEmail={admin.email ?? 'admin'} />
+
     </div>
   );
 }
