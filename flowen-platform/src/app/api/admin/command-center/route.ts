@@ -1,8 +1,46 @@
-import { assertAdmin } from '@/lib/admin/guard';
+import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
 import { stripe } from '@/lib/stripe';
-import { CommandCentreClient } from './CommandCentreClient';
-import type { CCData } from '@/app/api/admin/command-center/route';
+
+export interface CCData {
+  generatedAt: string;
+  // Revenue
+  mrrPence: number;
+  arrPence: number;
+  activeSubs: number;
+  trialingSubs: number;
+  stripeOk: boolean;
+  supabaseOk: boolean;
+  emailConfigured: boolean;
+  // Users
+  totalUsers: number;
+  onboarded: number;
+  foundingCount: number;
+  newUsersWeek: number;
+  dau: number;
+  waitlistTotal: number;
+  // Tickets
+  openTickets: number;
+  inProgressTickets: number;
+  slaBreaches: number;
+  // GDPR
+  pendingGdpr: number;
+  overdueGdpr: number;
+  // Workflows
+  activeWorkflows: number;
+  failedRunsWeek: number;
+  // Sessions
+  sessionsToday: number;
+  // Feeds
+  recentErrors: { id: string; source: string; message: string; created_at: string }[];
+  recentAudit:  { id: string; timestamp: string; severity: string; category: string; action: string }[];
+  recentWaitlist: { id: string; email: string; source: string | null; created_at: string }[];
+  // Extras
+  tierCounts: Record<string, number>;
+  foundingGoal: number;
+  signupsByDay: Record<string, number>;
+}
 
 function db() {
   return createClient(
@@ -12,11 +50,15 @@ function db() {
   );
 }
 
-async function fetchData(): Promise<CCData> {
-  const now          = new Date();
-  const todayStart   = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400_000).toISOString();
-  const client       = db();
+export async function GET() {
+  const admin = await requireAdmin();
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const now           = new Date();
+  const todayStart    = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const sevenDaysAgo  = new Date(now.getTime() - 7 * 86400_000).toISOString();
+
+  const client = db();
 
   const [
     totalUsersRes, onboardedRes, foundingRes, newUsersRes,
@@ -44,19 +86,19 @@ async function fetchData(): Promise<CCData> {
     client.from('profiles').select('created_at').gte('created_at', sevenDaysAgo),
   ]);
 
-  // Revenue
+  // Revenue from Stripe
   let mrrPence = 0; let activeSubs = 0; let trialingSubs = 0; let stripeOk = false;
   try {
     const [active, trialing] = await Promise.all([
       stripe.subscriptions.list({ status: 'active', limit: 100, expand: ['data.items.data.price'] }),
       stripe.subscriptions.list({ status: 'trialing', limit: 100 }),
     ]);
-    activeSubs   = active.data.length;
+    activeSubs = active.data.length;
     trialingSubs = trialing.data.length;
     for (const sub of active.data) {
       const price = sub.items.data[0]?.price as { unit_amount: number | null; recurring: { interval: string; interval_count: number } | null } | undefined;
       if (!price) continue;
-      const amount   = price.unit_amount ?? 0;
+      const amount = price.unit_amount ?? 0;
       const interval = price.recurring?.interval ?? 'month';
       const cnt      = price.recurring?.interval_count ?? 1;
       mrrPence += interval === 'year' ? Math.round(amount / (cnt * 12)) : Math.round(amount / cnt);
@@ -65,25 +107,25 @@ async function fetchData(): Promise<CCData> {
   } catch { /* stripe unavailable */ }
 
   // Tickets
-  const tickets           = ticketsRes.data ?? [];
-  const openTickets       = tickets.filter(t => t.status === 'open').length;
+  const tickets = ticketsRes.data ?? [];
+  const openTickets      = tickets.filter(t => t.status === 'open').length;
   const inProgressTickets = tickets.filter(t => t.status === 'in_progress').length;
-  const slaBreaches       = tickets.filter(t => !['resolved','closed'].includes(t.status) && new Date(t.sla_due_at) < now).length;
+  const slaBreaches      = tickets.filter(t => !['resolved','closed'].includes(t.status) && new Date(t.sla_due_at) < now).length;
 
   // GDPR
-  const gdpr        = gdprRes.data ?? [];
-  const pendingGdpr = gdpr.filter(r => r.status === 'pending').length;
-  const overdueGdpr = gdpr.filter(r => new Date(r.sla_due_at) < now).length;
+  const gdpr = gdprRes.data ?? [];
+  const pendingGdpr  = gdpr.filter(r => r.status === 'pending').length;
+  const overdueGdpr  = gdpr.filter(r => new Date(r.sla_due_at) < now).length;
 
   // Workflows
-  const wfs             = workflowsRes.data ?? [];
+  const wfs = workflowsRes.data ?? [];
   const activeWorkflows = wfs.filter(w => w.status === 'active').length;
   const failedRunsWeek  = (workflowRunsRes.data ?? []).filter(r => r.status === 'failed').length;
 
-  // Sessions
-  const sessionRows   = sessionsTodayRes.data ?? [];
+  // Sessions today
+  const sessionRows = sessionsTodayRes.data ?? [];
   const sessionsToday = sessionRows.length;
-  const dau           = new Set(sessionRows.map((s: { user_id: string }) => s.user_id)).size;
+  const dau = new Set(sessionRows.map((s: { user_id: string }) => s.user_id)).size;
 
   // Tier distribution
   const tierCounts: Record<string, number> = {};
@@ -92,14 +134,14 @@ async function fetchData(): Promise<CCData> {
     tierCounts[t] = (tierCounts[t] ?? 0) + 1;
   }
 
-  // Signup sparkline
+  // Signup sparkline (last 7 days)
   const signupsByDay: Record<string, number> = {};
   for (const p of (signupsWeekRes.data ?? []) as { created_at: string }[]) {
     const day = p.created_at.slice(0, 10);
     signupsByDay[day] = (signupsByDay[day] ?? 0) + 1;
   }
 
-  return {
+  const data: CCData = {
     generatedAt: now.toISOString(),
     mrrPence, arrPence: mrrPence * 12,
     activeSubs, trialingSubs, stripeOk,
@@ -120,10 +162,6 @@ async function fetchData(): Promise<CCData> {
     recentAudit:  auditRes.data  ?? [],
     tierCounts, foundingGoal: 500, signupsByDay,
   };
-}
 
-export default async function CommandCenterPage() {
-  await assertAdmin();
-  const data = await fetchData();
-  return <CommandCentreClient initialData={data} />;
+  return NextResponse.json(data);
 }
