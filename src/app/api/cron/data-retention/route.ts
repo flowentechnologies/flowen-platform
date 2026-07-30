@@ -9,23 +9,30 @@ function db() {
   );
 }
 
-export async function POST(_req: NextRequest): Promise<NextResponse> {
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const secret = req.headers.get('x-cron-secret');
+  if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const isManual   = req.headers.get('x-triggered-by') !== null;
   const started    = Date.now();
   const runId      = crypto.randomUUID();
   const durationMs = Date.now() - started;
 
-  // Stub — actual data retention policies are future work.
-  await db().from('cron_runs').insert({
-    id:           runId,
-    job_id:       'data-retention',
-    status:       'success',
-    triggered_by: 'schedule',
-    duration_ms:  durationMs,
-    result:       { message: 'stub — no-op' },
-    error:        null,
-    started_at:   new Date(Date.now() - durationMs).toISOString(),
-    finished_at:  new Date().toISOString(),
-  });
+  if (!isManual) {
+    await db().from('cron_runs').insert({
+      id:           runId,
+      job_id:       'data-retention',
+      status:       'success',
+      triggered_by: 'schedule',
+      duration_ms:  durationMs,
+      result:       { message: 'stub — no-op' },
+      error:        null,
+      started_at:   new Date(Date.now() - durationMs).toISOString(),
+      finished_at:  new Date().toISOString(),
+    });
+  }
 
   return NextResponse.json({ ok: true, message: 'stub — no-op' });
 }

@@ -64,7 +64,7 @@ export async function signup(formData: FormData) {
         brand,
         tier,
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "https://flowen.app"}/auth/callback`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.flowen.digital"}/auth/callback`,
     },
   });
 
