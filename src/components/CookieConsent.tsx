@@ -45,6 +45,7 @@ export default function CookieConsent() {
   const accept = () => {
     writeConsent('all');
     enableSentryReplay();
+    window.dispatchEvent(new Event('flowen:consent:granted'));
     setVisible(false);
   };
 
