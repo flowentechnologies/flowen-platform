@@ -1,84 +1,155 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { logout } from '@/app/auth/actions';
 
+function Section({ title, description, danger, children }: {
+  title: string; description?: string; danger?: boolean; children: React.ReactNode;
+}) {
+  return (
+    <div className={`bg-slate-900 border rounded-2xl p-6 ${danger ? 'border-red-900/40' : 'border-slate-800'}`}>
+      <h2 className={`text-sm font-bold mb-0.5 ${danger ? 'text-red-400' : 'text-white'}`}>{title}</h2>
+      {description && <p className="text-slate-500 text-xs mb-5 leading-relaxed">{description}</p>}
+      {!description && <div className="mb-4" />}
+      {children}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const router = useRouter();
-  const [deleting, setDeleting] = useState(false);
-  const [confirmText, setConfirmText] = useState('');
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const [displayName, setDisplayName] = useState('');
+  const [nameLoaded,  setNameLoaded]  = useState(false);
+  const [nameSaving,  startNameSave]  = useTransition();
+  const [nameMsg,     setNameMsg]     = useState('');
+
+  const [confirmText,  setConfirmText]  = useState('');
+  const [showConfirm,  setShowConfirm]  = useState(false);
+  const [erasing,      setErasing]      = useState(false);
+  const [erasureError, setErasureError] = useState('');
+
+  React.useEffect(() => {
+    if (nameLoaded) return;
+    createClient().auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      const { data } = await createClient().from('profiles').select('display_name').eq('id', user.id).single();
+      setDisplayName(data?.display_name ?? '');
+      setNameLoaded(true);
+    });
+  }, [nameLoaded]);
+
+  const handleSaveName = () => {
+    setNameMsg('');
+    startNameSave(async () => {
+      const sb = createClient();
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      const { error } = await sb.from('profiles').update({ display_name: displayName || null }).eq('id', user.id);
+      setNameMsg(error ? 'Failed to save.' : 'Saved.');
+    });
+  };
 
   const handleErasure = async () => {
     if (confirmText !== 'DELETE MY ACCOUNT') return;
-    setDeleting(true);
-    setError(null);
-
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    setErasing(true);
+    setErasureError('');
+    const sb = createClient();
+    const { data: { user } } = await sb.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
-
-    const { error } = await supabase.rpc('apply_gdpr_erasure', { target_user_id: user.id });
-
+    const { error } = await sb.rpc('apply_gdpr_erasure', { target_user_id: user.id });
     if (error) {
-      setError('Could not process your request. Please email flowenspeech@outlook.com with subject [ERASURE REQUEST].');
-      setDeleting(false);
+      setErasureError('Could not process your request. Email flowenspeech@outlook.com with subject [ERASURE REQUEST].');
+      setErasing(false);
       return;
     }
-
-    await supabase.from('consent_audit_log').insert({
-      user_id:         user.id,
-      event_type:      'gdpr_consent_withdrawn',
-      consent_version: '2026-07-01',
+    await sb.from('consent_audit_log').insert({
+      user_id: user.id, event_type: 'gdpr_consent_withdrawn', consent_version: '2026-07-01',
     });
-
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
     router.push('/?erased=true');
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-1">Account Settings</h1>
-      <p className="text-slate-400 text-sm mb-10">Manage your Flowen account and data.</p>
+    <div className="max-w-2xl mx-auto px-4 py-10 space-y-5">
+      <div className="pb-6 border-b border-slate-800">
+        <h1 className="text-3xl font-extrabold text-white tracking-tight">Settings</h1>
+        <p className="text-slate-400 text-sm mt-1">Manage your profile, security, and account data</p>
+      </div>
 
-      {/* Password change */}
-      <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-6">
-        <h2 className="text-base font-semibold text-white mb-1">Password</h2>
-        <p className="text-slate-400 text-xs mb-4">Change your sign-in password.</p>
+      {/* Profile */}
+      <Section title="Profile" description="How your name appears across the platform.">
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-mono text-slate-400 uppercase tracking-wide mb-2">Display Name</label>
+            <input
+              type="text"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              placeholder="Your name"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSaveName}
+              disabled={nameSaving || !nameLoaded}
+              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-slate-950 font-bold text-sm transition-colors"
+            >
+              {nameSaving ? 'Saving…' : 'Save'}
+            </button>
+            {nameMsg && <span className="text-xs text-slate-400">{nameMsg}</span>}
+          </div>
+        </div>
+      </Section>
+
+      {/* Security */}
+      <Section title="Security" description="Change your password or update your sign-in method.">
         <button
           onClick={() => router.push('/auth/forgot-password')}
-          className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm text-white border border-slate-700 transition-colors"
+          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-white transition-colors"
         >
           Reset password via email
         </button>
-      </section>
+      </Section>
+
+      {/* Support */}
+      <Section title="Help & Support" description="Get help, report issues, or contact the Flowen team.">
+        <button
+          onClick={() => router.push('/dashboard/support')}
+          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-white transition-colors"
+        >
+          Open Support Centre →
+        </button>
+      </Section>
 
       {/* Sign out */}
-      <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-6">
-        <h2 className="text-base font-semibold text-white mb-1">Sign out</h2>
-        <p className="text-slate-400 text-xs mb-4">Sign out of your account on this device.</p>
+      <Section title="Session" description="Sign out of your account on this device.">
         <form action={logout}>
           <button
             type="submit"
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm text-white border border-slate-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-white transition-colors"
           >
+            <svg className="w-4 h-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clipRule="evenodd"/>
+              <path fillRule="evenodd" d="M6 10a.75.75 0 01.75-.75h9.546l-1.048-.943a.75.75 0 111.004-1.114l2.5 2.25a.75.75 0 010 1.114l-2.5 2.25a.75.75 0 11-1.004-1.114l1.048-.943H6.75A.75.75 0 016 10z" clipRule="evenodd"/>
+            </svg>
             Sign out
           </button>
         </form>
-      </section>
+      </Section>
 
-      {/* Right to erasure — UK GDPR Article 17 */}
-      <section className="bg-slate-900 border border-red-900/40 rounded-2xl p-6">
-        <h2 className="text-base font-semibold text-red-400 mb-1">Delete account</h2>
-        <p className="text-slate-400 text-xs mb-1 leading-relaxed">
-          Permanently delete your account and all associated data under UK GDPR Article 17 (Right to Erasure).
-          Your voice session data, telemetry, and profile will be anonymised and removed within 30 days.
-        </p>
-        <p className="text-slate-500 text-xs mb-4">This action cannot be undone.</p>
+      <div className="flex gap-4 text-[11px] text-slate-600 pt-2">
+        {[['Privacy Policy', '/legal'], ['Cookie Policy', '/cookie-policy'], ['Security', '/security']].map(([label, href]) => (
+          <a key={href} href={href} className="hover:text-slate-400 transition-colors">{label}</a>
+        ))}
+      </div>
 
+      {/* Danger zone */}
+      <Section title="Delete Account" danger
+        description="Permanently delete your account and all data under UK GDPR Article 17. Voice session data, telemetry, and your profile will be anonymised within 30 days. This cannot be undone.">
         {!showConfirm ? (
           <button
             onClick={() => setShowConfirm(true)}
@@ -88,10 +159,8 @@ export default function SettingsPage() {
           </button>
         ) : (
           <div className="space-y-3">
-            {error && (
-              <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
-                {error}
-              </p>
+            {erasureError && (
+              <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">{erasureError}</p>
             )}
             <p className="text-xs text-slate-300">
               Type <span className="font-mono text-red-400">DELETE MY ACCOUNT</span> to confirm:
@@ -106,13 +175,13 @@ export default function SettingsPage() {
             <div className="flex gap-3">
               <button
                 onClick={handleErasure}
-                disabled={deleting || confirmText !== 'DELETE MY ACCOUNT'}
-                className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-600 text-white text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                disabled={erasing || confirmText !== 'DELETE MY ACCOUNT'}
+                className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-600 text-white text-sm font-semibold transition-colors disabled:opacity-40"
               >
-                {deleting ? 'Processing…' : 'Confirm deletion'}
+                {erasing ? 'Processing…' : 'Confirm deletion'}
               </button>
               <button
-                onClick={() => { setShowConfirm(false); setConfirmText(''); setError(null); }}
+                onClick={() => { setShowConfirm(false); setConfirmText(''); setErasureError(''); }}
                 className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm border border-slate-700 transition-colors"
               >
                 Cancel
@@ -120,7 +189,7 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
-      </section>
+      </Section>
     </div>
   );
 }
