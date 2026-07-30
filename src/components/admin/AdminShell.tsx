@@ -36,15 +36,28 @@ const NAV: NavSection[] = [
     ],
   },
   {
+    section: 'Investment',
+    items: [
+      { label: 'Venture', href: '/admin/venture' },
+      { label: 'Data Room', href: '/admin/data-room' },
+      { label: 'Pitch Deck', href: '/admin/pitch-deck' },
+    ],
+  },
+  {
     section: 'Operations',
     items: [
-      { label: 'Data Room', href: '/admin/data-room' },
       { label: 'Tickets', href: '/admin/tickets' },
       { label: 'GDPR Requests', href: '/admin/tickets/gdpr-requests', indent: true },
       { label: 'Audit Log', href: '/admin/audit' },
       { label: 'Staff', href: '/admin/staff' },
       { label: 'Integrations', href: '/admin/integrations' },
       { label: 'Tracking', href: '/admin/tracking' },
+    ],
+  },
+  {
+    section: 'Compliance',
+    items: [
+      { label: 'NHS Readiness', href: '/admin/compliance' },
     ],
   },
   {
