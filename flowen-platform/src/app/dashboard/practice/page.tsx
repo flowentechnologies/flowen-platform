@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import MainNavbar from '@/components/MainNavbar';
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -47,9 +46,7 @@ export default function PracticeEnginePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      <MainNavbar />
-
+    <div className="text-slate-100 flex flex-col">
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-10 space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">

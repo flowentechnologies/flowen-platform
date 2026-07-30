@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import MainNavbar from '@/components/MainNavbar';
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -47,9 +46,7 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      <MainNavbar />
-
+    <div className="text-slate-100 flex flex-col">
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-10 space-y-8">
         <div className="pb-6 border-b border-slate-800">
           <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
