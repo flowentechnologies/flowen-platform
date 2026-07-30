@@ -29,9 +29,16 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return response;
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error && session) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+
+      const redirectTo = profile?.is_admin ? '/admin' : '/dashboard';
+      return NextResponse.redirect(new URL(redirectTo, origin));
     }
   }
 
