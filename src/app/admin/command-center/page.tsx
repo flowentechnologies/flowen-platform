@@ -1,6 +1,5 @@
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { assertAdmin } from '@/lib/admin/guard';
-import SentryTestButton from './SentryTestButton';
 
 function severityClass(severity: string): string {
   switch (severity) {
@@ -96,12 +95,9 @@ export default async function CommandCenterPage() {
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Command Centre</h1>
           <p className="text-slate-400 text-sm mt-1">Real-time platform overview</p>
         </div>
-        <div className="flex items-center gap-3">
-          <SentryTestButton />
-          <span className="self-start sm:self-auto px-3 py-1.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 animate-pulse">
-            LIVE DATA
-          </span>
-        </div>
+        <span className="self-start sm:self-auto px-3 py-1.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 animate-pulse">
+          LIVE DATA
+        </span>
       </div>
 
       {/* KPI grid row 1 */}
