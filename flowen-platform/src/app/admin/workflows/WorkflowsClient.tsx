@@ -442,12 +442,234 @@ function NewWorkflowModal({ onCreated }: { onCreated: (wf: WorkflowDefinition) =
   );
 }
 
+// ── Workflow Visualiser ───────────────────────────────────────────────────────
+
+const VIS_W = 900;
+const VIS_PAD_T = 56;
+const VIS_PAD_B = 52;
+
+const TRIG_X = 0;   const TRIG_W = 150; const TRIG_OUT = TRIG_X + TRIG_W;
+const WF_X = 256;   const WF_W = 222;   const WF_OUT   = WF_X + WF_W;
+const SVC_X = 580;  const SVC_W = 158;
+const TRIG_H = 60;  const WF_H = 76;    const SVC_H = 60;
+
+const VIS_TRIG_DEFS = [
+  { id: 'user_event', label: 'User Event',  sub: 'signup · session',  color: '#3b82f6' },
+  { id: 'schedule',   label: 'Scheduler',   sub: 'cron · daily',      color: '#f59e0b' },
+  { id: 'webhook',    label: 'Webhook',     sub: 'Stripe · external', color: '#a855f7' },
+  { id: 'manual',     label: 'Manual',      sub: 'admin triggered',   color: '#64748b' },
+];
+
+const VIS_SVC_DEFS = [
+  { id: 'email',   label: 'Email',     sub: 'Resend API',     color: '#6366f1' },
+  { id: 'db',      label: 'Database',  sub: 'Supabase',       color: '#10b981' },
+  { id: 'stripe',  label: 'Billing',   sub: 'Stripe API',     color: '#8b5cf6' },
+  { id: 'tickets', label: 'Tickets',   sub: 'Support queue',  color: '#f59e0b' },
+  { id: 'admin',   label: 'Alerts',    sub: 'Admin notif.',   color: '#ef4444' },
+];
+
+function svcIdForAction(action: string): string | null {
+  if (/send_email|welcome|check_in|milestone|re_engage|upgrade|payment_fail|founding|nudge|broadcast/i.test(action)) return 'email';
+  if (/retry_payment/i.test(action)) return 'stripe';
+  if (/create_ticket/i.test(action)) return 'tickets';
+  if (/send_admin_alert/i.test(action)) return 'admin';
+  if (/identify|query|wait/i.test(action)) return 'db';
+  return null;
+}
+
+function cubicPath(x1: number, y1: number, x2: number, y2: number) {
+  const mx = (x1 + x2) / 2;
+  return `M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`;
+}
+
+function spreadY(count: number, canvasH: number, nodeH: number): number[] {
+  const usable = canvasH - VIS_PAD_T - VIS_PAD_B;
+  const slot = usable / count;
+  return Array.from({ length: count }, (_, i) =>
+    VIS_PAD_T + i * slot + (slot - nodeH) / 2,
+  );
+}
+
+interface VisConn { id: string; d: string; color: string; active: boolean; draft: boolean }
+
+function WorkflowVisualiser({ workflows }: { workflows: WorkflowDefinition[] }) {
+  const nWf     = Math.max(workflows.length, 1);
+  const canvasH = Math.max(640, Math.max(nWf, VIS_SVC_DEFS.length) * 112 + VIS_PAD_T + VIS_PAD_B);
+
+  const trigYs = spreadY(VIS_TRIG_DEFS.length, canvasH, TRIG_H);
+  const wfYs   = spreadY(nWf,                  canvasH, WF_H);
+  const svcYs  = spreadY(VIS_SVC_DEFS.length,  canvasH, SVC_H);
+
+  const conns: VisConn[] = [];
+  workflows.forEach((wf, wi) => {
+    const wCY    = wfYs[wi] + WF_H / 2;
+    const tIdx   = Math.max(0, VIS_TRIG_DEFS.findIndex(t => t.id === wf.trigger_type));
+    const tCY    = trigYs[tIdx] + TRIG_H / 2;
+    const active = wf.status === 'active';
+    const draft  = wf.status === 'draft';
+
+    conns.push({ id: `vt${wi}`, d: cubicPath(TRIG_OUT, tCY, WF_X, wCY), color: VIS_TRIG_DEFS[tIdx].color, active, draft });
+
+    const seen = new Set<string>();
+    wf.steps.forEach(step => {
+      const sid = svcIdForAction(step.action);
+      if (!sid || seen.has(sid)) return;
+      seen.add(sid);
+      const si = VIS_SVC_DEFS.findIndex(s => s.id === sid);
+      if (si < 0) return;
+      conns.push({ id: `vs${wi}_${sid}`, d: cubicPath(WF_OUT, wCY, SVC_X, svcYs[si] + SVC_H / 2), color: VIS_SVC_DEFS[si].color, active, draft });
+    });
+  });
+
+  return (
+    <div className="overflow-x-auto rounded-xl bg-slate-950 border border-slate-800 select-none">
+      <div style={{ width: VIS_W, height: canvasH, position: 'relative' }}>
+
+        {/* Column headers */}
+        {([
+          { label: 'TRIGGERS',       cx: TRIG_X + TRIG_W / 2 },
+          { label: 'WORKFLOWS',      cx: WF_X + WF_W / 2 },
+          { label: 'INFRASTRUCTURE', cx: SVC_X + SVC_W / 2 },
+        ] as const).map(h => (
+          <div key={h.label}
+            style={{ position: 'absolute', left: h.cx, top: 14, transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}
+            className="text-[9px] font-mono font-bold text-slate-700 uppercase tracking-widest">
+            {h.label}
+          </div>
+        ))}
+
+        {/* SVG: grid, dividers, paths, particles */}
+        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none' }}>
+          <defs>
+            <pattern id="vg-dots" width="24" height="24" patternUnits="userSpaceOnUse">
+              <circle cx="1" cy="1" r="0.7" fill="#1a2535" />
+            </pattern>
+            <filter id="vg-glow">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b" />
+              <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+          </defs>
+
+          <rect width="100%" height="100%" fill="url(#vg-dots)" />
+
+          {/* Column dividers */}
+          {[TRIG_OUT + 52, WF_OUT + 50].map((x, i) => (
+            <line key={i} x1={x} y1={VIS_PAD_T} x2={x} y2={canvasH - VIS_PAD_B}
+              stroke="#1e293b" strokeWidth="1" strokeDasharray="4 8" />
+          ))}
+
+          {/* Connections */}
+          {conns.map(c => (
+            <g key={c.id}>
+              <path
+                id={c.id} d={c.d} fill="none"
+                stroke={c.active ? c.color : c.draft ? '#111e2e' : '#1e2d3d'}
+                strokeWidth={c.active ? 1.5 : 1}
+                strokeDasharray={c.draft ? '5 7' : undefined}
+                opacity={c.active ? 0.85 : c.draft ? 0.22 : 0.4}
+                filter={c.active ? 'url(#vg-glow)' : undefined}
+              />
+              {c.active && [0, 1, 2].map(i => (
+                <circle key={i} r={3} fill={c.color} opacity={0.9}>
+                  <animateMotion dur="3s" begin={`${-i}s`} repeatCount="indefinite">
+                    <mpath href={`#${c.id}`} />
+                  </animateMotion>
+                </circle>
+              ))}
+            </g>
+          ))}
+        </svg>
+
+        {/* Trigger nodes */}
+        {VIS_TRIG_DEFS.map((tr, i) => {
+          const active = workflows.some(w => w.trigger_type === tr.id && w.status === 'active');
+          const used   = workflows.some(w => w.trigger_type === tr.id);
+          return (
+            <div key={tr.id} style={{ position: 'absolute', left: TRIG_X + 4, top: trigYs[i], width: TRIG_W - 8, height: TRIG_H, opacity: used ? 1 : 0.28 }}>
+              <div style={{ height: '100%', borderRadius: 10, padding: '9px 12px', boxSizing: 'border-box', border: `1px solid ${active ? tr.color : '#1e3347'}`, background: active ? `${tr.color}18` : '#0d1b2a' }}>
+                <p style={{ color: active ? tr.color : '#475569', fontSize: 11, fontFamily: 'monospace', fontWeight: 700, margin: 0 }}>{tr.label}</p>
+                <p style={{ color: '#2d4057', fontSize: 9, fontFamily: 'monospace', margin: '3px 0 0' }}>{tr.sub}</p>
+                {active && <span className="block w-1.5 h-1.5 rounded-full animate-pulse mt-1.5" style={{ background: tr.color }} />}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Workflow nodes */}
+        {workflows.map((wf, i) => {
+          const active  = wf.status === 'active';
+          const paused  = wf.status === 'paused';
+          const bc      = active ? '#10b981' : paused ? '#f59e0b' : '#1a2a3a';
+          const services = [...new Set(wf.steps.map(s => svcIdForAction(s.action)).filter(Boolean))] as string[];
+          return (
+            <div key={wf.id} style={{ position: 'absolute', left: WF_X + 4, top: wfYs[i], width: WF_W - 8, height: WF_H, opacity: wf.status === 'draft' ? 0.42 : 1 }}>
+              <div style={{ height: '100%', borderRadius: 10, padding: '9px 12px', boxSizing: 'border-box', border: `1px solid ${bc}`, background: active ? 'rgba(16,185,129,0.07)' : '#0d1b2a' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? 'animate-pulse' : ''}`} style={{ background: bc }} />
+                  <p style={{ color: active ? '#f1f5f9' : '#64748b', fontSize: 10, fontFamily: 'monospace', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{wf.name}</p>
+                </div>
+                <p style={{ color: '#2d4057', fontSize: 9, fontFamily: 'monospace', margin: '0 0 5px 18px' }}>{wf.steps.length} steps · {wf.run_count} runs</p>
+                {services.length > 0 && (
+                  <div style={{ display: 'flex', gap: 3, marginLeft: 18, flexWrap: 'wrap' }}>
+                    {services.slice(0, 3).map(sid => {
+                      const svc = VIS_SVC_DEFS.find(s => s.id === sid)!;
+                      return (
+                        <span key={sid} style={{ fontSize: 8, fontFamily: 'monospace', color: svc.color, background: `${svc.color}18`, border: `1px solid ${svc.color}40`, borderRadius: 4, padding: '1px 5px' }}>
+                          {svc.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Service nodes */}
+        {VIS_SVC_DEFS.map((svc, i) => {
+          const active = workflows.some(w => w.status === 'active' && w.steps.some(s => svcIdForAction(s.action) === svc.id));
+          const used   = workflows.some(w => w.steps.some(s => svcIdForAction(s.action) === svc.id));
+          return (
+            <div key={svc.id} style={{ position: 'absolute', left: SVC_X + 4, top: svcYs[i], width: SVC_W - 8, height: SVC_H, opacity: used ? 1 : 0.26 }}>
+              <div style={{ height: '100%', borderRadius: 10, padding: '9px 12px', boxSizing: 'border-box', border: `1px solid ${active ? svc.color : '#1e3347'}`, background: active ? `${svc.color}18` : '#0d1b2a' }}>
+                <p style={{ color: active ? svc.color : '#475569', fontSize: 11, fontFamily: 'monospace', fontWeight: 700, margin: 0 }}>{svc.label}</p>
+                <p style={{ color: '#2d4057', fontSize: 9, fontFamily: 'monospace', margin: '3px 0 0' }}>{svc.sub}</p>
+                {active && <span className="block w-1.5 h-1.5 rounded-full animate-pulse mt-1.5" style={{ background: svc.color }} />}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Legend */}
+        <div style={{ position: 'absolute', bottom: 14, left: WF_X + 4, display: 'flex', gap: 20, alignItems: 'center' }}>
+          {[
+            { color: '#10b981', label: 'Active', dash: false },
+            { color: '#f59e0b', label: 'Paused', dash: false },
+            { color: '#334155', label: 'Draft',  dash: true },
+          ].map(l => (
+            <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <svg width="22" height="2"><line x1="0" y1="1" x2="22" y2="1" stroke={l.color} strokeWidth="2" strokeDasharray={l.dash ? '4 4' : undefined} /></svg>
+              <span style={{ color: '#475569', fontSize: 9, fontFamily: 'monospace' }}>{l.label}</span>
+            </div>
+          ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 8 }}>
+            <span className="w-2 h-2 rounded-full animate-pulse bg-emerald-400 inline-block" />
+            <span style={{ color: '#334155', fontSize: 9, fontFamily: 'monospace' }}>live data flow</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function WorkflowsClient({ initialWorkflows }: Props) {
   const [workflows, setWorkflows] = useState(initialWorkflows);
   const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' } | null>(null);
   const [statusFilter, setStatusFilter] = useState<WorkflowStatus | 'all'>('all');
+  const [view, setView] = useState<'cards' | 'visualiser'>('cards');
 
   function showToast(message: string, kind: 'success' | 'error') {
     setToast({ message, kind });
@@ -505,49 +727,57 @@ export function WorkflowsClient({ initialWorkflows }: Props) {
     <div className="space-y-5">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={() => setStatusFilter('all')}
-            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${statusFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
-          >
-            All ({workflows.length})
-          </button>
-          {(['active', 'paused', 'draft'] as WorkflowStatus[]).map(s => (
-            statusCounts[s] ? (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${statusFilter === s ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
-              >
-                {STATUS_CONFIG[s].label} ({statusCounts[s]})
-              </button>
-            ) : null
+
+        {/* View toggle */}
+        <div className="flex gap-0.5 bg-slate-800/60 border border-slate-700/60 rounded-lg p-0.5">
+          {(['cards', 'visualiser'] as const).map(v => (
+            <button key={v} type="button" onClick={() => setView(v)}
+              className={`px-3 py-1 text-xs font-mono rounded-md transition-colors capitalize ${view === v ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+              {v === 'visualiser' ? '⬡ Visualiser' : '☰ Cards'}
+            </button>
           ))}
         </div>
-        <div className="ml-auto">
-          <NewWorkflowModal onCreated={handleCreated} />
-        </div>
+
+        {/* Status filters + create — cards view only */}
+        {view === 'cards' && (
+          <>
+            <div className="flex gap-1">
+              <button type="button" onClick={() => setStatusFilter('all')}
+                className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${statusFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}>
+                All ({workflows.length})
+              </button>
+              {(['active', 'paused', 'draft'] as WorkflowStatus[]).map(s =>
+                statusCounts[s] ? (
+                  <button key={s} type="button" onClick={() => setStatusFilter(s)}
+                    className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${statusFilter === s ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}>
+                    {STATUS_CONFIG[s].label} ({statusCounts[s]})
+                  </button>
+                ) : null
+              )}
+            </div>
+            <div className="ml-auto">
+              <NewWorkflowModal onCreated={handleCreated} />
+            </div>
+          </>
+        )}
       </div>
 
+      {/* Visualiser */}
+      {view === 'visualiser' && <WorkflowVisualiser workflows={workflows} />}
+
       {/* Cards */}
-      {filtered.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-sm text-slate-600 font-mono">No workflows — create one above</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filtered.map(wf => (
-            <WorkflowCard
-              key={wf.id}
-              wf={wf}
-              onToggle={handleToggle}
-              onTrigger={handleTrigger}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
+      {view === 'cards' && (
+        filtered.length === 0 ? (
+          <div className="py-16 text-center">
+            <p className="text-sm text-slate-600 font-mono">No workflows — create one above</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filtered.map(wf => (
+              <WorkflowCard key={wf.id} wf={wf} onToggle={handleToggle} onTrigger={handleTrigger} onDelete={handleDelete} />
+            ))}
+          </div>
+        )
       )}
 
       {/* Toast */}
