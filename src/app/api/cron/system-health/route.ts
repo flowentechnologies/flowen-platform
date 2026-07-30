@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { stripe } from '@/lib/stripe';
+import { verifyCronSecret } from '@/lib/cron-auth';
 
 // ── DB client ─────────────────────────────────────────────────────────────────
 
@@ -24,8 +25,7 @@ interface ServiceCheck {
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const secret = req.headers.get('x-cron-secret');
-  if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
+  if (!verifyCronSecret(req.headers.get('x-cron-secret'))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

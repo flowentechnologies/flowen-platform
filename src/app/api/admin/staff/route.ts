@@ -88,9 +88,23 @@ export async function POST(req: NextRequest) {
   if (action === 'revoke_admin') {
     const { id } = body as { action: string; id: string };
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+
+    // Block self-removal
+    if (id === admin.id) {
+      return NextResponse.json({ error: 'Cannot revoke your own admin access' }, { status: 400 });
+    }
+
+    // Guard against removing the last admin
+    const { count } = await supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_admin', true);
+    if ((count ?? 0) <= 1) {
+      return NextResponse.json({ error: 'Cannot remove the last admin account' }, { status: 400 });
+    }
+
     const { error } = await supabase.from('profiles').update({ is_admin: false }).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    // Mark staff member inactive
     await supabase.from('staff_members').update({ status: 'inactive', updated_at: new Date().toISOString() }).eq('id', id);
     return NextResponse.json({ success: true });
   }

@@ -27,9 +27,12 @@ export async function POST(req: NextRequest) {
     try { formData = await req.formData(); }
     catch { return NextResponse.json({ error: 'Invalid form data' }, { status: 400 }); }
 
+    const ALLOWED_FOLDERS = new Set(['general', 'images', 'audio', 'video', 'documents', 'brand']);
+
     const file        = formData.get('file') as File | null;
     const name        = (formData.get('name') as string | null)?.trim();
-    const folder      = (formData.get('folder') as string | null)?.trim() ?? 'general';
+    const rawFolder   = (formData.get('folder') as string | null)?.trim() ?? 'general';
+    const folder      = ALLOWED_FOLDERS.has(rawFolder) ? rawFolder : 'general';
     const description = (formData.get('description') as string | null)?.trim() ?? null;
     const tagsRaw     = (formData.get('tags') as string | null)?.trim() ?? '';
 

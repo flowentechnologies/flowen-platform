@@ -51,10 +51,9 @@ export async function POST(req: NextRequest) {
     const { id } = body as { action: string; id: string };
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
-    // Fetch current run_count to increment it
     const { data: wf } = await supabase
       .from('workflow_definitions')
-      .select('run_count')
+      .select('id')
       .eq('id', id)
       .single();
 
@@ -81,14 +80,8 @@ export async function POST(req: NextRequest) {
 
     if (runError) return NextResponse.json({ error: runError.message }, { status: 500 });
 
-    await supabase
-      .from('workflow_definitions')
-      .update({
-        run_count: wf.run_count + 1,
-        last_run_at: now,
-        updated_at: now,
-      })
-      .eq('id', id);
+    // Atomic increment avoids TOCTOU race under concurrent triggers
+    await supabase.rpc('increment_workflow_run_count', { wf_id: id, ran_at: now });
 
     return NextResponse.json({ data: run });
   }

@@ -92,10 +92,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === 'add_message') {
-    const { ticket_id, body: msgBody, from_admin, author } = body as Record<string, string>;
+    const { ticket_id, body: msgBody, from_admin, author } = body as Record<string, unknown>;
     if (!ticket_id || !msgBody) return NextResponse.json({ error: 'ticket_id and body required' }, { status: 400 });
 
-    const isAdmin = from_admin === 'true';
+    const isAdmin = from_admin === true || from_admin === 'true';
     const [msgRes] = await Promise.all([
       supabase.from('ticket_messages').insert({
         ticket_id, body: msgBody,
