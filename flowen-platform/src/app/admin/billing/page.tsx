@@ -127,7 +127,7 @@ export default async function BillingPage() {
           currency:          price?.currency ?? 'gbp',
           interval:          price ? intervalLabel(price) : '—',
           mrr:               price ? monthlyNormalisedPence(price) : 0,
-          periodEnd:         sub.current_period_end as number,
+          periodEnd:         (sub.items.data[0]?.current_period_end ?? 0),
           cancelAtPeriodEnd: sub.cancel_at_period_end,
           created:           sub.created as number,
         };

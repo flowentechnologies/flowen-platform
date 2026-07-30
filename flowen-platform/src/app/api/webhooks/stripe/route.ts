@@ -170,8 +170,8 @@ async function upsertSubscription(
         status:               normaliseStatus(sub.status),
         price_id:             priceId,
         cancel_at_period_end: sub.cancel_at_period_end,
-        current_period_start: new Date((sub.current_period_start as number) * 1000).toISOString(),
-        current_period_end:   new Date((sub.current_period_end   as number) * 1000).toISOString(),
+        current_period_start: new Date((sub.items.data[0]?.current_period_start ?? 0) * 1000).toISOString(),
+        current_period_end:   new Date((sub.items.data[0]?.current_period_end   ?? 0) * 1000).toISOString(),
       },
       { onConflict: 'id' },
     );
@@ -292,10 +292,10 @@ async function handleInvoicePaymentSucceeded(
   admin: AdminClient,
   invoice: Stripe.Invoice,
 ): Promise<void> {
-  const subRef = invoice.subscription;
+  const subRef = invoice.parent?.subscription_details?.subscription;
   if (!subRef) return;
 
-  const subId = typeof subRef === 'string' ? subRef : (subRef as Stripe.Subscription).id;
+  const subId = typeof subRef === 'string' ? subRef : subRef.id;
   const sub   = await stripe.subscriptions.retrieve(subId, {
     expand: ['items.data.price'],
   });
