@@ -25,7 +25,8 @@ const securityHeaders = [
       `style-src 'self' 'unsafe-inline'`,
       `img-src 'self' data: blob: https:`,
       `font-src 'self' data:`,
-      `connect-src 'self' ${SUPABASE_URL} wss://*.supabase.co https://*.supabase.co https://api.stripe.com https://o*.ingest.sentry.io`,
+      // Sentry tunnel proxies browser events through /monitoring — no external ingest needed
+      `connect-src 'self' ${SUPABASE_URL} wss://*.supabase.co https://*.supabase.co https://api.stripe.com`,
       `frame-src https://js.stripe.com https://hooks.stripe.com`,
       `worker-src 'self' blob:`,
       `media-src 'self' blob:`,
@@ -49,12 +50,21 @@ const nextConfig: NextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
-  org:     process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
+  org:     'flowen-technologies-limited',
+  project: 'javascript-nextjs',
 
   silent: !process.env.CI,
 
   widenClientFileUpload: true,
+
+  // Route browser Sentry requests through Next.js to avoid ad-blockers
+  tunnelRoute: '/monitoring',
+
+  automaticVercelMonitors: true,
+
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+  },
 
   sourcemaps: {
     deleteSourcemapsAfterUpload: true,
