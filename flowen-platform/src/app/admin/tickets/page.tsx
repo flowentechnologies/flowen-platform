@@ -23,7 +23,7 @@ export default async function TicketsPage() {
     { cookies: { getAll: () => cookieStore.getAll() } },
   );
   const { data: { user } } = await anonClient.auth.getUser();
-  const adminEmail = user?.email ?? 'admin@flowen.digital';
+  const adminEmail = user?.email ?? '';
 
   const db = adminDb();
   const [ticketsRes, messagesRes] = await Promise.all([

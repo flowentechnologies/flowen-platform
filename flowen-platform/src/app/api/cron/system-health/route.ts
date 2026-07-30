@@ -23,7 +23,13 @@ interface ServiceCheck {
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 
-export async function POST(_req: NextRequest): Promise<NextResponse> {
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const secret = req.headers.get('x-cron-secret');
+  if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const isManual = req.headers.get('x-triggered-by') !== null;
   const started = Date.now();
   const runId   = crypto.randomUUID();
   const results: ServiceCheck[] = [];
@@ -94,19 +100,22 @@ export async function POST(_req: NextRequest): Promise<NextResponse> {
   const allOk       = results.every(r => r.ok);
   const durationMs  = Date.now() - started;
 
-  // ── Write cron_run record ────────────────────────────────────────────────
-  const now = new Date().toISOString();
-  await db().from('cron_runs').insert({
-    id:           runId,
-    job_id:       'system-health',
-    status:       allOk ? 'success' : 'failed',
-    triggered_by: 'schedule',
-    duration_ms:  durationMs,
-    result:       { results },
-    error:        allOk ? null : results.filter(r => !r.ok).map(r => `${r.name}: ${r.detail}`).join('; '),
-    started_at:   new Date(Date.now() - durationMs).toISOString(),
-    finished_at:  now,
-  });
+  // Only self-log when called by the scheduler (not by the admin trigger handler,
+  // which manages its own cron_runs record around this call).
+  if (!isManual) {
+    const now = new Date().toISOString();
+    await db().from('cron_runs').insert({
+      id:           runId,
+      job_id:       'system-health',
+      status:       allOk ? 'success' : 'failed',
+      triggered_by: 'schedule',
+      duration_ms:  durationMs,
+      result:       { results },
+      error:        allOk ? null : results.filter(r => !r.ok).map(r => `${r.name}: ${r.detail}`).join('; '),
+      started_at:   new Date(Date.now() - durationMs).toISOString(),
+      finished_at:  now,
+    });
+  }
 
   return NextResponse.json({ ok: allOk, results, durationMs });
 }
