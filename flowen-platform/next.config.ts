@@ -60,8 +60,6 @@ export default withSentryConfig(nextConfig, {
   // Route browser Sentry requests through Next.js to avoid ad-blockers
   tunnelRoute: '/monitoring',
 
-  automaticVercelMonitors: true,
-
   bundleSizeOptimizations: {
     excludeDebugStatements: true,
   },
