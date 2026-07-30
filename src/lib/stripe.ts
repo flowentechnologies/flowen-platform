@@ -17,6 +17,6 @@ export const stripePublishableKey = isLive
   : process.env.NEXT_PUBLIC_STRIPE_TEST_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
 export const stripe = new Stripe(secretKey, {
-  apiVersion: '2025-02-24.acacia',
+  apiVersion: '2026-07-29.dahlia',
   typescript: true,
 });
