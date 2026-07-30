@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { createClient } from '@supabase/supabase-js';
 import CookieConsent from '@/components/CookieConsent';
+import TrackingScripts from '@/components/TrackingScripts';
+import type { TrackingProvider } from '@/components/TrackingScripts';
 
 export const metadata: Metadata = {
   title: 'Flowen — Retraining the Brain to Speak Freely',
@@ -35,16 +38,36 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
-export default function RootLayout({
+async function getTrackingProviders(): Promise<TrackingProvider[]> {
+  try {
+    const db = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const { data } = await db
+      .from('tracking_providers')
+      .select('provider_key, head_html, body_html, consent_required, enabled')
+      .eq('enabled', true);
+    return (data ?? []) as TrackingProvider[];
+  } catch {
+    return [];
+  }
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const trackingProviders = await getTrackingProviders();
+
   return (
     <html lang="en">
       <body className="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
         {children}
         <CookieConsent />
+        <TrackingScripts providers={trackingProviders} />
       </body>
     </html>
   );

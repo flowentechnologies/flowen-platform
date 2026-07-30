@@ -37,6 +37,7 @@ const NAV: NavSection[] = [
       { label: 'Audit Log', href: '/admin/audit' },
       { label: 'Staff', href: '/admin/staff' },
       { label: 'Integrations', href: '/admin/integrations' },
+      { label: 'Tracking', href: '/admin/tracking' },
     ],
   },
   {
