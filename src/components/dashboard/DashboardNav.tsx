@@ -27,10 +27,85 @@ function initials(profile: UserProfile): string {
 }
 
 const NAV_LINKS = [
-  { label: 'Dashboard',       href: '/dashboard' },
-  { label: 'Practice',        href: '/dashboard/practice' },
-  { label: 'Analytics',       href: '/dashboard/analytics' },
+  {
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: (
+      <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+        <path d="M2 10.5a8.5 8.5 0 1117 0A8.5 8.5 0 012 10.5zm8.5-6a6.5 6.5 0 100 13 6.5 6.5 0 000-13z"/>
+        <path d="M10.5 6.25a.75.75 0 00-1.5 0v4.5a.75.75 0 00.22.53l2.25 2.25a.75.75 0 001.06-1.06L10.5 10.19V6.25z"/>
+      </svg>
+    ),
+    iconActive: (
+      <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+        <path fillRule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clipRule="evenodd"/>
+      </svg>
+    ),
+  },
+  {
+    label: 'Practice',
+    href: '/dashboard/practice',
+    icon: (
+      <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+        <path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z"/>
+        <path d="M5.5 9.643a.75.75 0 00-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-1.5v-1.546A6.001 6.001 0 0016 10v-.357a.75.75 0 00-1.5 0V10a4.5 4.5 0 01-9 0v-.357z"/>
+      </svg>
+    ),
+    iconActive: (
+      <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+        <path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z"/>
+        <path d="M5.5 9.643a.75.75 0 00-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-1.5v-1.546A6.001 6.001 0 0016 10v-.357a.75.75 0 00-1.5 0V10a4.5 4.5 0 01-9 0v-.357z"/>
+      </svg>
+    ),
+  },
+  {
+    label: 'Analytics',
+    href: '/dashboard/analytics',
+    icon: (
+      <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+        <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 003 0v-13A1.5 1.5 0 0015.5 2zM9.5 6A1.5 1.5 0 008 7.5v9a1.5 1.5 0 003 0v-9A1.5 1.5 0 009.5 6zM3.5 10A1.5 1.5 0 002 11.5v5a1.5 1.5 0 003 0v-5A1.5 1.5 0 003.5 10z"/>
+      </svg>
+    ),
+    iconActive: (
+      <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+        <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 003 0v-13A1.5 1.5 0 0015.5 2zM9.5 6A1.5 1.5 0 008 7.5v9a1.5 1.5 0 003 0v-9A1.5 1.5 0 009.5 6zM3.5 10A1.5 1.5 0 002 11.5v5a1.5 1.5 0 003 0v-5A1.5 1.5 0 003.5 10z"/>
+      </svg>
+    ),
+  },
 ];
+
+export function MobileBottomNav({ user }: { user: UserProfile }) {
+  const pathname = usePathname();
+  const links = [
+    ...NAV_LINKS,
+    ...(user.role === 'clinician'
+      ? [{ label: 'Clinician', href: '/dashboard/clinician', icon: null, iconActive: null }]
+      : []),
+  ];
+  return (
+    <nav className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800/80 pb-safe">
+      <div className="flex items-stretch h-16">
+        {links.slice(0, 4).map(link => {
+          const active = pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href));
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-semibold tracking-wide transition-colors ${
+                active ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              <span className={`transition-transform ${active ? 'scale-110' : ''}`}>
+                {active ? (link.iconActive ?? link.icon) : link.icon}
+              </span>
+              {link.label}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
 
 export function DashboardNav({ user }: { user: UserProfile }) {
   const pathname = usePathname();

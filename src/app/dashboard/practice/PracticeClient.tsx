@@ -103,6 +103,46 @@ interface Props {
 }
 
 // ---------------------------------------------------------------------------
+// Step bar
+// ---------------------------------------------------------------------------
+
+const STEP_LABELS = ['Stage', 'Ready', 'Record', 'Review'] as const;
+const SCREEN_TO_STEP: Record<Screen, number> = { select: 0, ready: 1, recording: 2, summary: 3 };
+
+function StepBar({ current }: { current: Screen }) {
+  const idx = SCREEN_TO_STEP[current];
+  return (
+    <div className="flex items-start w-full">
+      {STEP_LABELS.map((label, i) => (
+        <React.Fragment key={label}>
+          <div className="flex flex-col items-center gap-1 shrink-0">
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold border-2 transition-all ${
+              i < idx
+                ? 'bg-emerald-500 border-emerald-500 text-slate-950'
+                : i === idx
+                ? 'bg-slate-900 border-emerald-500 text-emerald-400'
+                : 'bg-slate-900 border-slate-700 text-slate-600'
+            }`}>
+              {i < idx ? (
+                <svg viewBox="0 0 14 14" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="2,7 5.5,11 12,3" />
+                </svg>
+              ) : String(i + 1)}
+            </div>
+            <span className={`text-[9px] font-mono uppercase tracking-wider whitespace-nowrap ${
+              i === idx ? 'text-emerald-400' : i < idx ? 'text-emerald-700' : 'text-slate-600'
+            }`}>{label}</span>
+          </div>
+          {i < STEP_LABELS.length - 1 && (
+            <div className={`flex-1 h-0.5 mt-3.5 mx-1.5 rounded-full transition-all ${i < idx ? 'bg-emerald-500' : 'bg-slate-700'}`} />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -144,6 +184,12 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
   const [saveError, setSaveError] = useState<string | null>(null);
   const [micError, setMicError] = useState<string | null>(null);
 
+  // Captions + playback
+  const [finalTranscript, setFinalTranscript] = useState('');
+  const [interimTranscript, setInterimTranscript] = useState('');
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [captionSupported, setCaptionSupported] = useState(false);
+
   // Audio refs
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -151,12 +197,41 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
   const rafRef = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Block detection refs (mutable, source of truth during recording)
+  // Block detection refs
   const isSpeakingRef = useRef(false);
   const silenceStartRef = useRef<number | null>(null);
   const blocksRef = useRef(0);
 
+  // Caption + recorder refs
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const captionBoxRef = useRef<HTMLDivElement | null>(null);
+
   const stage = STAGES[stageId - 1];
+
+  // Check SpeechRecognition support on mount
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    setCaptionSupported(!!SR);
+  }, []);
+
+  // Auto-scroll caption box
+  useEffect(() => {
+    if (captionBoxRef.current) {
+      captionBoxRef.current.scrollTop = captionBoxRef.current.scrollHeight;
+    }
+  }, [finalTranscript, interimTranscript]);
+
+  // Revoke object URL when it changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+    };
+  }, [audioUrl]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -165,6 +240,10 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
       if (timerRef.current) clearInterval(timerRef.current);
       streamRef.current?.getTracks().forEach(t => t.stop());
       audioCtxRef.current?.close().catch(() => {});
+      try { recognitionRef.current?.stop(); } catch { /* noop */ }
+      if (mediaRecorderRef.current?.state !== 'inactive') {
+        try { mediaRecorderRef.current?.stop(); } catch { /* noop */ }
+      }
     };
   }, []);
 
@@ -174,6 +253,11 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
 
   const startRecording = useCallback(async () => {
     setMicError(null);
+    setFinalTranscript('');
+    setInterimTranscript('');
+    setAudioUrl(null);
+    audioChunksRef.current = [];
+
     let stream: MediaStream;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -185,6 +269,48 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
     }
 
     streamRef.current = stream;
+
+    // MediaRecorder for playback
+    try {
+      const recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+        setAudioUrl(URL.createObjectURL(blob));
+      };
+      recorder.start(1000);
+      mediaRecorderRef.current = recorder;
+    } catch { /* MediaRecorder not supported — playback unavailable */ }
+
+    // SpeechRecognition for captions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    if (SR) {
+      const recognition = new SR();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-GB';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      recognition.onresult = (event: any) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const t = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            setFinalTranscript(prev => {
+              const sep = prev && !prev.endsWith(' ') ? ' ' : '';
+              return prev + sep + t.trim();
+            });
+          } else {
+            interim += t;
+          }
+        }
+        setInterimTranscript(interim);
+      };
+      recognition.onerror = () => { /* silent — captions degrade gracefully */ };
+      try { recognition.start(); } catch { /* noop */ }
+      recognitionRef.current = recognition;
+    }
 
     const AudioCtx =
       window.AudioContext ??
@@ -199,7 +325,7 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
     source.connect(analyser);
     analyserRef.current = analyser;
 
-    // Reset state
+    // Reset block detection
     blocksRef.current = 0;
     isSpeakingRef.current = false;
     silenceStartRef.current = null;
@@ -213,19 +339,14 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
     function tick() {
       analyser.getByteFrequencyData(buf);
 
-      // RMS amplitude
       const rms = Math.sqrt(buf.reduce((s, v) => s + v * v, 0) / buf.length);
       setAmplitude(Math.round(rms));
 
-      // 32 waveform bars
       const step = Math.floor(buf.length / 32);
       const bars: number[] = [];
-      for (let i = 0; i < 32; i++) {
-        bars.push(buf[i * step]);
-      }
+      for (let i = 0; i < 32; i++) bars.push(buf[i * step]);
       setFreqData(bars);
 
-      // Block detection heuristic
       const SPEECH_THRESH = 18;
       const BLOCK_SILENCE_MS = 280;
       const now = Date.now();
@@ -256,6 +377,13 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
     if (timerRef.current) clearInterval(timerRef.current);
     streamRef.current?.getTracks().forEach(t => t.stop());
     audioCtxRef.current?.close().catch(() => {});
+
+    if (mediaRecorderRef.current?.state !== 'inactive') {
+      try { mediaRecorderRef.current?.stop(); } catch { /* noop */ }
+    }
+    try { recognitionRef.current?.stop(); } catch { /* noop */ }
+    setInterimTranscript('');
+
     setScreen('summary');
   }, []);
 
@@ -293,6 +421,9 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
     setAmplitude(0);
     setFreqData(new Array(32).fill(0));
     setSaveError(null);
+    setFinalTranscript('');
+    setInterimTranscript('');
+    setAudioUrl(null);
     setScreen('select');
   }, []);
 
@@ -310,6 +441,9 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
   if (screen === 'select') {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+        {/* Step bar */}
+        <StepBar current="select" />
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -396,21 +530,16 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
           <div className="flex gap-3 justify-center">
             {STAGES.map(s => (
               <div key={s.id} className="flex flex-col items-center gap-1">
-                {s.id === recommendedStage && (
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-emerald-400">
-                    rec.
-                  </span>
-                )}
-                {s.id !== recommendedStage && (
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-transparent select-none">
-                    rec.
-                  </span>
+                {s.id === recommendedStage ? (
+                  <span className="text-[9px] font-mono uppercase tracking-widest text-emerald-400">rec.</span>
+                ) : (
+                  <span className="text-[9px] font-mono uppercase tracking-widest text-transparent select-none">rec.</span>
                 )}
                 <button
                   onClick={() => setStageId(s.id as StageId)}
-                  className={`w-11 h-11 rounded-full text-sm font-bold border transition-all ${
+                  className={`w-12 h-12 rounded-full text-sm font-bold border-2 transition-all active:scale-95 ${
                     s.id === stageId
-                      ? 'bg-emerald-500 border-emerald-500 text-slate-950'
+                      ? 'bg-emerald-500 border-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20'
                       : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-emerald-500/50 hover:text-slate-200'
                   }`}
                 >
@@ -431,15 +560,11 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
           <h2 className="text-xl font-bold text-white">{stage.name}</h2>
           <p className="text-slate-400 leading-relaxed text-sm">{stage.desc}</p>
           <div className="border-t border-slate-800 pt-4 space-y-2">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-              Instruction
-            </p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Instruction</p>
             <p className="text-slate-300 text-sm leading-relaxed">{stage.instruction}</p>
           </div>
           <div className="border-t border-slate-800 pt-4 space-y-2">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-              Cue
-            </p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Cue</p>
             <p className="text-slate-400 text-sm italic">{stage.cue}</p>
           </div>
           <div className="border-t border-slate-800 pt-4">
@@ -463,28 +588,13 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
                   trendChar = s.bpm < prevBpm ? 'v' : s.bpm > prevBpm ? '^' : '-';
                 }
                 return (
-                  <div
-                    key={s.id}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <span className="text-slate-500 font-mono text-xs">
-                      {formatDate(s.created_at)}
-                    </span>
-                    <span className="text-slate-400">
-                      {formatDurationLong(s.duration_seconds)}
-                    </span>
+                  <div key={s.id} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500 font-mono text-xs">{formatDate(s.created_at)}</span>
+                    <span className="text-slate-400">{formatDurationLong(s.duration_seconds)}</span>
                     <span className="text-slate-400 font-mono text-xs">
                       {bpmLabel(s.bpm)}{' '}
                       {trendChar && (
-                        <span
-                          className={
-                            trendChar === 'v'
-                              ? 'text-emerald-400'
-                              : trendChar === '^'
-                                ? 'text-red-400'
-                                : 'text-slate-500'
-                          }
-                        >
+                        <span className={trendChar === 'v' ? 'text-emerald-400' : trendChar === '^' ? 'text-red-400' : 'text-slate-500'}>
                           {trendChar === 'v' ? 'down' : trendChar === '^' ? 'up' : 'same'}
                         </span>
                       )}
@@ -499,9 +609,9 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
         {/* CTA */}
         <button
           onClick={() => setScreen('ready')}
-          className="w-full rounded-xl px-6 py-3 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-colors"
+          className="w-full rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20"
         >
-          Begin session
+          Begin session →
         </button>
       </div>
     );
@@ -514,11 +624,18 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
   if (screen === 'ready') {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+        {/* Step bar */}
+        <StepBar current="ready" />
+
+        {/* Back */}
         <button
           onClick={() => { setMicError(null); setScreen('select'); }}
-          className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-200 transition-colors group"
         >
-          Back
+          <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 12L6 8l4-4" />
+          </svg>
+          Back to stage select
         </button>
 
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
@@ -529,12 +646,14 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
           <p className="text-slate-400 text-sm leading-relaxed">{stage.instruction}</p>
 
           <div className="border-t border-slate-800 pt-4 space-y-3">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-              Before you begin
-            </p>
-            <p className="text-slate-400 text-sm">
-              Click Start to allow microphone access. Audio is processed locally and not recorded.
-            </p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Before you begin</p>
+            <div className="space-y-2 text-slate-400 text-sm">
+              <p>Click <strong className="text-white">Start</strong> to allow microphone access.</p>
+              <p>Audio is processed locally and not stored on our servers.</p>
+              {captionSupported && (
+                <p className="text-emerald-400/80">Live captions will appear during your session.</p>
+              )}
+            </div>
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
               {stage.minMins} min recommended
             </p>
@@ -549,7 +668,7 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
 
         <button
           onClick={startRecording}
-          className="w-full rounded-xl px-6 py-3 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-colors"
+          className="w-full rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20"
         >
           Start session
         </button>
@@ -567,6 +686,9 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
 
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+        {/* Step bar */}
+        <StepBar current="recording" />
+
         {/* Waveform card */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
           {/* Recording indicator */}
@@ -579,9 +701,7 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-red-400">
-                Recording
-              </span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-red-400">Recording</span>
             </div>
           </div>
 
@@ -592,9 +712,7 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
               return (
                 <div
                   key={i}
-                  className={`flex-1 rounded-sm transition-all duration-75 ${
-                    speaking ? 'bg-emerald-400' : 'bg-slate-700'
-                  }`}
+                  className={`flex-1 rounded-sm transition-all duration-75 ${speaking ? 'bg-emerald-400' : 'bg-slate-700'}`}
                   style={{ height: `${h}px` }}
                 />
               );
@@ -604,25 +722,15 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
           {/* Stats row */}
           <div className="grid grid-cols-3 gap-4 border-t border-slate-800 pt-4">
             <div className="space-y-1">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-                Time
-              </p>
-              <p className="text-xl font-bold font-mono text-white">
-                {formatDuration(elapsed)}
-              </p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Time</p>
+              <p className="text-xl font-bold font-mono text-white">{formatDuration(elapsed)}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-                Blocks
-              </p>
-              <p className={`text-xl font-bold font-mono ${blocks > 0 ? 'text-red-400' : 'text-white'}`}>
-                {blocks}
-              </p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks</p>
+              <p className={`text-xl font-bold font-mono ${blocks > 0 ? 'text-red-400' : 'text-white'}`}>{blocks}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-                Blocks/min
-              </p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks/min</p>
               <p className="text-xl font-bold font-mono text-amber-400">
                 {elapsed > 0 ? currentBpm.toFixed(1) : '—'}
               </p>
@@ -633,19 +741,39 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
           <p className="text-center text-slate-400 text-sm italic">{stage.cue}</p>
         </div>
 
+        {/* Live captions */}
+        {captionSupported && (
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Live captions</p>
+            <div
+              ref={captionBoxRef}
+              className="h-24 overflow-y-auto text-sm leading-relaxed scroll-smooth"
+            >
+              {finalTranscript || interimTranscript ? (
+                <span>
+                  <span className="text-slate-200">{finalTranscript}</span>
+                  {interimTranscript && (
+                    <span className="text-slate-500">{finalTranscript ? ' ' : ''}{interimTranscript}</span>
+                  )}
+                </span>
+              ) : (
+                <span className="text-slate-600 italic text-xs">Captions will appear as you speak…</span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Stop button */}
         <button
           onClick={canStop ? stopRecording : undefined}
           disabled={!canStop}
-          className={`w-full rounded-xl px-6 py-3 font-bold text-sm transition-colors ${
+          className={`w-full rounded-xl px-6 py-4 font-bold text-sm transition-colors ${
             canStop
-              ? 'bg-red-600 hover:bg-red-500 text-white'
+              ? 'bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-600/20'
               : 'bg-slate-800 text-slate-500 cursor-not-allowed'
           }`}
         >
-          {canStop
-            ? 'End session'
-            : `Recording — ${elapsed}s (minimum 10s)`}
+          {canStop ? 'End session' : `Recording — ${elapsed}s (minimum 10s)`}
         </button>
       </div>
     );
@@ -674,50 +802,35 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+      {/* Step bar */}
+      <StepBar current="summary" />
+
       <div>
-        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-          Session complete
-        </span>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">
-          Your results
-        </h1>
+        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Session complete</span>
+        <h1 className="text-2xl font-extrabold text-white tracking-tight">Your results</h1>
       </div>
 
       {/* Stats grid */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-1">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-              Duration
-            </p>
-            <p className="text-2xl font-bold font-mono text-white">
-              {formatDurationLong(elapsed)}
-            </p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Duration</p>
+            <p className="text-2xl font-bold font-mono text-white">{formatDurationLong(elapsed)}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-              Blocks detected
-            </p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks detected</p>
             <p className={`text-2xl font-bold font-mono ${blocks === 0 ? 'text-emerald-400' : blocks < 5 ? 'text-amber-400' : 'text-red-400'}`}>
               {blocks}
             </p>
-            {blocks === 0 && (
-              <p className="text-[10px] font-mono text-emerald-400">great session!</p>
-            )}
+            {blocks === 0 && <p className="text-[10px] font-mono text-emerald-400">great session!</p>}
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-              Blocks per min
-            </p>
-            <p className="text-2xl font-bold font-mono text-amber-400">
-              {summaryBpm.toFixed(1)}
-            </p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks per min</p>
+            <p className="text-2xl font-bold font-mono text-amber-400">{summaryBpm.toFixed(1)}</p>
             <p className="text-[10px] font-mono text-slate-600">lower is better</p>
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-              Stage
-            </p>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Stage</p>
             <p className="text-base font-bold text-white">{stage.name}</p>
           </div>
         </div>
@@ -726,19 +839,36 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
       {/* Comparison */}
       {lastBpm !== null && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-2">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-            vs last session
-          </p>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">vs last session</p>
           <div className="flex items-baseline gap-3">
-            <span className="text-sm text-slate-400">
-              Last: {lastBpm.toFixed(1)} blocks/min
-            </span>
+            <span className="text-sm text-slate-400">Last: {lastBpm.toFixed(1)} blocks/min</span>
             <span className="text-slate-600">—</span>
-            <span className="text-sm text-slate-400">
-              This: {summaryBpm.toFixed(1)} blocks/min
-            </span>
+            <span className="text-sm text-slate-400">This: {summaryBpm.toFixed(1)} blocks/min</span>
           </div>
           <p className={`text-sm font-mono ${comparisonClass}`}>{comparisonText}</p>
+        </div>
+      )}
+
+      {/* Playback */}
+      {audioUrl && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
+            Playback — hear your voice
+          </p>
+          <audio
+            controls
+            src={audioUrl}
+            className="w-full rounded-lg"
+            style={{ colorScheme: 'dark', height: '40px' }}
+          />
+        </div>
+      )}
+
+      {/* Transcript */}
+      {finalTranscript && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Session transcript</p>
+          <p className="text-slate-300 text-sm leading-relaxed">{finalTranscript}</p>
         </div>
       )}
 
@@ -747,7 +877,7 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
         <button
           onClick={saveSession}
           disabled={saving}
-          className="w-full rounded-xl px-6 py-3 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
         >
           {saving && (
             <svg className="animate-spin h-4 w-4 text-slate-950" viewBox="0 0 24 24" fill="none">
