@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { PatientDetail, PatientSession } from '@/app/api/clinician/patients/[patientId]/route';
+import type { TreatmentPlan } from '@/app/api/clinician/patients/[patientId]/plan/route';
 
 function fmt(d: string) {
   return new Date(d).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
@@ -112,6 +113,189 @@ function NoteCell({ session, patientId }: { session: PatientSession; patientId: 
   );
 }
 
+const PHASES = ['Establishment', 'Consolidation', 'Transfer', 'Maintenance'];
+const ALL_STAGES = [1, 2, 3, 4, 5];
+const STAGE_LABELS: Record<number, string> = {
+  1: 'Syllable-level speech',
+  2: 'Word-level speech',
+  3: 'Phrase-level speech',
+  4: 'Sentence-level speech',
+  5: 'Conversation practice',
+};
+
+function TreatmentPlanCard({ patientId }: { patientId: string }) {
+  const [plan, setPlan]       = useState<TreatmentPlan | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving]   = useState(false);
+  const [saved, setSaved]     = useState(false);
+  const [draft, setDraft]     = useState<Partial<TreatmentPlan>>({});
+
+  useEffect(() => {
+    fetch(`/api/clinician/patients/${patientId}/plan`)
+      .then(r => r.json())
+      .then((j: { plan: TreatmentPlan | null }) => { setPlan(j.plan); setLoading(false); });
+  }, [patientId]);
+
+  const startEdit = () => {
+    setDraft(plan ?? {
+      prescribed_stages: [1],
+      sessions_per_week: 3,
+      minutes_per_session: 10,
+      phase: 'Establishment',
+      goals: '',
+    });
+    setEditing(true);
+    setSaved(false);
+  };
+
+  const toggleStage = (s: number) => {
+    const cur = draft.prescribed_stages ?? [1];
+    setDraft(d => ({ ...d, prescribed_stages: cur.includes(s) ? cur.filter(x => x !== s) : [...cur, s].sort((a, b) => a - b) }));
+  };
+
+  const save = async () => {
+    setSaving(true);
+    const res = await fetch(`/api/clinician/patients/${patientId}/plan`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft),
+    });
+    const json = await res.json() as { plan: TreatmentPlan };
+    setPlan(json.plan); setSaving(false); setSaved(true); setEditing(false);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  if (loading) return (
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 animate-pulse h-32" />
+  );
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-white font-semibold text-sm">Treatment Plan</h2>
+        {!editing && (
+          <button onClick={startEdit} className="text-xs text-slate-500 hover:text-emerald-400 transition-colors">
+            {plan ? (saved ? '✓ Saved' : 'Edit') : '+ Create plan'}
+          </button>
+        )}
+      </div>
+
+      {!plan && !editing && (
+        <p className="text-slate-500 text-xs">No treatment plan yet. Create one to prescribe exercises and goals to this patient.</p>
+      )}
+
+      {plan && !editing && (
+        <div className="grid sm:grid-cols-2 gap-4 text-xs">
+          <div className="space-y-3">
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-wide text-slate-600 mb-1">Phase</p>
+              <p className="text-white font-medium">{plan.phase}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-wide text-slate-600 mb-1">Prescribed stages</p>
+              <div className="flex flex-wrap gap-1.5">
+                {plan.prescribed_stages.map(s => (
+                  <span key={s} className="px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono">
+                    Stage {s} — {STAGE_LABELS[s]}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-wide text-slate-600 mb-1">Session goal</p>
+              <p className="text-white font-medium">{plan.sessions_per_week}×/week · {plan.minutes_per_session} min each</p>
+            </div>
+            {plan.goals && (
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-wide text-slate-600 mb-1">Clinical goals</p>
+                <p className="text-slate-300 leading-relaxed">{plan.goals}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {editing && (
+        <div className="space-y-4">
+          {/* Phase */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-mono uppercase tracking-wide text-slate-500">Phase</label>
+            <select
+              value={draft.phase ?? 'Establishment'}
+              onChange={e => setDraft(d => ({ ...d, phase: e.target.value }))}
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+            >
+              {PHASES.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+
+          {/* Stages */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-mono uppercase tracking-wide text-slate-500">Prescribed stages (select all that apply)</label>
+            <div className="flex flex-wrap gap-2">
+              {ALL_STAGES.map(s => {
+                const active = (draft.prescribed_stages ?? []).includes(s);
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => toggleStage(s)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${active ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'}`}
+                  >
+                    {s} — {STAGE_LABELS[s]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Session frequency */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-wide text-slate-500">Sessions per week</label>
+              <input type="number" min={1} max={14} value={draft.sessions_per_week ?? 3}
+                onChange={e => setDraft(d => ({ ...d, sessions_per_week: Number(e.target.value) }))}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-wide text-slate-500">Minutes per session</label>
+              <input type="number" min={1} max={60} value={draft.minutes_per_session ?? 10}
+                onChange={e => setDraft(d => ({ ...d, minutes_per_session: Number(e.target.value) }))}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Goals */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-mono uppercase tracking-wide text-slate-500">Clinical goals (visible to patient)</label>
+            <textarea
+              rows={3}
+              value={draft.goals ?? ''}
+              onChange={e => setDraft(d => ({ ...d, goals: e.target.value }))}
+              placeholder="e.g. Reduce block rate to <2/min during phrase-level speech over 4 weeks…"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-600 resize-none focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={save} disabled={saving || !(draft.prescribed_stages ?? []).length}
+              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-40">
+              {saving ? 'Saving…' : 'Save plan'}
+            </button>
+            <button onClick={() => setEditing(false)}
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm border border-slate-700 transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function PatientClient({ patient }: { patient: PatientDetail }) {
   const patientId = patient.id;
   const { totalMins, trend, recentBpm, improvementPct } = computeStats(patient.sessions);
@@ -158,6 +342,9 @@ export function PatientClient({ patient }: { patient: PatientDetail }) {
           </div>
         ))}
       </div>
+
+      {/* Treatment plan */}
+      <TreatmentPlanCard patientId={patientId} />
 
       {/* Sparkline */}
       {chartSessions.length > 0 && (
