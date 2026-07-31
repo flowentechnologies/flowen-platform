@@ -11,6 +11,7 @@ export interface UserProfile {
   displayName: string | null;
   tier: string | null;
   isAdmin: boolean;
+  role: string | null;
 }
 
 const TIER_LABELS: Record<string, string> = {
@@ -67,6 +68,14 @@ export function DashboardNav({ user }: { user: UserProfile }) {
               </Link>
             );
           })}
+          {user.role === 'clinician' && (
+            <Link
+              href="/dashboard/clinician"
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${pathname.startsWith('/dashboard/clinician') ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'}`}
+            >
+              Clinician View
+            </Link>
+          )}
           {user.isAdmin && (
             <Link
               href="/admin"
