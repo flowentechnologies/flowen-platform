@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 // ── Exported types ─────────────────────────────────────────────────────────────
 
@@ -129,6 +130,7 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'ip.asset_added', resource_type: 'ip_asset', resource_id: data.id, metadata: { asset_type: data.asset_type, name: data.name }, severity: 'info' });
     return NextResponse.json({ data });
   }
 
@@ -167,8 +169,10 @@ export async function POST(req: NextRequest) {
     const { id } = body as unknown as { id: string };
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
+    const { data: assetRow } = await supabase.from('ip_assets').select('name').eq('id', id).single();
     const { error } = await supabase.from('ip_assets').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'ip.asset_deleted', resource_type: 'ip_asset', resource_id: id, metadata: { name: assetRow?.name ?? null }, severity: 'warning' });
     return NextResponse.json({ success: true });
   }
 
@@ -214,6 +218,7 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'ip.version_added', resource_type: 'ip_model_version', resource_id: data.id, metadata: { version: data.version, deployed: data.deployed }, severity: 'info' });
     return NextResponse.json({ data });
   }
 
@@ -248,6 +253,7 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'ip.version_updated', resource_type: 'ip_model_version', resource_id: data.id, metadata: { version: data.version, deployed: data.deployed }, severity: 'info' });
     return NextResponse.json({ data });
   }
 

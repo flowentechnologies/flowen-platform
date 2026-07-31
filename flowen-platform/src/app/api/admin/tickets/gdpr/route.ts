@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 function db() {
   return createClient(
@@ -57,6 +58,7 @@ export async function POST(req: NextRequest) {
     if (internal_notes !== undefined) updates.internal_notes = internal_notes || null;
     const { error } = await supabase.from('gdpr_requests').update(updates).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'gdpr.request_actioned', resource_type: 'gdpr_request', resource_id: id, metadata: { action: 'update_status', status }, severity: 'critical' });
     return NextResponse.json({ success: true });
   }
 
@@ -105,6 +107,7 @@ export async function POST(req: NextRequest) {
     }).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'gdpr.request_actioned', resource_type: 'gdpr_request', resource_id: id, metadata: { action: 'apply_erasure', user_id: userId }, severity: 'critical' });
     return NextResponse.json({ success: true });
   }
 
@@ -113,6 +116,7 @@ export async function POST(req: NextRequest) {
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const { error } = await supabase.from('gdpr_requests').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'gdpr.request_actioned', resource_type: 'gdpr_request', resource_id: id, metadata: { action: 'delete_request' }, severity: 'critical' });
     return NextResponse.json({ success: true });
   }
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
 import { randomBytes } from 'crypto';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 export interface DeckInvite {
   id: string;
@@ -61,13 +62,16 @@ export async function POST(request: Request) {
     }).select().single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'deck.invite_created', resource_type: 'deck_invite', resource_id: data.id, metadata: { investor_name, investor_email: investor_email || null }, severity: 'info' });
     return NextResponse.json({ invite: data });
   }
 
   if (action === 'revoke') {
     const { id } = body;
+    const { data: invite } = await client.from('deck_invites').select('investor_name').eq('id', id).single();
     const { error } = await client.from('deck_invites').update({ revoked: true }).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'deck.invite_revoked', resource_type: 'deck_invite', resource_id: id, metadata: { investor_name: invite?.investor_name ?? null }, severity: 'warning' });
     return NextResponse.json({ ok: true });
   }
 
@@ -76,6 +80,7 @@ export async function POST(request: Request) {
     await client.from('deck_views').delete().eq('invite_id', id);
     const { error } = await client.from('deck_invites').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'deck.invite_deleted', resource_type: 'deck_invite', resource_id: id, severity: 'warning' });
     return NextResponse.json({ ok: true });
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -112,6 +113,7 @@ export async function POST(req: Request) {
     };
     const { data, error } = await client.from('nhs_icb_contacts').insert(payload).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'nhs.icb_added', resource_type: 'nhs_icb_contact', resource_id: data.id, metadata: { icb_name: data.icb_name, stage: data.stage }, severity: 'info' });
     return NextResponse.json({ data });
   }
 
@@ -125,6 +127,7 @@ export async function POST(req: Request) {
       .select()
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'nhs.icb_updated', resource_type: 'nhs_icb_contact', resource_id: data.id, metadata: { stage: data.stage }, severity: 'info' });
     return NextResponse.json({ data });
   }
 
@@ -133,6 +136,7 @@ export async function POST(req: Request) {
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const { error } = await client.from('nhs_icb_contacts').delete().eq('id', id as string);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'nhs.icb_deleted', resource_type: 'nhs_icb_contact', resource_id: id as string, severity: 'warning' });
     return NextResponse.json({ ok: true });
   }
 
@@ -152,6 +156,7 @@ export async function POST(req: Request) {
     };
     const { data, error } = await client.from('nhs_slp_signups').insert(payload).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'nhs.slp_added', resource_type: 'nhs_slp_signup', resource_id: data.id, severity: 'info' });
     return NextResponse.json({ data });
   }
 
@@ -173,6 +178,7 @@ export async function POST(req: Request) {
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const { error } = await client.from('nhs_slp_signups').delete().eq('id', id as string);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'nhs.slp_deleted', resource_type: 'nhs_slp_signup', resource_id: id as string, severity: 'warning' });
     return NextResponse.json({ ok: true });
   }
 
@@ -191,6 +197,7 @@ export async function POST(req: Request) {
     };
     const { data, error } = await client.from('nhs_block_pledges').insert(payload).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'nhs.pledge_added', resource_type: 'nhs_block_pledge', resource_id: data.id, metadata: { icb_name: data.icb_name, contract_value_pence: data.contract_value_pence }, severity: 'info' });
     return NextResponse.json({ data });
   }
 
@@ -212,6 +219,7 @@ export async function POST(req: Request) {
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const { error } = await client.from('nhs_block_pledges').delete().eq('id', id as string);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'nhs.pledge_deleted', resource_type: 'nhs_block_pledge', resource_id: id as string, severity: 'warning' });
     return NextResponse.json({ ok: true });
   }
 

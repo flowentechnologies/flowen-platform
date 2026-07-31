@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 interface ProfileRow {
   id: string;
@@ -140,6 +141,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
+    void logAuditEvent({ actor_email: adminUser.email, actor_id: adminUser.id, action: 'user.tier_update', resource_type: 'user', resource_id: userId, metadata: { is_admin: !profile.is_admin }, severity: 'warning' });
     return NextResponse.json({ success: true, is_admin: !profile.is_admin });
   }
 

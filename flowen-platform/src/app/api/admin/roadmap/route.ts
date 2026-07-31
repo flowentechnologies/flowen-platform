@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -342,6 +343,7 @@ export async function POST(req: Request) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'roadmap.milestone_added', resource_type: 'roadmap_milestone', resource_id: data.id, metadata: { title: data.title, phase: data.phase, status: data.status }, severity: 'info' });
     return NextResponse.json({ milestone: data });
   }
 
@@ -368,6 +370,7 @@ export async function POST(req: Request) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'roadmap.milestone_updated', resource_type: 'roadmap_milestone', resource_id: data.id, metadata: { title: data.title, status: data.status }, severity: 'info' });
     return NextResponse.json({ milestone: data });
   }
 
@@ -375,8 +378,10 @@ export async function POST(req: Request) {
 
   if (action === 'delete') {
     const { id } = body as { id: string };
+    const { data: milestoneRow } = await client.from('roadmap_milestones').select('title').eq('id', id).single();
     const { error } = await client.from('roadmap_milestones').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'roadmap.milestone_deleted', resource_type: 'roadmap_milestone', resource_id: id, metadata: { title: milestoneRow?.title ?? null }, severity: 'warning' });
     return NextResponse.json({ ok: true });
   }
 
