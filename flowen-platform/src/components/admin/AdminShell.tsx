@@ -41,6 +41,7 @@ const NAV: NavSection[] = [
       { label: 'Venture', href: '/admin/venture' },
       { label: 'Data Room', href: '/admin/data-room' },
       { label: 'Pitch Deck', href: '/admin/pitch-deck' },
+      { label: 'IP Register', href: '/admin/ip' },
     ],
   },
   {
@@ -58,6 +59,7 @@ const NAV: NavSection[] = [
     section: 'Compliance',
     items: [
       { label: 'NHS Readiness', href: '/admin/compliance' },
+      { label: 'Hazard Log', href: '/admin/hazard-log' },
       { label: 'NHS Pipeline', href: '/admin/nhs' },
     ],
   },
