@@ -1,14 +1,20 @@
 'use client';
 
 import * as THREE from 'three';
-import { useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import type { VisemeBlends } from '@/lib/viseme';
 
 // ============================================================================
 // FaceAvatar — Three.js speech therapy avatar driven by 42 viseme parameters
 // ============================================================================
 
+export interface FaceAvatarHandle {
+  /** Directly update blend values without going through React state (zero re-renders). */
+  updateBlends(blends: VisemeBlends, speaking: boolean): void;
+}
+
 interface Props {
+  /** Initial pose only — live updates go through the imperative handle. */
   blends: VisemeBlends;
   speaking: boolean;
 }
@@ -95,7 +101,7 @@ function rebuildLipTube(mesh: THREE.Mesh, points: THREE.Vector3[], radius: numbe
   mesh.geometry = new THREE.TubeGeometry(curve, 20, radius, 8, false);
 }
 
-export default function FaceAvatar({ blends, speaking }: Props) {
+const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(function FaceAvatar({ blends, speaking },  ref) {
   const mountRef = useRef<HTMLDivElement>(null);
 
   // Three.js object refs — never cause re-renders
@@ -119,11 +125,13 @@ export default function FaceAvatar({ blends, speaking }: Props) {
   const browRRef = useRef<THREE.Mesh | null>(null);
   const rimLightRef = useRef<THREE.PointLight | null>(null);
 
-  // Keep blends ref in sync without re-mounting
-  useEffect(() => {
-    blendsRef.current = blends;
-    speakingRef.current = speaking;
-  }, [blends, speaking]);
+  // Imperative handle — lets callers push blend updates without React state
+  useImperativeHandle(ref, () => ({
+    updateBlends(newBlends: VisemeBlends, newSpeaking: boolean) {
+      blendsRef.current = newBlends;
+      speakingRef.current = newSpeaking;
+    },
+  }));
 
   // Build scene on mount; destroy on unmount
   useEffect(() => {
@@ -480,8 +488,9 @@ export default function FaceAvatar({ blends, speaking }: Props) {
     <div
       ref={mountRef}
       style={{
-        width: W,
-        height: H,
+        width: '100%',
+        maxWidth: W,
+        aspectRatio: `${W} / ${H}`,
         borderRadius: '1rem',
         overflow: 'hidden',
         background: '#0d1117',
@@ -489,4 +498,6 @@ export default function FaceAvatar({ blends, speaking }: Props) {
       }}
     />
   );
-}
+});
+
+export default FaceAvatar;
