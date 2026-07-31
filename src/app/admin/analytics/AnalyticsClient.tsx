@@ -3,6 +3,7 @@
 import React, { useState, useTransition, useCallback } from 'react';
 import type { AnalyticsData } from '@/app/api/admin/analytics/route';
 import { CohortPanel } from './CohortPanel';
+import { QualityPanel } from './QualityPanel';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -417,6 +418,10 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
 
       {/* Cohort retention + ARR projection */}
       <CohortPanel />
+
+      {/* Session Quality Intelligence */}
+      <hr className="border-slate-800" />
+      <QualityPanel />
 
       {/* Footer */}
       <p className="text-[10px] text-slate-700 font-mono text-center pb-4">
