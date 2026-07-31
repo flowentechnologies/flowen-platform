@@ -677,6 +677,11 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
           Back to stage select
         </button>
 
+        {/* Avatar — neutral idle pose */}
+        <div className="rounded-2xl overflow-hidden border border-slate-800 shadow-xl shadow-black/30">
+          <FaceAvatar blends={ZERO_BLENDS} speaking={false} />
+        </div>
+
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
           <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400">
             {stage.target}
