@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import type { ProgrammeState } from '@/lib/programme';
 
 type Trend = 'improving' | 'plateauing' | 'regressing' | 'no_data';
 
@@ -23,6 +25,7 @@ interface DashboardClientProps {
   sessionsByDay: Record<string, number>;
   recentBpms: number[];
   recentSessions: RecentSession[];
+  programmeState: ProgrammeState | null;
 }
 
 function greeting(): string {
@@ -80,6 +83,111 @@ function KpiCard({
   );
 }
 
+const PHASE_COLORS: Record<string, string> = {
+  Foundation:  'text-sky-400 border-sky-500/30 bg-sky-500/10',
+  Building:    'text-violet-400 border-violet-500/30 bg-violet-500/10',
+  Integration: 'text-amber-400 border-amber-500/30 bg-amber-500/10',
+  Transfer:    'text-emerald-400 border-emerald-500/30 bg-emerald-500/10',
+  Maintenance: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10',
+};
+
+function ProgrammeCard({ state }: { state: ProgrammeState }) {
+  const [advancing, setAdvancing] = useState(false);
+  const [localState, setLocalState] = useState<ProgrammeState>(state);
+  const s = localState;
+  const phaseColor = PHASE_COLORS[s.week.phase] ?? 'text-slate-400 border-slate-600/30 bg-slate-700/20';
+
+  const advance = async () => {
+    setAdvancing(true);
+    const res = await fetch('/api/user/programme', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'advance' }) });
+    const next = await res.json() as ProgrammeState;
+    setLocalState(next);
+    setAdvancing(false);
+  };
+
+  if (s.isComplete) {
+    return (
+      <div className="bg-slate-900 border border-emerald-500/30 rounded-2xl p-6 space-y-3">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🏆</span>
+          <div>
+            <p className="text-white font-bold">8-Week Programme Complete</p>
+            <p className="text-slate-400 text-xs mt-0.5">You've worked through every stage. Keep practising to maintain your gains.</p>
+          </div>
+        </div>
+        <Link href="/dashboard/practice" className="inline-block px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors">
+          Continue practising →
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">8-Week Programme</p>
+          <p className="text-white font-bold text-lg mt-0.5">Week {s.currentWeek} — {s.week.title}</p>
+        </div>
+        <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold border ${phaseColor}`}>
+          {s.week.phase}
+        </span>
+      </div>
+
+      {/* Progress bar */}
+      <div className="space-y-1.5">
+        <div className="flex justify-between text-[10px] text-slate-500">
+          <span>Week {s.currentWeek} of 8</span>
+          <span>{s.progressPct}% complete</span>
+        </div>
+        <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${s.progressPct}%` }} />
+        </div>
+      </div>
+
+      {/* This week target */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-slate-800/60 rounded-xl p-3 space-y-1">
+          <p className="text-[10px] font-mono uppercase text-slate-500">Sessions this week</p>
+          <p className="text-xl font-bold text-white">
+            <span className={s.sessionsThisWeek >= s.week.targetSessions ? 'text-emerald-400' : ''}>{s.sessionsThisWeek}</span>
+            <span className="text-slate-600 text-sm font-normal"> / {s.week.targetSessions}</span>
+          </p>
+        </div>
+        <div className="bg-slate-800/60 rounded-xl p-3 space-y-1">
+          <p className="text-[10px] font-mono uppercase text-slate-500">Target per session</p>
+          <p className="text-xl font-bold text-white">{s.week.targetMinutes}<span className="text-slate-600 text-sm font-normal"> min</span></p>
+        </div>
+      </div>
+
+      {/* Focus tip */}
+      <p className="text-slate-400 text-xs leading-relaxed border-l-2 border-slate-700 pl-3">
+        <span className="text-slate-300 font-semibold">This week: </span>{s.week.focus}
+      </p>
+
+      {/* Actions */}
+      <div className="flex items-center gap-3">
+        <Link
+          href="/dashboard/practice"
+          className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors"
+        >
+          Start session →
+        </Link>
+        {s.canAdvance && (
+          <button
+            onClick={advance}
+            disabled={advancing}
+            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-sm transition-colors disabled:opacity-50"
+          >
+            {advancing ? 'Moving…' : `Move to Week ${s.currentWeek + 1} →`}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function DashboardClient({
   displayName,
   tier,
@@ -91,6 +199,7 @@ export function DashboardClient({
   sessionsByDay,
   recentBpms,
   recentSessions,
+  programmeState,
 }: DashboardClientProps) {
   const days30 = buildLast30Days();
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -198,6 +307,9 @@ export function DashboardClient({
           </Link>
         </div>
       )}
+
+      {/* Programme card — only for self-guided users */}
+      {programmeState && <ProgrammeCard state={programmeState} />}
 
       {sessionCount > 0 && (
         <>

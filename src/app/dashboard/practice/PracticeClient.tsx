@@ -84,10 +84,21 @@ interface TreatmentPlanProp {
   slp_email: string | null;
 }
 
+interface ProgrammeBanner {
+  week: number;
+  title: string;
+  phase: string;
+  stages: number[];
+  targetSessions: number;
+  sessionsThisWeek: number;
+  tip: string;
+}
+
 interface Props {
   recommendedStage: number;
   recentSessions: RecentSession[];
   treatmentPlan: TreatmentPlanProp | null;
+  programmeBanner: ProgrammeBanner | null;
   sessionsThisWeek: number;
 }
 
@@ -120,7 +131,7 @@ function bpmLabel(bpm: number): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan, sessionsThisWeek }: Props) {
+export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan, programmeBanner, sessionsThisWeek }: Props) {
   const [screen, setScreen] = useState<Screen>('select');
   const [stageId, setStageId] = useState<StageId>(
     Math.min(5, Math.max(1, recommendedStage)) as StageId,
@@ -344,6 +355,36 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
             {treatmentPlan.goals && (
               <p className="text-xs text-sky-400/70 italic leading-relaxed">&ldquo;{treatmentPlan.goals}&rdquo;</p>
             )}
+          </div>
+        )}
+
+        {/* Programme banner (self-guided users) */}
+        {programmeBanner && (
+          <div className="bg-violet-500/5 border border-violet-500/20 rounded-2xl p-4 space-y-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-violet-400">
+                Week {programmeBanner.week} · Programme
+              </span>
+              <span className="text-[10px] font-mono text-violet-500 border border-violet-500/30 rounded-full px-2 py-0.5">
+                {programmeBanner.phase}
+              </span>
+            </div>
+            <p className="text-sm font-semibold text-violet-200">{programmeBanner.title}</p>
+            <div className="flex flex-wrap gap-3 text-xs text-violet-300">
+              <span>
+                Stages: <strong>{programmeBanner.stages.join(', ')}</strong>
+              </span>
+              <span>·</span>
+              <span>
+                This week:{' '}
+                <strong className={programmeBanner.sessionsThisWeek >= programmeBanner.targetSessions ? 'text-emerald-400' : 'text-violet-300'}>
+                  {programmeBanner.sessionsThisWeek}/{programmeBanner.targetSessions}
+                </strong>
+              </span>
+            </div>
+            <p className="text-xs text-violet-400/70 italic leading-relaxed border-l-2 border-violet-500/30 pl-3">
+              {programmeBanner.tip}
+            </p>
           </div>
         )}
 
