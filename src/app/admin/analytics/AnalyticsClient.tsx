@@ -2,6 +2,7 @@
 
 import React, { useState, useTransition, useCallback } from 'react';
 import type { AnalyticsData } from '@/app/api/admin/analytics/route';
+import { CohortPanel } from './CohortPanel';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -413,6 +414,9 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
           ))}
         </div>
       </div>
+
+      {/* Cohort retention + ARR projection */}
+      <CohortPanel />
 
       {/* Footer */}
       <p className="text-[10px] text-slate-700 font-mono text-center pb-4">
