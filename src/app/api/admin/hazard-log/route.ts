@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -105,6 +106,7 @@ export async function POST(req: NextRequest) {
       if (isMissingTable(error)) return NextResponse.json({ ok: true });
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'hazard.delete', resource_type: 'hazard', resource_id: id, severity: 'warning' });
     return NextResponse.json({ ok: true });
   }
 
@@ -184,6 +186,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'hazard.add', resource_type: 'hazard', resource_id: data.id, metadata: { hazard_ref: data.hazard_ref, risk_level: data.risk_level }, severity: 'info' });
     return NextResponse.json({ entry: data });
   }
 
@@ -227,5 +230,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'hazard.update', resource_type: 'hazard', resource_id: data.id, metadata: { hazard_ref: data.hazard_ref, status: data.status, risk_level: data.risk_level }, severity: 'info' });
   return NextResponse.json({ entry: data });
 }

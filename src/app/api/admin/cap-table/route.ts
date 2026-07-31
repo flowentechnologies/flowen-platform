@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 // ── Exported types ─────────────────────────────────────────────────────────────
 
@@ -174,6 +175,7 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'cap_table.add', resource_type: 'cap_table_entry', resource_id: data.id, metadata: { holder_name: data.holder_name, instrument: data.instrument, shares: data.shares }, severity: 'info' });
     return NextResponse.json({ entry: data });
   }
 
@@ -188,6 +190,7 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'cap_table.update', resource_type: 'cap_table_entry', resource_id: data.id, severity: 'info' });
     return NextResponse.json({ entry: data });
   }
 
@@ -197,6 +200,7 @@ export async function POST(req: NextRequest) {
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const { error } = await supabase.from('cap_table_entries').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'cap_table.delete', resource_type: 'cap_table_entry', resource_id: id as string, severity: 'warning' });
     return NextResponse.json({ ok: true });
   }
 

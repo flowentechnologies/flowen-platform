@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -175,6 +176,7 @@ export async function POST(req: Request) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'grant.add', resource_type: 'grant', resource_id: data.id, metadata: { name: data.name, grant_type: data.grant_type, amount_pence: data.amount_pence }, severity: 'info' });
     return NextResponse.json({ grant: data });
   }
 
@@ -204,6 +206,7 @@ export async function POST(req: Request) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'grant.update', resource_type: 'grant', resource_id: data.id, metadata: { status: data.status }, severity: 'info' });
     return NextResponse.json({ grant: data });
   }
 
@@ -213,6 +216,7 @@ export async function POST(req: Request) {
     const { id } = body as { id: string };
     const { error } = await client.from('grants').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'grant.delete', resource_type: 'grant', resource_id: id, severity: 'warning' });
     return NextResponse.json({ ok: true });
   }
 

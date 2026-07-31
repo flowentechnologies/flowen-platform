@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -106,6 +107,7 @@ export async function POST(req: Request) {
     };
     const { data, error } = await client.from('investors').insert(payload).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'investor.add', resource_type: 'investor', resource_id: data.id, metadata: { name: data.name, stage: data.stage }, severity: 'info' });
     return NextResponse.json({ data });
   }
 
@@ -121,6 +123,7 @@ export async function POST(req: Request) {
       .select()
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'investor.update', resource_type: 'investor', resource_id: data.id, metadata: { stage: data.stage }, severity: 'info' });
     return NextResponse.json({ data });
   }
 
@@ -131,6 +134,7 @@ export async function POST(req: Request) {
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const { error } = await client.from('investors').delete().eq('id', id as string);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'investor.delete', resource_type: 'investor', resource_id: id as string, severity: 'warning' });
     return NextResponse.json({ ok: true });
   }
 
@@ -145,6 +149,7 @@ export async function POST(req: Request) {
       .select()
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'venture.config_update', resource_type: 'venture_config', resource_id: '1', severity: 'info' });
     return NextResponse.json({ data });
   }
 

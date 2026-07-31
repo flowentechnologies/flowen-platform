@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 function db() {
   return createClient(
@@ -104,5 +105,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'compliance.status_update', resource_type: 'compliance_item', resource_id: data.id, metadata: { framework, item_code, status }, severity: 'info' });
   return NextResponse.json({ item: data });
 }

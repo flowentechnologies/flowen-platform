@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 function db() {
   return createClient(
@@ -106,6 +107,7 @@ export async function POST(req: NextRequest) {
     const { error } = await supabase.from('profiles').update({ is_admin: false }).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     await supabase.from('staff_members').update({ status: 'inactive', updated_at: new Date().toISOString() }).eq('id', id);
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'staff.removed', resource_type: 'staff_member', resource_id: id, severity: 'warning' });
     return NextResponse.json({ success: true });
   }
 
@@ -120,6 +122,7 @@ export async function POST(req: NextRequest) {
       invited_by_email,
     }).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'staff.invited', resource_type: 'staff_invite', resource_id: data.id, metadata: { email, role: role || 'admin' }, severity: 'info' });
     return NextResponse.json({ data, inviteUrl: `${SITE}/admin/join/${data.token}` });
   }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 function db() {
   return createClient(
@@ -88,6 +89,7 @@ export async function POST(req: NextRequest) {
 
     const { error } = await supabase.from('support_tickets').update(updates).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'ticket.status_update', resource_type: 'support_ticket', resource_id: id, metadata: { status: status ?? null }, severity: 'info' });
     return NextResponse.json({ success: true });
   }
 
@@ -120,6 +122,7 @@ export async function POST(req: NextRequest) {
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
     const { error } = await supabase.from('support_tickets').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'ticket.closed', resource_type: 'support_ticket', resource_id: id, severity: 'info' });
     return NextResponse.json({ success: true });
   }
 
