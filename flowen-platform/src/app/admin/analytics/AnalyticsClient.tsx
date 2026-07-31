@@ -4,6 +4,7 @@ import React, { useState, useTransition, useCallback } from 'react';
 import type { AnalyticsData } from '@/app/api/admin/analytics/route';
 import { CohortPanel } from './CohortPanel';
 import { QualityPanel } from './QualityPanel';
+import { FunnelPanel } from './FunnelPanel';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -213,6 +214,9 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
           </span>
         </div>
       </div>
+
+      {/* Waitlist Conversion Funnel */}
+      <FunnelPanel />
 
       {/* Revenue KPIs */}
       <div>
