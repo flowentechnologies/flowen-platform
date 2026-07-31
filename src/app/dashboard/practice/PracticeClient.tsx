@@ -74,9 +74,21 @@ interface RecentSession {
   bpm: number;
 }
 
+interface TreatmentPlanProp {
+  prescribed_stages: number[];
+  sessions_per_week: number;
+  minutes_per_session: number;
+  phase: string;
+  goals: string | null;
+  slp_display_name: string | null;
+  slp_email: string | null;
+}
+
 interface Props {
   recommendedStage: number;
   recentSessions: RecentSession[];
+  treatmentPlan: TreatmentPlanProp | null;
+  sessionsThisWeek: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -108,7 +120,7 @@ function bpmLabel(bpm: number): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function PracticeClient({ recommendedStage, recentSessions }: Props) {
+export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan, sessionsThisWeek }: Props) {
   const [screen, setScreen] = useState<Screen>('select');
   const [stageId, setStageId] = useState<StageId>(
     Math.min(5, Math.max(1, recommendedStage)) as StageId,
@@ -301,6 +313,39 @@ export function PracticeClient({ recommendedStage, recentSessions }: Props) {
             STAGE {stageId} OF 5
           </span>
         </div>
+
+        {/* Treatment plan banner */}
+        {treatmentPlan && (
+          <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 space-y-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-sky-400">Prescribed plan</span>
+                {treatmentPlan.slp_display_name && (
+                  <span className="text-[10px] text-sky-600">from {treatmentPlan.slp_display_name}</span>
+                )}
+              </div>
+              <span className="text-[10px] font-mono text-sky-500 border border-sky-500/30 rounded-full px-2 py-0.5">
+                {treatmentPlan.phase}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-3 text-xs text-sky-300">
+              <span>
+                Stages: <strong>{treatmentPlan.prescribed_stages.join(', ')}</strong>
+              </span>
+              <span>·</span>
+              <span>
+                Goal: <strong>{treatmentPlan.sessions_per_week}×/week</strong> · <strong>{treatmentPlan.minutes_per_session} min</strong>
+              </span>
+              <span>·</span>
+              <span>
+                This week: <strong className={sessionsThisWeek >= treatmentPlan.sessions_per_week ? 'text-emerald-400' : 'text-sky-300'}>{sessionsThisWeek}/{treatmentPlan.sessions_per_week}</strong>
+              </span>
+            </div>
+            {treatmentPlan.goals && (
+              <p className="text-xs text-sky-400/70 italic leading-relaxed">&ldquo;{treatmentPlan.goals}&rdquo;</p>
+            )}
+          </div>
+        )}
 
         {/* Stage selector */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
