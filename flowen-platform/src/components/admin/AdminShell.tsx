@@ -39,6 +39,7 @@ const NAV: NavSection[] = [
     section: 'Investment',
     items: [
       { label: 'Venture', href: '/admin/venture' },
+      { label: 'Grants', href: '/admin/grants' },
       { label: 'Data Room', href: '/admin/data-room' },
       { label: 'Pitch Deck', href: '/admin/pitch-deck' },
       { label: 'IP Register', href: '/admin/ip' },
