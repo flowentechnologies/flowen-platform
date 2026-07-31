@@ -34,6 +34,7 @@ const NAV: NavSection[] = [
       { label: 'Billing', href: '/admin/billing' },
       { label: 'Analytics', href: '/admin/analytics' },
       { label: 'Session Quality', href: '/admin/session-quality' },
+      { label: 'Feature Flags', href: '/admin/feature-flags' },
     ],
   },
   {
