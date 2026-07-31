@@ -35,6 +35,7 @@ const NAV: NavSection[] = [
       { label: 'Analytics', href: '/admin/analytics' },
       { label: 'Session Quality', href: '/admin/session-quality' },
       { label: 'Feature Flags', href: '/admin/feature-flags' },
+      { label: 'Waitlist', href: '/admin/waitlist' },
     ],
   },
   {
