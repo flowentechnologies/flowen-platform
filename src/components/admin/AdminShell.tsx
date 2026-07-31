@@ -53,6 +53,7 @@ const NAV: NavSection[] = [
       { label: 'Tickets', href: '/admin/tickets' },
       { label: 'GDPR Requests', href: '/admin/tickets/gdpr-requests', indent: true },
       { label: 'Audit Log', href: '/admin/audit' },
+      { label: 'Alerts', href: '/admin/notifications' },
       { label: 'Staff', href: '/admin/staff' },
       { label: 'Integrations', href: '/admin/integrations' },
       { label: 'Tracking', href: '/admin/tracking' },
