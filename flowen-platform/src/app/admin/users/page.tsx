@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import type { AdminUserRecord } from '@/app/api/admin/users/route';
+import type { AtRiskUser } from '@/app/api/admin/users/at-risk/route';
 
 type FilterTab = 'all' | 'active' | 'admins' | 'waitlist';
 
@@ -140,6 +141,8 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState<FilterTab>('all');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [atRiskUsers, setAtRiskUsers] = useState<AtRiskUser[]>([]);
+  const [atRiskLoading, setAtRiskLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/admin/users')
@@ -149,6 +152,14 @@ export default function AdminUsersPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    fetch('/api/admin/users/at-risk')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.atRiskUsers) setAtRiskUsers(data.atRiskUsers);
+      })
+      .catch(() => {})
+      .finally(() => setAtRiskLoading(false));
   }, []);
 
   function showToast(message: string, type: 'success' | 'error') {
@@ -240,6 +251,81 @@ export default function AdminUsersPage() {
           USER MANAGEMENT
         </span>
       </div>
+
+      {/* At-Risk Users */}
+      {(atRiskLoading || atRiskUsers.length > 0) && (
+        <div className="bg-slate-900 border border-amber-700/40 rounded-2xl p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-sm font-bold text-amber-400">At-Risk Users</h2>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              NO SESSION &gt; 14 DAYS
+            </span>
+            {!atRiskLoading && (
+              <span className="text-[10px] font-mono text-slate-500 ml-auto">{atRiskUsers.length} user{atRiskUsers.length !== 1 ? 's' : ''}</span>
+            )}
+          </div>
+
+          {atRiskLoading ? (
+            <div className="animate-pulse space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-slate-800" />
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-3 w-40 bg-slate-800 rounded" />
+                    <div className="h-2 w-24 bg-slate-800 rounded" />
+                  </div>
+                  <div className="h-3 w-28 bg-slate-800 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-800/60">
+              {atRiskUsers.map((user) => {
+                const daysSince = user.last_session_at
+                  ? Math.floor((Date.now() - new Date(user.last_session_at).getTime()) / 86400_000)
+                  : null;
+
+                const tierColours: Record<string, string> = {
+                  founding:        'bg-amber-500/10 text-amber-400 border-amber-500/30',
+                  standard:        'bg-sky-500/10 text-sky-400 border-sky-500/30',
+                  public_funds:    'bg-purple-500/10 text-purple-400 border-purple-500/30',
+                  vocali_freemium: 'bg-slate-700/50 text-slate-400 border-slate-600/30',
+                  pro:             'bg-sky-500/10 text-sky-400 border-sky-500/30',
+                  free:            'bg-slate-700/50 text-slate-400 border-slate-600/30',
+                };
+                const tierCls = user.tier ? (tierColours[user.tier] ?? 'bg-slate-700/50 text-slate-400 border-slate-600/30') : null;
+
+                return (
+                  <div key={user.id} className="flex items-center gap-3 py-2.5">
+                    <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xs font-bold font-mono flex-shrink-0">
+                      {(user.display_name ?? '?').slice(0, 1).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-xs font-medium truncate">
+                        {user.display_name ?? <span className="text-slate-500 italic">No name</span>}
+                      </p>
+                      <p className="text-[10px] font-mono text-amber-600 mt-0.5">
+                        {daysSince === null ? 'Never practiced' : `Last session: ${daysSince} day${daysSince !== 1 ? 's' : ''} ago`}
+                      </p>
+                    </div>
+                    {tierCls && user.tier && (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border ${tierCls}`}>
+                        {user.tier.toUpperCase()}
+                      </span>
+                    )}
+                    <a
+                      href="/admin/users"
+                      className="shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-mono font-medium border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors"
+                    >
+                      View profile
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Search + tabs */}
       <div className="flex flex-col sm:flex-row gap-3">
