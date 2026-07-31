@@ -21,7 +21,7 @@ async function getUserProfile(): Promise<UserProfile | null> {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('display_name, tier, is_admin')
+    .select('display_name, tier, is_admin, role')
     .eq('id', user.id)
     .single();
 
@@ -30,6 +30,7 @@ async function getUserProfile(): Promise<UserProfile | null> {
     displayName: profile?.display_name ?? null,
     tier:        profile?.tier ?? null,
     isAdmin:     profile?.is_admin ?? false,
+    role:        profile?.role ?? null,
   };
 }
 
