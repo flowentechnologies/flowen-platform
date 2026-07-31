@@ -27,6 +27,9 @@ export interface VentureConfig {
   seis_limit_remaining_pence: number | null;
   eis_eligible: boolean;
   notes: string | null;
+  monthly_burn_pence: number | null;
+  cash_in_bank_pence: number | null;
+  last_updated_at: string | null;
 }
 
 export interface VentureData {
@@ -136,6 +139,27 @@ export async function POST(req: Request) {
   if (action === 'update_config') {
     const { action: _a, ...fields } = body;
     const payload = { id: 1, updated_at: new Date().toISOString(), ...fields };
+    const { data, error } = await client
+      .from('venture_config')
+      .upsert(payload, { onConflict: 'id' })
+      .select()
+      .single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ data });
+  }
+
+  // ── update_runway ─────────────────────────────────────────────────────────
+
+  if (action === 'update_runway') {
+    const monthly_burn_pence = body.monthly_burn_pence ?? null;
+    const cash_in_bank_pence = body.cash_in_bank_pence ?? null;
+    const payload = {
+      id: 1,
+      monthly_burn_pence,
+      cash_in_bank_pence,
+      last_updated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
     const { data, error } = await client
       .from('venture_config')
       .upsert(payload, { onConflict: 'id' })
