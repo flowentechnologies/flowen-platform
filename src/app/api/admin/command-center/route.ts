@@ -34,12 +34,24 @@ export interface CCData {
   sessionsToday: number;
   // Feeds
   recentErrors: { id: string; source: string; message: string; created_at: string }[];
-  recentAudit:  { id: string; timestamp: string; severity: string; category: string; action: string }[];
+  recentAudit:  { id: string; created_at: string; severity: string; action: string; actor_email: string | null }[];
   recentWaitlist: { id: string; email: string; source: string | null; created_at: string }[];
   // Extras
   tierCounts: Record<string, number>;
   foundingGoal: number;
   signupsByDay: Record<string, number>;
+  // Fundraising
+  grantsPipelineValuePence: number;
+  grantsSubmitted: number;
+  grantsDeadlineSoon: number;
+  runwayMonths: number | null;
+  runwayZeroDate: string | null;
+  // Roadmap
+  roadmapInProgress: number;
+  nextCriticalMilestone: { title: string; target_date: string | null } | null;
+  // NHS & Compliance
+  nhsReadinessScore: number;
+  icbPipelineCount: number;
 }
 
 function db() {
@@ -60,6 +72,8 @@ export async function GET() {
 
   const client = db();
 
+  const thirtyDaysLater = new Date(now.getTime() + 30 * 86400_000).toISOString().slice(0, 10);
+
   const [
     totalUsersRes, onboardedRes, foundingRes, newUsersRes,
     waitlistTotalRes, recentWaitlistRes,
@@ -68,6 +82,11 @@ export async function GET() {
     sessionsTodayRes,
     auditRes, errorsRes,
     tiersRes, signupsWeekRes,
+    grantsRes,
+    roadmapStatusRes, roadmapNextRes,
+    ventureRes,
+    complianceRes, hazardRes,
+    icbCountRes,
   ] = await Promise.all([
     client.from('profiles').select('*', { count: 'exact', head: true }),
     client.from('profiles').select('*', { count: 'exact', head: true }).eq('onboarding_complete', true),
@@ -80,10 +99,17 @@ export async function GET() {
     client.from('workflow_definitions').select('status'),
     client.from('workflow_runs').select('status,started_at').gte('started_at', sevenDaysAgo),
     client.from('practice_sessions').select('user_id,created_at').gte('created_at', todayStart),
-    client.from('audit_logs').select('id,timestamp,severity,category,action').order('timestamp', { ascending: false }).limit(20),
+    client.from('audit_log').select('id,created_at,severity,action,actor_email').order('created_at', { ascending: false }).limit(20),
     client.from('system_error_logs').select('id,source,message,created_at').order('created_at', { ascending: false }).limit(5),
     client.from('profiles').select('tier'),
     client.from('profiles').select('created_at').gte('created_at', sevenDaysAgo),
+    client.from('grants').select('amount_pence,status,deadline'),
+    client.from('roadmap_milestones').select('status,priority'),
+    client.from('roadmap_milestones').select('id,title,target_date').eq('priority', 'critical').not('status', 'in', '("complete","deferred")').order('target_date', { ascending: true, nullsFirst: false }).limit(1),
+    client.from('venture_config').select('cash_in_bank_pence,monthly_burn_pence').eq('id', 1).maybeSingle(),
+    client.from('compliance_items').select('framework,status'),
+    client.from('hazard_log').select('id').eq('risk_level', 'critical').in('status', ['open','accepted']),
+    client.from('nhs_icb_contacts').select('*', { count: 'exact', head: true }).in('stage', ['engaged','proposal','pilot','contract']),
   ]);
 
   // Revenue from Stripe
@@ -141,6 +167,45 @@ export async function GET() {
     signupsByDay[day] = (signupsByDay[day] ?? 0) + 1;
   }
 
+  // Grants
+  const grantRows = (grantsRes.data ?? []) as { amount_pence: number | null; status: string; deadline: string | null }[];
+  const grantsPipelineValuePence = grantRows
+    .filter(g => !['rejected', 'withdrawn'].includes(g.status))
+    .reduce((sum, g) => sum + (g.amount_pence ?? 0), 0);
+  const grantsSubmitted = grantRows.filter(g => ['submitted', 'under_review'].includes(g.status)).length;
+  const grantsDeadlineSoon = grantRows.filter(g =>
+    g.deadline && g.deadline <= thirtyDaysLater && !['awarded', 'rejected', 'withdrawn'].includes(g.status)
+  ).length;
+
+  // Roadmap
+  const roadmapRows = (roadmapStatusRes.data ?? []) as { status: string; priority: string }[];
+  const roadmapInProgress = roadmapRows.filter(r => r.status === 'in_progress').length;
+  const nextCriticalMilestone = ((roadmapNextRes.data ?? []) as { id: string; title: string; target_date: string | null }[])[0] ?? null;
+
+  // Runway
+  const vc = ventureRes.data as { cash_in_bank_pence: number | null; monthly_burn_pence: number | null } | null;
+  let runwayMonths: number | null = null;
+  let runwayZeroDate: string | null = null;
+  if (vc?.cash_in_bank_pence && vc?.monthly_burn_pence && vc.monthly_burn_pence > 0) {
+    runwayMonths = Math.round((vc.cash_in_bank_pence / vc.monthly_burn_pence) * 10) / 10;
+    const zeroDate = new Date(now.getTime() + runwayMonths * 30.44 * 86400_000);
+    runwayZeroDate = zeroDate.toISOString().slice(0, 10);
+  }
+
+  // NHS readiness score
+  const complianceRows = (complianceRes.data ?? []) as { framework: string; status: string }[];
+  const frameworkWeights: Record<string, number> = { dcb0129: 30, dtac: 25, dspt: 20 };
+  let nhsScore = 0;
+  for (const [fw, weight] of Object.entries(frameworkWeights)) {
+    const items = complianceRows.filter(c => c.framework === fw);
+    const applicable = items.filter(c => c.status !== 'not_applicable');
+    const complete = applicable.filter(c => c.status === 'complete').length;
+    nhsScore += applicable.length > 0 ? (complete / applicable.length) * weight : weight;
+  }
+  if ((hazardRes.data ?? []).length === 0) nhsScore += 15;
+  if ((totalUsersRes.count ?? 0) > 0) nhsScore += 10;
+  const nhsReadinessScore = Math.round(nhsScore);
+
   const data: CCData = {
     generatedAt: now.toISOString(),
     mrrPence, arrPence: mrrPence * 12,
@@ -161,6 +226,10 @@ export async function GET() {
     recentErrors: errorsRes.data ?? [],
     recentAudit:  auditRes.data  ?? [],
     tierCounts, foundingGoal: 500, signupsByDay,
+    grantsPipelineValuePence, grantsSubmitted, grantsDeadlineSoon,
+    runwayMonths, runwayZeroDate,
+    roadmapInProgress, nextCriticalMilestone,
+    nhsReadinessScore, icbPipelineCount: icbCountRes.count ?? 0,
   };
 
   return NextResponse.json(data);
