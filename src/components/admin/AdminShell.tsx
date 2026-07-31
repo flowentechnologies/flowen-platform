@@ -63,6 +63,7 @@ const NAV: NavSection[] = [
     items: [
       { label: 'NHS Readiness', href: '/admin/compliance' },
       { label: 'Hazard Log', href: '/admin/hazard-log' },
+      { label: 'Evidence Pack', href: '/admin/evidence' },
       { label: 'NHS Pipeline', href: '/admin/nhs' },
     ],
   },
