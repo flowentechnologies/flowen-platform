@@ -33,6 +33,7 @@ const NAV: NavSection[] = [
       { label: 'Users', href: '/admin/users' },
       { label: 'Billing', href: '/admin/billing' },
       { label: 'Analytics', href: '/admin/analytics' },
+      { label: 'Session Quality', href: '/admin/session-quality' },
     ],
   },
   {
