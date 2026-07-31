@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { DashboardNav, type UserProfile } from '@/components/dashboard/DashboardNav';
+import { DashboardNav, MobileBottomNav, type UserProfile } from '@/components/dashboard/DashboardNav';
 
 async function getUserProfile(): Promise<UserProfile | null> {
   const cookieStore = await cookies();
@@ -41,9 +41,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <>
       <DashboardNav user={user} />
-      <main className="pt-16 min-h-screen bg-slate-950">
+      <main className="pt-16 pb-16 sm:pb-0 min-h-screen bg-slate-950">
         {children}
       </main>
+      <MobileBottomNav user={user} />
     </>
   );
 }
