@@ -124,7 +124,7 @@ function Select({ value, onChange, options }: {
 
 // ── Tab Bar ───────────────────────────────────────────────────────────────────
 
-type Tab = 'round' | 'investors' | 'kpis' | 'updates';
+type Tab = 'round' | 'investors' | 'kpis' | 'updates' | 'runway';
 
 function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   const tabs: { id: Tab; label: string }[] = [
@@ -132,6 +132,7 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
     { id: 'investors', label: 'Investors Pipeline' },
     { id: 'kpis',      label: 'KPI Board' },
     { id: 'updates',   label: 'Updates' },
+    { id: 'runway',    label: 'Runway' },
   ];
   return (
     <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 w-fit">
@@ -1410,6 +1411,402 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
   );
 }
 
+// ── Runway Tab ────────────────────────────────────────────────────────────────
+
+function pencePounds(p: number | null | undefined): string {
+  if (p == null) return '';
+  return String(Math.round(p / 100));
+}
+
+function addMonths(date: Date, n: number): Date {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + n);
+  return d;
+}
+
+function fmtMonthYear(d: Date): string {
+  return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+}
+
+function runwayColour(months: number): string {
+  if (months > 12) return 'text-emerald-400';
+  if (months > 6)  return 'text-amber-400';
+  if (months > 3)  return 'text-orange-400';
+  return 'text-red-400';
+}
+
+function runwayBorderColour(months: number): string {
+  if (months > 12) return 'border-emerald-500/30';
+  if (months > 6)  return 'border-amber-500/30';
+  if (months > 3)  return 'border-orange-500/30';
+  return 'border-red-500/40';
+}
+
+function runwayBgColour(months: number): string {
+  if (months > 12) return 'bg-emerald-500/10';
+  if (months > 6)  return 'bg-amber-500/10';
+  if (months > 3)  return 'bg-orange-500/10';
+  return 'bg-red-500/10';
+}
+
+interface RunwayRow {
+  month: number;
+  label: string;
+  opening: number;
+  burn: number;
+  closing: number;
+  goesNegative: boolean;
+}
+
+function buildCashFlowTable(cashPence: number, burnPence: number, today: Date): RunwayRow[] {
+  const rows: RunwayRow[] = [];
+  let balance = cashPence;
+  for (let i = 0; i < 12; i++) {
+    const date = addMonths(today, i + 1);
+    const label = date.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+    const opening = balance;
+    const closing = opening - burnPence;
+    rows.push({
+      month: i + 1,
+      label,
+      opening,
+      burn: burnPence,
+      closing,
+      goesNegative: closing < 0,
+    });
+    balance = closing;
+    if (closing <= 0) break;
+  }
+  // Pad to 12 rows with greyed-out zeros if we ran out of cash early
+  const filled = rows.length;
+  for (let i = filled; i < 12; i++) {
+    const date = addMonths(today, i + 1);
+    const label = date.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+    rows.push({ month: i + 1, label, opening: 0, burn: burnPence, closing: 0, goesNegative: false });
+  }
+  return rows;
+}
+
+function ScenarioCard({
+  label,
+  months,
+  zeroDate,
+  accent,
+  sub,
+}: {
+  label: string;
+  months: number;
+  zeroDate: Date;
+  accent: 'red' | 'amber' | 'emerald';
+  sub?: string;
+}) {
+  const colourMap = {
+    red:     { text: 'text-red-400',     border: 'border-red-500/30',     bg: 'bg-red-500/10' },
+    amber:   { text: 'text-amber-400',   border: 'border-amber-500/30',   bg: 'bg-amber-500/10' },
+    emerald: { text: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-500/10' },
+  };
+  const c = colourMap[accent];
+  return (
+    <div className={`rounded-2xl border p-5 ${c.bg} ${c.border}`}>
+      <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-3">{label}</p>
+      <p className={`text-4xl font-black ${c.text} mb-1`}>{months > 0 ? months.toFixed(1) : '0'}</p>
+      <p className="text-[10px] font-mono text-slate-500 mb-2">months runway</p>
+      <p className={`text-xs font-mono font-bold ${c.text}`}>
+        Zero: {fmtMonthYear(zeroDate)}
+      </p>
+      {sub && <p className="text-[10px] font-mono text-slate-500 mt-2 leading-relaxed">{sub}</p>}
+    </div>
+  );
+}
+
+function RunwayTab({
+  config,
+  onConfigUpdate,
+  showToast,
+}: {
+  config: VentureConfig | null;
+  onConfigUpdate: (c: VentureConfig) => void;
+  showToast: (m: string, k: 'success' | 'error') => void;
+}) {
+  const today = new Date('2026-07-31');
+
+  const [burnInput,  setBurnInput]  = React.useState<string>(() => pencePounds(config?.monthly_burn_pence));
+  const [cashInput,  setCashInput]  = React.useState<string>(() => pencePounds(config?.cash_in_bank_pence));
+  const [saving, setSaving] = React.useState(false);
+
+  // Derived pence values from inputs
+  const burnPence = burnInput  ? Math.round(parseFloat(burnInput)  * 100) : 0;
+  const cashPence = cashInput  ? Math.round(parseFloat(cashInput)  * 100) : 0;
+
+  const hasData = burnPence > 0 && cashPence > 0;
+
+  async function saveRunway() {
+    if (saving) return;
+    setSaving(true);
+    const res = await apiPost({
+      action: 'update_runway',
+      monthly_burn_pence: burnPence || null,
+      cash_in_bank_pence: cashPence || null,
+    });
+    setSaving(false);
+    if (res.error) { showToast(`Error: ${res.error}`, 'error'); return; }
+    onConfigUpdate(res.data as VentureConfig);
+    showToast('Runway updated', 'success');
+  }
+
+  function handleBlur() { saveRunway(); }
+  function handleKeyDown(e: React.KeyboardEvent) { if (e.key === 'Enter') saveRunway(); }
+
+  // ── Computed projections ──────────────────────────────────────────────────
+  const runwayMonths = hasData ? cashPence / burnPence : 0;
+  const zeroDate     = addMonths(today, runwayMonths);
+
+  // Round close deadline: today + runway - 3 month buffer
+  const closeDeadlineDate   = addMonths(today, Math.max(0, runwayMonths - 3));
+  const hasTarget            = (config?.target_raise_pence ?? 0) > 0;
+
+  // 12-month table
+  const tableRows = hasData ? buildCashFlowTable(cashPence, burnPence, today) : [];
+
+  // Scenarios
+  const bearBurn    = burnPence * 1.2;
+  const bearMonths  = cashPence > 0 && bearBurn > 0 ? cashPence / bearBurn : 0;
+  const bearZero    = addMonths(today, bearMonths);
+
+  const baseMonths  = runwayMonths;
+  const baseZero    = zeroDate;
+
+  const raisePence  = config?.target_raise_pence ?? 0;
+  const bullCash    = cashPence + raisePence; // raise closes in 3 months, adds to bank
+  const bullBurn    = burnPence * 0.8;
+  const bullMonths  = bullCash > 0 && bullBurn > 0 ? bullCash / bullBurn : 0;
+  const bullZero    = addMonths(today, bullMonths);
+
+  // MRR offset
+  const mrrPence = config?.committed_pence ?? 0; // using committed as a proxy; you could swap to an MRR field
+  // We'll use a separate signal: if mrrPence is meaningful it's actually storing MRR, not commitments
+  // So we rely on a distinct flag — skip display if it's obviously the committed column
+  const showMrr = false; // Placeholder: no dedicated MRR field yet in VentureConfig
+
+  if (!hasData) {
+    return (
+      <div className="space-y-6">
+        {/* Inputs card (always shown) */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <h3 className="text-sm font-bold text-white mb-1">Runway Inputs</h3>
+          <p className="text-[11px] font-mono text-slate-500 mb-5">
+            Update these when your bank balance or burn rate changes. All projections recalculate instantly.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <Label>Monthly Burn (£/month)</Label>
+              <input
+                type="number"
+                value={burnInput}
+                onChange={e => setBurnInput(e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                placeholder="e.g. 15000"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+              />
+            </div>
+            <div>
+              <Label>Cash in Bank (£)</Label>
+              <input
+                type="number"
+                value={cashInput}
+                onChange={e => setCashInput(e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                placeholder="e.g. 180000"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Empty state prompt */}
+        <div className="bg-slate-900 border border-dashed border-slate-700 rounded-2xl py-20 text-center">
+          <p className="text-slate-500 font-mono text-sm mb-2">Enter your monthly burn and current cash balance to see runway projections</p>
+          <p className="text-slate-700 font-mono text-xs">Projections recalculate instantly as you type</p>
+        </div>
+      </div>
+    );
+  }
+
+  const runwayColourClass  = runwayColour(runwayMonths);
+  const runwayBorderClass  = runwayBorderColour(runwayMonths);
+  const runwayBgClass      = runwayBgColour(runwayMonths);
+  const isPulsing          = runwayMonths < 3;
+
+  return (
+    <div className="space-y-6">
+      {/* Inputs panel */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <h3 className="text-sm font-bold text-white mb-1">Runway Inputs</h3>
+        <p className="text-[11px] font-mono text-slate-500 mb-5">
+          Update these when your bank balance or burn rate changes. All projections recalculate instantly.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <Label>Monthly Burn (£/month)</Label>
+            <input
+              type="number"
+              value={burnInput}
+              onChange={e => setBurnInput(e.target.value)}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              placeholder="e.g. 15000"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+            />
+          </div>
+          <div>
+            <Label>Cash in Bank (£)</Label>
+            <input
+              type="number"
+              value={cashInput}
+              onChange={e => setCashInput(e.target.value)}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              placeholder="e.g. 180000"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+            />
+          </div>
+        </div>
+        {saving && (
+          <p className="text-[10px] font-mono text-slate-500 mt-3">Saving...</p>
+        )}
+      </div>
+
+      {/* Headline stat */}
+      <div className={`rounded-2xl border p-8 text-center ${runwayBgClass} ${runwayBorderClass}`}>
+        <p className={`text-7xl font-black ${runwayColourClass} ${isPulsing ? 'animate-pulse' : ''} mb-2`}>
+          {runwayMonths.toFixed(1)}
+        </p>
+        <p className="text-lg font-bold text-white mb-1">months runway</p>
+        <p className="text-[11px] font-mono text-slate-400">
+          at current burn rate &middot; until {fmtMonthYear(zeroDate)}
+        </p>
+      </div>
+
+      {/* Round close deadline */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono mb-3">Round Close Deadline</h3>
+        {hasTarget ? (
+          <div className={`flex items-start gap-4 p-4 rounded-xl ${runwayBgClass} ${runwayBorderClass} border`}>
+            <div>
+              <p className="text-sm font-bold text-white mb-1">
+                To avoid a gap, the round must close by{' '}
+                <span className={`${runwayColourClass} font-black`}>{fmtMonthYear(closeDeadlineDate)}</span>
+              </p>
+              <p className="text-[11px] font-mono text-slate-500">
+                3-month buffer for legal / closing deducted from current runway of {runwayMonths.toFixed(1)} months
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm font-mono text-slate-500">
+            Set a fundraising target in the <span className="text-amber-400">Round</span> tab to see close deadline
+          </p>
+        )}
+      </div>
+
+      {/* Scenario cards */}
+      <div>
+        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono mb-4">Scenarios</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <ScenarioCard
+            label="Bear — burn +20%"
+            months={bearMonths}
+            zeroDate={bearZero}
+            accent="red"
+            sub={`Burn: ${pence(bearBurn)}/mo`}
+          />
+          <ScenarioCard
+            label="Base — current"
+            months={baseMonths}
+            zeroDate={baseZero}
+            accent={baseMonths > 6 ? 'emerald' : 'amber'}
+            sub={`Burn: ${pence(burnPence)}/mo`}
+          />
+          <ScenarioCard
+            label={raisePence > 0 ? `Bull — burn -20% + round closes` : 'Bull — burn -20%'}
+            months={bullMonths}
+            zeroDate={bullZero}
+            accent="emerald"
+            sub={raisePence > 0
+              ? `Burn: ${pence(bullBurn)}/mo · +${pence(raisePence)} raised`
+              : `Burn: ${pence(bullBurn)}/mo`}
+          />
+        </div>
+      </div>
+
+      {/* 12-month cash flow table */}
+      <div>
+        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono mb-4">12-Month Cash Flow</h3>
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-800">
+                  <th className="text-left px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Month</th>
+                  <th className="text-right px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Opening Balance</th>
+                  <th className="text-right px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Burn</th>
+                  <th className="text-right px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Closing Balance</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {tableRows.map((row, idx) => {
+                  const exhausted = idx > 0 && tableRows[idx - 1].goesNegative;
+                  const isNegative = row.goesNegative;
+                  return (
+                    <tr
+                      key={row.month}
+                      className={`${
+                        isNegative
+                          ? 'bg-red-950/30'
+                          : exhausted
+                          ? 'opacity-30'
+                          : 'hover:bg-slate-800/40'
+                      } transition-colors`}
+                    >
+                      <td className={`px-5 py-3 text-sm font-mono ${exhausted ? 'text-slate-700' : 'text-slate-300'}`}>
+                        {row.label}
+                      </td>
+                      <td className={`px-4 py-3 text-right text-sm font-mono ${exhausted ? 'text-slate-700' : 'text-slate-400'}`}>
+                        {exhausted ? '—' : pence(row.opening)}
+                      </td>
+                      <td className={`px-4 py-3 text-right text-sm font-mono ${exhausted ? 'text-slate-700' : 'text-red-400/70'}`}>
+                        {exhausted ? '—' : `−${pence(row.burn)}`}
+                      </td>
+                      <td className={`px-5 py-3 text-right text-sm font-mono font-bold ${
+                        isNegative ? 'text-red-400' : exhausted ? 'text-slate-700' : 'text-white'
+                      }`}>
+                        {isNegative ? 'ZERO' : exhausted ? '—' : pence(row.closing)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* MRR offset — shown only if showMrr flag is set */}
+      {showMrr && (
+        <div className="bg-slate-900 border border-emerald-500/20 rounded-2xl p-5">
+          <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-400 mb-1">MRR Offset</p>
+          <p className="text-sm text-slate-300">
+            MRR offsets burn by <span className="text-emerald-400 font-bold">{pence(mrrPence)}/month</span>
+            {' '}&rarr; effective burn = <span className="text-white font-bold">{pence(Math.max(0, burnPence - mrrPence))}/month</span>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export function VentureClient({ initialData }: { initialData: VentureData }) {
@@ -1448,6 +1845,9 @@ export function VentureClient({ initialData }: { initialData: VentureData }) {
       )}
       {tab === 'updates' && (
         <UpdatesTab investors={investors} />
+      )}
+      {tab === 'runway' && (
+        <RunwayTab config={config} onConfigUpdate={setConfig} showToast={showToast} />
       )}
 
       {toast && <Toast message={toast.message} kind={toast.kind} />}
