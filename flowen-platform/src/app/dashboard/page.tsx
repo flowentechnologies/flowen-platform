@@ -1,7 +1,17 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { DashboardClient } from './DashboardClient';
+import { computeProgrammeState, weekForSessionCount, type ProgrammeState } from '@/lib/programme';
+
+function adminDb() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
 
 type Session = {
   id: string;
@@ -30,24 +40,46 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login');
 
-  const [sessionsRes, profileRes] = await Promise.all([
+  const admin = adminDb();
+  const weekStart = new Date(Date.now() - 7 * 86400_000).toISOString();
+
+  const [sessionsRes, profileRes, progRes, weekCountRes, hasPlanRes] = await Promise.all([
     supabase
       .from('practice_sessions')
-      .select(
-        'id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at'
-      )
+      .select('id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true }),
-    supabase
-      .from('profiles')
-      .select('display_name,tier')
-      .eq('id', user.id)
-      .single(),
+    supabase.from('profiles').select('display_name,tier').eq('id', user.id).single(),
+    admin.from('user_programme').select('*').eq('user_id', user.id).maybeSingle(),
+    admin.from('practice_sessions').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', weekStart),
+    admin.from('treatment_plans').select('id', { count: 'exact', head: true }).eq('patient_user_id', user.id).eq('active', true),
   ]);
 
   const sessions = (sessionsRes.data ?? []) as Session[];
   const profile = profileRes.data;
   const n = sessions.length;
+  const sessionsThisWeek = weekCountRes.count ?? 0;
+  const hasTreatmentPlan = (hasPlanRes.count ?? 0) > 0;
+
+  // Programme state — only shown when user has no clinician-assigned plan
+  let programmeState: ProgrammeState | null = null;
+  if (!hasTreatmentPlan) {
+    let prog = progRes.data;
+    if (!prog) {
+      const seedWeek = weekForSessionCount(n);
+      const { data: inserted } = await admin.from('user_programme').upsert({
+        user_id: user.id,
+        current_week: seedWeek,
+        week_started_at: new Date().toISOString(),
+        completed_weeks: Array.from({ length: seedWeek - 1 }, (_, i) => i + 1),
+        started_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' }).select().single();
+      prog = inserted;
+    }
+    if (prog) {
+      programmeState = computeProgrammeState(prog.current_week, prog.week_started_at, prog.completed_weeks, sessionsThisWeek);
+    }
+  }
 
   // Total practice time
   const totalMins = Math.round(
@@ -108,9 +140,7 @@ export default async function DashboardPage() {
 
   return (
     <DashboardClient
-      displayName={
-        profile?.display_name ?? user.email?.split('@')[0] ?? 'there'
-      }
+      displayName={profile?.display_name ?? user.email?.split('@')[0] ?? 'there'}
       tier={profile?.tier ?? null}
       sessionCount={n}
       totalMins={totalMins}
@@ -119,6 +149,7 @@ export default async function DashboardPage() {
       improvementPct={improvementPct}
       sessionsByDay={sessionsByDay}
       recentBpms={recentBpms}
+      programmeState={programmeState}
       recentSessions={recentSessions.map((s) => ({
         id: s.id,
         created_at: s.created_at,

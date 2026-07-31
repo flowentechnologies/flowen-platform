@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { PracticeClient } from './PracticeClient';
 import type { UserTreatmentPlan } from '@/app/api/user/treatment-plan/route';
+import { computeProgrammeState, weekForSessionCount } from '@/lib/programme';
 
 function adminDb() {
   return createClient(
@@ -48,9 +49,11 @@ export default async function PracticePage() {
   ]);
 
   const totalSessions = countRes.count ?? 0;
+  const sessionsThisWeek = weekSessionsRes.count ?? 0;
 
   let treatmentPlan: UserTreatmentPlan | null = null;
   let recommendedStage = Math.min(5, Math.floor(totalSessions / 5) + 1);
+  let programmeBanner: { week: number; title: string; phase: string; stages: number[]; targetSessions: number; sessionsThisWeek: number; tip: string } | null = null;
 
   if (planRes.data) {
     const p = planRes.data;
@@ -69,13 +72,41 @@ export default async function PracticePage() {
       slp_email: null,
     };
     recommendedStage = p.prescribed_stages[0] ?? recommendedStage;
+  } else {
+    // Self-guided programme
+    const progRes = await admin.from('user_programme').select('*').eq('user_id', user.id).maybeSingle();
+    let prog = progRes.data;
+    if (!prog) {
+      const seedWeek = weekForSessionCount(totalSessions);
+      const { data: inserted } = await admin.from('user_programme').upsert({
+        user_id: user.id, current_week: seedWeek,
+        week_started_at: new Date().toISOString(),
+        completed_weeks: Array.from({ length: seedWeek - 1 }, (_, i) => i + 1),
+        started_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' }).select().single();
+      prog = inserted;
+    }
+    if (prog) {
+      const state = computeProgrammeState(prog.current_week, prog.week_started_at, prog.completed_weeks, sessionsThisWeek);
+      recommendedStage = state.week.stages[0] ?? recommendedStage;
+      programmeBanner = {
+        week: state.currentWeek,
+        title: state.week.title,
+        phase: state.week.phase,
+        stages: state.week.stages,
+        targetSessions: state.week.targetSessions,
+        sessionsThisWeek,
+        tip: state.week.tip,
+      };
+    }
   }
 
   return (
     <PracticeClient
       recommendedStage={recommendedStage}
       treatmentPlan={treatmentPlan}
-      sessionsThisWeek={weekSessionsRes.count ?? 0}
+      programmeBanner={programmeBanner}
+      sessionsThisWeek={sessionsThisWeek}
       recentSessions={(recentSessionsRes.data ?? []).map(s => ({
         id: s.id,
         duration_seconds: s.duration_seconds,
