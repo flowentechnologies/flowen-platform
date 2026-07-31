@@ -104,7 +104,7 @@ function Sparkline({ byDay }: { byDay: Record<string, number> }) {
 }
 
 type FeedItem =
-  | { kind: 'audit';  id: string; ts: string; severity: string; category: string; action: string }
+  | { kind: 'audit';  id: string; ts: string; severity: string; actor_email: string | null; action: string }
   | { kind: 'signup'; id: string; ts: string; email: string; source: string | null }
   | { kind: 'error';  id: string; ts: string; source: string; message: string };
 
@@ -117,7 +117,7 @@ const SEVERITY_COLOR: Record<string, string> = {
 
 function ActivityFeed({ data }: { data: CCData }) {
   const feed: FeedItem[] = [
-    ...data.recentAudit.map(a => ({ kind: 'audit'  as const, id: a.id,  ts: a.timestamp,  severity: a.severity, category: a.category, action: a.action })),
+    ...data.recentAudit.map(a => ({ kind: 'audit'  as const, id: a.id,  ts: a.created_at,  severity: a.severity, actor_email: a.actor_email, action: a.action })),
     ...data.recentWaitlist.map(w => ({ kind: 'signup' as const, id: w.id,  ts: w.created_at, email: w.email, source: w.source })),
     ...data.recentErrors.map(e => ({ kind: 'error'  as const, id: e.id,  ts: e.created_at, source: e.source, message: e.message })),
   ].sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime()).slice(0, 20);
@@ -138,7 +138,7 @@ function ActivityFeed({ data }: { data: CCData }) {
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-slate-300 truncate">{item.action}</p>
                 <p className={`text-[10px] font-mono mt-0.5 ${SEVERITY_COLOR[item.severity] ?? 'text-slate-600'}`}>
-                  {item.severity} · {item.category} · {timeAgo(item.ts)}
+                  {item.severity} · {item.actor_email ?? 'system'} · {timeAgo(item.ts)}
                 </p>
               </div>
             </>
@@ -200,7 +200,11 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
           openTickets, inProgressTickets, slaBreaches,
           pendingGdpr, overdueGdpr, activeWorkflows, failedRunsWeek,
           sessionsToday, tierCounts, foundingGoal, signupsByDay,
-          stripeOk, supabaseOk, emailConfigured, recentErrors } = data;
+          stripeOk, supabaseOk, emailConfigured, recentErrors,
+          grantsPipelineValuePence, grantsSubmitted, grantsDeadlineSoon,
+          runwayMonths, runwayZeroDate,
+          roadmapInProgress, nextCriticalMilestone,
+          nhsReadinessScore, icbPipelineCount } = data;
 
   const onboardedPct = pct(onboarded, totalUsers);
   const foundingPct  = Math.min(100, pct(foundingCount, foundingGoal));
@@ -307,6 +311,28 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
         </div>
       </div>
 
+      {/* Fundraising KPIs */}
+      <div>
+        <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-3">Fundraising</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCard label="Grants Pipeline" value={gbp(grantsPipelineValuePence)} sub={`${grantsSubmitted} submitted`} color="text-emerald-400" href="/admin/grants" />
+          <KpiCard label="Deadline Soon" value={grantsDeadlineSoon.toString()} sub="within 30 days" color={grantsDeadlineSoon > 0 ? 'text-amber-400' : 'text-white'} href="/admin/grants" alert={grantsDeadlineSoon > 0} />
+          <KpiCard label="Runway" value={runwayMonths !== null ? `${runwayMonths}mo` : '—'} sub={runwayZeroDate ? `zero ${runwayZeroDate}` : 'not configured'} color={runwayMonths !== null && runwayMonths < 6 ? 'text-red-400' : runwayMonths !== null && runwayMonths < 12 ? 'text-amber-400' : 'text-emerald-400'} href="/admin/venture" alert={runwayMonths !== null && runwayMonths < 6} />
+          <KpiCard label="ICB Pipeline" value={icbPipelineCount.toString()} sub="engaged → contract" color="text-sky-400" href="/admin/nhs" />
+        </div>
+      </div>
+
+      {/* NHS & Compliance KPIs */}
+      <div>
+        <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-3">NHS & Compliance</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCard label="NHS Readiness" value={`${nhsReadinessScore}%`} sub="DCB0129 · DTAC · DSPT" color={nhsReadinessScore >= 80 ? 'text-emerald-400' : nhsReadinessScore >= 50 ? 'text-amber-400' : 'text-red-400'} href="/admin/compliance" />
+          <KpiCard label="Roadmap In Progress" value={roadmapInProgress.toString()} sub={nextCriticalMilestone ? `next: ${nextCriticalMilestone.title.slice(0, 22)}` : 'no critical items'} color="text-indigo-400" href="/admin/roadmap" />
+          <KpiCard label="Next Critical" value={nextCriticalMilestone?.target_date ?? '—'} sub={nextCriticalMilestone?.title.slice(0, 28) ?? 'no critical milestone'} color="text-purple-400" href="/admin/roadmap" />
+          <KpiCard label="Evidence Pack" value="→" sub="clinical & commercial docs" color="text-slate-400" href="/admin/evidence" />
+        </div>
+      </div>
+
       {/* Signups sparkline + OKRs */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -390,8 +416,11 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
               {[
                 { label: 'Support Queue',      href: '/admin/tickets',                badge: openTickets > 0 ? `${openTickets} open` : null,    badgeColor: 'bg-amber-500/10 text-amber-400' },
                 { label: 'GDPR Requests',      href: '/admin/tickets/gdpr-requests',  badge: pendingGdpr > 0 ? `${pendingGdpr} pending` : null, badgeColor: 'bg-red-500/10 text-red-400' },
+                { label: 'Grants',             href: '/admin/grants',                 badge: grantsDeadlineSoon > 0 ? `${grantsDeadlineSoon} due soon` : null, badgeColor: 'bg-amber-500/10 text-amber-400' },
+                { label: 'Roadmap',            href: '/admin/roadmap',                badge: roadmapInProgress > 0 ? `${roadmapInProgress} active` : null, badgeColor: 'bg-indigo-500/10 text-indigo-400' },
+                { label: 'Evidence Pack',      href: '/admin/evidence',               badge: null,                                               badgeColor: '' },
+                { label: 'Notifications',      href: '/admin/notifications',          badge: null,                                               badgeColor: '' },
                 { label: 'Users',              href: '/admin/users',                  badge: null,                                               badgeColor: '' },
-                { label: 'Analytics',          href: '/admin/analytics',              badge: null,                                               badgeColor: '' },
                 { label: 'Billing',            href: '/admin/billing',                badge: null,                                               badgeColor: '' },
                 { label: 'Workflows',          href: '/admin/workflows',              badge: failedRunsWeek > 0 ? `${failedRunsWeek} failed` : null, badgeColor: 'bg-red-500/10 text-red-400' },
                 { label: 'System',             href: '/admin/system',                 badge: recentErrors.length > 0 ? `${recentErrors.length} errors` : null, badgeColor: 'bg-red-500/10 text-red-400' },
