@@ -1,68 +1,136 @@
-'use client';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { DashboardClient } from './DashboardClient';
 
-import React, { useState } from 'react';
+type Session = {
+  id: string;
+  duration_seconds: number;
+  total_blocks_detected: number;
+  total_repetitions_detected: number;
+  total_prolongations_detected: number;
+  created_at: string;
+};
 
-export default function EnterpriseDashboard() {
-  const [activeTab, setActiveTab] = useState<'user' | 'professional' | 'admin'>('user');
+export default async function DashboardPage() {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: () => {},
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/auth/login');
+
+  const [sessionsRes, profileRes] = await Promise.all([
+    supabase
+      .from('practice_sessions')
+      .select(
+        'id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at'
+      )
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('profiles')
+      .select('display_name,tier')
+      .eq('id', user.id)
+      .single(),
+  ]);
+
+  const sessions = (sessionsRes.data ?? []) as Session[];
+  const profile = profileRes.data;
+  const n = sessions.length;
+
+  // Total practice time
+  const totalMins = Math.round(
+    sessions.reduce((s, r) => s + r.duration_seconds, 0) / 60
+  );
+
+  // Streak: count consecutive days ending today or yesterday with ≥1 session
+  const practiceDays = new Set(sessions.map((s) => s.created_at.slice(0, 10)));
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    if (practiceDays.has(key)) streak++;
+    else if (i > 0) break;
+  }
+
+  // bpm for each session
+  const bpms = sessions.map((s) =>
+    s.duration_seconds > 0
+      ? s.total_blocks_detected / (s.duration_seconds / 60)
+      : 0
+  );
+
+  // Trajectory
+  let improvementPct: number | null = null;
+  let trend: 'improving' | 'plateauing' | 'regressing' | 'no_data' = 'no_data';
+  if (n >= 3) {
+    const baseline = bpms.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
+    const recent = bpms.slice(-3).reduce((a, b) => a + b, 0) / 3;
+    improvementPct =
+      baseline > 0
+        ? Math.round(((recent - baseline) / baseline) * 100)
+        : 0;
+    trend =
+      improvementPct < -10
+        ? 'improving'
+        : improvementPct > 10
+        ? 'regressing'
+        : 'plateauing';
+  }
+
+  // Sessions by day (last 30 days)
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400_000).toISOString();
+  const sessionsByDay: Record<string, number> = {};
+  for (const s of sessions.filter((s) => s.created_at >= thirtyDaysAgo)) {
+    const day = s.created_at.slice(0, 10);
+    sessionsByDay[day] = (sessionsByDay[day] ?? 0) + 1;
+  }
+
+  // Last 8 sessions for mini-chart (most recent last)
+  const recentBpms = bpms.slice(-8);
+
+  // Last 5 sessions for history list (most recent first)
+  const recentSessions = sessions.slice(-5).reverse();
 
   return (
-    <div className="min-h-screen bg-[#0C0E1A] text-[#F5F3EE] p-6 md:p-12 font-sans">
-      <div className="max-w-7xl mx-auto">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 mb-8 border-b border-[rgba(245,243,238,0.1)] gap-4">
-          <div>
-            <h1 className="font-serif text-3xl font-semibold">Enterprise Control Center</h1>
-            <p className="text-xs font-mono text-[#A6A3BE] mt-1">Flowen Compliance & Telemetry Engine // SECURE SESSION</p>
-          </div>
-          <div className="flex gap-2 font-mono text-xs">
-            <button onClick={() => setActiveTab('user')} className={`px-4 py-2 rounded-lg border ${activeTab === 'user' ? 'bg-[#2FBBA3] text-[#0C0E1A] border-[#2FBBA3]' : 'bg-[#14172E] text-[#A6A3BE] border-[rgba(245,243,238,0.1)]'}`}>User Portal</button>
-            <button onClick={() => setActiveTab('professional')} className={`px-4 py-2 rounded-lg border ${activeTab === 'professional' ? 'bg-[#2FBBA3] text-[#0C0E1A] border-[#2FBBA3]' : 'bg-[#14172E] text-[#A6A3BE] border-[rgba(245,243,238,0.1)]'}`}>SLP Professional</button>
-            <button onClick={() => setActiveTab('admin')} className={`px-4 py-2 rounded-lg border ${activeTab === 'admin' ? 'bg-[#2FBBA3] text-[#0C0E1A] border-[#2FBBA3]' : 'bg-[#14172E] text-[#A6A3BE] border-[rgba(245,243,238,0.1)]'}`}>Staff Admin</button>
-          </div>
-        </header>
-
-        {activeTab === 'user' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-[#14172E] border border-[rgba(245,243,238,0.1)] rounded-xl">
-              <span className="text-xs font-mono text-[#2FBBA3]">PRACTICE STAGE</span>
-              <h3 className="font-serif text-xl mt-2 mb-1">Stage 03: Sentences</h3>
-              <p className="text-xs text-[#A6A3BE]">Viseme breath sync active. Next session scheduled for today.</p>
-            </div>
-            <div className="p-6 bg-[#14172E] border border-[rgba(245,243,238,0.1)] rounded-xl">
-              <span className="text-xs font-mono text-[#E2703A]">SUBSCRIPTION STATUS</span>
-              <h3 className="font-serif text-xl mt-2 mb-1">Founding Member</h3>
-              <p className="text-xs text-[#A6A3BE]">£4.99/mo locked for 12 months.</p>
-            </div>
-            <div className="p-6 bg-[#14172E] border border-[rgba(245,243,238,0.1)] rounded-xl">
-              <span className="text-xs font-mono text-[#2FBBA3]">TELEMETRY LATENCY</span>
-              <h3 className="font-serif text-xl mt-2 mb-1">112 ms average</h3>
-              <p className="text-xs text-[#A6A3BE]">Sub-150ms real-time constraint met.</p>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'professional' && (
-          <div className="p-8 bg-[#14172E] border border-[rgba(47,187,163,0.35)] rounded-xl space-y-4">
-            <span className="text-xs font-mono text-[#2FBBA3]">SLP CLINICAL TELEMETRY PORTAL</span>
-            <h2 className="font-serif text-2xl">Assigned Patient Cohort</h2>
-            <p className="text-sm text-[#A6A3BE]">Review consented progress metrics, assign practice pathways, and leave audio feedback notes securely.</p>
-            <div className="p-4 bg-[#0C0E1A] rounded-lg font-mono text-xs text-[#2FBBA3]">
-              [Secure NHS ICB Telemetry Feed Connected]
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'admin' && (
-          <div className="p-8 bg-[#14172E] border border-[rgba(226,112,58,0.35)] rounded-xl space-y-4">
-            <span className="text-xs font-mono text-[#E2703A]">STAFF ADMINISTRATION &amp; WAITLIST CRM</span>
-            <h2 className="font-serif text-2xl">Global Waitlist Lead Capture Engine</h2>
-            <p className="text-sm text-[#A6A3BE]">All inbound leads automatically synchronize to Supabase and forward instantly to <strong>flowenspeech@outlook.com</strong>.</p>
-            <div className="p-4 bg-[#0C0E1A] rounded-lg font-mono text-xs text-[#A6A3BE] space-y-2">
-              <div>• Compliance: DTAC Aligned &amp; DCB0129 Clinical Safety Active</div>
-              <div>• Storage: Encrypted in transit &amp; at rest (UK GDPR / DSPT)</div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+    <DashboardClient
+      displayName={
+        profile?.display_name ?? user.email?.split('@')[0] ?? 'there'
+      }
+      tier={profile?.tier ?? null}
+      sessionCount={n}
+      totalMins={totalMins}
+      streak={streak}
+      trend={trend}
+      improvementPct={improvementPct}
+      sessionsByDay={sessionsByDay}
+      recentBpms={recentBpms}
+      recentSessions={recentSessions.map((s) => ({
+        id: s.id,
+        created_at: s.created_at,
+        duration_seconds: s.duration_seconds,
+        total_blocks_detected: s.total_blocks_detected,
+        bpm:
+          s.duration_seconds > 0
+            ? Math.round(
+                (s.total_blocks_detected / (s.duration_seconds / 60)) * 10
+              ) / 10
+            : 0,
+      }))}
+    />
   );
 }
