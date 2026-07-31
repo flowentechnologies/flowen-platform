@@ -40,6 +40,7 @@ const NAV: NavSection[] = [
     items: [
       { label: 'Venture', href: '/admin/venture' },
       { label: 'Grants', href: '/admin/grants' },
+      { label: 'Roadmap', href: '/admin/roadmap' },
       { label: 'Data Room', href: '/admin/data-room' },
       { label: 'Pitch Deck', href: '/admin/pitch-deck' },
       { label: 'IP Register', href: '/admin/ip' },
