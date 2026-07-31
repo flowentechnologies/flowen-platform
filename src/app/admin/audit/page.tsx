@@ -1,75 +1,78 @@
-'use client';
+import { createClient } from '@supabase/supabase-js';
+import { assertAdmin } from '@/lib/admin/guard';
+import { AuditClient } from './AuditClient';
+import type { AuditEntry } from '@/app/api/admin/audit/route';
 
-import React, { useState, useEffect } from 'react';
-
-interface AuditLog {
-  id: string;
-  timestamp: string;
-  severity: 'INFO' | 'WARNING' | 'CRITICAL' | 'SECURITY_ALERT';
-  category: string;
-  actorId: string;
-  actorRole: string;
-  action: string;
-  hash: string;
+function db() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
 }
 
-export default function SecurityAuditPage() {
-  const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [filterSeverity, setFilterSeverity] = useState<string>('ALL');
+export default async function AuditPage() {
+  await assertAdmin();
 
-  useEffect(() => {
-    fetch('/api/audit')
-      .then((res) => res.json())
-      .then((data) => { if (data.logs) setLogs(data.logs); })
-      .catch(() => {});
-  }, []);
+  const client = db();
 
-  const filteredLogs = logs.filter((l) => filterSeverity === 'ALL' ? true : l.severity === filterSeverity);
+  // Fetch first page directly from Supabase
+  const { data, error, count } = await client
+    .from('audit_log')
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(0, 49);
+
+  let entries: AuditEntry[] = [];
+  let total = 0;
+
+  if (!error && data) {
+    entries = data as AuditEntry[];
+    total = count ?? 0;
+  }
+
+  // Auto-seed if table is empty
+  if (total === 0) {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+      await fetch(`${baseUrl}/api/admin/audit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'seed' }),
+        cache: 'no-store',
+      });
+
+      // Re-fetch after seeding
+      const { data: seeded, count: seededCount } = await client
+        .from('audit_log')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(0, 49);
+
+      if (seeded) {
+        entries = seeded as AuditEntry[];
+        total = seededCount ?? 0;
+      }
+    } catch {
+      // Seeding failed; page still renders with empty state
+    }
+  }
 
   return (
     <div className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                SECURITY & COMPLIANCE FRAMEWORK
-              </span>
-              <span className="text-xs text-slate-400 font-mono">SOC 2 TYPE II • HIPAA • GDPR</span>
-            </div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">System Audit & Access Matrix</h1>
-          </div>
-
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-            HASH INTEGRITY VALIDATED
-          </span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+        <div>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Audit Log</h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Complete record of admin actions for regulatory and compliance review.
+          </p>
         </div>
+        <span className="self-start sm:self-auto px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-teal-500/10 text-teal-400 border border-teal-500/30">
+          GDPR &amp; NHS Compliant
+        </span>
+      </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <table className="w-full text-left font-mono text-xs">
-            <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase">
-              <tr>
-                <th className="p-4">Timestamp</th>
-                <th className="p-4">Severity</th>
-                <th className="p-4">Category</th>
-                <th className="p-4">Actor</th>
-                <th className="p-4">Action</th>
-                <th className="p-4">Hash Signature</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300">
-              {filteredLogs.map((log) => (
-                <tr key={log.id}>
-                  <td className="p-4 text-slate-400">{log.timestamp}</td>
-                  <td className="p-4 font-bold">{log.severity}</td>
-                  <td className="p-4">{log.category}</td>
-                  <td className="p-4">{log.actorId}</td>
-                  <td className="p-4 font-bold">{log.action}</td>
-                  <td className="p-4 text-emerald-400 text-[10px] truncate max-w-[180px]">{log.hash}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <AuditClient initialEntries={entries} total={total} />
     </div>
   );
 }
