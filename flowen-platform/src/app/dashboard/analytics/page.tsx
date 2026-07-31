@@ -79,13 +79,25 @@ export default async function AnalyticsPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
       {/* Heading */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Session history</h1>
-        <p className="text-slate-400 text-sm mt-1">
-          {n === 0
-            ? 'No sessions recorded yet.'
-            : `${n} session${n !== 1 ? 's' : ''} total`}
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Session history</h1>
+          <p className="text-slate-400 text-sm mt-1">
+            {n === 0
+              ? 'No sessions recorded yet.'
+              : `${n} session${n !== 1 ? 's' : ''} total`}
+          </p>
+        </div>
+        {n > 0 && (
+          <a
+            href="/api/reports/my-progress"
+            download
+            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a.75.75 0 01.75.75v7.44l2.47-2.47a.75.75 0 111.06 1.06l-3.75 3.75a.75.75 0 01-1.06 0L5.72 9.78a.75.75 0 111.06-1.06l2.47 2.47V3.75A.75.75 0 0110 3zm-6.25 13.5a.75.75 0 000 1.5h12.5a.75.75 0 000-1.5H3.75z" clipRule="evenodd"/></svg>
+            Download PDF report
+          </a>
+        )}
       </div>
 
       {n === 0 ? (

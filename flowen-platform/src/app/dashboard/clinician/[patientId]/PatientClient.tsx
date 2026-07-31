@@ -322,9 +322,19 @@ export function PatientClient({ patient }: { patient: PatientDetail }) {
               Assigned {new Date(patient.assigned_at).toLocaleDateString('en-GB', { dateStyle: 'medium' })}
             </p>
           </div>
-          <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold border ${trendCls}`}>
-            {trendLabel}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold border ${trendCls}`}>
+              {trendLabel}
+            </span>
+            <a
+              href={`/api/reports/patient/${patientId}`}
+              download
+              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a.75.75 0 01.75.75v7.44l2.47-2.47a.75.75 0 111.06 1.06l-3.75 3.75a.75.75 0 01-1.06 0L5.72 9.78a.75.75 0 111.06-1.06l2.47 2.47V3.75A.75.75 0 0110 3zm-6.25 13.5a.75.75 0 000 1.5h12.5a.75.75 0 000-1.5H3.75z" clipRule="evenodd"/></svg>
+              PDF Report
+            </a>
+          </div>
         </div>
       </div>
 
