@@ -117,6 +117,7 @@ export function DashboardNav({ user }: { user: UserProfile }) {
               {/* Menu items */}
               <div className="py-1.5">
                 {[
+                  { label: 'Billing',           href: '/dashboard/billing',  icon: '$' },
                   { label: 'Settings',         href: '/dashboard/settings', icon: '⚙️' },
                   { label: 'Support Centre',    href: '/dashboard/support',  icon: '💬' },
                 ].map(item => (
