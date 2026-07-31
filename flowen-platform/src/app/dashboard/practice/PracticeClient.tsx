@@ -2,8 +2,9 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { type VisemeBlends, ZERO_BLENDS, extractFormants } from '@/lib/viseme';
+import { ZERO_BLENDS, extractFormants } from '@/lib/viseme';
 import { VisemeDriver } from '@/components/avatar/VisemeDriver';
+import type { FaceAvatarHandle } from '@/components/avatar/FaceAvatar';
 
 const FaceAvatar = dynamic(() => import('@/components/avatar/FaceAvatar'), { ssr: false });
 
@@ -189,8 +190,8 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
   const [saveError, setSaveError] = useState<string | null>(null);
   const [micError, setMicError] = useState<string | null>(null);
 
-  // Avatar
-  const [avatarBlends, setAvatarBlends] = useState<VisemeBlends>(ZERO_BLENDS);
+  // Avatar — imperative handle avoids 60fps React re-renders
+  const avatarRef = useRef<FaceAvatarHandle | null>(null);
   const visemeDriverRef = useRef<VisemeDriver | null>(null);
 
   // Captions + playback
@@ -202,6 +203,7 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
   // Audio refs
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+  const formantAnalyserRef = useRef<AnalyserNode | null>(null); // 2048-bin, dedicated to formant extraction
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -253,6 +255,7 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
       if (mediaRecorderRef.current?.state !== 'inactive') {
         try { mediaRecorderRef.current?.stop(); } catch { /* noop */ }
       }
+      formantAnalyserRef.current = null;
     };
   }, []);
 
@@ -331,11 +334,20 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
     audioCtxRef.current = ctx;
 
     const source = ctx.createMediaStreamSource(stream);
+
+    // Low-res analyser: 256 FFT for waveform bars + RMS block detection
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 256;
     analyser.smoothingTimeConstant = 0.75;
     source.connect(analyser);
     analyserRef.current = analyser;
+
+    // High-res analyser: 2048 FFT for formant extraction (21 Hz/bin at 44100 Hz)
+    const formantAnalyser = ctx.createAnalyser();
+    formantAnalyser.fftSize = 2048;
+    formantAnalyser.smoothingTimeConstant = 0.5;
+    source.connect(formantAnalyser);
+    formantAnalyserRef.current = formantAnalyser;
 
     // Initialize viseme driver
     visemeDriverRef.current = new VisemeDriver();
@@ -350,9 +362,11 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
     timerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
 
     const buf = new Uint8Array(analyser.frequencyBinCount);
+    const formantBuf = new Uint8Array(formantAnalyser.frequencyBinCount);
 
     function tick() {
       analyser.getByteFrequencyData(buf);
+      formantAnalyser.getByteFrequencyData(formantBuf);
 
       const rms = Math.sqrt(buf.reduce((s, v) => s + v * v, 0) / buf.length);
       setAmplitude(Math.round(rms));
@@ -362,12 +376,12 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
       for (let i = 0; i < 32; i++) bars.push(buf[i * step]);
       setFreqData(bars);
 
-      // Formant analysis → viseme driver
+      // Formant analysis → viseme driver → avatar (bypasses React state entirely)
       if (visemeDriverRef.current && ctx.sampleRate) {
-        const { f1, f2 } = extractFormants(buf, ctx.sampleRate);
+        const { f1, f2 } = extractFormants(formantBuf, ctx.sampleRate);
         visemeDriverRef.current.updateFormants(f1, f2);
         visemeDriverRef.current.tick(Date.now());
-        setAvatarBlends(visemeDriverRef.current.getBlends());
+        avatarRef.current?.updateBlends(visemeDriverRef.current.getBlends(), rms > 18);
       }
 
       const SPEECH_THRESH = 18;
@@ -714,11 +728,9 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
         {/* Step bar */}
         <StepBar current="recording" />
 
-        {/* 3D Avatar */}
-        <div className="flex justify-center">
-          <div className="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl shadow-black/40">
-            <FaceAvatar blends={avatarBlends} speaking={amplitude > 18} />
-          </div>
+        {/* 3D Avatar — updates via imperative ref, zero React re-renders */}
+        <div className="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl shadow-black/40">
+          <FaceAvatar ref={avatarRef} blends={ZERO_BLENDS} speaking={false} />
         </div>
 
         {/* Waveform card */}
