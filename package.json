@@ -14,6 +14,7 @@
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.110.8",
     "@types/pdfkit": "^0.17.6",
+    "@types/three": "^0.185.3",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "framer-motion": "^12.43.0",
@@ -26,6 +27,7 @@
     "react-dom": "^19.0.0",
     "resend": "^4.0.0",
     "stripe": "^22.4.0",
+    "three": "^0.185.1",
     "vercel": "^50.41.0",
     "ws": "^8.21.1"
   },

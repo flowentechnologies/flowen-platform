@@ -1,6 +1,11 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { type VisemeBlends, ZERO_BLENDS, extractFormants } from '@/lib/viseme';
+import { VisemeDriver } from '@/components/avatar/VisemeDriver';
+
+const FaceAvatar = dynamic(() => import('@/components/avatar/FaceAvatar'), { ssr: false });
 
 // ---------------------------------------------------------------------------
 // Stage definitions
@@ -184,6 +189,10 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
   const [saveError, setSaveError] = useState<string | null>(null);
   const [micError, setMicError] = useState<string | null>(null);
 
+  // Avatar
+  const [avatarBlends, setAvatarBlends] = useState<VisemeBlends>(ZERO_BLENDS);
+  const visemeDriverRef = useRef<VisemeDriver | null>(null);
+
   // Captions + playback
   const [finalTranscript, setFinalTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
@@ -301,6 +310,9 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
               const sep = prev && !prev.endsWith(' ') ? ' ' : '';
               return prev + sep + t.trim();
             });
+            if (visemeDriverRef.current) {
+              visemeDriverRef.current.pushWords(t.trim());
+            }
           } else {
             interim += t;
           }
@@ -325,6 +337,9 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
     source.connect(analyser);
     analyserRef.current = analyser;
 
+    // Initialize viseme driver
+    visemeDriverRef.current = new VisemeDriver();
+
     // Reset block detection
     blocksRef.current = 0;
     isSpeakingRef.current = false;
@@ -346,6 +361,14 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
       const bars: number[] = [];
       for (let i = 0; i < 32; i++) bars.push(buf[i * step]);
       setFreqData(bars);
+
+      // Formant analysis → viseme driver
+      if (visemeDriverRef.current && ctx.sampleRate) {
+        const { f1, f2 } = extractFormants(buf, ctx.sampleRate);
+        visemeDriverRef.current.updateFormants(f1, f2);
+        visemeDriverRef.current.tick(Date.now());
+        setAvatarBlends(visemeDriverRef.current.getBlends());
+      }
 
       const SPEECH_THRESH = 18;
       const BLOCK_SILENCE_MS = 280;
@@ -383,6 +406,8 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
     }
     try { recognitionRef.current?.stop(); } catch { /* noop */ }
     setInterimTranscript('');
+
+    visemeDriverRef.current?.reset();
 
     setScreen('summary');
   }, []);
@@ -688,6 +713,13 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
         {/* Step bar */}
         <StepBar current="recording" />
+
+        {/* 3D Avatar */}
+        <div className="flex justify-center">
+          <div className="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl shadow-black/40">
+            <FaceAvatar blends={avatarBlends} speaking={amplitude > 18} />
+          </div>
+        </div>
 
         {/* Waveform card */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
