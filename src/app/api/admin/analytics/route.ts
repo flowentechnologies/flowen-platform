@@ -172,9 +172,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     : newSignups > 0 ? 100 : 0;
 
   const newSessions  = n;
-  const prevSessions = sessionsAllRes.count ?? 0; // re-use prev count query
-  const sessionGrowthPct = (sessionsAllRes.count ?? 0) > 0
-    ? Math.round(((newSessions - (sessionsAllRes.count ?? 0)) / (sessionsAllRes.count ?? 0)) * 100)
+  const prevSessions = sessionsPrevRes.count ?? 0;
+  const sessionGrowthPct = prevSessions > 0
+    ? Math.round(((newSessions - prevSessions) / prevSessions) * 100)
     : newSessions > 0 ? 100 : 0;
 
   const data: AnalyticsData = {
@@ -192,7 +192,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     practicedUsers, avgSessionsPerUser,
     signupsByDay, sessionsByDay, tierCounts,
     newSignups, prevSignups, signupGrowthPct,
-    newSessions, prevSessions: sessionsAllRes.count ?? 0, sessionGrowthPct,
+    newSessions, prevSessions, sessionGrowthPct,
   };
 
   return NextResponse.json(data);

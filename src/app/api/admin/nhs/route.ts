@@ -53,6 +53,27 @@ export interface NHSData {
   blockPledges: BlockPledge[];
 }
 
+// ── Column allowlists ──────────────────────────────────────────────────────────
+
+const ICB_COLUMNS = new Set([
+  'icb_name', 'region', 'stage', 'contact_name', 'contact_email',
+  'contact_role', 'last_contact_at', 'next_action', 'patient_population', 'notes',
+]);
+
+const SLP_COLUMNS = new Set([
+  'name', 'email', 'organisation', 'role', 'region',
+  'signup_date', 'activated', 'patient_referrals', 'notes',
+]);
+
+const PLEDGE_COLUMNS = new Set([
+  'icb_name', 'contact_name', 'patients_covered', 'contract_value_pence',
+  'status', 'expected_start_date', 'actual_start_date', 'notes',
+]);
+
+function pick(obj: Record<string, unknown>, allowed: Set<string>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(obj).filter(([k]) => allowed.has(k)));
+}
+
 // ── DB client ──────────────────────────────────────────────────────────────────
 
 function db() {
@@ -118,8 +139,9 @@ export async function POST(req: Request) {
   }
 
   if (action === 'update_icb') {
-    const { id, action: _a, ...fields } = body;
+    const { id, action: _a, ...rest } = body;
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const fields = pick(rest, ICB_COLUMNS);
     const { data, error } = await client
       .from('nhs_icb_contacts')
       .update(fields)
@@ -161,8 +183,9 @@ export async function POST(req: Request) {
   }
 
   if (action === 'update_slp') {
-    const { id, action: _a, ...fields } = body;
+    const { id, action: _a, ...rest } = body;
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const fields = pick(rest, SLP_COLUMNS);
     const { data, error } = await client
       .from('nhs_slp_signups')
       .update(fields)
@@ -202,8 +225,9 @@ export async function POST(req: Request) {
   }
 
   if (action === 'update_pledge') {
-    const { id, action: _a, ...fields } = body;
+    const { id, action: _a, ...rest } = body;
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const fields = pick(rest, PLEDGE_COLUMNS);
     const { data, error } = await client
       .from('nhs_block_pledges')
       .update(fields)
