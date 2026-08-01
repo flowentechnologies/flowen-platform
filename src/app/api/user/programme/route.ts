@@ -28,16 +28,12 @@ export async function GET(): Promise<NextResponse> {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const admin = db();
-  const weekStart = new Date(Date.now() - 7 * 86400_000).toISOString();
-
-  const [progRes, countRes, weekRes] = await Promise.all([
+  const [progRes, countRes] = await Promise.all([
     admin.from('user_programme').select('*').eq('user_id', user.id).maybeSingle(),
     admin.from('practice_sessions').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-    admin.from('practice_sessions').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', weekStart),
   ]);
 
-  const totalSessions   = countRes.count ?? 0;
-  const sessionsThisWeek = weekRes.count ?? 0;
+  const totalSessions = countRes.count ?? 0;
 
   // Auto-create programme row if missing, seeding week from session count
   let prog = progRes.data;
@@ -55,11 +51,19 @@ export async function GET(): Promise<NextResponse> {
 
   if (!prog) return NextResponse.json({ error: 'Failed to load programme' }, { status: 500 });
 
+  // Count sessions since this week started — not a rolling window — so that
+  // advancement resets the counter rather than carrying over old sessions.
+  const { count: weekCount } = await admin
+    .from('practice_sessions')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .gte('created_at', prog.week_started_at);
+
   const state = computeProgrammeState(
     prog.current_week,
     prog.week_started_at,
     prog.completed_weeks,
-    sessionsThisWeek,
+    weekCount ?? 0,
   );
 
   return NextResponse.json(state);
@@ -85,9 +89,8 @@ export async function POST(req: Request): Promise<NextResponse> {
       completed_weeks: completed,
     }).eq('user_id', user.id).select().single();
 
-    const weekStart = new Date(Date.now() - 7 * 86400_000).toISOString();
-    const { count } = await admin.from('practice_sessions').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', weekStart);
-    const state = computeProgrammeState(data.current_week, data.week_started_at, data.completed_weeks, count ?? 0);
+    // New week just started — sessions count is 0 by definition.
+    const state = computeProgrammeState(data.current_week, data.week_started_at, data.completed_weeks, 0);
     return NextResponse.json(state);
   }
 

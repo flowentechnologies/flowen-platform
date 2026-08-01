@@ -64,7 +64,6 @@ export default async function DashboardPage() {
   const sessions = (sessionsRes.data ?? []) as Session[];
   const profile = profileRes.data;
   const n = sessions.length;
-  const sessionsThisWeek = weekCountRes.count ?? 0;
   const hasTreatmentPlan = (hasPlanRes.count ?? 0) > 0;
 
   // Programme state — only shown when user has no clinician-assigned plan
@@ -83,6 +82,9 @@ export default async function DashboardPage() {
       prog = inserted;
     }
     if (prog) {
+      // Count sessions since this programme week started (not a rolling 7-day window)
+      // so that manual or auto-advancement resets the counter correctly.
+      const sessionsThisWeek = sessions.filter(s => s.created_at >= prog!.week_started_at).length;
       programmeState = computeProgrammeState(prog.current_week, prog.week_started_at, prog.completed_weeks, sessionsThisWeek);
     }
   }
