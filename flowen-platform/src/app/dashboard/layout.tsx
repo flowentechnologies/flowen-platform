@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { DashboardNav, MobileBottomNav, type UserProfile } from '@/components/dashboard/DashboardNav';
+
+export const metadata: Metadata = {
+  title: 'Dashboard | Flowen',
+  robots: { index: false, follow: false },
+};
 
 async function getUserProfile(): Promise<UserProfile | null> {
   const cookieStore = await cookies();

@@ -1,10 +1,14 @@
 import MarketingNavbar from '@/components/MarketingNavbar';
 import MarketingFooter from '@/components/MarketingFooter';
+import { JsonLd } from '@/components/JsonLd';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'FAQ — Flowen Speech Platform',
   description: 'Answers to common questions about Flowen, how the biofeedback engine works, pricing, NHS funding, and clinical governance.',
+  alternates: {
+    canonical: '/faq',
+  },
 };
 
 const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
@@ -99,8 +103,24 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
 ];
 
 export default function FAQPage() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': FAQS.flatMap(group =>
+      group.items.map(item => ({
+        '@type': 'Question',
+        'name': item.q,
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': item.a,
+        },
+      }))
+    ),
+  };
+
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
+      <JsonLd data={faqSchema} />
       <MarketingNavbar />
 
       <main className="flex-1 max-w-4xl mx-auto px-6 py-16">
