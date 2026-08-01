@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       client.from('profiles').select('id', { count: 'exact', head: true }),
       // sessions last 30 days
       client
-        .from('sessions')
+        .from('practice_sessions')
         .select('id', { count: 'exact', head: true })
         .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
       // latest NHS ICB stage (most progressed)

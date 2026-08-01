@@ -46,6 +46,23 @@ export interface VentureData {
   };
 }
 
+// ── Column allowlists ──────────────────────────────────────────────────────────
+
+const INVESTOR_COLUMNS = new Set([
+  'name', 'firm', 'email', 'stage', 'last_contact_at',
+  'next_action', 'amount_pence', 'notes',
+]);
+
+const VENTURE_CONFIG_COLUMNS = new Set([
+  'round_type', 'target_raise_pence', 'committed_pence', 'valuation_cap_pence',
+  'instrument', 'seis_advance_assurance', 'seis_limit_remaining_pence',
+  'eis_eligible', 'notes', 'monthly_burn_pence', 'cash_in_bank_pence',
+]);
+
+function pick(obj: Record<string, unknown>, allowed: Set<string>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(obj).filter(([k]) => allowed.has(k)));
+}
+
 // ── DB client ──────────────────────────────────────────────────────────────────
 
 function db() {
@@ -114,8 +131,9 @@ export async function POST(req: Request) {
   // ── update_investor ───────────────────────────────────────────────────────
 
   if (action === 'update_investor') {
-    const { id, action: _a, ...fields } = body;
+    const { id, action: _a, ...rest } = body;
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const fields = pick(rest, INVESTOR_COLUMNS);
     const { data, error } = await client
       .from('investors')
       .update(fields)
@@ -141,7 +159,8 @@ export async function POST(req: Request) {
   // ── update_config ─────────────────────────────────────────────────────────
 
   if (action === 'update_config') {
-    const { action: _a, ...fields } = body;
+    const { action: _a, ...rest } = body;
+    const fields = pick(rest, VENTURE_CONFIG_COLUMNS);
     const payload = { id: 1, updated_at: new Date().toISOString(), ...fields };
     const { data, error } = await client
       .from('venture_config')

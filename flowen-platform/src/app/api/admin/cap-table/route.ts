@@ -38,6 +38,20 @@ export interface CapTableEntry {
   created_at: string;
 }
 
+// ── Column allowlist ──────────────────────────────────────────────────────────
+
+const CAP_TABLE_COLUMNS = new Set([
+  'holder_name', 'holder_type', 'instrument', 'shares', 'share_class',
+  'price_per_share_pence', 'amount_pence', 'valuation_cap_pence',
+  'discount_pct', 'interest_rate_pct', 'vesting_start', 'vesting_months',
+  'cliff_months', 'seis_eligible', 'eis_eligible', 'certificate_ref',
+  'issued_at', 'notes',
+]);
+
+function pick(obj: Record<string, unknown>, allowed: Set<string>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(obj).filter(([k]) => allowed.has(k)));
+}
+
 // ── DB client ─────────────────────────────────────────────────────────────────
 
 function db() {
@@ -168,7 +182,8 @@ export async function POST(req: NextRequest) {
 
   // ── add ──────────────────────────────────────────────────────────────────────
   if (action === 'add') {
-    const { action: _a, ...fields } = body;
+    const { action: _a, ...rest } = body;
+    const fields = pick(rest, CAP_TABLE_COLUMNS);
     const { data, error } = await supabase
       .from('cap_table_entries')
       .insert(fields)
@@ -181,8 +196,9 @@ export async function POST(req: NextRequest) {
 
   // ── update ───────────────────────────────────────────────────────────────────
   if (action === 'update') {
-    const { action: _a, id, ...fields } = body;
+    const { action: _a, id, ...rest } = body;
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const fields = pick(rest, CAP_TABLE_COLUMNS);
     const { data, error } = await supabase
       .from('cap_table_entries')
       .update(fields)
