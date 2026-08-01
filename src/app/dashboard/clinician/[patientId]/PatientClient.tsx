@@ -436,7 +436,7 @@ function MiniChat({ patientId, myId }: { patientId: string; myId: string | null 
   );
 }
 
-export function PatientClient({ patient }: { patient: PatientDetail }) {
+export function PatientClient({ patient, clinicianId }: { patient: PatientDetail; clinicianId: string }) {
   const patientId = patient.id;
   const { totalMins, trend, recentBpm, improvementPct } = computeStats(patient.sessions);
   const { cls: trendCls, label: trendLabel } = TREND_STYLES[trend];
@@ -571,7 +571,7 @@ export function PatientClient({ patient }: { patient: PatientDetail }) {
           </button>
         </div>
         {showMessages && (
-          <MiniChat patientId={patientId} myId={null} />
+          <MiniChat patientId={patientId} myId={clinicianId} />
         )}
       </div>
     </div>

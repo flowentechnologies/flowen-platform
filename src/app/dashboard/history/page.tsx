@@ -5,7 +5,7 @@ import { HistoryClient } from './HistoryClient';
 
 export type PracticeSession = {
   id: string;
-  stage_id: number;
+  stage_id: number | null;
   duration_seconds: number;
   total_blocks_detected: number;
   total_repetitions_detected: number;

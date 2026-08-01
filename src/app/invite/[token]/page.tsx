@@ -73,16 +73,17 @@ export default async function InvitePage({ params }: PageProps) {
 
   // Already converted
   if (signup.converted_at !== null) {
+    const loginUrl = `/auth/login?email=${encodeURIComponent(signup.email)}&invited=1`;
     return (
       <ErrorPage
-        title="Already joined"
-        body="You have already accepted this invitation and created your account. Sign in below to continue."
+        title="Invitation already claimed"
+        body={`This invitation has already been accepted. Click below to sign in as ${signup.email}.`}
         cta={
           <Link
-            href="/auth/login"
+            href={loginUrl}
             className="inline-block bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm px-6 py-3 rounded-xl transition-colors"
           >
-            Sign in
+            Sign in →
           </Link>
         }
       />

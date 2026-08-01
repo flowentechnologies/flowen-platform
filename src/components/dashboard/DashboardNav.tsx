@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FlowenLogo } from '@/components/FlowenLogo';
@@ -138,7 +138,30 @@ export function MobileBottomNav({ user }: { user: UserProfile }) {
 export function DashboardNav({ user }: { user: UserProfile }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+
+  const fetchUnread = useCallback(async () => {
+    try {
+      const res = await fetch('/api/messages/unread');
+      if (res.ok) {
+        const data = (await res.json()) as { count: number };
+        setUnread(data.count);
+      }
+    } catch {
+      // silent
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUnread().catch(() => {});
+    const id = setInterval(() => fetchUnread().catch(() => {}), 30000);
+    return () => clearInterval(id);
+  }, [fetchUnread]);
+
+  useEffect(() => {
+    if (pathname === '/dashboard/messages') setUnread(0);
+  }, [pathname]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -161,13 +184,19 @@ export function DashboardNav({ user }: { user: UserProfile }) {
         <nav className="hidden sm:flex items-center gap-1">
           {NAV_LINKS.map(link => {
             const active = pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href));
+            const isMessages = link.href === '/dashboard/messages';
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'}`}
+                className={`relative px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'}`}
               >
                 {link.label}
+                {isMessages && unread > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-0.5 leading-none">
+                    {unread > 9 ? '9+' : unread}
+                  </span>
+                )}
               </Link>
             );
           })}

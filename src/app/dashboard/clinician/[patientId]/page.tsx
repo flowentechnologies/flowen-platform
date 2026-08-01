@@ -62,5 +62,5 @@ export default async function PatientPage({ params }: { params: Promise<{ patien
     })),
   };
 
-  return <PatientClient patient={detail} />;
+  return <PatientClient patient={detail} clinicianId={user.id} />;
 }
