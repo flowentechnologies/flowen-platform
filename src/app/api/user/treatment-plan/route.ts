@@ -41,11 +41,9 @@ export async function GET() {
 
   if (!plan) return NextResponse.json({ plan: null });
 
-  const { data: slpProfile } = await admin
-    .from('profiles')
-    .select('display_name, email')
-    .eq('id', plan.slp_user_id)
-    .single();
+  const { data: slpProfile } = plan.slp_user_id
+    ? await admin.from('profiles').select('display_name, email').eq('id', plan.slp_user_id).single()
+    : { data: null };
 
   const result: UserTreatmentPlan = {
     prescribed_stages: plan.prescribed_stages,
