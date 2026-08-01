@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { ZERO_BLENDS, extractFormants } from '@/lib/viseme';
 import { VisemeDriver } from '@/components/avatar/VisemeDriver';
 import type { FaceAvatarHandle } from '@/components/avatar/FaceAvatar';
+import { ExercisePanel } from './ExercisePanel';
 
 const FaceAvatar = dynamic(() => import('@/components/avatar/FaceAvatar'), { ssr: false });
 
@@ -750,6 +751,8 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
             </div>
           )}
         </div>
+
+        <ExercisePanel key={stageId} stageId={stageId} />
 
         <button
           onClick={startRecording}
