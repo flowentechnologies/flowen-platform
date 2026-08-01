@@ -12,8 +12,10 @@ function LoginForm() {
   const urlError = searchParams.get('error');
   const urlMessage = searchParams.get('message');
 
-  const [tab, setTab] = useState<'password' | 'magic'>('password');
-  const [email, setEmail] = useState('');
+  const prefillEmail = searchParams.get('email') ?? '';
+  const isInvited = searchParams.get('invited') === '1';
+  const [tab, setTab] = useState<'password' | 'magic'>(prefillEmail ? 'magic' : 'password');
+  const [email, setEmail] = useState(prefillEmail);
   const [magicSent, setMagicSent] = useState(false);
   const [magicError, setMagicError] = useState<string | null>(null);
   const [magicLoading, setMagicLoading] = useState(false);
@@ -45,6 +47,11 @@ function LoginForm() {
       <h1 className="text-xl font-bold text-white mb-1 text-center">Sign in</h1>
       <p className="text-slate-500 text-xs text-center mb-6">Access your Flowen account</p>
 
+      {isInvited && (
+        <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
+          Your invitation was accepted. We&apos;ve prefilled your email — click &ldquo;Send magic link&rdquo; to sign in instantly.
+        </div>
+      )}
       {urlError && (
         <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
           {decodeURIComponent(urlError)}
