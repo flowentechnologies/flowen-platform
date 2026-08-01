@@ -100,11 +100,31 @@ export default async function InvitePage({ params }: PageProps) {
     );
   }
 
-  // Valid — mark as converted
-  await db()
+  // Atomic claim: the WHERE .is('converted_at', null) guard ensures only one
+  // concurrent request can mark the invite as used (TOCTOU protection).
+  const { count: claimed } = await db()
     .from('waitlist_signups')
-    .update({ converted_at: new Date().toISOString() })
-    .eq('id', signup.id);
+    .update({ converted_at: new Date().toISOString() }, { count: 'exact' })
+    .eq('id', signup.id)
+    .is('converted_at', null);
+
+  if (!claimed) {
+    const loginUrl = `/auth/login?email=${encodeURIComponent(signup.email)}&invited=1`;
+    return (
+      <ErrorPage
+        title="Invitation already claimed"
+        body={`This invitation has already been accepted. Click below to sign in as ${signup.email}.`}
+        cta={
+          <Link
+            href={loginUrl}
+            className="inline-block bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm px-6 py-3 rounded-xl transition-colors"
+          >
+            Sign in →
+          </Link>
+        }
+      />
+    );
+  }
 
   const loginUrl = `/auth/login?email=${encodeURIComponent(signup.email)}&invited=1`;
 

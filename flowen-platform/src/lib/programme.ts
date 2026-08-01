@@ -122,14 +122,15 @@ export function evaluateAutoAdvance(
 
   const longSessions = recentSessions.filter(s => s.duration_seconds >= PROGRESSION_MIN_SESSION_S);
 
-  let avgBpm: number | undefined;
-  if (longSessions.length >= targetSessions) {
-    avgBpm = longSessions.reduce(
-      (sum, s) => sum + (s.duration_seconds > 0 ? s.total_blocks_detected / (s.duration_seconds / 60) : 0),
-      0,
-    ) / longSessions.length;
-    if (avgBpm > PROGRESSION_BPM_THRESHOLD) return { advanced: false, avgBpm };
-  }
+  // Require enough long-enough sessions to evaluate quality — short sessions
+  // don't give a reliable BPM signal and shouldn't count toward advancement.
+  if (longSessions.length < targetSessions) return { advanced: false };
+
+  const avgBpm = longSessions.reduce(
+    (sum, s) => sum + (s.duration_seconds > 0 ? s.total_blocks_detected / (s.duration_seconds / 60) : 0),
+    0,
+  ) / longSessions.length;
+  if (avgBpm > PROGRESSION_BPM_THRESHOLD) return { advanced: false, avgBpm };
 
   const newWeek = currentWeek + 1;
   const nextWeek = PROGRAMME[newWeek - 1];
