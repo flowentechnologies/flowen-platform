@@ -93,3 +93,52 @@ export function weekForSessionCount(totalSessions: number): number {
   }
   return PROGRAMME.length;
 }
+
+export const PROGRESSION_BPM_THRESHOLD = 3.5;
+export const PROGRESSION_MIN_SESSION_S = 90;
+
+export interface QualifiedSession {
+  duration_seconds: number;
+  total_blocks_detected: number;
+}
+
+export interface AutoAdvanceResult {
+  advanced: boolean;
+  newWeek?: number;
+  weekTitle?: string;
+  weekPhase?: string;
+  nextStages?: number[];
+  avgBpm?: number;
+}
+
+export function evaluateAutoAdvance(
+  currentWeek: number,
+  sessionsThisWeek: number,
+  targetSessions: number,
+  recentSessions: QualifiedSession[],
+): AutoAdvanceResult {
+  if (currentWeek >= PROGRAMME.length) return { advanced: false };
+  if (sessionsThisWeek < targetSessions) return { advanced: false };
+
+  const longSessions = recentSessions.filter(s => s.duration_seconds >= PROGRESSION_MIN_SESSION_S);
+
+  let avgBpm: number | undefined;
+  if (longSessions.length >= targetSessions) {
+    avgBpm = longSessions.reduce(
+      (sum, s) => sum + (s.duration_seconds > 0 ? s.total_blocks_detected / (s.duration_seconds / 60) : 0),
+      0,
+    ) / longSessions.length;
+    if (avgBpm > PROGRESSION_BPM_THRESHOLD) return { advanced: false, avgBpm };
+  }
+
+  const newWeek = currentWeek + 1;
+  const nextWeek = PROGRAMME[newWeek - 1];
+  return {
+    advanced: true,
+    newWeek,
+    weekTitle: nextWeek.title,
+    weekPhase: nextWeek.phase,
+    nextStages: [...nextWeek.stages],
+    avgBpm,
+  };
+}
