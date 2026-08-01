@@ -267,7 +267,7 @@ export function HistoryClient({ sessions }: Props) {
                 {pageSlice.map((s) => {
                   const bpm = calcBpm(s.total_blocks_detected, s.duration_seconds);
                   const barWidth = bpmBarWidth(bpm);
-                  const stageName = STAGE_NAMES[s.stage_id] ?? `Stage ${s.stage_id}`;
+                  const stageName = s.stage_id ? (STAGE_NAMES[s.stage_id] ?? `Stage ${s.stage_id}`) : '—';
                   return (
                     <tr
                       key={s.id}
