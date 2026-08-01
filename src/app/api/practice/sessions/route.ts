@@ -23,6 +23,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
+  const { duration_seconds, total_blocks_detected, stage_id } = body;
+  if (
+    typeof duration_seconds !== 'number' || !Number.isFinite(duration_seconds) || duration_seconds <= 0 || duration_seconds > 7200 ||
+    typeof total_blocks_detected !== 'number' || !Number.isInteger(total_blocks_detected) || total_blocks_detected < 0 ||
+    (stage_id !== undefined && stage_id !== null && (!Number.isInteger(stage_id) || stage_id < 1))
+  ) {
+    return NextResponse.json({ error: 'Invalid session data' }, { status: 400 });
+  }
+
   const admin = db();
 
   const { data: inserted, error } = await admin.from('practice_sessions').insert({
