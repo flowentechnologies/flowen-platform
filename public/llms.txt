@@ -1,0 +1,45 @@
+# Flowen
+
+> Flowen is an evidence-based AI speech fluency platform for people who stutter. Real-time vocal coordination training, clinical supervision tools, and 3D visual biofeedback — accessible via web browser.
+
+## What Flowen does
+
+Flowen helps people who stutter develop fluent speech through evidence-based techniques including diaphragmatic breathing, easy onset, prolonged speech, light articulatory contacts, and pull-out techniques. Sessions are guided by an AI that tracks real-time acoustic features including fundamental frequency, RMS amplitude, and formant structure.
+
+## Who it is for
+
+- Adults and children who stutter (ages 12+)
+- Speech-language pathologists (SLPs) managing caseloads
+- NHS and public-funded speech therapy services
+- Organisations requiring workplace fluency support
+
+## Key capabilities
+
+- Sub-80ms real-time vocal analysis using Web Audio API
+- 3D avatar with 42-state ARKit-style viseme blend shapes driven by formant analysis
+- Live phoneme prediction and visual biofeedback
+- Session history, analytics, and progress tracking
+- SLP messaging and patient management
+- Micro-practice exercises (3 minutes)
+- PWA-installable for offline-first mobile use
+- GDPR-compliant, UK-hosted
+
+## Pricing
+
+- Founding Member: early-access tier for individuals
+- Standard: general access
+- Public Funds: NHS and local authority funded
+- Freemium: limited free access via partner programmes
+
+## Contact
+
+- Website: https://flowen.digital
+- Support: support@flowen.digital
+- Clinical enquiries: clinical@flowen.digital
+
+## Technical
+
+- Built with Next.js 16, React, Three.js, Supabase, Stripe
+- Deployed on Vercel (EU-West region)
+- WCAG 2.1 AA accessible
+- GDPR and UK GDPR compliant

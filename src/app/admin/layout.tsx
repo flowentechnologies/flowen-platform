@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { assertAdmin } from '@/lib/admin/guard';
 import AdminShell, { type AdminUser } from '@/components/admin/AdminShell';
+
+export const metadata: Metadata = {
+  title: 'Admin | Flowen',
+  robots: { index: false, follow: false },
+};
 
 async function getAdminUser(): Promise<AdminUser> {
   const cookieStore = await cookies();

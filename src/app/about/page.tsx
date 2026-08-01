@@ -1,16 +1,32 @@
 import MarketingNavbar from '@/components/MarketingNavbar';
 import MarketingFooter from '@/components/MarketingFooter';
+import { JsonLd } from '@/components/JsonLd';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'About Flowen — Neural Speech Coordination Platform',
   description: 'Flowen was built to give every person who stutters access to clinical-grade biofeedback — without waiting lists, geography, or cost being barriers.',
+  alternates: {
+    canonical: '/about',
+  },
 };
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'MedicalWebPage',
+        'name': 'About Flowen — AI Speech Therapy Platform',
+        'url': 'https://flowen.digital/about',
+        'description': 'Learn about Flowen\'s evidence-based approach to stuttering therapy.',
+        'medicalAudience': {
+          '@type': 'MedicalAudience',
+          'audienceType': 'People who stutter and speech-language pathologists',
+        },
+        'specialty': 'Speech-Language Pathology',
+      }} />
       <MarketingNavbar />
 
       <main className="flex-1">

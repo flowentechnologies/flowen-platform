@@ -1,9 +1,15 @@
+import type { Metadata } from 'next';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { DashboardClient } from './DashboardClient';
 import { computeProgrammeState, weekForSessionCount, type ProgrammeState } from '@/lib/programme';
+
+export const metadata: Metadata = {
+  title: 'Dashboard | Flowen',
+  robots: { index: false, follow: false },
+};
 
 function adminDb() {
   return createClient(
