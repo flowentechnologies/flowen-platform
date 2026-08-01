@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { logout } from '@/app/auth/actions';
@@ -31,6 +31,12 @@ export default function SettingsPage() {
   const [erasing,      setErasing]      = useState(false);
   const [erasureError, setErasureError] = useState('');
 
+  const [remindersEnabled, setRemindersEnabled] = useState(true);
+  const [streakEnabled,    setStreakEnabled]    = useState(true);
+  const [notifSaving,      startNotifSave]      = useTransition();
+  const [notifMsg,         setNotifMsg]         = useState('');
+  const [notifLoaded,      setNotifLoaded]      = useState(false);
+
   React.useEffect(() => {
     if (nameLoaded) return;
     createClient().auth.getUser().then(async ({ data: { user } }) => {
@@ -41,6 +47,23 @@ export default function SettingsPage() {
     });
   }, [nameLoaded]);
 
+  useEffect(() => {
+    if (notifLoaded) return;
+    fetch('/api/user/notifications')
+      .then(res => {
+        if (!res.ok) throw new Error('not found');
+        return res.json();
+      })
+      .then((json: { practice_reminders?: boolean; streak_notifications?: boolean }) => {
+        setRemindersEnabled(json.practice_reminders ?? true);
+        setStreakEnabled(json.streak_notifications ?? true);
+      })
+      .catch(() => {
+        // 404 or error — use defaults (true, true)
+      })
+      .finally(() => setNotifLoaded(true));
+  }, [notifLoaded]);
+
   const handleSaveName = () => {
     setNameMsg('');
     startNameSave(async () => {
@@ -49,6 +72,22 @@ export default function SettingsPage() {
       if (!user) return;
       const { error } = await sb.from('profiles').update({ display_name: displayName || null }).eq('id', user.id);
       setNameMsg(error ? 'Failed to save.' : 'Saved.');
+    });
+  };
+
+  const handleSaveNotifications = () => {
+    setNotifMsg('');
+    startNotifSave(async () => {
+      try {
+        const res = await fetch('/api/user/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ practice_reminders: remindersEnabled, streak_notifications: streakEnabled }),
+        });
+        setNotifMsg(res.ok ? 'Saved.' : 'Failed to save.');
+      } catch {
+        setNotifMsg('Failed to save.');
+      }
     });
   };
 
@@ -123,6 +162,68 @@ export default function SettingsPage() {
         >
           Open Support Centre →
         </button>
+      </Section>
+
+      {/* Data Export */}
+      <Section title="Data Export" description="Download all your practice session data as JSON under UK GDPR Article 20 (Right to Data Portability).">
+        <a
+          href="/api/user/export"
+          download
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-white transition-colors"
+        >
+          <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+          Download my data
+        </a>
+      </Section>
+
+      {/* Email Notifications */}
+      <Section title="Email Notifications" description="Control which reminder emails Flowen sends you.">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-white">Practice reminders</p>
+              <p className="text-xs text-slate-500 mt-0.5">Sent when you haven&apos;t practiced in 3+ days</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRemindersEnabled(v => !v)}
+              aria-pressed={remindersEnabled}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${remindersEnabled ? 'bg-emerald-500' : 'bg-slate-700'}`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${remindersEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+              />
+            </button>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-white">Streak milestones</p>
+              <p className="text-xs text-slate-500 mt-0.5">Celebrate 3, 7, 14, and 30-day streaks</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setStreakEnabled(v => !v)}
+              aria-pressed={streakEnabled}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${streakEnabled ? 'bg-emerald-500' : 'bg-slate-700'}`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${streakEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+              />
+            </button>
+          </div>
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              onClick={handleSaveNotifications}
+              disabled={notifSaving || !notifLoaded}
+              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-slate-950 font-bold text-sm transition-colors"
+            >
+              {notifSaving ? 'Saving…' : 'Save'}
+            </button>
+            {notifMsg && <span className="text-xs text-slate-400">{notifMsg}</span>}
+          </div>
+        </div>
       </Section>
 
       {/* Sign out */}

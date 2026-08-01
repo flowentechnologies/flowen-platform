@@ -1,0 +1,336 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
+import type { PracticeSession } from './page';
+
+const STAGE_NAMES: Record<number, string> = {
+  1: 'Breathing',
+  2: 'Easy Onset',
+  3: 'Light Contacts',
+  4: 'Pausing',
+  5: 'Conversation',
+};
+
+const PAGE_SIZE = 20;
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}m ${s}s`;
+}
+
+function formatTotalTime(totalSeconds: number): string {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  if (h === 0) return `${m}m`;
+  return `${h}h ${m}m`;
+}
+
+function calcBpm(blocks: number, seconds: number): number {
+  if (seconds <= 0) return 0;
+  return blocks / (seconds / 60);
+}
+
+function blocksColor(blocks: number): string {
+  if (blocks === 0) return 'text-emerald-400';
+  if (blocks <= 4) return 'text-amber-400';
+  return 'text-red-400';
+}
+
+function bpmBarWidth(bpm: number): number {
+  const MAX_BPM = 10;
+  return Math.min(100, (bpm / MAX_BPM) * 100);
+}
+
+function bpmBarColor(bpm: number): string {
+  if (bpm < 2) return 'bg-emerald-500';
+  if (bpm <= 5) return 'bg-amber-500';
+  return 'bg-red-500';
+}
+
+interface Props {
+  sessions: PracticeSession[];
+}
+
+export function HistoryClient({ sessions }: Props) {
+  const [filter, setFilter] = useState('');
+  const [page, setPage] = useState(1);
+
+  const filtered = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return sessions;
+    return sessions.filter((s) =>
+      formatDate(s.created_at).toLowerCase().includes(q)
+    );
+  }, [sessions, filter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageSlice = filtered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE
+  );
+
+  // Summary stats over ALL sessions (not just filtered)
+  const totalSessions = sessions.length;
+  const totalSeconds = sessions.reduce((a, s) => a + s.duration_seconds, 0);
+
+  const qualifiedSessions = sessions.filter((s) => s.duration_seconds >= 30);
+  const bestSession =
+    qualifiedSessions.length > 0
+      ? qualifiedSessions.reduce((best, s) => {
+          const bpm = calcBpm(s.total_blocks_detected, s.duration_seconds);
+          const bestBpm = calcBpm(best.total_blocks_detected, best.duration_seconds);
+          return bpm < bestBpm ? s : best;
+        })
+      : null;
+  const bestBpm = bestSession
+    ? calcBpm(bestSession.total_blocks_detected, bestSession.duration_seconds)
+    : null;
+
+  const avgBpm =
+    sessions.length > 0
+      ? sessions.reduce((a, s) => a + calcBpm(s.total_blocks_detected, s.duration_seconds), 0) /
+        sessions.length
+      : null;
+
+  if (totalSessions === 0) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Session History</h1>
+          <p className="text-slate-400 text-sm mt-1">All your practice sessions in one place.</p>
+        </div>
+        <div className="mt-10 bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-4">
+          <p className="text-white font-semibold text-lg">No sessions yet.</p>
+          <p className="text-slate-400 text-sm">
+            Start your first practice session to see your history here.
+          </p>
+          <Link
+            href="/dashboard/practice"
+            className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold transition-colors"
+          >
+            Start practising
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+      {/* Heading */}
+      <div>
+        <h1 className="text-2xl font-bold text-white">Session History</h1>
+        <p className="text-slate-400 text-sm mt-1">
+          {totalSessions} session{totalSessions !== 1 ? 's' : ''} recorded
+        </p>
+      </div>
+
+      {/* Summary row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {[
+          {
+            label: 'Total sessions',
+            value: String(totalSessions),
+            sub: 'lifetime',
+          },
+          {
+            label: 'Practice time',
+            value: formatTotalTime(totalSeconds),
+            sub: 'total',
+          },
+          {
+            label: 'Best session',
+            value: bestBpm !== null ? bestBpm.toFixed(1) : '—',
+            sub: 'lowest bpm (≥30s)',
+          },
+          {
+            label: 'Avg blocks / min',
+            value: avgBpm !== null ? avgBpm.toFixed(1) : '—',
+            sub: 'all time',
+          },
+        ].map((card) => (
+          <div
+            key={card.label}
+            className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-2"
+          >
+            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
+              {card.label}
+            </span>
+            <span className="text-3xl font-bold text-white leading-none">{card.value}</span>
+            <span className="text-slate-400 text-xs">{card.sub}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Search / filter */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-xs">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <input
+            type="text"
+            value={filter}
+            onChange={(e) => {
+              setFilter(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Filter by date (e.g. Jul)"
+            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 text-sm text-white placeholder-slate-600 outline-none transition-colors"
+          />
+        </div>
+        {filter && (
+          <span className="text-xs text-slate-500">
+            {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
+
+      {/* Table */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between gap-4 flex-wrap">
+          <h2 className="text-white font-semibold text-sm">All sessions</h2>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                className="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                Prev
+              </button>
+              <span className="text-xs text-slate-500 tabular-nums">
+                Page {safePage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                className="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="px-6 py-10 text-center text-slate-500 text-sm">
+            No sessions match &ldquo;{filter}&rdquo;
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left border-b border-slate-800/60">
+                  <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
+                    Stage
+                  </th>
+                  <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
+                    Duration
+                  </th>
+                  <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
+                    Blocks
+                  </th>
+                  <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
+                    Blocks / min
+                  </th>
+                  <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap min-w-[100px]">
+                    Intensity
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {pageSlice.map((s) => {
+                  const bpm = calcBpm(s.total_blocks_detected, s.duration_seconds);
+                  const barWidth = bpmBarWidth(bpm);
+                  const stageName = STAGE_NAMES[s.stage_id] ?? `Stage ${s.stage_id}`;
+                  return (
+                    <tr
+                      key={s.id}
+                      className="hover:bg-slate-800/40 transition-colors"
+                    >
+                      <td className="px-6 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
+                        {formatDate(s.created_at)}
+                      </td>
+                      <td className="px-6 py-3 text-slate-300 text-xs whitespace-nowrap">
+                        {stageName}
+                      </td>
+                      <td className="px-6 py-3 text-slate-300 text-xs whitespace-nowrap">
+                        {formatDuration(s.duration_seconds)}
+                      </td>
+                      <td className={`px-6 py-3 text-xs font-semibold tabular-nums ${blocksColor(s.total_blocks_detected)}`}>
+                        {s.total_blocks_detected}
+                      </td>
+                      <td className="px-6 py-3 text-xs font-semibold tabular-nums text-slate-300 whitespace-nowrap">
+                        {bpm.toFixed(1)}
+                      </td>
+                      <td className="px-6 py-3">
+                        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden min-w-[80px]">
+                          <div
+                            className={`h-full rounded-full transition-all ${bpmBarColor(bpm)}`}
+                            style={{ width: `${barWidth}%` }}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Bottom pagination */}
+        {totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-slate-800 flex items-center justify-between gap-4">
+            <span className="text-xs text-slate-600 tabular-nums">
+              Showing {(safePage - 1) * PAGE_SIZE + 1}–
+              {Math.min(safePage * PAGE_SIZE, filtered.length)} of {filtered.length}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                className="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                Prev
+              </button>
+              <span className="text-xs text-slate-500 tabular-nums">
+                Page {safePage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                className="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

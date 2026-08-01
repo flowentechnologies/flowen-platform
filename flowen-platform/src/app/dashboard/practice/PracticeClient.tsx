@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { ZERO_BLENDS, extractFormants } from '@/lib/viseme';
 import { VisemeDriver } from '@/components/avatar/VisemeDriver';
@@ -644,6 +645,13 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
             </div>
           </div>
         )}
+
+        {/* Micro-practice link */}
+        <div className="text-center">
+          <Link href="/dashboard/practice/micro" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+            Short on time? Try a quick 3-min exercise →
+          </Link>
+        </div>
 
         {/* CTA */}
         <button
