@@ -54,8 +54,8 @@ export default function SettingsPage() {
         if (!res.ok) throw new Error('not found');
         return res.json();
       })
-      .then((json: { practice_reminders?: boolean; streak_notifications?: boolean }) => {
-        setRemindersEnabled(json.practice_reminders ?? true);
+      .then((json: { email_reminders?: boolean; streak_notifications?: boolean }) => {
+        setRemindersEnabled(json.email_reminders ?? true);
         setStreakEnabled(json.streak_notifications ?? true);
       })
       .catch(() => {
@@ -82,7 +82,7 @@ export default function SettingsPage() {
         const res = await fetch('/api/user/notifications', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ practice_reminders: remindersEnabled, streak_notifications: streakEnabled }),
+          body: JSON.stringify({ email_reminders: remindersEnabled, streak_notifications: streakEnabled }),
         });
         setNotifMsg(res.ok ? 'Saved.' : 'Failed to save.');
       } catch {

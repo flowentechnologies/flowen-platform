@@ -1,19 +1,12 @@
-function Bone({ className }: { className: string }) {
-  return (
-    <div className={`animate-pulse rounded-lg bg-slate-800/70 ${className}`} />
-  );
-}
+import { Bone } from '@/components/dashboard/Bone';
 
 export default function DashboardLoading() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
-      {/* Header */}
       <div className="space-y-2">
         <Bone className="h-3 w-24" />
         <Bone className="h-7 w-48" />
       </div>
-
-      {/* KPI row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
@@ -23,8 +16,6 @@ export default function DashboardLoading() {
           </div>
         ))}
       </div>
-
-      {/* Chart area */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
         <Bone className="h-3 w-32" />
         <div className="flex items-end gap-1 h-28">
@@ -37,8 +28,6 @@ export default function DashboardLoading() {
           ))}
         </div>
       </div>
-
-      {/* Two column cards */}
       <div className="grid sm:grid-cols-2 gap-4">
         {Array.from({ length: 2 }).map((_, i) => (
           <div key={i} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">

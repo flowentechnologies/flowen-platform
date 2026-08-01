@@ -74,13 +74,13 @@ export async function GET(request: NextRequest) {
       .single(),
   ]);
 
-  // Mark unread messages sent to me as read
-  await admin
+  admin
     .from('slp_messages')
     .update({ read_at: new Date().toISOString() })
     .eq('to_user_id', user.id)
     .eq('from_user_id', them)
-    .is('read_at', null);
+    .is('read_at', null)
+    .then(() => {});
 
   const messages: Message[] = (messagesRes.data ?? []) as Message[];
   const otherUser: OtherUser = {

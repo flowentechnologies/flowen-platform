@@ -1,6 +1,4 @@
-function Bone({ className }: { className: string }) {
-  return <div className={`animate-pulse rounded-lg bg-slate-800/70 ${className}`} />;
-}
+import { Bone } from '@/components/dashboard/Bone';
 
 export default function ClinicianLoading() {
   return (

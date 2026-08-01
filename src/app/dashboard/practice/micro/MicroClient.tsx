@@ -151,28 +151,26 @@ export function MicroClient() {
   const [showDone, setShowDone] = useState(false);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const phaseElapsedRef = useRef(0);
-  const totalElapsedRef = useRef(0);
+  const doneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeExercise = EXERCISES.find(e => e.id === activeId) as Exercise | undefined;
 
-  // Clear interval on unmount
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (doneTimeoutRef.current) clearTimeout(doneTimeoutRef.current);
     };
   }, []);
 
   function openExercise(exercise: Exercise) {
     if (intervalRef.current) clearInterval(intervalRef.current);
+    if (doneTimeoutRef.current) clearTimeout(doneTimeoutRef.current);
     setActiveId(exercise.id);
     setSecondsLeft(exercise.duration);
     setPhaseIndex(0);
     setPhaseSecondsLeft(exercise.phases[0].duration);
     setRunning(false);
     setShowDone(false);
-    phaseElapsedRef.current = 0;
-    totalElapsedRef.current = 0;
   }
 
   function closeExercise() {
@@ -190,12 +188,9 @@ export function MicroClient() {
     let totalSecs = currentSecondsLeft;
 
     intervalRef.current = setInterval(() => {
-      // Decrement total
       totalSecs -= 1;
-      totalElapsedRef.current += 1;
 
       if (totalSecs <= 0) {
-        // Exercise complete
         clearInterval(intervalRef.current!);
         intervalRef.current = null;
         setSecondsLeft(0);
@@ -206,24 +201,18 @@ export function MicroClient() {
           next.add(exercise.id);
           return next;
         });
-        setTimeout(() => setShowDone(false), 2000);
+        doneTimeoutRef.current = setTimeout(() => setShowDone(false), 2000);
         return;
       }
 
       setSecondsLeft(totalSecs);
 
-      // Decrement phase
       pSecs -= 1;
-      phaseElapsedRef.current += 1;
-
       if (pSecs <= 0) {
-        // Advance phase (loop)
         pIdx = (pIdx + 1) % exercise.phases.length;
         pSecs = exercise.phases[pIdx].duration;
-        phaseElapsedRef.current = 0;
         setPhaseIndex(pIdx);
       }
-
       setPhaseSecondsLeft(pSecs);
     }, 1000);
   }
@@ -328,11 +317,7 @@ export function MicroClient() {
             onClick={handleStartPause}
             className="w-full rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20"
           >
-            {!running
-              ? secondsLeft < activeExercise.duration
-                ? 'Resume'
-                : 'Start'
-              : 'Pause'}
+            {running ? 'Pause' : secondsLeft < activeExercise.duration ? 'Resume' : 'Start'}
           </button>
         )}
 
@@ -366,7 +351,7 @@ export function MicroClient() {
           Quick Practice
         </span>
         <h1 className="text-2xl font-extrabold text-white tracking-tight">
-          Quick Practice
+          Choose an exercise
         </h1>
         <p className="text-sm text-slate-500 mt-1">3&ndash;5 minute daily exercises</p>
       </div>
