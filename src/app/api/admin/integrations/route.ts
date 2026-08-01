@@ -25,6 +25,23 @@ function generateApiKey(): { plaintext: string; prefix: string; hash: string } {
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 
+export async function GET(): Promise<NextResponse> {
+  const admin = await requireAdmin();
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { data, error } = await db()
+    .from('api_keys')
+    .select('id,name,key_prefix,scopes,expires_at,revoked,created_at')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    if (error.code === '42P01') return NextResponse.json({ keys: [] });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ keys: data ?? [] });
+}
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

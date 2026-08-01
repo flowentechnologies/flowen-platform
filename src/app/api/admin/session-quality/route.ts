@@ -96,10 +96,15 @@ export async function GET(): Promise<NextResponse> {
   const now = new Date();
   const cutoff30 = new Date(now.getTime() - 30 * 86400_000);
 
+  // Fetch up to 365 days of sessions to bound the query while keeping
+  // enough history for per-user baseline/trend calculations.
+  const cutoff365 = new Date(now.getTime() - 365 * 86400_000);
+
   const [sessionsRes, profilesRes] = await Promise.all([
     client
       .from('practice_sessions')
       .select('id,user_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at')
+      .gte('created_at', cutoff365.toISOString())
       .order('created_at', { ascending: true }),
     client
       .from('profiles')
