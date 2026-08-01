@@ -160,8 +160,10 @@ export function DashboardNav({ user }: { user: UserProfile }) {
   }, [fetchUnread]);
 
   useEffect(() => {
-    if (pathname === '/dashboard/messages') setUnread(0);
-  }, [pathname]);
+    if (pathname === '/dashboard/messages' || pathname.startsWith('/dashboard/clinician')) {
+      fetchUnread().catch(() => {});
+    }
+  }, [pathname, fetchUnread]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -183,6 +185,7 @@ export function DashboardNav({ user }: { user: UserProfile }) {
         {/* Nav links */}
         <nav className="hidden sm:flex items-center gap-1">
           {NAV_LINKS.map(link => {
+            if (link.href === '/dashboard/messages' && user.role === 'clinician') return null;
             const active = pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href));
             const isMessages = link.href === '/dashboard/messages';
             return (
@@ -203,9 +206,14 @@ export function DashboardNav({ user }: { user: UserProfile }) {
           {user.role === 'clinician' && (
             <Link
               href="/dashboard/clinician"
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${pathname.startsWith('/dashboard/clinician') ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'}`}
+              className={`relative px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${pathname.startsWith('/dashboard/clinician') ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'}`}
             >
               Clinician View
+              {unread > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-0.5 leading-none">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
             </Link>
           )}
           {user.isAdmin && (
