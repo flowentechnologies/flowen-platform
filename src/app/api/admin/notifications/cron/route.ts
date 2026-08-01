@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCronSecret } from '@/lib/cron-auth';
+import { verifyCronRequest } from '@/lib/cron-auth';
 import { runChecks } from '../route';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  const secret = req.headers.get('x-cron-secret');
-  if (!verifyCronSecret(secret)) {
+  if (!verifyCronRequest(req.headers)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
