@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { verifyCronSecret } from '@/lib/cron-auth';
+import { verifyCronRequest } from '@/lib/cron-auth';
 
 function db() {
   return createClient(
@@ -14,7 +14,7 @@ const NINETY_DAYS_MS  = 90  * 86_400_000;
 const THIRTY_DAYS_MS  = 30  * 86_400_000;
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  if (!verifyCronSecret(req.headers.get('x-cron-secret'))) {
+  if (!verifyCronRequest(req.headers)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -80,3 +80,5 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({ ok: true, results });
 }
+
+export { POST as GET };
