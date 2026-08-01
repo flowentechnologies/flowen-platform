@@ -1,11 +1,8 @@
-function Bone({ className }: { className: string }) {
-  return <div className={`animate-pulse rounded-lg bg-slate-800/70 ${className}`} />;
-}
+import { Bone } from '@/components/dashboard/Bone';
 
 export default function PracticeLoading() {
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
-      {/* Step bar */}
       <div className="flex items-center gap-2">
         {[0, 1, 2, 3].map(i => (
           <div key={i} className="flex items-center gap-2 flex-1 last:flex-none">
@@ -14,8 +11,6 @@ export default function PracticeLoading() {
           </div>
         ))}
       </div>
-
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Bone className="h-2.5 w-24" />
@@ -23,8 +18,6 @@ export default function PracticeLoading() {
         </div>
         <Bone className="h-6 w-20 rounded-full" />
       </div>
-
-      {/* Stage pills */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
         <Bone className="h-2.5 w-20" />
         <div className="flex gap-3 justify-center">
@@ -36,8 +29,6 @@ export default function PracticeLoading() {
           ))}
         </div>
       </div>
-
-      {/* Detail card */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
         <Bone className="h-2.5 w-28" />
         <Bone className="h-6 w-48" />
@@ -49,8 +40,6 @@ export default function PracticeLoading() {
           <Bone className="h-3 w-4/5" />
         </div>
       </div>
-
-      {/* CTA */}
       <Bone className="h-12 w-full rounded-xl" />
     </div>
   );

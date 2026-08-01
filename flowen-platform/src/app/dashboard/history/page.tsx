@@ -37,7 +37,8 @@ export default async function HistoryPage() {
       'id,stage_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at'
     )
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(500);
 
   const sessions = (rawSessions ?? []) as PracticeSession[];
 

@@ -24,9 +24,8 @@ function fmt(d: string) {
   return new Date(d).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
 }
 
-export function MessagesClient({ slpId, slpName }: { slpId: string; slpName: string }) {
+export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpName: string; myId: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [myId, setMyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
@@ -36,18 +35,11 @@ export function MessagesClient({ slpId, slpName }: { slpId: string; slpName: str
     const res = await fetch(`/api/messages?with=${slpId}`);
     if (!res.ok) return;
     const data = (await res.json()) as MessagesResponse;
-    setMessages(data.messages);
-    if (initial) {
-      // Determine our own user id from message data if possible
-      // We rely on to_user_id/from_user_id — we'll derive myId from context later
-      // but since we don't have a /api/me endpoint, set myId from any message sent by us
-      // The safest approach: find a message where to_user_id === slpId (we sent it)
-      const sent = data.messages.find(m => m.to_user_id === slpId);
-      const received = data.messages.find(m => m.from_user_id === slpId);
-      if (sent) setMyId(sent.from_user_id);
-      else if (received) setMyId(received.to_user_id);
-      setLoading(false);
-    }
+    setMessages(prev => {
+      if (!initial && prev.length === data.messages.length && prev.at(-1)?.id === data.messages.at(-1)?.id) return prev;
+      return data.messages;
+    });
+    if (initial) setLoading(false);
   }, [slpId]);
 
   // Initial load
@@ -80,11 +72,7 @@ export function MessagesClient({ slpId, slpName }: { slpId: string; slpName: str
       });
       if (res.ok) {
         const data = (await res.json()) as SendResponse;
-        setMessages(prev => {
-          // Set myId if not yet known
-          if (!myId) setMyId(data.message.from_user_id);
-          return [...prev, data.message];
-        });
+        setMessages(prev => [...prev, data.message]);
         setContent('');
       }
     } finally {
@@ -126,7 +114,7 @@ export function MessagesClient({ slpId, slpName }: { slpId: string; slpName: str
           </p>
         ) : (
           messages.map(msg => {
-            const isMe = myId ? msg.from_user_id === myId : msg.to_user_id === slpId;
+            const isMe = msg.from_user_id === myId;
             return (
               <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                 <div

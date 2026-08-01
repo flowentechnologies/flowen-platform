@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/dashboard', '/admin', '/auth', '/api', '/onboarding', '/telemetry', '/invite', '/api/'],
+      disallow: ['/dashboard', '/admin', '/auth', '/api', '/onboarding', '/telemetry', '/invite'],
     },
     sitemap: 'https://flowen.digital/sitemap.xml',
     host: 'https://flowen.digital',
