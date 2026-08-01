@@ -93,23 +93,56 @@ const PHASE_COLORS: Record<string, string> = {
 
 function ProgrammeCard({ state }: { state: ProgrammeState }) {
   const [advancing, setAdvancing] = useState(false);
+  const [confirm, setConfirm] = useState(false);
+  const [advanceError, setAdvanceError] = useState<string | null>(null);
   const [localState, setLocalState] = useState<ProgrammeState>(state);
   const s = localState;
   const phaseColor = PHASE_COLORS[s.week.phase] ?? 'text-slate-400 border-slate-600/30 bg-slate-700/20';
+  const isLastWeek = s.currentWeek >= 8;
 
-  const advance = async () => {
+  const handleAdvanceClick = () => {
+    if (!confirm) {
+      setConfirm(true);
+      // Auto-cancel confirmation after 4 seconds
+      setTimeout(() => setConfirm(false), 4000);
+      return;
+    }
+    setConfirm(false);
+    doAdvance();
+  };
+
+  const doAdvance = async () => {
     setAdvancing(true);
-    const res = await fetch('/api/user/programme', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'advance' }) });
-    const next = await res.json() as ProgrammeState;
-    setLocalState(next);
-    setAdvancing(false);
+    setAdvanceError(null);
+    try {
+      const res = await fetch('/api/user/programme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'advance' }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({})) as { error?: string };
+        setAdvanceError(json.error ?? 'Something went wrong. Try again.');
+        return;
+      }
+      const next = await res.json() as ProgrammeState;
+      setLocalState(next);
+    } catch {
+      setAdvanceError('Network error. Check your connection and try again.');
+    } finally {
+      setAdvancing(false);
+    }
   };
 
   if (s.isComplete) {
     return (
       <div className="bg-slate-900 border border-emerald-500/30 rounded-2xl p-6 space-y-3">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">🏆</span>
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/30 shrink-0">
+            <svg viewBox="0 0 20 20" className="w-5 h-5 text-emerald-400" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+            </svg>
+          </div>
           <div>
             <p className="text-white font-bold">8-Week Programme Complete</p>
             <p className="text-slate-400 text-xs mt-0.5">You've worked through every stage. Keep practising to maintain your gains.</p>
@@ -167,21 +200,43 @@ function ProgrammeCard({ state }: { state: ProgrammeState }) {
       </p>
 
       {/* Actions */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/dashboard/practice"
-          className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors"
-        >
-          Start session →
-        </Link>
-        {s.canAdvance && (
-          <button
-            onClick={advance}
-            disabled={advancing}
-            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-sm transition-colors disabled:opacity-50"
+      <div className="space-y-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Link
+            href="/dashboard/practice"
+            className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors"
           >
-            {advancing ? 'Moving…' : `Move to Week ${s.currentWeek + 1} →`}
-          </button>
+            Start session →
+          </Link>
+          {s.canAdvance && (
+            <button
+              onClick={handleAdvanceClick}
+              disabled={advancing}
+              className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                confirm
+                  ? 'bg-amber-500/10 border-amber-500/40 text-amber-300 hover:bg-amber-500/20'
+                  : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              {advancing
+                ? 'Advancing…'
+                : confirm
+                ? 'Confirm — click again'
+                : isLastWeek
+                ? 'Complete programme →'
+                : `Advance to week ${s.currentWeek + 1} →`}
+            </button>
+          )}
+        </div>
+        {s.canAdvance && !advancing && (
+          <p className="text-[10px] text-slate-600 font-mono">
+            {confirm
+              ? 'This will lock you into the next week. Sessions reset.'
+              : "You've met this week's target — advance when ready or keep practising."}
+          </p>
+        )}
+        {advanceError && (
+          <p className="text-xs text-red-400 font-mono">{advanceError}</p>
         )}
       </div>
     </div>
