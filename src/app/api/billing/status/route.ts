@@ -38,8 +38,8 @@ export async function GET() {
     // 2. Look up customers table
     const { data: customer } = await admin
       .from('customers')
-      .select('id, stripe_customer_id, email')
-      .eq('auth_user_id', user.id)
+      .select('id, stripe_customer_id')
+      .eq('id', user.id)
       .maybeSingle();
 
     // 3. Fetch profile tier
@@ -64,10 +64,8 @@ export async function GET() {
     // 4. Look up active subscription
     const { data: subscription } = await admin
       .from('subscriptions')
-      .select(
-        'stripe_subscription_id, status, tier_interval, current_period_end, cancel_at_period_end'
-      )
-      .eq('customer_id', customer.id)
+      .select('status, tier_interval, current_period_end, cancel_at_period_end')
+      .eq('user_id', user.id)
       .in('status', ['active', 'trialing', 'past_due'])
       .order('created_at', { ascending: false })
       .limit(1)

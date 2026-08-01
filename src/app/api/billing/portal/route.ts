@@ -41,7 +41,7 @@ export async function POST() {
     const { data: customer } = await admin
       .from('customers')
       .select('stripe_customer_id')
-      .eq('auth_user_id', user.id)
+      .eq('id', user.id)
       .maybeSingle();
 
     // 3. No customer row or no stripe_customer_id
