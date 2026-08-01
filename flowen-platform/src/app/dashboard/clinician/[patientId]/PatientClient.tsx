@@ -321,16 +321,25 @@ function MiniChat({ patientId, myId }: { patientId: string; myId: string | null 
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const fetchMessages = useCallback(async () => {
+  const fetchMessages = useCallback(async (initial = false) => {
     const res = await fetch(`/api/messages?with=${patientId}`);
     if (!res.ok) return;
     const data = (await res.json()) as MessagesResponse;
-    setMessages(data.messages.slice(-20));
-    setLoading(false);
+    setMessages(prev => {
+      const next = data.messages.slice(-20);
+      if (!initial && prev.length === next.length && prev.at(-1)?.id === next.at(-1)?.id) return prev;
+      return next;
+    });
+    if (initial) setLoading(false);
   }, [patientId]);
 
   useEffect(() => {
-    fetchMessages().catch(console.error);
+    fetchMessages(true).catch(console.error);
+  }, [fetchMessages]);
+
+  useEffect(() => {
+    const id = setInterval(() => fetchMessages(false).catch(console.error), 20000);
+    return () => clearInterval(id);
   }, [fetchMessages]);
 
   useEffect(() => {
