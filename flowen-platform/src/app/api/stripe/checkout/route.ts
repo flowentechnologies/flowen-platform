@@ -3,7 +3,7 @@ import { stripe } from '@/lib/stripe';
 
 export async function POST(req: Request) {
   try {
-    const { email, interval } = await req.json();
+    const { email } = await req.json();
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

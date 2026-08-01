@@ -38,12 +38,13 @@ async function getUser() {
 }
 
 async function verifyAssignment(admin: ReturnType<typeof db>, userId1: string, userId2: string): Promise<boolean> {
-  const { data } = await admin
-    .from('slp_assignments')
-    .select('id')
-    .or(`and(slp_user_id.eq.${userId1},patient_user_id.eq.${userId2}),and(slp_user_id.eq.${userId2},patient_user_id.eq.${userId1})`)
-    .maybeSingle();
-  return !!data;
+  const [res1, res2] = await Promise.all([
+    admin.from('slp_assignments').select('id')
+      .eq('slp_user_id', userId1).eq('patient_user_id', userId2).maybeSingle(),
+    admin.from('slp_assignments').select('id')
+      .eq('slp_user_id', userId2).eq('patient_user_id', userId1).maybeSingle(),
+  ]);
+  return !!(res1.data ?? res2.data);
 }
 
 export async function GET(request: NextRequest) {
@@ -53,6 +54,9 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const them = searchParams.get('with');
   if (!them) return NextResponse.json({ error: 'Missing ?with= parameter' }, { status: 400 });
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(them)) {
+    return NextResponse.json({ error: 'Invalid user id' }, { status: 400 });
+  }
 
   const admin = db();
 
