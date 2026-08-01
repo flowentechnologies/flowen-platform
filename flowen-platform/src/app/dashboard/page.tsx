@@ -21,6 +21,7 @@ function adminDb() {
 
 type Session = {
   id: string;
+  stage_id: number | null;
   duration_seconds: number;
   total_blocks_detected: number;
   total_repetitions_detected: number;
@@ -52,7 +53,7 @@ export default async function DashboardPage() {
   const [sessionsRes, profileRes, progRes, weekCountRes, hasPlanRes] = await Promise.all([
     supabase
       .from('practice_sessions')
-      .select('id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at')
+      .select('id,stage_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true }),
     supabase.from('profiles').select('display_name,tier').eq('id', user.id).single(),
@@ -163,6 +164,7 @@ export default async function DashboardPage() {
         created_at: s.created_at,
         duration_seconds: s.duration_seconds,
         total_blocks_detected: s.total_blocks_detected,
+        stage_id: s.stage_id,
         bpm:
           s.duration_seconds > 0
             ? Math.round(

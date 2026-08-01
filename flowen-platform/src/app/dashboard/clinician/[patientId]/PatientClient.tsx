@@ -116,11 +116,11 @@ function NoteCell({ session, patientId }: { session: PatientSession; patientId: 
 const PHASES = ['Establishment', 'Consolidation', 'Transfer', 'Maintenance'];
 const ALL_STAGES = [1, 2, 3, 4, 5];
 const STAGE_LABELS: Record<number, string> = {
-  1: 'Syllable-level speech',
-  2: 'Word-level speech',
-  3: 'Phrase-level speech',
-  4: 'Sentence-level speech',
-  5: 'Conversation practice',
+  1: 'Diaphragmatic Breathing',
+  2: 'Easy Onset & Prolongation',
+  3: 'Light Articulatory Contacts',
+  4: 'Pausing & Phrasing',
+  5: 'Conversational Flow',
 };
 
 function TreatmentPlanCard({ patientId }: { patientId: string }) {
@@ -523,7 +523,7 @@ export function PatientClient({ patient }: { patient: PatientDetail }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left border-b border-slate-800/60">
-                  {['Date', 'Duration', 'Blocks', 'Blk/min', 'Clinical notes'].map(h => (
+                  {['Date', 'Stage', 'Duration', 'Blocks', 'Blk/min', 'Clinical notes'].map(h => (
                     <th key={h} className="px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">{h}</th>
                   ))}
                 </tr>
@@ -534,6 +534,7 @@ export function PatientClient({ patient }: { patient: PatientDetail }) {
                   return (
                     <tr key={s.id} className="hover:bg-slate-800/30 transition-colors group">
                       <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">{fmt(s.created_at)}</td>
+                      <td className="px-4 py-3 text-slate-400 text-xs whitespace-nowrap">{s.stage_id ? (STAGE_LABELS[s.stage_id] ?? `Stage ${s.stage_id}`) : '—'}</td>
                       <td className="px-4 py-3 text-slate-300 text-xs">{fmtDur(s.duration_seconds)}</td>
                       <td className="px-4 py-3 text-slate-300 text-xs">{s.total_blocks_detected}</td>
                       <td className={`px-4 py-3 text-xs font-semibold tabular-nums ${bpmColor(bpm)}`}>{bpm.toFixed(1)}</td>
