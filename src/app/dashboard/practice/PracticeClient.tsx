@@ -442,7 +442,22 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
   // Save
   // ---------------------------------------------------------------------------
 
-  const saveSession = useCallback(async () => {
+  const discardAndReset = useCallback(() => {
+    blocksRef.current = 0;
+    isSpeakingRef.current = false;
+    silenceStartRef.current = null;
+    setBlocks(0);
+    setElapsed(0);
+    setAmplitude(0);
+    setFreqData(new Array(32).fill(0));
+    setSaveError(null);
+    setFinalTranscript('');
+    setInterimTranscript('');
+    setAudioUrl(null);
+    setScreen('select');
+  }, []);
+
+  const saveSession = useCallback(async (andRepeat = false) => {
     setSaving(true);
     setSaveError(null);
     const res = await fetch('/api/practice/sessions', {
@@ -465,25 +480,13 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
       setProgression(json.progression);
       setScreen('progression');
       setSaving(false);
+    } else if (andRepeat) {
+      discardAndReset();
+      setSaving(false);
     } else {
       window.location.href = '/dashboard';
     }
-  }, [elapsed, stageId]);
-
-  const discardAndReset = useCallback(() => {
-    blocksRef.current = 0;
-    isSpeakingRef.current = false;
-    silenceStartRef.current = null;
-    setBlocks(0);
-    setElapsed(0);
-    setAmplitude(0);
-    setFreqData(new Array(32).fill(0));
-    setSaveError(null);
-    setFinalTranscript('');
-    setInterimTranscript('');
-    setAudioUrl(null);
-    setScreen('select');
-  }, []);
+  }, [elapsed, stageId, discardAndReset]);
 
   // ---------------------------------------------------------------------------
   // Derived
@@ -1022,7 +1025,7 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
       {/* Actions */}
       <div className="space-y-3">
         <button
-          onClick={saveSession}
+          onClick={() => saveSession(false)}
           disabled={saving}
           className="w-full rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
         >
@@ -1033,6 +1036,14 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
             </svg>
           )}
           {saving ? 'Saving...' : 'Save & return to dashboard'}
+        </button>
+
+        <button
+          onClick={() => saveSession(true)}
+          disabled={saving}
+          className="w-full rounded-xl px-6 py-3 font-semibold text-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Save & do another session
         </button>
 
         {saveError && (

@@ -40,7 +40,7 @@ export default async function PatientPage({ params }: { params: Promise<{ patien
   const [patientProfileRes, sessionsRes, notesRes] = await Promise.all([
     admin.from('profiles').select('id, display_name, email, role').eq('id', patientId).single(),
     admin.from('practice_sessions')
-      .select('id, duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, created_at')
+      .select('id, stage_id, duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, created_at')
       .eq('user_id', patientId)
       .order('created_at', { ascending: true }),
     admin.from('slp_session_notes')

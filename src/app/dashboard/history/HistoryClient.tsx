@@ -43,15 +43,16 @@ interface Props {
 
 export function HistoryClient({ sessions }: Props) {
   const [filter, setFilter] = useState('');
+  const [stageFilter, setStageFilter] = useState<number | null>(null);
   const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
+    let result = sessions;
+    if (stageFilter !== null) result = result.filter(s => s.stage_id === stageFilter);
     const q = filter.trim().toLowerCase();
-    if (!q) return sessions;
-    return sessions.filter((s) =>
-      formatDate(s.created_at).toLowerCase().includes(q)
-    );
-  }, [sessions, filter]);
+    if (q) result = result.filter(s => formatDate(s.created_at).toLowerCase().includes(q));
+    return result;
+  }, [sessions, filter, stageFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -180,8 +181,8 @@ export function HistoryClient({ sessions }: Props) {
       </div>
 
       {/* Search / filter */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-xs">
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none"
             viewBox="0 0 20 20"
@@ -196,18 +197,33 @@ export function HistoryClient({ sessions }: Props) {
           <input
             type="text"
             value={filter}
-            onChange={(e) => {
-              setFilter(e.target.value);
-              setPage(1);
-            }}
+            onChange={(e) => { setFilter(e.target.value); setPage(1); }}
             placeholder="Filter by date (e.g. Jul)"
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 text-sm text-white placeholder-slate-600 outline-none transition-colors"
+            className="pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 text-sm text-white placeholder-slate-600 outline-none transition-colors w-52"
           />
         </div>
-        {filter && (
+        <select
+          value={stageFilter ?? ''}
+          onChange={e => { setStageFilter(e.target.value === '' ? null : Number(e.target.value)); setPage(1); }}
+          className="py-2 pl-3 pr-8 rounded-xl bg-slate-900 border border-slate-800 focus:border-emerald-500/60 text-sm text-white outline-none transition-colors appearance-none cursor-pointer"
+        >
+          <option value="">All stages</option>
+          {Object.entries(STAGE_NAMES).map(([id, name]) => (
+            <option key={id} value={id}>Stage {id} — {name}</option>
+          ))}
+        </select>
+        {(filter || stageFilter !== null) && (
           <span className="text-xs text-slate-500">
             {filtered.length} result{filtered.length !== 1 ? 's' : ''}
           </span>
+        )}
+        {(filter || stageFilter !== null) && (
+          <button
+            onClick={() => { setFilter(''); setStageFilter(null); setPage(1); }}
+            className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            Clear filters
+          </button>
         )}
       </div>
 

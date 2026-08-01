@@ -6,11 +6,20 @@ import type { ProgrammeState } from '@/lib/programme';
 
 type Trend = 'improving' | 'plateauing' | 'regressing' | 'no_data';
 
+const STAGE_NAMES: Record<number, string> = {
+  1: 'Breathing',
+  2: 'Easy Onset',
+  3: 'Light Contacts',
+  4: 'Pausing',
+  5: 'Conversation',
+};
+
 type RecentSession = {
   id: string;
   created_at: string;
   duration_seconds: number;
   total_blocks_detected: number;
+  stage_id: number | null;
   bpm: number;
 };
 
@@ -287,11 +296,10 @@ export function DashboardClient({
   // Bar chart max for bpm
   const bpmMax = Math.max(1, ...recentBpms);
 
-  // Bar color for bpm trend
-  function bpmBarColor(i: number): string {
-    if (trend === 'improving') return 'bg-emerald-500';
-    if (trend === 'regressing') return 'bg-red-500';
-    return 'bg-slate-600';
+  function bpmBarColor(bpm: number): string {
+    if (bpm < 2) return 'bg-emerald-500';
+    if (bpm <= 5) return 'bg-amber-500';
+    return 'bg-red-500';
   }
 
   const latestBpm =
@@ -465,7 +473,7 @@ export function DashboardClient({
                     >
                       <div
                         style={{ height: `${heightPct}%`, opacity }}
-                        className={`rounded-sm ${bpmBarColor(i)}`}
+                        className={`rounded-sm ${bpmBarColor(bpm)}`}
                       />
                     </div>
                   );
@@ -503,18 +511,10 @@ export function DashboardClient({
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left border-b border-slate-800/60">
-                      <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">
-                        Duration
-                      </th>
-                      <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">
-                        Blocks detected
-                      </th>
-                      <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">
-                        Blocks / min
-                      </th>
+                      <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">Date</th>
+                      <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">Stage</th>
+                      <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">Duration</th>
+                      <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks / min</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800">
@@ -524,20 +524,15 @@ export function DashboardClient({
                         className="hover:bg-slate-800/40 transition-colors"
                       >
                         <td className="px-6 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
-                          {new Date(s.created_at).toLocaleString('en-GB', {
-                            dateStyle: 'short',
-                            timeStyle: 'short',
-                          })}
+                          {new Date(s.created_at).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' })}
+                        </td>
+                        <td className="px-6 py-3 text-slate-400 text-xs whitespace-nowrap">
+                          {s.stage_id ? (STAGE_NAMES[s.stage_id] ?? `Stage ${s.stage_id}`) : '—'}
                         </td>
                         <td className="px-6 py-3 text-slate-300 text-xs">
                           {formatDuration(s.duration_seconds)}
                         </td>
-                        <td className="px-6 py-3 text-slate-300 text-xs">
-                          {s.total_blocks_detected}
-                        </td>
-                        <td
-                          className={`px-6 py-3 text-xs font-semibold tabular-nums ${bpmColor(s.bpm)}`}
-                        >
+                        <td className={`px-6 py-3 text-xs font-semibold tabular-nums ${bpmColor(s.bpm)}`}>
                           {s.bpm.toFixed(1)}
                         </td>
                       </tr>
