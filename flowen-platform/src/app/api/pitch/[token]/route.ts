@@ -51,12 +51,9 @@ export async function GET(
   Promise.all([
     client.from('deck_views').insert({ invite_id: invite.id, ip_address: ip, user_agent: ua }),
     client.from('deck_invites').update({
-      view_count: invite.view_count ?? 0,
+      view_count: (invite.view_count ?? 0) + 1,
       last_viewed_at: new Date().toISOString(),
-    }).eq('id', invite.id).select('view_count').single().then(async ({ data }) => {
-      const newCount = ((data as { view_count: number } | null)?.view_count ?? 0) + 1;
-      await client.from('deck_invites').update({ view_count: newCount }).eq('id', invite.id);
-    }),
+    }).eq('id', invite.id),
   ]).catch(() => {/* ignore tracking errors */});
 
   try {
