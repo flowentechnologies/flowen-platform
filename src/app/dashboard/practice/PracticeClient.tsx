@@ -188,7 +188,8 @@ function bpmLabel(bpm: number): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan, programmeBanner, sessionsThisWeek }: Props) {
+export function PracticeClient({ recommendedStage, recentSessions: initialRecentSessions, treatmentPlan, programmeBanner, sessionsThisWeek }: Props) {
+  const [recentSessions, setRecentSessions] = useState<RecentSession[]>(initialRecentSessions);
   const [screen, setScreen] = useState<Screen>('select');
   const [stageId, setStageId] = useState<StageId>(
     Math.min(5, Math.max(1, recommendedStage)) as StageId,
@@ -475,7 +476,17 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
       setSaving(false);
       return;
     }
-    const json = await res.json() as { ok: boolean; progression?: ProgressionInfo | null };
+    const json = await res.json() as { ok: boolean; session?: { id: string; created_at: string } | null; progression?: ProgressionInfo | null };
+    if (json.session) {
+      const bpm = elapsed > 0 ? blocksRef.current / (elapsed / 60) : 0;
+      setRecentSessions(prev => [{
+        id: json.session!.id,
+        created_at: json.session!.created_at,
+        duration_seconds: elapsed,
+        total_blocks_detected: blocksRef.current,
+        bpm: Math.round(bpm * 10) / 10,
+      }, ...prev].slice(0, 5));
+    }
     if (json.progression?.advanced) {
       setProgression(json.progression);
       setScreen('progression');

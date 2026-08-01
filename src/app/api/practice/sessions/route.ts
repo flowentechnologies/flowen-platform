@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   const admin = db();
 
-  const { error } = await admin.from('practice_sessions').insert({
+  const { data: inserted, error } = await admin.from('practice_sessions').insert({
     user_id: user.id,
     brand: 'flowen',
     duration_seconds: body.duration_seconds,
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     total_prolongations_detected: 0,
     average_latency_ms: null,
     stage_id: body.stage_id,
-  });
+  }).select('id, created_at').single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -54,8 +54,10 @@ export async function POST(req: Request) {
       .maybeSingle(),
   ]);
 
+  const session = inserted ? { id: inserted.id, created_at: inserted.created_at } : null;
+
   if ((planCount.count ?? 0) > 0 || !progRes.data) {
-    return NextResponse.json({ ok: true, progression: null });
+    return NextResponse.json({ ok: true, session, progression: null });
   }
 
   const prog = progRes.data;
@@ -72,7 +74,7 @@ export async function POST(req: Request) {
   const result = evaluateAutoAdvance(currentWeek, weekSessions.length, targetSessions, weekSessions);
 
   if (!result.advanced) {
-    return NextResponse.json({ ok: true, progression: result });
+    return NextResponse.json({ ok: true, session, progression: result });
   }
 
   await Promise.all([
@@ -90,5 +92,5 @@ export async function POST(req: Request) {
     }),
   ]);
 
-  return NextResponse.json({ ok: true, progression: result });
+  return NextResponse.json({ ok: true, session, progression: result });
 }
