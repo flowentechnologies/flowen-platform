@@ -67,7 +67,16 @@ const STAGES = [
 ] as const;
 
 type StageId = 1 | 2 | 3 | 4 | 5;
-type Screen = 'select' | 'ready' | 'recording' | 'summary';
+type Screen = 'select' | 'ready' | 'recording' | 'summary' | 'progression';
+
+interface ProgressionInfo {
+  advanced: boolean;
+  newWeek?: number;
+  weekTitle?: string;
+  weekPhase?: string;
+  nextStages?: number[];
+  avgBpm?: number;
+}
 
 // ---------------------------------------------------------------------------
 // Props
@@ -114,7 +123,7 @@ interface Props {
 // ---------------------------------------------------------------------------
 
 const STEP_LABELS = ['Stage', 'Ready', 'Record', 'Review'] as const;
-const SCREEN_TO_STEP: Record<Screen, number> = { select: 0, ready: 1, recording: 2, summary: 3 };
+const SCREEN_TO_STEP: Record<Screen, number> = { select: 0, ready: 1, recording: 2, summary: 3, progression: 4 };
 
 function StepBar({ current }: { current: Screen }) {
   const idx = SCREEN_TO_STEP[current];
@@ -190,6 +199,7 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [micError, setMicError] = useState<string | null>(null);
+  const [progression, setProgression] = useState<ProgressionInfo | null>(null);
 
   // Avatar — imperative handle avoids 60fps React re-renders
   const avatarRef = useRef<FaceAvatarHandle | null>(null);
@@ -449,7 +459,14 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
       setSaving(false);
       return;
     }
-    window.location.href = '/dashboard';
+    const json = await res.json() as { ok: boolean; progression?: ProgressionInfo | null };
+    if (json.progression?.advanced) {
+      setProgression(json.progression);
+      setScreen('progression');
+      setSaving(false);
+    } else {
+      window.location.href = '/dashboard';
+    }
   }, [elapsed, stageId]);
 
   const discardAndReset = useCallback(() => {
@@ -568,25 +585,41 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
             Select stage
           </p>
           <div className="flex gap-3 justify-center">
-            {STAGES.map(s => (
-              <div key={s.id} className="flex flex-col items-center gap-1">
-                {s.id === recommendedStage ? (
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-emerald-400">rec.</span>
-                ) : (
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-transparent select-none">rec.</span>
-                )}
-                <button
-                  onClick={() => setStageId(s.id as StageId)}
-                  className={`w-12 h-12 rounded-full text-sm font-bold border-2 transition-all active:scale-95 ${
-                    s.id === stageId
-                      ? 'bg-emerald-500 border-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20'
-                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-emerald-500/50 hover:text-slate-200'
-                  }`}
-                >
-                  {s.id}
-                </button>
-              </div>
-            ))}
+            {(() => {
+              const maxAllowed = programmeBanner && !treatmentPlan
+                ? Math.max(...programmeBanner.stages)
+                : 5;
+              return STAGES.map(s => {
+                const locked = s.id > maxAllowed;
+                return (
+                  <div key={s.id} className="flex flex-col items-center gap-1">
+                    {s.id === recommendedStage ? (
+                      <span className="text-[9px] font-mono uppercase tracking-widest text-emerald-400">rec.</span>
+                    ) : (
+                      <span className="text-[9px] font-mono uppercase tracking-widest text-transparent select-none">rec.</span>
+                    )}
+                    <button
+                      onClick={() => !locked && setStageId(s.id as StageId)}
+                      disabled={locked}
+                      title={locked ? 'Complete your current programme week to unlock' : undefined}
+                      className={`w-12 h-12 rounded-full text-sm font-bold border-2 transition-all ${
+                        locked
+                          ? 'bg-slate-900 border-slate-800 text-slate-700 cursor-not-allowed'
+                          : s.id === stageId
+                          ? 'bg-emerald-500 border-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20 active:scale-95'
+                          : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-emerald-500/50 hover:text-slate-200 active:scale-95'
+                      }`}
+                    >
+                      {locked ? (
+                        <svg viewBox="0 0 20 20" className="w-4 h-4 mx-auto" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+                        </svg>
+                      ) : s.id}
+                    </button>
+                  </div>
+                );
+              });
+            })()}
           </div>
         </div>
 
@@ -831,6 +864,60 @@ export function PracticeClient({ recommendedStage, recentSessions, treatmentPlan
           }`}
         >
           {canStop ? 'End session' : `Recording — ${elapsed}s (minimum 10s)`}
+        </button>
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Screen: progression
+  // ---------------------------------------------------------------------------
+
+  if (screen === 'progression' && progression) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 space-y-8">
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500/30 mx-auto">
+            <svg viewBox="0 0 24 24" className="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <div>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400">
+              Programme milestone
+            </span>
+            <h1 className="text-3xl font-extrabold text-white tracking-tight mt-1">
+              Week {(progression.newWeek ?? 2) - 1} complete
+            </h1>
+          </div>
+        </div>
+
+        <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 text-center space-y-4">
+          <p className="text-slate-400 text-sm">You have advanced to</p>
+          <div>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400/70">
+              Week {progression.newWeek} · {progression.weekPhase}
+            </span>
+            <p className="text-xl font-bold text-white mt-1">{progression.weekTitle}</p>
+          </div>
+          {progression.nextStages && progression.nextStages.length > 0 && (
+            <p className="text-sm text-slate-400">
+              Stages unlocked:{' '}
+              <strong className="text-white">{progression.nextStages.join(', ')}</strong>
+            </p>
+          )}
+          {progression.avgBpm !== undefined && (
+            <p className="text-xs text-slate-500 font-mono">
+              Avg. blocks/min this week: {progression.avgBpm.toFixed(1)}
+            </p>
+          )}
+        </div>
+
+        <button
+          onClick={() => { window.location.href = '/dashboard'; }}
+          className="w-full rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20"
+        >
+          Continue to dashboard
         </button>
       </div>
     );
