@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import type { PatientDetail, PatientSession } from '@/app/api/clinician/patients/[patientId]/route';
 import type { TreatmentPlan } from '@/app/api/clinician/patients/[patientId]/plan/route';
@@ -296,6 +296,137 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
   );
 }
 
+interface ClinicianMessage {
+  id: string;
+  from_user_id: string;
+  to_user_id: string;
+  content: string;
+  read_at: string | null;
+  created_at: string;
+}
+
+interface MessagesResponse {
+  messages: ClinicianMessage[];
+  other_user: { id: string; display_name: string | null; email: string | null };
+}
+
+interface SendResponse {
+  message: ClinicianMessage;
+}
+
+function MiniChat({ patientId, myId }: { patientId: string; myId: string | null }) {
+  const [messages, setMessages] = useState<ClinicianMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [content, setContent] = useState('');
+  const [sending, setSending] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const fetchMessages = useCallback(async () => {
+    const res = await fetch(`/api/messages?with=${patientId}`);
+    if (!res.ok) return;
+    const data = (await res.json()) as MessagesResponse;
+    setMessages(data.messages.slice(-20));
+    setLoading(false);
+  }, [patientId]);
+
+  useEffect(() => {
+    fetchMessages().catch(console.error);
+  }, [fetchMessages]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const send = async () => {
+    const trimmed = content.trim();
+    if (!trimmed || sending) return;
+    setSending(true);
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to_user_id: patientId, content: trimmed }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as SendResponse;
+        setMessages(prev => [...prev, data.message]);
+        setContent('');
+      }
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send().catch(console.error);
+    }
+  };
+
+  if (loading) {
+    return <p className="text-slate-400 text-sm px-4 py-6 text-center">Loading messages...</p>;
+  }
+
+  return (
+    <div className="flex flex-col">
+      <div
+        className="flex flex-col gap-2 p-4 overflow-y-auto"
+        style={{ maxHeight: '400px' }}
+      >
+        {messages.length === 0 ? (
+          <p className="text-slate-500 text-sm text-center py-6">No messages yet.</p>
+        ) : (
+          messages.map(msg => {
+            const isMe = myId ? msg.from_user_id === myId : msg.to_user_id === patientId;
+            return (
+              <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                <div
+                  className={`max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                    isMe
+                      ? 'bg-emerald-500/20 border border-emerald-500/30 text-white'
+                      : 'bg-slate-800 border border-slate-700 text-slate-200'
+                  }`}
+                >
+                  {msg.content}
+                </div>
+                <div className="flex items-center gap-1.5 mt-1 px-1">
+                  <span className="text-[10px] text-slate-600 font-mono">
+                    {new Date(msg.created_at).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' })}
+                  </span>
+                  {isMe && msg.read_at && (
+                    <span className="text-[10px] text-emerald-600">Seen</span>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      <div className="border-t border-slate-800 p-4 flex gap-3 items-end">
+        <textarea
+          rows={2}
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          onKeyDown={handleKeyDown}
+          maxLength={2000}
+          placeholder="Type a message… (Enter to send)"
+          className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500 transition-colors"
+        />
+        <button
+          onClick={() => send().catch(console.error)}
+          disabled={sending || !content.trim()}
+          className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+        >
+          {sending ? 'Sending…' : 'Send'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function PatientClient({ patient }: { patient: PatientDetail }) {
   const patientId = patient.id;
   const { totalMins, trend, recentBpm, improvementPct } = computeStats(patient.sessions);
@@ -306,6 +437,7 @@ export function PatientClient({ patient }: { patient: PatientDetail }) {
 
   const displayName = patient.display_name ?? patient.email?.split('@')[0] ?? 'Unknown';
   const reversedSessions = [...patient.sessions].reverse();
+  const [showMessages, setShowMessages] = useState(false);
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
@@ -416,6 +548,22 @@ export function PatientClient({ patient }: { patient: PatientDetail }) {
           </div>
         </div>
       )}
+
+      {/* Messages panel */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 flex items-center justify-between border-b border-slate-800">
+          <h2 className="text-white font-semibold text-sm">Messages</h2>
+          <button
+            onClick={() => setShowMessages(v => !v)}
+            className="text-xs text-slate-500 hover:text-emerald-400 transition-colors"
+          >
+            {showMessages ? 'Message patient ↑' : 'Message patient ↓'}
+          </button>
+        </div>
+        {showMessages && (
+          <MiniChat patientId={patientId} myId={null} />
+        )}
+      </div>
     </div>
   );
 }
