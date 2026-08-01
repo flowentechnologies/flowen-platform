@@ -34,8 +34,6 @@ export default function OnboardingPage() {
       if (!user) { router.push('/auth/login'); return; }
 
       const { error: actionError } = await completeOnboarding({
-        userId:      user.id,
-        email:       user.email ?? '',
         displayName: displayName.trim(),
         role,
         consentAt:   new Date().toISOString(),
