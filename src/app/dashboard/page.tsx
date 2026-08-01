@@ -48,6 +48,10 @@ export default async function DashboardPage() {
   if (!user) redirect('/auth/login');
 
   const admin = adminDb();
+
+  // Clinicians have no practice data — send them to their patient list.
+  const { data: roleRow } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+  if (roleRow?.role === 'clinician') redirect('/dashboard/clinician');
   const weekStart = new Date(Date.now() - 7 * 86400_000).toISOString();
 
   const [sessionsRes, profileRes, progRes, weekCountRes, hasPlanRes] = await Promise.all([

@@ -37,7 +37,7 @@ async function getBillingData(): Promise<BillingProps | null> {
     admin
       .from('customers')
       .select('id, stripe_customer_id')
-      .eq('auth_user_id', user.id)
+      .eq('id', user.id)
       .maybeSingle(),
     admin
       .from('profiles')
@@ -62,7 +62,7 @@ async function getBillingData(): Promise<BillingProps | null> {
   const { data: subscription } = await admin
     .from('subscriptions')
     .select('status, tier_interval, current_period_end, cancel_at_period_end')
-    .eq('customer_id', customer.id)
+    .eq('user_id', user.id)
     .in('status', ['active', 'trialing', 'past_due'])
     .order('created_at', { ascending: false })
     .limit(1)

@@ -319,5 +319,49 @@ export async function sendAdminPaymentFailedAlert(opts: {
   });
 }
 
+/** Admin alert when a new support ticket is submitted */
+export async function sendAdminSupportTicketAlert(opts: {
+  userEmail: string;
+  subject: string;
+  body: string;
+  category: string;
+  ticketId: string;
+  slaDueAt: string;
+}) {
+  const slaLabel = new Date(opts.slaDueAt).toLocaleString('en-GB', {
+    timeZone: 'Europe/London',
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+  await send({
+    from: FROM,
+    to:   ADMIN,
+    subject: `[Support] ${opts.category.toUpperCase()}: ${opts.subject}`,
+    text: `New support ticket from ${opts.userEmail}.\n\nCategory: ${opts.category}\nSubject: ${opts.subject}\nSLA due: ${slaLabel}\n\n${opts.body}`,
+    html: wrap(`
+      ${badge('SUPPORT TICKET')}
+      ${h1('New support request')}
+      <table style="margin:16px 0;width:100%;border-collapse:collapse;">
+        ${[
+          ['From',     opts.userEmail],
+          ['Category', opts.category],
+          ['SLA due',  slaLabel],
+          ['Ticket',   opts.ticketId],
+        ].map(([k, v]) => `
+          <tr>
+            <td style="padding:8px 12px 8px 0;font-size:13px;color:#64748b;font-weight:600;white-space:nowrap;">${k}</td>
+            <td style="padding:8px 0;font-size:14px;color:#f8fafc;">${v}</td>
+          </tr>
+        `).join('')}
+      </table>
+      <div style="background:#0f172a;border-radius:10px;padding:16px 20px;margin-top:4px;">
+        <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
+        <p style="margin:0;font-size:14px;color:#cbd5e1;line-height:1.7;white-space:pre-wrap;">${opts.body.slice(0, 1000)}${opts.body.length > 1000 ? '…' : ''}</p>
+      </div>
+      ${btn('Reply to user', `mailto:${opts.userEmail}?subject=Re: ${encodeURIComponent(opts.subject)}`)}
+    `),
+  });
+}
+
 /** @deprecated use sendAdminWaitlistAlert */
 export const sendWaitlistNotification = sendAdminWaitlistAlert;

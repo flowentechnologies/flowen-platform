@@ -161,6 +161,7 @@ async function upsertSubscription(
   userId: string,
 ): Promise<void> {
   const priceId = sub.items.data[0]?.price.id ?? '';
+  const { cycle } = resolvePlanMeta(sub.items.data[0]?.plan ?? ({} as Stripe.Plan));
   const { error } = await admin
     .from('subscriptions')
     .upsert(
@@ -169,6 +170,7 @@ async function upsertSubscription(
         user_id:              userId,
         status:               normaliseStatus(sub.status),
         price_id:             priceId,
+        tier_interval:        cycle,
         cancel_at_period_end: sub.cancel_at_period_end,
         current_period_start: new Date((sub.items.data[0]?.current_period_start ?? 0) * 1000).toISOString(),
         current_period_end:   new Date((sub.items.data[0]?.current_period_end   ?? 0) * 1000).toISOString(),

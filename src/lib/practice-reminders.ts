@@ -107,11 +107,19 @@ export async function sendPracticeReminders(): Promise<{ sent: number; skipped: 
   const thirtyDaysAgo  = new Date(now.getTime() - 30 * 86400_000).toISOString();
   const weekStart      = new Date(now.getTime() - 7 * 86400_000).toISOString();
 
+  const currentHour = now.getUTCHours();
+  const DEFAULT_REMINDER_HOUR = 9;
+
   const { data: profiles } = await admin
     .from('profiles')
-    .select('id, display_name, email')
+    .select('id, display_name, email, email_reminders, streak_notifications, reminder_hour')
     .eq('onboarding_complete', true)
-    .not('email', 'is', null);
+    .not('email', 'is', null)
+    .or(
+      currentHour === DEFAULT_REMINDER_HOUR
+        ? `reminder_hour.eq.${currentHour},reminder_hour.is.null`
+        : `reminder_hour.eq.${currentHour}`,
+    );
 
   if (!profiles?.length) return { sent: 0, skipped: 0 };
 
@@ -145,6 +153,7 @@ export async function sendPracticeReminders(): Promise<{ sent: number; skipped: 
     const lastSession = sessions[0];
 
     // ── Inactive reminder ─────────────────────────────────────────────────────
+    if (profile.email_reminders === false) { skipped++; continue; }
     if (!lastSession || new Date(lastSession.created_at) < new Date(now.getTime() - 3 * 86400_000)) {
       const daysSince = lastSession
         ? Math.floor((now.getTime() - new Date(lastSession.created_at).getTime()) / 86400_000)
@@ -166,7 +175,7 @@ export async function sendPracticeReminders(): Promise<{ sent: number; skipped: 
 
     // ── Streak milestone ──────────────────────────────────────────────────────
     const streak = computeStreak(sessions);
-    if ([3, 7, 14, 30].includes(streak)) {
+    if ([3, 7, 14, 30].includes(streak) && profile.streak_notifications !== false) {
       const alreadySent = await wasRecentlySent(admin, profile.id, `streak_${streak}`, 2);
       if (!alreadySent) {
         const ok = await sendReminderEmail(email, `${streak}-day streak — keep it up!`, streakEmail(name, streak));

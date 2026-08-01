@@ -214,28 +214,28 @@ async function runChecks(): Promise<{ checked: number; triggered: number; result
         case 'at_risk_users': {
           const threshold = rule.threshold_count ?? 5;
           const cutoff14 = new Date(now.getTime() - 14 * 86400_000).toISOString();
-          // Users who have had at least one session but none in the last 14 days
-          const { data: allUsers } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('onboarding_complete', true);
+          // Users who have practised at least once but not in the last 14 days
+          const { data: historicalUsers } = await supabase
+            .from('practice_sessions')
+            .select('user_id');
 
           const { data: recentSessions } = await supabase
             .from('practice_sessions')
             .select('user_id')
             .gte('created_at', cutoff14);
 
-          if (allUsers) {
+          if (historicalUsers) {
+            const everActive = new Set(historicalUsers.map((s: { user_id: string }) => s.user_id));
             const recentSet = new Set((recentSessions ?? []).map((s: { user_id: string }) => s.user_id));
-            const atRisk = allUsers.filter((u: { id: string }) => !recentSet.has(u.id));
+            const atRisk = [...everActive].filter(id => !recentSet.has(id));
             if (atRisk.length > threshold) {
               triggered = true;
-              message = `${atRisk.length} onboarded users haven't had a session in 14+ days (threshold: ${threshold}).`;
+              message = `${atRisk.length} previously-active users haven't practised in 14+ days (threshold: ${threshold}).`;
             } else {
               message = `At-risk user count (${atRisk.length}) is within the acceptable threshold of ${threshold}.`;
             }
           } else {
-            message = 'Could not retrieve user data.';
+            message = 'Could not retrieve session data.';
           }
           break;
         }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { sendAdminSupportTicketAlert } from '@/lib/email';
 
 function db() {
   return createClient(
@@ -54,5 +55,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  void sendAdminSupportTicketAlert({
+    userEmail: user.email ?? '',
+    subject:   subject.trim().slice(0, 200),
+    body:      message.trim().slice(0, 1000),
+    category:  safeCategory,
+    ticketId:  data.id as string,
+    slaDueAt,
+  });
+
   return NextResponse.json({ id: data.id });
 }
