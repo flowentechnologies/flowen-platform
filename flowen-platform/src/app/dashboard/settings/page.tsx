@@ -33,6 +33,7 @@ export default function SettingsPage() {
 
   const [remindersEnabled, setRemindersEnabled] = useState(true);
   const [streakEnabled,    setStreakEnabled]    = useState(true);
+  const [reminderHour,     setReminderHour]     = useState(9);
   const [notifSaving,      startNotifSave]      = useTransition();
   const [notifMsg,         setNotifMsg]         = useState('');
   const [notifLoaded,      setNotifLoaded]      = useState(false);
@@ -54,9 +55,10 @@ export default function SettingsPage() {
         if (!res.ok) throw new Error('not found');
         return res.json();
       })
-      .then((json: { email_reminders?: boolean; streak_notifications?: boolean }) => {
+      .then((json: { email_reminders?: boolean; streak_notifications?: boolean; reminder_hour?: number }) => {
         setRemindersEnabled(json.email_reminders ?? true);
         setStreakEnabled(json.streak_notifications ?? true);
+        setReminderHour(json.reminder_hour ?? 9);
       })
       .catch(() => {
         // 404 or error — use defaults (true, true)
@@ -82,7 +84,7 @@ export default function SettingsPage() {
         const res = await fetch('/api/user/notifications', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email_reminders: remindersEnabled, streak_notifications: streakEnabled }),
+          body: JSON.stringify({ email_reminders: remindersEnabled, streak_notifications: streakEnabled, reminder_hour: reminderHour }),
         });
         setNotifMsg(res.ok ? 'Saved.' : 'Failed to save.');
       } catch {
@@ -212,6 +214,22 @@ export default function SettingsPage() {
                 className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${streakEnabled ? 'translate-x-5' : 'translate-x-0'}`}
               />
             </button>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-white">Reminder time (UTC)</p>
+              <p className="text-xs text-slate-500 mt-0.5">Hour you&apos;d like to receive reminders</p>
+            </div>
+            <select
+              value={reminderHour}
+              onChange={e => setReminderHour(Number(e.target.value))}
+              disabled={!notifLoaded}
+              className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors disabled:opacity-40"
+            >
+              {Array.from({ length: 24 }, (_, h) => (
+                <option key={h} value={h}>{String(h).padStart(2, '0')}:00 UTC</option>
+              ))}
+            </select>
           </div>
           <div className="flex items-center gap-3 pt-1">
             <button

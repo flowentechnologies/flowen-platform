@@ -23,6 +23,7 @@ export async function completeOnboarding(opts: {
     .from('profiles')
     .update({
       display_name:         opts.displayName,
+      role:                 opts.role,
       brand:                'flowen',
       onboarding_complete:  true,
       gdpr_consent_at:      opts.consentAt,

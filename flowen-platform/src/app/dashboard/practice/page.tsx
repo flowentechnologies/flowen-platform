@@ -61,9 +61,11 @@ export default async function PracticePage() {
     sessionsThisWeek = weekCount ?? 0;
 
     let slpName: string | null = null;
+    let slpEmail: string | null = null;
     if (p.slp_user_id) {
       const { data: slp } = await admin.from('profiles').select('display_name,email').eq('id', p.slp_user_id).single();
-      slpName = slp?.display_name ?? slp?.email ?? null;
+      slpName  = slp?.display_name ?? slp?.email ?? null;
+      slpEmail = slp?.email ?? null;
     }
     treatmentPlan = {
       prescribed_stages: p.prescribed_stages,
@@ -72,7 +74,7 @@ export default async function PracticePage() {
       phase: p.phase,
       goals: p.goals,
       slp_display_name: slpName,
-      slp_email: null,
+      slp_email: slpEmail,
     };
     recommendedStage = p.prescribed_stages[0] ?? recommendedStage;
   } else {
