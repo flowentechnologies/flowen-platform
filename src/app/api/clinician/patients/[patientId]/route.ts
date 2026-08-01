@@ -114,6 +114,16 @@ export async function POST(
   const { session_id, note } = body;
   if (!session_id) return NextResponse.json({ error: 'session_id required' }, { status: 400 });
 
+  // Verify the session belongs to the patient this clinician is assigned to,
+  // preventing a clinician from attaching notes to another patient's sessions.
+  const { data: sessionOwner } = await admin
+    .from('practice_sessions')
+    .select('id')
+    .eq('id', session_id)
+    .eq('user_id', patientId)
+    .maybeSingle();
+  if (!sessionOwner) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+
   const { error } = await admin.from('slp_session_notes').upsert(
     { session_id, slp_user_id: clinician.id, note: note ?? '', updated_at: new Date().toISOString() },
     { onConflict: 'session_id,slp_user_id' },
