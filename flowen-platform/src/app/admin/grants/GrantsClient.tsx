@@ -662,13 +662,13 @@ function GrantWriteTab({ grants }: { grants: Grant[] }) {
         }),
       });
 
-      const data = await res.json() as {
-        draft?:         string;
-        section_label?: string;
-        grant_name?:    string;
-        word_count?:    number;
-        error?:         string;
-      };
+      let data: { draft?: string; section_label?: string; grant_name?: string; word_count?: number; error?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        setError('Server error — please try again');
+        return;
+      }
 
       if (!res.ok || data.error) {
         setError(data.error ?? 'Failed to generate draft');

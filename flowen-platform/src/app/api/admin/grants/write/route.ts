@@ -212,19 +212,27 @@ export async function POST(req: Request) {
 
   // ── Call Claude API ───────────────────────────────────────────────────────────
 
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: 'AI drafting is not configured (missing API key)' }, { status: 503 });
+  }
 
-  const msg = await anthropic.messages.create({
-    model:      'claude-sonnet-4-6',
-    max_tokens: 1500,
-    system:     'You are an expert grant writer specialising in UK healthcare innovation funding (SBRI Healthcare, Innovate UK). Write in clear, professional prose. Be specific and evidence-based. Avoid buzzwords.',
-    messages:   [{ role: 'user', content: prompt }],
-  });
-
-  const draft = msg.content
-    .filter(block => block.type === 'text')
-    .map(block => (block as { type: 'text'; text: string }).text)
-    .join('\n');
+  let draft: string;
+  try {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const msg = await anthropic.messages.create({
+      model:      'claude-sonnet-4-6',
+      max_tokens: 1500,
+      system:     'You are an expert grant writer specialising in UK healthcare innovation funding (SBRI Healthcare, Innovate UK). Write in clear, professional prose. Be specific and evidence-based. Avoid buzzwords.',
+      messages:   [{ role: 'user', content: prompt }],
+    });
+    draft = msg.content
+      .filter(block => block.type === 'text')
+      .map(block => (block as { type: 'text'; text: string }).text)
+      .join('\n');
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'AI API error';
+    return NextResponse.json({ error: `Failed to generate draft: ${message}` }, { status: 502 });
+  }
 
   const wordCount = draft.trim().split(/\s+/).filter(Boolean).length;
 
