@@ -3,7 +3,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { sendWelcomeEmail, sendAdminNewUserAlert } from '@/lib/email';
+import { sendAdminNewUserAlert } from '@/lib/email';
+import { fireEventWorkflows } from '@/lib/workflow-executor';
 
 const ALLOWED_ROLES = new Set(['pwds', 'clinician', 'researcher', 'parent_carer', 'other']);
 
@@ -57,7 +58,14 @@ export async function completeOnboarding(opts: {
   });
 
   void Promise.all([
-    sendWelcomeEmail(user.email ?? '', opts.displayName.trim()),
+    // Fire all active user_event workflows registered for onboarding_complete
+    // (handles welcome email + deferred check-in/milestone steps)
+    fireEventWorkflows('onboarding_complete', {
+      userId: user.id,
+      email: user.email ?? '',
+      displayName: opts.displayName.trim(),
+      triggeredBy: 'onboarding',
+    }),
     sendAdminNewUserAlert(user.email ?? '', opts.displayName.trim(), opts.role),
   ]);
 

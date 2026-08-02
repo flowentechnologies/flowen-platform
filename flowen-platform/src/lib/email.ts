@@ -363,5 +363,119 @@ export async function sendAdminSupportTicketAlert(opts: {
   });
 }
 
+/** 3-day onboarding check-in */
+export async function sendCheckIn3d(email: string, displayName: string) {
+  await send({
+    from: FROM,
+    to:   email,
+    subject: 'Quick check-in from the Flowen team',
+    html: wrap(`
+      ${badge('3-DAY CHECK-IN')}
+      ${h1(`How's it going, ${displayName}?`)}
+      ${p("You've had a few days with Flowen — we'd love to know how you're finding it.")}
+      ${p("Your practice dashboard tracks every session and your progress compounds with each one. If you haven't started yet, now's the perfect time.")}
+      ${btn('Open my dashboard', `${SITE}/dashboard`)}
+      ${p(`<span style="color:#64748b;font-size:13px;">Reply to this email with any questions — we read every message.</span>`)}
+    `),
+  });
+}
+
+/** 7-day milestone email */
+export async function sendMilestone7d(email: string, displayName: string) {
+  await send({
+    from: FROM,
+    to:   email,
+    subject: 'Your first week with Flowen',
+    html: wrap(`
+      ${badge('7-DAY MILESTONE')}
+      ${h1(`One week in, ${displayName}.`)}
+      ${p("You've been with Flowen for a week. Consistent practice over weeks and months is where the real gains happen — you're on the right track.")}
+      ${btn('View my progress', `${SITE}/dashboard`)}
+      ${p(`<span style="color:#64748b;font-size:13px;">Your session history and fluency analytics are all saved in your dashboard.</span>`)}
+    `),
+  });
+}
+
+/** Churn re-engagement for inactive users */
+export async function sendReEngagement(email: string, displayName: string) {
+  await send({
+    from: FROM,
+    to:   email,
+    subject: 'Come back to Flowen',
+    html: wrap(`
+      ${badge('WE MISS YOU')}
+      ${h1(`Come back, ${displayName}.`)}
+      ${p("It's been a while since your last session. Speech fluency practice works best when it's consistent — even 5 minutes a day makes a real difference.")}
+      ${p("Your progress is still saved. Pick up exactly where you left off.")}
+      ${btn('Resume my practice', `${SITE}/dashboard/practice`)}
+      ${p(`<span style="color:#64748b;font-size:13px;">If you're having any issues, reply to this email and we'll help.</span>`)}
+    `),
+  });
+}
+
+/** Founding member offer to waitlist users */
+export async function sendFoundingOffer(email: string, displayName: string) {
+  await send({
+    from: FROM,
+    to:   email,
+    subject: 'Founding member spot available — Flowen',
+    html: wrap(`
+      ${badge('FOUNDING MEMBER OFFER')}
+      ${h1(`A spot for you, ${displayName}.`)}
+      ${p("We're inviting a select group of waitlist members to join Flowen as Founding Members — locked-in pricing for life, direct access to the product team, and early access to new features.")}
+      ${p("Founding Member spots are strictly limited. This invitation is personal to you.")}
+      ${btn('Claim my founding spot', `${SITE}/pricing`)}
+      ${p(`<span style="color:#64748b;font-size:13px;">This offer expires when spots fill up. Reply to this email with any questions.</span>`)}
+    `),
+  });
+}
+
+/** Trial expiry upgrade nudge */
+export async function sendUpgradeNudge(email: string, displayName: string) {
+  await send({
+    from: FROM,
+    to:   email,
+    subject: 'Your trial is ending soon',
+    html: wrap(`
+      ${badge('TRIAL ENDING')}
+      ${h1(`Your trial is ending soon, ${displayName}.`)}
+      ${p("Your Flowen trial is coming to an end. To keep access to your practice sessions, analytics, and clinician messaging, upgrade to a full subscription.")}
+      ${btn('Upgrade now', `${SITE}/pricing`)}
+      ${p(`<span style="color:#64748b;font-size:13px;">Questions about pricing? Reply to this email — we're happy to help find the right plan.</span>`)}
+    `),
+  });
+}
+
+/** Generic admin alert triggered by a workflow */
+export async function sendAdminWorkflowAlert(opts: {
+  workflowName: string;
+  userEmail: string;
+  userName: string;
+  detail?: string;
+}) {
+  await send({
+    from: FROM,
+    to:   ADMIN,
+    subject: `Workflow alert: ${opts.workflowName} — ${opts.userEmail}`,
+    html: wrap(`
+      ${badge('WORKFLOW ALERT')}
+      ${h1(opts.workflowName)}
+      <table style="margin-top:16px;width:100%;border-collapse:collapse;">
+        ${[
+          ['User',  opts.userName],
+          ['Email', opts.userEmail],
+          ['Time',  new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' }) + ' (London)'],
+          ...(opts.detail ? [['Detail', opts.detail]] : []),
+        ].map(([k, v]) => `
+          <tr>
+            <td style="padding:8px 12px 8px 0;font-size:13px;color:#64748b;font-weight:600;white-space:nowrap;">${k}</td>
+            <td style="padding:8px 0;font-size:14px;color:#f8fafc;">${v}</td>
+          </tr>
+        `).join('')}
+      </table>
+    `),
+  });
+}
+
 /** @deprecated use sendAdminWaitlistAlert */
 export const sendWaitlistNotification = sendAdminWaitlistAlert;
