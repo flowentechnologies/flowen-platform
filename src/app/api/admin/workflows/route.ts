@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
+import { executeWorkflow } from '@/lib/workflow-executor';
 
 function db() {
   return createClient(
@@ -51,37 +52,17 @@ export async function POST(req: NextRequest) {
     const { id } = body as { action: string; id: string };
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
-    const { data: wf } = await supabase
-      .from('workflow_definitions')
-      .select('id')
-      .eq('id', id)
-      .single();
+    const result = await executeWorkflow(id, { triggeredBy: `admin:${admin.email}` });
+    if (result.status === 'failed') {
+      return NextResponse.json({ error: result.error ?? 'Execution failed' }, { status: 500 });
+    }
 
-    if (!wf) return NextResponse.json({ error: 'Workflow not found' }, { status: 404 });
-
-    const now = new Date().toISOString();
-    const durationMs = Math.floor(Math.random() * 800) + 200;
-    const finishedAt = new Date(Date.now() + durationMs).toISOString();
-
-    const { data: run, error: runError } = await supabase
+    // Return a run-like object so the client can show it in history
+    const { data: run } = await supabase
       .from('workflow_runs')
-      .insert({
-        workflow_id: id,
-        status: 'success',
-        triggered_by: 'manual',
-        context: { triggered_by_admin: admin.email },
-        result: { message: 'Simulated execution completed' },
-        duration_ms: durationMs,
-        started_at: now,
-        finished_at: finishedAt,
-      })
-      .select()
+      .select('*')
+      .eq('id', result.runId)
       .single();
-
-    if (runError) return NextResponse.json({ error: runError.message }, { status: 500 });
-
-    // Atomic increment avoids TOCTOU race under concurrent triggers
-    await supabase.rpc('increment_workflow_run_count', { wf_id: id, ran_at: now });
 
     return NextResponse.json({ data: run });
   }

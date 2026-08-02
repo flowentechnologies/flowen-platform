@@ -4,9 +4,9 @@ import { stripe, stripeWebhookSecret } from '@/lib/stripe';
 import {
   sendPaymentConfirmation,
   sendAdminPaymentAlert,
-  sendPaymentFailedUser,
   sendAdminPaymentFailedAlert,
 } from '@/lib/email';
+import { fireEventWorkflows } from '@/lib/workflow-executor';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -344,8 +344,14 @@ async function handleInvoicePaymentFailed(
   const recipientEmail = emailForNotif?.email
     ?? (typeof invoice.customer_email === 'string' ? invoice.customer_email : null);
 
-  if (recipientEmail) {
-    void sendPaymentFailedUser(recipientEmail, emailForNotif?.displayName ?? recipientEmail.split('@')[0]);
+  // Fire webhook-triggered workflows (handles dunning sequence including payment retry)
+  if (userId) {
+    void fireEventWorkflows('invoice.payment_failed', {
+      userId,
+      email: recipientEmail ?? undefined,
+      displayName: emailForNotif?.displayName,
+      triggeredBy: 'stripe_webhook',
+    });
   }
 
   void sendAdminPaymentFailedAlert({
