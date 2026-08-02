@@ -185,6 +185,79 @@ function bpmLabel(bpm: number): string {
 }
 
 // ---------------------------------------------------------------------------
+// Breathing pacer (Stage 1 only)
+// ---------------------------------------------------------------------------
+
+function BreathingPacer() {
+  const [expanded, setExpanded] = useState(false);
+  const [breathPhase, setBreathPhase] = useState<'in' | 'out'>('in');
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    const sleep = (ms: number) => new Promise<void>(res => setTimeout(res, ms));
+
+    async function run() {
+      await sleep(100);
+      while (active) {
+        setExpanded(true);
+        setBreathPhase('in');
+        for (let i = 1; i <= 4; i++) {
+          if (!active) return;
+          setCount(i);
+          await sleep(1000);
+        }
+        if (!active) return;
+        setExpanded(false);
+        setBreathPhase('out');
+        for (let i = 1; i <= 6; i++) {
+          if (!active) return;
+          setCount(i);
+          await sleep(1000);
+        }
+      }
+    }
+
+    run();
+    return () => { active = false; };
+  }, []);
+
+  const maxSteps = breathPhase === 'in' ? 4 : 6;
+
+  return (
+    <div className="flex flex-col items-center gap-3 py-2">
+      <div
+        className="rounded-full border-2 transition-all ease-in-out"
+        style={{
+          width: expanded ? 96 : 48,
+          height: expanded ? 96 : 48,
+          transitionDuration: expanded ? '4000ms' : '6000ms',
+          borderColor: breathPhase === 'in' ? 'rgba(52, 211, 153, 0.7)' : 'rgba(99, 179, 237, 0.7)',
+          backgroundColor: breathPhase === 'in' ? 'rgba(52, 211, 153, 0.08)' : 'rgba(99, 179, 237, 0.08)',
+        }}
+      />
+      <div className="text-center space-y-1.5">
+        <p className={`text-xs font-semibold uppercase tracking-widest ${breathPhase === 'in' ? 'text-emerald-400' : 'text-sky-400'}`}>
+          {breathPhase === 'in' ? 'Breathe in' : 'Breathe out'}
+        </p>
+        <div className="flex gap-1.5 justify-center">
+          {Array.from({ length: maxSteps }, (_, i) => (
+            <div
+              key={i}
+              className={`w-1 h-1 rounded-full transition-colors duration-300 ${
+                i < count
+                  ? breathPhase === 'in' ? 'bg-emerald-400' : 'bg-sky-400'
+                  : 'bg-slate-700'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -786,6 +859,20 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     const speaking = amplitude > 18;
     const canStop = elapsed >= 10;
 
+    const feedbackText =
+      elapsed < 10           ? 'Warming up…' :
+      currentBpm === 0       ? 'Keep going…' :
+      currentBpm < 2         ? 'Excellent — very fluent' :
+      currentBpm < 4         ? 'Good control' :
+      currentBpm < 7         ? 'Keep applying your techniques' :
+                               'Slow down — breathe and reset';
+    const feedbackClass =
+      elapsed < 10 || currentBpm === 0 ? 'text-slate-500' :
+      currentBpm < 2   ? 'text-emerald-400' :
+      currentBpm < 4   ? 'text-emerald-300/70' :
+      currentBpm < 7   ? 'text-amber-400' :
+                         'text-red-400';
+
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
         {/* Step bar */}
@@ -844,9 +931,20 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
             </div>
           </div>
 
-          {/* Cue */}
-          <p className="text-center text-slate-400 text-sm italic">{stage.cue}</p>
+          {/* Feedback */}
+          <p className={`text-center text-xs font-mono transition-colors ${feedbackClass}`}>
+            {feedbackText}
+          </p>
+
+          {/* Breathing pacer (Stage 1) or cue text */}
+          {stageId === 1
+            ? <BreathingPacer />
+            : <p className="text-center text-slate-400 text-sm italic">{stage.cue}</p>
+          }
         </div>
+
+        {/* Exercise panel — live during recording */}
+        <ExercisePanel key={stageId} stageId={stageId} />
 
         {/* Live captions */}
         {captionSupported && (
