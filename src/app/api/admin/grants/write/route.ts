@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
-import Anthropic from '@anthropic-ai/sdk';
+import { getAnthropicClient, requireAnthropicKey } from '@/lib/anthropic';
 
 // ── DB client ──────────────────────────────────────────────────────────────────
 
@@ -212,14 +212,12 @@ export async function POST(req: Request) {
 
   // ── Call Claude API ───────────────────────────────────────────────────────────
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: 'AI drafting is not configured (missing API key)' }, { status: 503 });
-  }
+  const keyError = requireAnthropicKey();
+  if (keyError) return keyError;
 
   let draft: string;
   try {
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const msg = await anthropic.messages.create({
+    const msg = await getAnthropicClient().messages.create({
       model:      'claude-sonnet-4-6',
       max_tokens: 1500,
       system:     'You are an expert grant writer specialising in UK healthcare innovation funding (SBRI Healthcare, Innovate UK). Write in clear, professional prose. Be specific and evidence-based. Avoid buzzwords.',

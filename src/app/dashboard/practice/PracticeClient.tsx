@@ -297,6 +297,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   const elapsedRef = useRef(0);
   const coachEnabledRef = useRef(true);
   const coachSpeakingRef = useRef(false);
+  const stage1FiredRef = useRef<Set<number>>(new Set());
 
   // Audio refs
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -382,7 +383,6 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           stageId,
-          stageName: stage.name,
           transcript,
           sessionElapsed: elapsedRef.current,
           lastCoachResponse: coachTextRef.current ?? undefined,
@@ -403,12 +403,13 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       utter.onerror = () => setCoachSpeaking(false);
       window.speechSynthesis.speak(utter);
     } catch { /* silent — coach is best-effort */ }
-  }, [stageId, stage.name]);
+  }, [stageId]);
 
   // Trigger after transcript grows by 20+ words with a 20s cooldown
   useEffect(() => {
     if (screen !== 'recording') return;
     const wordCount = finalTranscript.trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount < 5) return;
     const wordsSinceLast = wordCount - lastCoachWordCountRef.current;
     const timeSinceLast = Date.now() - lastCoachTimeRef.current;
     const minWords = stageId === 5 ? 12 : 20;
@@ -417,12 +418,18 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     }
   }, [finalTranscript, screen, stageId, triggerCoach]);
 
-  // Stage 1: time-based triggers since there's little/no transcript
+  // Stage 1: time-based triggers — use >= so skipped seconds (e.g. 29→31) still fire
   useEffect(() => {
     if (screen !== 'recording' || stageId !== 1) return;
-    if (elapsed === 30 || elapsed === 60 || elapsed === 90) {
-      const timeSinceLast = Date.now() - lastCoachTimeRef.current;
-      if (timeSinceLast >= 25_000) triggerCoach('');
+    const THRESHOLDS = [30, 60, 90];
+    for (const t of THRESHOLDS) {
+      if (elapsed >= t && !stage1FiredRef.current.has(t)) {
+        const timeSinceLast = Date.now() - lastCoachTimeRef.current;
+        if (timeSinceLast >= 25_000) {
+          stage1FiredRef.current.add(t);
+          triggerCoach('');
+        }
+      }
     }
   }, [elapsed, screen, stageId, triggerCoach]);
 
@@ -526,6 +533,12 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     setBlocks(0);
     setElapsed(0);
 
+    // Reset coach state for new session
+    coachCallCountRef.current = 0;
+    lastCoachWordCountRef.current = 0;
+    lastCoachTimeRef.current = 0;
+    stage1FiredRef.current = new Set();
+
     timerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
 
     const buf = new Uint8Array(analyser.frequencyBinCount);
@@ -594,6 +607,10 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     setInterimTranscript('');
     window.speechSynthesis?.cancel();
     setCoachSpeaking(false);
+    coachCallCountRef.current = 0;
+    lastCoachWordCountRef.current = 0;
+    lastCoachTimeRef.current = 0;
+    stage1FiredRef.current = new Set();
 
     visemeDriverRef.current?.reset();
 
