@@ -157,6 +157,7 @@ async function executeUserSteps(
   steps: WorkflowStep[],
   user: WorkflowUser,
   workflowId: string,
+  workflowName: string,
   fromStep: number,
 ): Promise<{ nextStep: number | null; nextStepAt: Date | null; count: number }> {
   const sorted = steps.slice().sort((a, b) => a.step - b.step);
@@ -188,9 +189,8 @@ async function executeUserSteps(
       }
 
       case 'send_admin_alert': {
-        const wf = await admin.from('workflow_definitions').select('name').eq('id', workflowId).single();
         await sendAdminWorkflowAlert({
-          workflowName: (wf.data as { name: string } | null)?.name ?? workflowId,
+          workflowName,
           userEmail: user.email,
           userName: user.displayName,
         }).catch(err => console.error('[workflow-executor] admin alert error:', err));
@@ -271,34 +271,47 @@ async function executeAggregateSteps(
         break;
 
       case 'send_email': {
-        for (const user of users) {
-          const notifKey = `wf_${workflowId}_step${step.step}`;
+        if (!users.length) break;
+        const notifKey = `wf_${workflowId}_step${step.step}`;
+        const userIds = users.map(u => u.userId);
 
-          if (step.template === 'founding_offer') {
-            // Waitlist users: deduplicate via invited_at on waitlist_signups
-            const { data: existing } = await admin
+        if (step.template === 'founding_offer') {
+          // Batch-check which waitlist entries already have invited_at set
+          const { data: existing } = await admin
+            .from('waitlist_signups')
+            .select('id, invited_at')
+            .in('id', userIds);
+          const alreadyInvited = new Set(
+            (existing ?? [])
+              .filter((e: { invited_at?: string | null }) => e.invited_at)
+              .map((e: { id: string }) => e.id),
+          );
+
+          for (const user of users) {
+            if (alreadyInvited.has(user.userId)) continue;
+            // Mark invited_at first so a send failure doesn't cause a re-send on the next run
+            await admin
               .from('waitlist_signups')
-              .select('invited_at')
-              .eq('id', user.userId)
-              .maybeSingle();
-            if ((existing as { invited_at?: string } | null)?.invited_at) continue;
+              .update({ invited_at: new Date().toISOString() })
+              .eq('id', user.userId);
+            await dispatchTemplate(step.template, user).catch(() => false);
+            count++;
+          }
+        } else {
+          // Batch-check which users already received this notification
+          const { data: logs } = await admin
+            .from('notification_log')
+            .select('user_id')
+            .eq('type', notifKey)
+            .in('user_id', userIds);
+          const alreadySent = new Set((logs ?? []).map((l: { user_id: string }) => l.user_id));
 
+          for (const user of users) {
+            if (alreadySent.has(user.userId) || !step.template) continue;
             const sent = await dispatchTemplate(step.template, user).catch(() => false);
             if (sent) {
-              await admin
-                .from('waitlist_signups')
-                .update({ invited_at: new Date().toISOString() })
-                .eq('id', user.userId);
+              await logNotification(admin, user.userId, notifKey);
               count++;
-            }
-          } else {
-            const already = await wasNotificationSent(admin, user.userId, notifKey);
-            if (!already && step.template) {
-              const sent = await dispatchTemplate(step.template, user).catch(() => false);
-              if (sent) {
-                await logNotification(admin, user.userId, notifKey);
-                count++;
-              }
             }
           }
         }
@@ -336,6 +349,7 @@ export async function executeWorkflow(
   if (!wf) return { runId: '', status: 'failed', count: 0, error: 'Workflow not found' };
 
   const steps = wf.steps as WorkflowStep[];
+  const workflowName = (wf as { name: string }).name ?? workflowId;
 
   const { data: runRow } = await admin
     .from('workflow_runs')
@@ -371,7 +385,7 @@ export async function executeWorkflow(
       }
 
       const { nextStep, nextStepAt, count: stepCount } = await executeUserSteps(
-        admin, steps, user, workflowId, 1,
+        admin, steps, user, workflowId, workflowName, 1,
       );
       count = stepCount;
 
@@ -444,14 +458,10 @@ export async function runScheduleWorkflows(): Promise<{ total: number; count: nu
 
   if (!workflows?.length) return { total: 0, count: 0 };
 
-  let total = 0;
-  let count = 0;
-  for (const wf of workflows as { id: string }[]) {
-    const result = await executeWorkflow(wf.id, { triggeredBy: 'cron' });
-    total++;
-    count += result.count;
-  }
-  return { total, count };
+  const results = await Promise.all(
+    (workflows as { id: string }[]).map(wf => executeWorkflow(wf.id, { triggeredBy: 'cron' })),
+  );
+  return { total: results.length, count: results.reduce((sum, r) => sum + r.count, 0) };
 }
 
 // Advance pending runs whose wait delay has elapsed (called by cron)
@@ -468,6 +478,16 @@ export async function advancePendingRuns(): Promise<{ advanced: number; errors: 
 
   if (!pendingRuns?.length) return { advanced: 0, errors: 0 };
 
+  // Batch-fetch all unique workflow definitions upfront
+  const workflowIds = [...new Set((pendingRuns as { workflow_id: string }[]).map(r => r.workflow_id))];
+  const { data: wfRows } = await admin
+    .from('workflow_definitions')
+    .select('id, name, steps, status')
+    .in('id', workflowIds);
+  const wfMap = new Map(
+    (wfRows ?? []).map((w: { id: string; name: string; steps: WorkflowStep[]; status: string }) => [w.id, w]),
+  );
+
   let advanced = 0;
   let errors = 0;
 
@@ -479,18 +499,15 @@ export async function advancePendingRuns(): Promise<{ advanced: number; errors: 
     context: Record<string, string>;
   }[]) {
     try {
-      const { data: wf } = await admin
-        .from('workflow_definitions')
-        .select('steps, status')
-        .eq('id', run.workflow_id)
-        .single();
+      const wf = wfMap.get(run.workflow_id);
 
-      if (!wf || (wf as { status: string }).status !== 'active') {
+      if (!wf || wf.status !== 'active') {
         await admin.from('workflow_runs').update({ status: 'skipped', finished_at: now }).eq('id', run.id);
         continue;
       }
 
-      const steps = (wf as { steps: WorkflowStep[] }).steps;
+      const steps = wf.steps;
+      const workflowName = wf.name ?? run.workflow_id;
 
       let user: WorkflowUser | null = null;
       if (run.user_id) {
@@ -508,10 +525,11 @@ export async function advancePendingRuns(): Promise<{ advanced: number; errors: 
         continue;
       }
 
+      // Mark running only after validation passes
       await admin.from('workflow_runs').update({ status: 'running' }).eq('id', run.id);
 
       const { nextStep, nextStepAt, count } = await executeUserSteps(
-        admin, steps, user, run.workflow_id, run.current_step,
+        admin, steps, user, run.workflow_id, workflowName, run.current_step,
       );
 
       if (nextStep !== null && nextStepAt !== null) {

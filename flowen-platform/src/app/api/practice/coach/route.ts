@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import Anthropic from '@anthropic-ai/sdk';
+import type Anthropic from '@anthropic-ai/sdk';
+import { getAnthropicClient, requireAnthropicKey } from '@/lib/anthropic';
 
 const STAGE_PROMPTS: Record<number, string> = {
   1: 'The user is practising diaphragmatic breathing — 4-count inhale, 6-count exhale. Give one short, warm encouragement about their breathing rhythm. Mention belly expansion or steady exhale if relevant.',
@@ -15,11 +16,10 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: 'Not configured' }, { status: 503 });
-  }
+  const keyError = requireAnthropicKey();
+  if (keyError) return keyError;
 
-  let body: { stageId: number; stageName: string; transcript: string; sessionElapsed: number; lastCoachResponse?: string };
+  let body: { stageId: number; transcript: string; sessionElapsed: number; lastCoachResponse?: string };
   try {
     body = await req.json();
   } catch {
@@ -27,6 +27,7 @@ export async function POST(req: Request) {
   }
 
   const { stageId, transcript, sessionElapsed, lastCoachResponse } = body;
+  // stageName is not used server-side — stageId selects the prompt
 
   const stageInstruction = STAGE_PROMPTS[stageId] ?? STAGE_PROMPTS[5];
   const systemPrompt = `You are a warm, encouraging speech therapy voice coach for someone who stammers. Keep all responses under 2 sentences — they will be spoken aloud immediately. Never comment negatively on disfluency. ${stageInstruction}`;
@@ -43,8 +44,7 @@ export async function POST(req: Request) {
 
   let reply: string;
   try {
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const msg = await anthropic.messages.create({
+    const msg = await getAnthropicClient().messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 120,
       system: systemPrompt,
