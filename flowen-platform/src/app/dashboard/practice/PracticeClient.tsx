@@ -286,6 +286,18 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [captionSupported, setCaptionSupported] = useState(false);
 
+  // Voice coach
+  const [coachEnabled, setCoachEnabled] = useState(true);
+  const [coachSpeaking, setCoachSpeaking] = useState(false);
+  const [coachText, setCoachText] = useState<string | null>(null);
+  const lastCoachWordCountRef = useRef(0);
+  const lastCoachTimeRef = useRef(0);
+  const coachCallCountRef = useRef(0);
+  const coachTextRef = useRef<string | null>(null);
+  const elapsedRef = useRef(0);
+  const coachEnabledRef = useRef(true);
+  const coachSpeakingRef = useRef(false);
+
   // Audio refs
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -342,8 +354,77 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         try { mediaRecorderRef.current?.stop(); } catch { /* noop */ }
       }
       formantAnalyserRef.current = null;
+      window.speechSynthesis?.cancel();
     };
   }, []);
+
+  // Keep refs in sync so triggerCoach always sees current values without stale closures
+  useEffect(() => { elapsedRef.current = elapsed; }, [elapsed]);
+  useEffect(() => { coachEnabledRef.current = coachEnabled; }, [coachEnabled]);
+  useEffect(() => { coachSpeakingRef.current = coachSpeaking; }, [coachSpeaking]);
+  useEffect(() => { coachTextRef.current = coachText; }, [coachText]);
+
+  // ---------------------------------------------------------------------------
+  // Voice coach
+  // ---------------------------------------------------------------------------
+
+  const triggerCoach = useCallback(async (transcript: string) => {
+    if (!coachEnabledRef.current || coachSpeakingRef.current) return;
+    if (coachCallCountRef.current >= 12) return;
+
+    coachCallCountRef.current++;
+    lastCoachWordCountRef.current = transcript.trim().split(/\s+/).filter(Boolean).length;
+    lastCoachTimeRef.current = Date.now();
+
+    try {
+      const res = await fetch('/api/practice/coach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stageId,
+          stageName: stage.name,
+          transcript,
+          sessionElapsed: elapsedRef.current,
+          lastCoachResponse: coachTextRef.current ?? undefined,
+        }),
+      });
+      if (!res.ok) return;
+      const data = await res.json() as { reply?: string };
+      if (!data.reply) return;
+
+      setCoachText(data.reply);
+      setCoachSpeaking(true);
+
+      const utter = new SpeechSynthesisUtterance(data.reply);
+      utter.rate = 0.92;
+      utter.pitch = 1.05;
+      utter.volume = 0.85;
+      utter.onend = () => setCoachSpeaking(false);
+      utter.onerror = () => setCoachSpeaking(false);
+      window.speechSynthesis.speak(utter);
+    } catch { /* silent — coach is best-effort */ }
+  }, [stageId, stage.name]);
+
+  // Trigger after transcript grows by 20+ words with a 20s cooldown
+  useEffect(() => {
+    if (screen !== 'recording') return;
+    const wordCount = finalTranscript.trim().split(/\s+/).filter(Boolean).length;
+    const wordsSinceLast = wordCount - lastCoachWordCountRef.current;
+    const timeSinceLast = Date.now() - lastCoachTimeRef.current;
+    const minWords = stageId === 5 ? 12 : 20;
+    if (wordsSinceLast >= minWords && timeSinceLast >= 20_000) {
+      triggerCoach(finalTranscript);
+    }
+  }, [finalTranscript, screen, stageId, triggerCoach]);
+
+  // Stage 1: time-based triggers since there's little/no transcript
+  useEffect(() => {
+    if (screen !== 'recording' || stageId !== 1) return;
+    if (elapsed === 30 || elapsed === 60 || elapsed === 90) {
+      const timeSinceLast = Date.now() - lastCoachTimeRef.current;
+      if (timeSinceLast >= 25_000) triggerCoach('');
+    }
+  }, [elapsed, screen, stageId, triggerCoach]);
 
   // ---------------------------------------------------------------------------
   // Audio
@@ -477,6 +558,11 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       if (rms > SPEECH_THRESH) {
         isSpeakingRef.current = true;
         silenceStartRef.current = null;
+        // Politely stop coach if user starts speaking
+        if (window.speechSynthesis?.speaking) {
+          window.speechSynthesis.cancel();
+          setCoachSpeaking(false);
+        }
       } else if (isSpeakingRef.current) {
         if (silenceStartRef.current === null) {
           silenceStartRef.current = now;
@@ -506,6 +592,8 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     }
     try { recognitionRef.current?.stop(); } catch { /* noop */ }
     setInterimTranscript('');
+    window.speechSynthesis?.cancel();
+    setCoachSpeaking(false);
 
     visemeDriverRef.current?.reset();
 
@@ -528,6 +616,12 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     setFinalTranscript('');
     setInterimTranscript('');
     setAudioUrl(null);
+    window.speechSynthesis?.cancel();
+    setCoachSpeaking(false);
+    setCoachText(null);
+    coachCallCountRef.current = 0;
+    lastCoachWordCountRef.current = 0;
+    lastCoachTimeRef.current = 0;
     setScreen('select');
   }, []);
 
@@ -945,6 +1039,41 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
         {/* Exercise panel — live during recording */}
         <ExercisePanel key={stageId} stageId={stageId} />
+
+        {/* Voice coach */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Voice Coach</span>
+              {coachSpeaking && (
+                <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+                  </span>
+                  Speaking
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                const next = !coachEnabled;
+                setCoachEnabled(next);
+                if (!next) { window.speechSynthesis?.cancel(); setCoachSpeaking(false); }
+              }}
+              className={`text-[10px] font-mono px-2.5 py-1 rounded-lg border transition-all ${
+                coachEnabled
+                  ? 'border-emerald-500/30 text-emerald-500/80 hover:border-emerald-500/50 hover:text-emerald-400'
+                  : 'border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400'
+              }`}
+            >
+              {coachEnabled ? 'Mute' : 'Unmute'}
+            </button>
+          </div>
+          <p className={`text-sm leading-relaxed transition-colors ${coachText ? 'text-slate-300' : 'text-slate-600 italic text-xs'}`}>
+            {coachText ?? (coachEnabled ? 'Listening to your practice…' : 'Coach muted')}
+          </p>
+        </div>
 
         {/* Live captions */}
         {captionSupported && (
