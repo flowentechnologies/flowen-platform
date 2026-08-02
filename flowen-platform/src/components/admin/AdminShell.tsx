@@ -70,6 +70,8 @@ const NAV: NavSection[] = [
       { label: 'Hazard Log', href: '/admin/hazard-log' },
       { label: 'Evidence Pack', href: '/admin/evidence' },
       { label: 'NHS Pipeline', href: '/admin/nhs' },
+      { label: 'GDPR Art. 30 ROPA', href: '/admin/ropa' },
+      { label: 'Internal Policies', href: '/admin/policies' },
     ],
   },
   {

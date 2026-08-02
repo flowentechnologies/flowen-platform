@@ -40,6 +40,8 @@ const RELATED_PAGES = [
   { title: 'Cookie Policy', href: '/cookie-policy', desc: 'Full details on every cookie we set and how to manage them.' },
   { title: 'Security & Compliance', href: '/security', desc: 'Technical controls, encryption, and DCB0129 hazard log details.' },
   { title: 'Accessibility Statement', href: '/accessibility', desc: 'WCAG 2.1 AA conformance status and assistive technology support.' },
+  { title: 'Data Processing Agreement', href: '/dpa', desc: 'UK GDPR Article 28 DPA for NHS trusts, ICBs, and institutional customers.' },
+  { title: 'NHS Commissioning Framework', href: '/nhs-framework', desc: 'DTAC evidence pack, procurement pathway, and service level commitments.' },
 ];
 
 export default function LegalPage() {
@@ -90,7 +92,7 @@ export default function LegalPage() {
           <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400 mb-6 pb-3 border-b border-slate-800">
             Related Documents
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {RELATED_PAGES.map(page => (
               <Link
                 key={page.title}
