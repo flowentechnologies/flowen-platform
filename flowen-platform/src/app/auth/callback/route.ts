@@ -33,11 +33,18 @@ export async function GET(request: NextRequest) {
     if (!error && session) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('is_admin')
+        .select('is_admin, onboarding_complete')
         .eq('id', session.user.id)
         .single();
 
-      const redirectTo = profile?.is_admin ? '/admin' : '/dashboard';
+      let redirectTo: string;
+      if (profile?.is_admin) {
+        redirectTo = '/admin';
+      } else if (!profile?.onboarding_complete) {
+        redirectTo = '/onboarding';
+      } else {
+        redirectTo = '/dashboard';
+      }
       return NextResponse.redirect(new URL(redirectTo, origin));
     }
   }

@@ -46,12 +46,14 @@ export async function login(formData: FormData) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('is_admin')
+    .select('is_admin, onboarding_complete')
     .eq('id', authData.user.id)
     .single();
 
   revalidatePath("/", "layout");
-  redirect(profile?.is_admin ? "/admin" : "/dashboard");
+  if (profile?.is_admin) redirect("/admin");
+  else if (!profile?.onboarding_complete) redirect("/onboarding");
+  else redirect("/dashboard");
 }
 
 export async function signup(formData: FormData) {
