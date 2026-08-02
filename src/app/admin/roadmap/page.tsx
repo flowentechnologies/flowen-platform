@@ -1,7 +1,6 @@
 import { assertAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
 import { RoadmapClient } from './RoadmapClient';
-import { SEED_DATA } from './seed-data';
 import type { RoadmapMilestone } from '@/app/api/admin/roadmap/route';
 
 function db() {
@@ -26,32 +25,20 @@ function sortMilestones(data: RoadmapMilestone[]): RoadmapMilestone[] {
   });
 }
 
-async function fetchAndSeed(): Promise<RoadmapMilestone[]> {
+async function fetchMilestones(): Promise<RoadmapMilestone[]> {
   const client = db();
-
   const { data, error } = await client
     .from('roadmap_milestones')
     .select('*')
     .order('target_date', { ascending: true, nullsFirst: false });
-
   if (error) return [];
-
-  if ((data ?? []).length === 0) {
-    await client.from('roadmap_milestones').insert(SEED_DATA);
-    const { data: seeded } = await client
-      .from('roadmap_milestones')
-      .select('*')
-      .order('target_date', { ascending: true, nullsFirst: false });
-    return sortMilestones((seeded ?? []) as RoadmapMilestone[]);
-  }
-
   return sortMilestones((data ?? []) as RoadmapMilestone[]);
 }
 
 export default async function RoadmapPage() {
   await assertAdmin();
 
-  const milestones = await fetchAndSeed();
+  const milestones = await fetchMilestones();
 
   return (
     <div className="space-y-6">

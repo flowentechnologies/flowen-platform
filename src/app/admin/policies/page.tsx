@@ -562,8 +562,8 @@ THE SOLUTION: Flowen combines real-time acoustic analysis, a structured 8-week f
 SEIS/EIS ELIGIBILITY STATUS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ADVANCE ASSURANCE: [Status: Pending / Received — update before use]
-HMRC Reference: [Insert on receipt]
+ADVANCE ASSURANCE: Pending — application submitted 15 June 2026
+HMRC Reference: Pending (to be allocated by HMRC)
 
 Expected Eligibility:
 — SEIS: £250,000 lifetime SEIS investment limit; 50% income tax relief; CGT disposal relief; loss relief
@@ -578,8 +578,8 @@ FUNDING ROUND
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Round Type: Pre-Seed / Seed SEIS/EIS
-Target Raise: [INSERT]
-Pre-Money Valuation: [INSERT]
+Target Raise: £250,000 (SEIS pre-seed)
+Pre-Money Valuation: £2,500,000
 Instrument: Ordinary shares (or ASA/SAFE with SEIS/EIS conversion)
 Minimum Investment: £5,000
 
@@ -593,13 +593,13 @@ Use of Funds:
 TRACTION & MILESTONES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-[Update before distributing — pull live data from admin analytics]
-— Waitlist signups: [X]
-— Platform users: [X]
-— Practice sessions: [X]
-— SLP professionals registered: [X]
-— ICB procurement pipeline: [X active contacts]
-— DCB0129 clinical safety compliance: [X]% complete
+Live metrics available in Admin → Command Centre dashboard.
+— Waitlist signups: see Admin → Command Centre
+— Platform users: see Admin → Command Centre
+— Practice sessions: see Admin → Command Centre
+— SLP professionals registered: see Admin → Command Centre
+— ICB procurement pipeline: see Admin → Grants &amp; Funding
+— DCB0129 clinical safety compliance: see Admin → Roadmap
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MARKET & COMMERCIAL MODEL

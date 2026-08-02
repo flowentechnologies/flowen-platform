@@ -22,75 +22,7 @@ export default async function CapTablePage() {
     .order('holder_type', { ascending: true })
     .order('created_at', { ascending: true });
 
-  let entries: CapTableEntry[] = data ?? [];
-
-  // Auto-seed if empty and no error
-  if (!error && entries.length === 0) {
-    const SEED_ENTRIES = [
-      {
-        holder_name: 'Howard (Founder)',
-        holder_type: 'founder',
-        instrument: 'ordinary_shares',
-        shares: 5_000_000,
-        share_class: 'A Ordinary',
-        price_per_share_pence: 1,
-        amount_pence: 50_000,
-        seis_eligible: true,
-        eis_eligible: false,
-        certificate_ref: 'SC-001',
-        issued_at: '2024-01-15',
-        notes: 'Founding shares. SEIS advance assurance received.',
-      },
-      {
-        holder_name: 'Co-Founder',
-        holder_type: 'founder',
-        instrument: 'ordinary_shares',
-        shares: 1_500_000,
-        share_class: 'A Ordinary',
-        price_per_share_pence: 1,
-        amount_pence: 15_000,
-        vesting_start: '2024-01-15',
-        vesting_months: 48,
-        cliff_months: 12,
-        seis_eligible: false,
-        eis_eligible: false,
-        certificate_ref: 'SC-002',
-        issued_at: '2024-01-15',
-        notes: '4-year vest, 1-year cliff.',
-      },
-      {
-        holder_name: 'EMI Option Pool (Unissued)',
-        holder_type: 'pool',
-        instrument: 'emi_option',
-        shares: 500_000,
-        vesting_months: 48,
-        cliff_months: 12,
-        seis_eligible: false,
-        eis_eligible: false,
-        notes: 'Board-approved EMI option pool. Standard 4-year vest, 1-year cliff applied to all grants.',
-      },
-      {
-        holder_name: 'SEIS Advance Assurance Investor (Placeholder)',
-        holder_type: 'investor',
-        instrument: 'safe_note',
-        amount_pence: 5_000_000,
-        valuation_cap_pence: 250_000_000,
-        discount_pct: 20.0,
-        seis_eligible: true,
-        eis_eligible: false,
-        notes: 'SAFE note — £50k at £2.5M valuation cap, 20% conversion discount. SEIS advance assurance pending.',
-      },
-    ];
-
-    const { data: seeded } = await db
-      .from('cap_table_entries')
-      .insert(SEED_ENTRIES)
-      .select();
-
-    if (seeded) {
-      entries = seeded as CapTableEntry[];
-    }
-  }
+  const entries: CapTableEntry[] = data ?? [];
 
   return (
     <div className="space-y-8">

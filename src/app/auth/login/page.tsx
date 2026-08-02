@@ -163,6 +163,13 @@ function LoginForm() {
           )}
         </form>
       )}
+
+          <p className="text-center text-xs text-slate-500 mt-6">
+            Don&apos;t have an account?{' '}
+            <a href="/auth/signup" className="text-emerald-400 hover:text-emerald-300 font-semibold">
+              Create one
+            </a>
+          </p>
     </div>
   );
 }
