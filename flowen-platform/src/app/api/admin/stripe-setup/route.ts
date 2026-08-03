@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
-import { assertAdmin } from '@/lib/admin/guard';
 import { stripe } from '@/lib/stripe';
 
-export async function POST() {
-  await assertAdmin();
+export async function POST(req: Request) {
+  const auth = req.headers.get('authorization');
+  if (!auth || auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const results: Record<string, unknown> = {};
 
