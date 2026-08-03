@@ -25,8 +25,13 @@ export default function AnalyticsTracker() {
       keepalive: true,
     }).catch(() => { /* fire-and-forget */ });
 
-    // Re-fire Facebook Pixel PageView on SPA navigation (skips first load — pixel base code handles that)
-    if (!isFirstView) pixelPageView();
+    // Re-fire tracking pixels on SPA navigation (skips first load — base codes handle that)
+    if (!isFirstView) {
+      pixelPageView(); // Facebook Pixel
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'page_view', { page_path: pathname });
+      }
+    }
   }, [pathname]);
 
   return null;
