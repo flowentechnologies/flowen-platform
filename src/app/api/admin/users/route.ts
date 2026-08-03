@@ -8,6 +8,7 @@ interface ProfileRow {
   display_name: string | null;
   tier: string | null;
   is_admin: boolean;
+  early_access: boolean;
   onboarding_complete: boolean;
   created_at: string;
 }
@@ -24,6 +25,7 @@ export interface AdminUserRecord {
   display_name: string | null;
   tier: string | null;
   is_admin: boolean;
+  early_access: boolean;
   onboarding_complete: boolean;
   created_at: string;
   last_sign_in_at: string | null;
@@ -53,7 +55,7 @@ export async function GET(request: NextRequest) {
   const [profilesRes, authUsersRes] = await Promise.all([
     admin
       .from('profiles')
-      .select('id,display_name,tier,is_admin,onboarding_complete,created_at')
+      .select('id,display_name,tier,is_admin,early_access,onboarding_complete,created_at')
       .order('created_at', { ascending: false })
       .range(from, to),
     admin.schema('auth').from('users').select('id,email,last_sign_in_at'),
@@ -76,6 +78,7 @@ export async function GET(request: NextRequest) {
       display_name: p.display_name,
       tier: p.tier,
       is_admin: p.is_admin,
+      early_access: p.early_access,
       onboarding_complete: p.onboarding_complete,
       created_at: p.created_at,
       last_sign_in_at: auth?.last_sign_in_at ?? null,
@@ -173,6 +176,30 @@ export async function POST(request: NextRequest) {
       success: true,
       action_link: linkData.properties?.action_link ?? null,
     });
+  }
+
+  if (action === 'toggle_early_access') {
+    const { data: profile, error: fetchError } = await admin
+      .from('profiles')
+      .select('early_access')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !profile) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const { error: updateError } = await admin
+      .from('profiles')
+      .update({ early_access: !profile.early_access })
+      .eq('id', userId);
+
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    void logAuditEvent({ actor_email: adminUser.email, actor_id: adminUser.id, action: 'user.toggle_early_access', resource_type: 'user', resource_id: userId, metadata: { early_access: !profile.early_access }, severity: 'info' });
+    return NextResponse.json({ success: true, early_access: !profile.early_access });
   }
 
   return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
