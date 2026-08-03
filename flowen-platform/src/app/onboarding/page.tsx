@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { completeOnboarding } from '@/app/actions/complete-onboarding';
+import posthog from 'posthog-js';
 
 const ROLES = [
   { value: 'pwds',          label: 'Person who stutters (PWS)' },
@@ -41,6 +42,7 @@ export default function OnboardingPage() {
 
       if (actionError) { setError(actionError); return; }
 
+      posthog.capture('onboarding_completed', { role });
       document.cookie = 'flowen_ob=1; path=/; max-age=31536000; SameSite=Lax';
       router.push(role === 'clinician' ? '/dashboard/clinician' : '/dashboard');
     });

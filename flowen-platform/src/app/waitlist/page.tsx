@@ -5,6 +5,7 @@ import MarketingNavbar from '@/components/MarketingNavbar';
 import MarketingFooter from '@/components/MarketingFooter';
 import { joinWaitlist } from '@/app/actions/join-waitlist';
 import { pixelLead } from '@/lib/pixel';
+import posthog from 'posthog-js';
 
 export default function WaitlistPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -20,6 +21,7 @@ export default function WaitlistPage() {
       if (result.success) {
         setSubmitted(true);
         pixelLead({ content_name: 'waitlist_signup', content_category: 'early_access' });
+        posthog.capture('waitlist_joined', { source: 'waitlist_page' });
       } else {
         setError(result.message);
       }

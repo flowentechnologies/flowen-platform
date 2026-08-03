@@ -7,6 +7,7 @@ import { ZERO_BLENDS, extractFormants } from '@/lib/viseme';
 import { VisemeDriver } from '@/components/avatar/VisemeDriver';
 import type { FaceAvatarHandle } from '@/components/avatar/FaceAvatar';
 import { ExercisePanel } from './ExercisePanel';
+import posthog from 'posthog-js';
 
 const FaceAvatar = dynamic(() => import('@/components/avatar/FaceAvatar'), { ssr: false });
 
@@ -671,6 +672,12 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         bpm: Math.round(bpm * 10) / 10,
       }, ...prev].slice(0, 5));
     }
+    posthog.capture('practice_session_saved', {
+      stage_id: stageId,
+      duration_seconds: elapsed,
+      total_blocks_detected: blocksRef.current,
+      repeated_session: andRepeat,
+    });
     if (json.progression?.advanced) {
       setProgression(json.progression);
       setScreen('progression');

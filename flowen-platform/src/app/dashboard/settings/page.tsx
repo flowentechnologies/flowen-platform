@@ -4,6 +4,7 @@ import React, { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { logout } from '@/app/auth/actions';
+import posthog from 'posthog-js';
 
 function Section({ title, description, danger, children }: {
   title: string; description?: string; danger?: boolean; children: React.ReactNode;
@@ -86,6 +87,13 @@ export default function SettingsPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email_reminders: remindersEnabled, streak_notifications: streakEnabled, reminder_hour: reminderHour }),
         });
+        if (res.ok) {
+          posthog.capture('settings_updated', {
+            settings_section: 'notifications',
+            practice_reminders_enabled: remindersEnabled,
+            streak_notifications_enabled: streakEnabled,
+          });
+        }
         setNotifMsg(res.ok ? 'Saved.' : 'Failed to save.');
       } catch {
         setNotifMsg('Failed to save.');
