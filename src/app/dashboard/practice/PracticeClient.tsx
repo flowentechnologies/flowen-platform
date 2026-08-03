@@ -592,8 +592,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     }
 
     rafRef.current = requestAnimationFrame(tick);
+    posthog.capture('practice_session_started', { stage_id: stageId });
     setScreen('recording');
-  }, []);
+  }, [stageId]);
 
   const stopRecording = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -675,7 +676,6 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     posthog.capture('practice_session_saved', {
       stage_id: stageId,
       duration_seconds: elapsed,
-      total_blocks_detected: blocksRef.current,
       repeated_session: andRepeat,
     });
     if (json.progression?.advanced) {

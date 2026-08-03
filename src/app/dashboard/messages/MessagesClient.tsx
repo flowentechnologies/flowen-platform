@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import posthog from 'posthog-js';
 
 interface Message {
   id: string;
@@ -74,6 +75,7 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
         const data = (await res.json()) as SendResponse;
         setMessages(prev => [...prev, data.message]);
         setContent('');
+        posthog.capture('message_sent', { recipient_type: 'clinician' });
       }
     } finally {
       setSending(false);

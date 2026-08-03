@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { stripe } from '@/lib/stripe';
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://flowen.digital';
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.flowen.digital';
 
 const adminDb = () =>
   createClient(
