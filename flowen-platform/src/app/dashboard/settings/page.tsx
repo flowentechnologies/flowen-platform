@@ -117,6 +117,7 @@ export default function SettingsPage() {
     await sb.from('consent_audit_log').insert({
       user_id: user.id, event_type: 'gdpr_consent_withdrawn', consent_version: '2026-07-01',
     });
+    posthog.capture('account_erasure_requested');
     await sb.auth.signOut();
     router.push('/?erased=true');
   };
