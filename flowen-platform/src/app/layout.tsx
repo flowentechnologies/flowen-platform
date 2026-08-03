@@ -6,6 +6,7 @@ import TrackingScripts from '@/components/TrackingScripts';
 import type { TrackingProvider } from '@/components/TrackingScripts';
 import { JsonLd } from '@/components/JsonLd';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
+import PostHogProvider from '@/components/PostHogProvider';
 
 export const metadata: Metadata = {
   title: 'Flowen — Retraining the Brain to Speak Freely',
@@ -130,7 +131,9 @@ export default async function RootLayout({
             },
           ],
         }} />
-        {children}
+        <PostHogProvider>
+          {children}
+        </PostHogProvider>
         <AnalyticsTracker />
         <CookieConsent />
         <TrackingScripts providers={trackingProviders} />
