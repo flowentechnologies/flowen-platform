@@ -102,7 +102,7 @@ export default function SettingsPage() {
     if (!user) { router.push('/auth/login'); return; }
     const { error } = await sb.rpc('apply_gdpr_erasure', { target_user_id: user.id });
     if (error) {
-      setErasureError('Could not process your request. Email flowenspeech@outlook.com with subject [ERASURE REQUEST].');
+      setErasureError('Could not process your request. Email hello@flowen.digital with subject [ERASURE REQUEST].');
       setErasing(false);
       return;
     }

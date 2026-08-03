@@ -112,7 +112,7 @@ export default function PricingSection() {
             </div>
           </div>
           <a
-            href="mailto:flowenspeech@outlook.com?subject=Sponsored%20Entry%20Eligibility"
+            href="mailto:hello@flowen.digital?subject=Sponsored%20Entry%20Eligibility"
             className="block w-full py-3.5 px-6 rounded-xl bg-slate-800 text-sky-300 font-semibold border border-slate-700 text-sm text-center hover:bg-slate-700 transition-colors"
           >
             Verify Eligibility

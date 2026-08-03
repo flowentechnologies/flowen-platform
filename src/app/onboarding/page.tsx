@@ -42,7 +42,7 @@ export default function OnboardingPage() {
       if (actionError) { setError(actionError); return; }
 
       document.cookie = 'flowen_ob=1; path=/; max-age=31536000; SameSite=Lax';
-      router.push('/dashboard');
+      router.push(role === 'clinician' ? '/dashboard/clinician' : '/dashboard');
     });
   };
 

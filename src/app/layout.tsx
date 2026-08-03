@@ -5,6 +5,7 @@ import CookieConsent from '@/components/CookieConsent';
 import TrackingScripts from '@/components/TrackingScripts';
 import type { TrackingProvider } from '@/components/TrackingScripts';
 import { JsonLd } from '@/components/JsonLd';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
 
 export const metadata: Metadata = {
   title: 'Flowen — Retraining the Brain to Speak Freely',
@@ -130,6 +131,7 @@ export default async function RootLayout({
           ],
         }} />
         {children}
+        <AnalyticsTracker />
         <CookieConsent />
         <TrackingScripts providers={trackingProviders} />
       </body>

@@ -881,7 +881,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         {/* Micro-practice link */}
         <div className="text-center">
           <Link href="/dashboard/practice/micro" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-            Short on time? Try a quick 3-min exercise →
+            Short on time? Try a quick 30–60s exercise →
           </Link>
         </div>
 
@@ -1174,12 +1174,20 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           )}
         </div>
 
-        <button
-          onClick={() => { window.location.href = '/dashboard'; }}
-          className="w-full rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20"
-        >
-          Continue to dashboard
-        </button>
+        <div className="space-y-3">
+          <button
+            onClick={() => { window.location.href = '/dashboard'; }}
+            className="w-full rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20"
+          >
+            Continue to dashboard
+          </button>
+          <button
+            onClick={discardAndReset}
+            className="w-full rounded-xl px-6 py-3 font-semibold text-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-colors"
+          >
+            Practice again
+          </button>
+        </div>
       </div>
     );
   }

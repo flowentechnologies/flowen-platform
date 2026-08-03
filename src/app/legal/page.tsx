@@ -108,8 +108,8 @@ export default function LegalPage() {
 
         <div className="mt-12 bg-slate-900/50 border border-slate-800 rounded-xl p-6 text-sm text-slate-400">
           <strong className="text-white">Questions?</strong> Contact our Data Protection Officer at{' '}
-          <a href="mailto:flowenspeech@outlook.com" className="text-emerald-400 hover:underline">
-            flowenspeech@outlook.com
+          <a href="mailto:hello@flowen.digital" className="text-emerald-400 hover:underline">
+            hello@flowen.digital
           </a>
           . We respond within one calendar month as required by UK GDPR Article 12.
         </div>

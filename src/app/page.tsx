@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useTransition, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { submitContactForm, FormState } from './actions/submit-form';
 import { LegalPoliciesModal } from '@/components/LegalPoliciesModal';
+import { FlowenLogo } from '@/components/FlowenLogo';
 
 export default function LandingPage() {
   const [isPending, startTransition] = useTransition();
@@ -10,6 +12,28 @@ export default function LandingPage() {
   const [selectedTier, setSelectedTier] = useState<string>('Standard Access (£39.90/mo)');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalTab, setModalTab] = useState<'terms' | 'privacy' | 'dcb0129'>('terms');
+
+  const demoVideoRef = useRef<HTMLVideoElement>(null);
+  const [demoPlaying, setDemoPlaying] = useState(false);
+  const [demoMuted, setDemoMuted] = useState(true);
+
+  useEffect(() => {
+    const video = demoVideoRef.current;
+    if (!video) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().then(() => setDemoPlaying(true)).catch(() => {});
+        } else {
+          video.pause();
+          setDemoPlaying(false);
+        }
+      },
+      { threshold: 0.25 },
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -112,12 +136,7 @@ export default function LandingPage() {
       {/* Navigation Header */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-[#06080F]/80 backdrop-blur-md border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => scrollToSection('hero')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center font-black text-black text-xl shadow-lg shadow-emerald-500/20">
-              F
-            </div>
-            <span className="text-2xl font-black tracking-tight text-white">FLOWEN</span>
-          </div>
+          <FlowenLogo className="h-7" />
 
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
             <button onClick={() => scrollToSection('technology')} className="hover:text-emerald-400 transition-colors">Technology</button>
@@ -125,12 +144,12 @@ export default function LandingPage() {
             <button onClick={() => scrollToSection('contact')} className="hover:text-emerald-400 transition-colors">Enterprise & Public Funds</button>
           </div>
 
-          <button 
-            onClick={() => scrollToSection('contact')}
+          <a
+            href="/auth/login"
             className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-sm transition-all transform hover:scale-105 shadow-md shadow-emerald-500/20"
           >
-            Access Portal
-          </button>
+            Sign In
+          </a>
         </div>
       </nav>
 
@@ -177,18 +196,18 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button
-                onClick={() => scrollToSection('pricing')}
+              <a
+                href="/auth/signup"
                 className="w-full sm:w-auto px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base transition-all shadow-lg shadow-emerald-500/30"
               >
-                View Subscription Tiers
-              </button>
-              <button
-                onClick={() => scrollToSection('contact')}
+                Get started free →
+              </a>
+              <a
+                href="/auth/login"
                 className="w-full sm:w-auto px-8 py-4 rounded-xl border border-white/25 hover:border-white/50 text-white font-semibold text-base bg-white/5 backdrop-blur-sm transition-all"
               >
-                Inquire for Public Funds (Access to Work / NHS)
-              </button>
+                Sign in
+              </a>
             </div>
 
             {/* Scroll indicator */}
@@ -363,6 +382,44 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* How It Works — 5-step flow */}
+      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-slate-800/60">
+        <div className="text-center mb-16">
+          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            HOW IT WORKS
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mt-4">Your path to fluent speech</h2>
+          <p className="mt-3 text-slate-400 text-sm max-w-xl mx-auto">
+            From sign-up to clinical review — five steps, fully guided.
+          </p>
+        </div>
+        <div className="space-y-20">
+          {[
+            { n:'01', title:'Create your account', body:'Join the waitlist and get your personalised invitation. Sign up in under 60 seconds — no card required.', src:'/assets/screenshots/auth-signup.jpg', alt:'Sign up screen' },
+            { n:'02', title:'Set up your profile', body:'Choose your role — PWS, clinician, researcher or carer. Flowen personalises your programme from day one.', src:'/assets/screenshots/onboarding.jpg', alt:'Onboarding screen' },
+            { n:'03', title:'Begin daily practice', body:'Work through 5 progressive therapy stages with 10 rotating exercises each, built on evidence-based fluency techniques.', src:'/assets/screenshots/dashboard-practice.jpg', alt:'Practice session' },
+            { n:'04', title:'Track your progress', body:'Every session is logged. See fluency trends, session streaks, and stage completion in your analytics dashboard.', src:'/assets/screenshots/dashboard-analytics.jpg', alt:'Analytics dashboard' },
+            { n:'05', title:'Clinical review', body:'Your assigned SLT monitors telemetry remotely, adjusts your programme, and reviews session data — all in-platform.', src:'/assets/screenshots/clinician.jpg', alt:'Clinician dashboard' },
+          ].map((step, i) => (
+            <div key={step.n} className={`flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-10 md:gap-16`}>
+              <div className="w-full md:w-1/2 order-first md:order-none">
+                <Image src={step.src} alt={step.alt} width={1280} height={800} className="w-full rounded-2xl border border-slate-800 shadow-2xl shadow-black/40" />
+              </div>
+              <div className="w-full md:w-1/2 flex flex-col gap-3">
+                <span className="text-7xl font-black bg-gradient-to-br from-emerald-400 to-cyan-500 bg-clip-text text-transparent leading-none select-none" aria-hidden="true">{step.n}</span>
+                <h3 className="text-2xl font-bold text-white">{step.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed max-w-md">{step.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-14 text-center">
+          <a href="/how-it-works" className="inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
+            Full walkthrough with screenshots →
+          </a>
+        </div>
+      </section>
+
       {/* Platform Demo Video */}
       <section className="py-20 px-6 max-w-7xl mx-auto border-t border-slate-800/60">
         <div className="text-center mb-10">
@@ -377,30 +434,111 @@ export default function LandingPage() {
 
         <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-2xl shadow-black/60 bg-slate-900">
           <video
-            autoPlay
-            muted
+            ref={demoVideoRef}
+            muted={demoMuted}
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             poster="/assets/videos/flowen_demo_poster.jpg"
             className="w-full aspect-video object-cover"
           >
             <source src="/assets/videos/flowen_demo.mp4" type="video/mp4" />
           </video>
 
+          {!demoPlaying && (
+            <button
+              onClick={() => {
+                const vid = demoVideoRef.current;
+                if (!vid) return;
+                setDemoMuted(false);
+                vid.muted = false;
+                vid.play().then(() => setDemoPlaying(true)).catch(() => {});
+              }}
+              className="absolute inset-0 flex items-center justify-center group"
+              aria-label="Play demo"
+            >
+              <span className="w-16 h-16 rounded-full bg-emerald-500/90 flex items-center justify-center shadow-lg shadow-emerald-500/40 group-hover:bg-emerald-400 transition-colors">
+                <svg className="w-7 h-7 text-slate-950 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </span>
+            </button>
+          )}
+
+          {demoPlaying && (
+            <button
+              onClick={() => {
+                const vid = demoVideoRef.current;
+                if (!vid) return;
+                vid.muted = !vid.muted;
+                setDemoMuted(vid.muted);
+              }}
+              className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center transition-colors"
+              aria-label={demoMuted ? 'Unmute' : 'Mute'}
+            >
+              {demoMuted ? (
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M16.5 12A4.5 4.5 0 0 0 14 7.97V10.18L16.45 12.63C16.48 12.42 16.5 12.21 16.5 12M19 12C19 12.94 18.8 13.82 18.46 14.64L19.97 16.15C20.63 14.91 21 13.5 21 12C21 7.72 18.01 4.14 14 3.23V5.29C16.89 6.15 19 8.83 19 12M4.27 3L3 4.27L7.73 9H3V15H7L12 20V13.27L16.25 17.52C15.58 18.04 14.83 18.45 14 18.7V20.76C15.38 20.43 16.63 19.78 17.68 18.9L19.73 21L21 19.73L12 10.73L4.27 3M12 4L9.91 6.09L12 8.18V4Z"/>
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+              )}
+            </button>
+          )}
+
           {/* Subtle gradient border glow */}
           <div className="absolute inset-0 rounded-2xl ring-1 ring-emerald-500/10 pointer-events-none" />
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl px-5 py-4">
+            <div className="text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider mb-1">Real-Time Biofeedback</div>
+            <div className="text-slate-400 text-sm">Sub-80ms acoustic processing with live laryngeal tension overlay</div>
+          </div>
+          <a href="/viseme" className="bg-slate-900/60 border border-slate-800 hover:border-emerald-500/40 rounded-xl px-5 py-4 transition-colors group block">
+            <div className="text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              Viseme Alignment
+              <span className="text-emerald-500/60 group-hover:text-emerald-400 transition-colors text-xs">↗</span>
+            </div>
+            <div className="text-slate-400 text-sm">42-state ARKit avatar driven by formant analysis and phoneme prediction — explore all states</div>
+          </a>
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl px-5 py-4">
+            <div className="text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider mb-1">Clinical Analytics</div>
+            <div className="text-slate-400 text-sm">Disfluency telemetry, session trends, and SLT remote monitoring</div>
+          </div>
+        </div>
+      </section>
+
+      {/* See the Platform — screenshot gallery */}
+      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-slate-800/60">
+        <div className="text-center mb-12">
+          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-violet-500/10 text-violet-400 border border-violet-500/30">
+            PLATFORM PREVIEW
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mt-4">See the platform</h2>
+          <p className="mt-3 text-slate-400 text-sm max-w-xl mx-auto">
+            Every screen you need — from daily practice to clinical monitoring.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[
-            { label: 'Real-Time Biofeedback', desc: 'Sub-80ms acoustic processing with live laryngeal tension overlay' },
-            { label: 'Viseme Alignment', desc: '42-state 3D avatar driven by formant analysis and phoneme prediction' },
-            { label: 'Clinical Analytics', desc: 'Disfluency telemetry, session trends, and SLT remote monitoring' },
+            { src:'/assets/screenshots/dashboard-home.jpg',     label:'Dashboard', desc:'Daily overview and session launcher' },
+            { src:'/assets/screenshots/dashboard-practice.jpg', label:'Practice',  desc:'5 stages · 10 rotating exercises each' },
+            { src:'/assets/screenshots/dashboard-analytics.jpg',label:'Analytics', desc:'Fluency trends and stage progress' },
+            { src:'/assets/screenshots/clinician.jpg',          label:'Clinician', desc:'Remote patient monitoring for SLTs' },
+            { src:'/assets/screenshots/viseme-reference.jpg',   label:'Viseme System', desc:'42-state ARKit face tracking reference' },
+            { src:'/assets/screenshots/practice-micro.jpg',     label:'Micro Exercises', desc:'30–60 second targeted drills' },
           ].map(item => (
-            <div key={item.label} className="bg-slate-900/60 border border-slate-800 rounded-xl px-5 py-4">
-              <div className="text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider mb-1">{item.label}</div>
-              <div className="text-slate-400 text-sm">{item.desc}</div>
+            <div key={item.label} className="group rounded-2xl overflow-hidden border border-slate-800 hover:border-emerald-500/30 transition-colors bg-slate-900/40">
+              <div className="overflow-hidden">
+                <Image src={item.src} alt={item.label} width={1280} height={800} className="w-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
+              </div>
+              <div className="px-4 py-3 border-t border-slate-800">
+                <p className="text-sm font-semibold text-white">{item.label}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -412,7 +550,7 @@ export default function LandingPage() {
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-white">Direct Access & Inquiry Portal</h2>
             <p className="text-slate-400 mt-2 text-sm">
-              All inquiries are dispatched directly to our clinical and commercial team at <strong className="text-emerald-400">flowenspeech@outlook.com</strong>.
+              All inquiries are dispatched directly to our clinical and commercial team at <strong className="text-emerald-400">hello@flowen.digital</strong>.
             </p>
           </div>
 
@@ -494,7 +632,7 @@ export default function LandingPage() {
                 disabled={isPending}
                 className="w-full py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
               >
-                {isPending ? 'Dispatching to flowenspeech@outlook.com...' : 'Submit Inquiry'}
+                {isPending ? 'Dispatching to hello@flowen.digital...' : 'Submit Inquiry'}
               </button>
             </form>
           )}
@@ -506,8 +644,18 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center font-black text-black text-sm">F</div>
+              <div className="flex items-center gap-2 mb-4">
+                <svg viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-6 w-auto">
+                  <defs>
+                    <linearGradient id="fw-lp-footer" x1="0%" y1="50%" x2="100%" y2="50%">
+                      <stop offset="0%" stopColor="#F59E0B"/>
+                      <stop offset="35%" stopColor="#10B981"/>
+                      <stop offset="100%" stopColor="#06B6D4"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M 10 25 C 20 25, 25 38, 35 38 C 48 38, 52 12, 65 12 C 78 12, 82 42, 95 42 C 105 42, 108 30, 115 30" stroke="url(#fw-lp-footer)" strokeWidth="6" strokeLinecap="round" fill="none"/>
+                  <path d="M 10 33 C 20 33, 25 46, 35 46 C 48 46, 52 20, 65 20 C 78 20, 82 50, 95 50 C 105 50, 108 38, 115 38" stroke="url(#fw-lp-footer)" strokeWidth="6" strokeLinecap="round" fill="none"/>
+                </svg>
                 <span className="text-white font-bold text-lg">FLOWEN</span>
               </div>
               <p className="text-slate-500 text-xs leading-relaxed">Neural biofeedback speech coordination for individuals, clinicians, and public programs.</p>
@@ -516,6 +664,7 @@ export default function LandingPage() {
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Product</h4>
               <ul className="space-y-2.5">
+                <li><a href="/how-it-works" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">How it works</a></li>
                 <li><button onClick={() => scrollToSection('technology')} className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Technology</button></li>
                 <li><button onClick={() => scrollToSection('pricing')} className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Pricing</button></li>
                 <li><a href="/waitlist" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Join Waitlist</a></li>

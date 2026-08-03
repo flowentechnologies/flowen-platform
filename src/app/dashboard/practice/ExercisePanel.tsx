@@ -89,9 +89,16 @@ function PromptCard({ prompt }: { prompt: string }) {
   );
 }
 
+// Rotate starting exercise daily so users don't always begin at the same one
+function dailyOffset(stageId: number, total: number): number {
+  if (total === 0) return 0;
+  const dayOfYear = Math.floor(Date.now() / 86_400_000);
+  return (dayOfYear + stageId) % total;
+}
+
 export function ExercisePanel({ stageId }: Props) {
-  const [idx, setIdx] = useState(0);
   const exercises = EXERCISES[stageId] ?? [];
+  const [idx, setIdx] = useState(() => dailyOffset(stageId, exercises.length));
   if (exercises.length === 0) return null;
 
   const ex = exercises[Math.min(idx, exercises.length - 1)];

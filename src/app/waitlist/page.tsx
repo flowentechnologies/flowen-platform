@@ -39,10 +39,19 @@ export default function WaitlistPage() {
         </div>
 
         {submitted ? (
-          <div className="bg-slate-900 border border-emerald-500/50 p-8 rounded-3xl text-center space-y-3">
+          <div className="bg-slate-900 border border-emerald-500/50 p-8 rounded-3xl text-center space-y-4">
             <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-2xl">✓</div>
-            <h3 className="text-xl font-bold text-white">Application Received!</h3>
-            <p className="text-xs text-slate-400">Updates will be delivered to <span className="text-emerald-400 font-mono">{email}</span>.</p>
+            <h3 className="text-xl font-bold text-white">You&apos;re on the list!</h3>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              We&apos;ll send your invitation link to{' '}
+              <span className="text-emerald-400 font-mono">{email}</span>{' '}
+              when your early access slot opens.
+            </p>
+            <div className="pt-2 space-y-2 text-xs text-slate-500">
+              <p>✓ Confirmation email sent — check your inbox</p>
+              <p>✓ You&apos;ll receive a one-click invite link when ready</p>
+              <p>✓ No payment needed until you choose a plan</p>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 p-8 rounded-3xl space-y-4">

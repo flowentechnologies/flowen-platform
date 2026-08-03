@@ -5,6 +5,13 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { applyIdentityGuard } from '@/middleware/identity-guard';
 
+// ── Analytics constants ───────────────────────────────────────────────────────
+
+const VS_COOKIE      = '__vs';
+const UTM_COOKIE     = '__utm';
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+const UTM_PARAMS     = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const;
+
 // ── In-process rate limiter ───────────────────────────────────────────────────
 // In-memory map, scoped to the serverless instance lifetime.
 // For a distributed rate limit (multi-region), replace with Upstash Redis
@@ -130,6 +137,31 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   if (isPortalRoute && user) {
     const guardRedirect = await applyIdentityGuard(request, supabase as any, user.id);
     if (guardRedirect) return guardRedirect;
+  }
+
+  // 9. Analytics — visitor session cookie + UTM attribution
+  if (!request.cookies.has(VS_COOKIE)) {
+    response.cookies.set(VS_COOKIE, crypto.randomUUID(), {
+      path:     '/',
+      maxAge:   COOKIE_MAX_AGE,
+      httpOnly: true,
+      sameSite: 'lax',
+    });
+  }
+  const searchParams = request.nextUrl.searchParams;
+  const hasUtm = UTM_PARAMS.some(p => searchParams.has(p));
+  if (hasUtm) {
+    const utm: Record<string, string> = {};
+    for (const p of UTM_PARAMS) {
+      const v = searchParams.get(p);
+      if (v) utm[p] = v;
+    }
+    response.cookies.set(UTM_COOKIE, JSON.stringify(utm), {
+      path:     '/',
+      maxAge:   COOKIE_MAX_AGE,
+      httpOnly: true,
+      sameSite: 'lax',
+    });
   }
 
   return response;

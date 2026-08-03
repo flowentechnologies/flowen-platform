@@ -1,6 +1,6 @@
 'use server';
 
-import nodemailer from 'nodemailer';
+import { sendEmail, FROM, ADMIN_INBOX } from '@/lib/email';
 
 export type FormState = {
   success: boolean;
@@ -12,10 +12,10 @@ export async function submitContactForm(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
-  const role = formData.get('role') as string;
-  const tier = formData.get('tier') as string;
+  const name    = formData.get('name')    as string;
+  const email   = formData.get('email')   as string;
+  const role    = formData.get('role')    as string;
+  const tier    = formData.get('tier')    as string;
   const message = formData.get('message') as string;
 
   const errors: Record<string, string> = {};
@@ -27,24 +27,7 @@ export async function submitContactForm(
     return { success: false, message: 'Please correct the errors in the form.', errors };
   }
 
-  try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.office365.com',
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER || 'flowenspeech@outlook.com',
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
-    const mailOptions = {
-      from: `"Flowen Web Portal" <${process.env.SMTP_USER || 'flowenspeech@outlook.com'}>`,
-      to: 'flowenspeech@outlook.com',
-      replyTo: email,
-      subject: `[Flowen Submission] ${tier || 'Inquiry'} from ${name}`,
-      text: `
-Name: ${name}
+  const text = `Name: ${name}
 Email: ${email}
 Role/Organization: ${role || 'Not specified'}
 Selected Tier: ${tier || 'General Interest'}
@@ -52,22 +35,20 @@ Selected Tier: ${tier || 'General Interest'}
 Message:
 ${message}
 
---------------------------------------------------
-Sent from Flowen Global Landing Page (${new Date().toISOString()})
-      `,
-    };
+--
+Sent from Flowen landing page · ${new Date().toISOString()}`;
 
-    await transporter.sendMail(mailOptions);
+  const ok = await sendEmail({
+    from:    FROM.hello,
+    to:      ADMIN_INBOX,
+    subject: `[Flowen Inquiry] ${tier || 'General'} from ${name}`,
+    replyTo: email,
+    text,
+    html: `<pre style="font-family:sans-serif;font-size:14px;line-height:1.7;white-space:pre-wrap;">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`,
+  });
 
-    return {
-      success: true,
-      message: 'Thank you. Your inquiry has been sent directly to our team at flowenspeech@outlook.com.',
-    };
-  } catch (error) {
-    console.error('Mail Dispatch Error:', error);
-    return {
-      success: false,
-      message: 'Unable to send your message right now. Please email us directly at flowenspeech@outlook.com.',
-    };
+  if (ok) {
+    return { success: true, message: 'Thank you. Your inquiry has been sent to our team at hello@flowen.digital.' };
   }
+  return { success: false, message: 'Unable to send your message right now. Please email us directly at hello@flowen.digital.' };
 }

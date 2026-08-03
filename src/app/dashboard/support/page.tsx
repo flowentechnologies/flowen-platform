@@ -168,8 +168,8 @@ function ContactForm() {
 
       <p className="text-[10px] text-slate-600 text-center">
         We typically respond within 24–48 hours. For urgent issues email{' '}
-        <a href="mailto:flowenspeech@outlook.com" className="text-slate-500 hover:text-slate-300 underline">
-          flowenspeech@outlook.com
+        <a href="mailto:hello@flowen.digital" className="text-slate-500 hover:text-slate-300 underline">
+          hello@flowen.digital
         </a>
       </p>
     </form>
@@ -195,7 +195,7 @@ export default function SupportPage() {
             icon: '📧',
             title: 'Email Support',
             desc: 'Send us a message and we\'ll reply within 24–48 hours.',
-            action: 'mailto:flowenspeech@outlook.com',
+            action: 'mailto:hello@flowen.digital',
             label: 'Email us',
             external: true,
           },

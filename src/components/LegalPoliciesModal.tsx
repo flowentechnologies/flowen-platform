@@ -99,7 +99,7 @@ export function LegalPoliciesModal({ isOpen, initialTab = 'terms', onClose }: Pr
 
               <h3 className="text-lg font-bold text-white">3. Data Controller Contact</h3>
               <p>
-                For data protection inquiries or to exercise Right to Be Forgotten under UK GDPR, contact our Data Protection Officer at <strong>flowenspeech@outlook.com</strong>.
+                For data protection inquiries or to exercise Right to Be Forgotten under UK GDPR, contact our Data Protection Officer at <strong>hello@flowen.digital</strong>.
               </p>
             </div>
           )}

@@ -392,7 +392,7 @@ export default function ApiDocsPage() {
                   { code: '403', meaning: 'Forbidden — authenticated but insufficient permissions (e.g. accessing another user\'s data)' },
                   { code: '404', meaning: 'Not Found — resource does not exist or is not accessible to caller' },
                   { code: '429', meaning: 'Too Many Requests — rate limit exceeded; back off and retry after 60 seconds' },
-                  { code: '500', meaning: 'Internal Server Error — unexpected error; contact flowenspeech@outlook.com' },
+                  { code: '500', meaning: 'Internal Server Error — unexpected error; contact hello@flowen.digital' },
                 ].map(row => (
                   <tr key={row.code} className="bg-slate-900/30 hover:bg-slate-900/60 transition-colors">
                     <td className="p-4 font-mono text-sm font-bold text-emerald-400">{row.code}</td>
@@ -533,7 +533,7 @@ export default function ApiDocsPage() {
               sandbox environment, and integration support for NHS-contracted organisations.
             </p>
             <a
-              href="mailto:flowenspeech@outlook.com?subject=API Integration Enquiry — [Organisation]"
+              href="mailto:hello@flowen.digital?subject=API Integration Enquiry — [Organisation]"
               className="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm px-6 py-3 rounded-xl transition-colors"
             >
               Technical Integration Enquiry →

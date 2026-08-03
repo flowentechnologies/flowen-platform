@@ -155,9 +155,17 @@ function SidebarContent({ pathname, onLinkClick }: SidebarContentProps) {
       {/* Brand */}
       <div className="px-4 py-5 border-b border-slate-800 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center text-slate-950 font-black text-sm">
-            F
-          </div>
+          <svg viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-5 w-auto">
+            <defs>
+              <linearGradient id="fw-admin" x1="0%" y1="50%" x2="100%" y2="50%">
+                <stop offset="0%" stopColor="#F59E0B"/>
+                <stop offset="35%" stopColor="#10B981"/>
+                <stop offset="100%" stopColor="#06B6D4"/>
+              </linearGradient>
+            </defs>
+            <path d="M 10 25 C 20 25, 25 38, 35 38 C 48 38, 52 12, 65 12 C 78 12, 82 42, 95 42 C 105 42, 108 30, 115 30" stroke="url(#fw-admin)" strokeWidth="6" strokeLinecap="round" fill="none"/>
+            <path d="M 10 33 C 20 33, 25 46, 35 46 C 48 46, 52 20, 65 20 C 78 20, 82 50, 95 50 C 105 50, 108 38, 115 38" stroke="url(#fw-admin)" strokeWidth="6" strokeLinecap="round" fill="none"/>
+          </svg>
           <span className="font-bold text-white text-sm tracking-tight">Flowen Admin</span>
         </div>
       </div>

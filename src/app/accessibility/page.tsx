@@ -106,7 +106,7 @@ export default function AccessibilityPage() {
             </p>
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
               <dl className="space-y-3 text-sm">
-                <div><dt className="text-slate-500 text-xs">Email</dt><dd className="text-emerald-400 mt-0.5"><a href="mailto:flowenspeech@outlook.com?subject=[ACCESSIBILITY]">flowenspeech@outlook.com</a></dd></div>
+                <div><dt className="text-slate-500 text-xs">Email</dt><dd className="text-emerald-400 mt-0.5"><a href="mailto:hello@flowen.digital?subject=[ACCESSIBILITY]">hello@flowen.digital</a></dd></div>
                 <div><dt className="text-slate-500 text-xs">Subject line</dt><dd className="text-slate-300 font-mono mt-0.5">[ACCESSIBILITY]</dd></div>
                 <div><dt className="text-slate-500 text-xs">Response time</dt><dd className="text-slate-300 mt-0.5">Within 5 working days</dd></div>
               </dl>

@@ -130,7 +130,7 @@ export default function CookiePolicyPage() {
             <h2 className="text-lg font-bold text-white mb-3">Contact</h2>
             <p>
               For questions about this Cookie Policy or to exercise your rights under UK GDPR, contact us at{' '}
-              <a href="mailto:flowenspeech@outlook.com" className="text-emerald-400 hover:underline">flowenspeech@outlook.com</a>.
+              <a href="mailto:privacy@flowen.digital" className="text-emerald-400 hover:underline">privacy@flowen.digital</a>.
             </p>
           </section>
         </div>

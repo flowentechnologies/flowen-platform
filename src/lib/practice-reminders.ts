@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { sendEmail, FROM } from '@/lib/email';
 
 function db() {
   return createClient(
@@ -8,18 +9,8 @@ function db() {
   );
 }
 
-async function sendReminderEmail(to: string, subject: string, html: string): Promise<boolean> {
-  try {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) return false;
-    const { Resend } = await import('resend');
-    const resend = new Resend(apiKey);
-    await resend.emails.send({ from: 'Flowen <hello@flowen.digital>', to, subject, html });
-    return true;
-  } catch (err) {
-    console.error('[reminders] email error:', err);
-    return false;
-  }
+function sendReminderEmail(to: string, subject: string, html: string): Promise<boolean> {
+  return sendEmail({ from: FROM.hello, to, subject, html });
 }
 
 function emailBase(content: string): string {
