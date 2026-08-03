@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 
-export async function POST(req: Request) {
-  const auth = req.headers.get('authorization');
-  if (!auth || auth !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+export async function POST() {
 
   const results: Record<string, unknown> = {};
 
