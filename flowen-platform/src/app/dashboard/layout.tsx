@@ -27,7 +27,7 @@ async function getUserProfile(): Promise<UserProfile | null> {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('display_name, tier, is_admin, role')
+    .select('display_name, tier, is_admin, role, early_access')
     .eq('id', user.id)
     .single();
 
@@ -37,12 +37,14 @@ async function getUserProfile(): Promise<UserProfile | null> {
     tier:        profile?.tier ?? null,
     isAdmin:     profile?.is_admin ?? false,
     role:        profile?.role ?? null,
+    earlyAccess: profile?.early_access ?? false,
   };
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getUserProfile();
   if (!user) redirect('/auth/login');
+  if (!user.isAdmin && !user.earlyAccess) redirect('/coming-soon');
 
   return (
     <>

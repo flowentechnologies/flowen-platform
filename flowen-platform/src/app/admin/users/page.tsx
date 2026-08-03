@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import type { AdminUserRecord } from '@/app/api/admin/users/route';
 import type { AtRiskUser } from '@/app/api/admin/users/at-risk/route';
 
-type FilterTab = 'all' | 'active' | 'admins' | 'waitlist';
+type FilterTab = 'all' | 'active' | 'admins' | 'beta' | 'waitlist';
 
 function TierBadge({ tier }: { tier: string | null }) {
   if (!tier) return null;
@@ -25,6 +25,14 @@ function AdminBadge() {
   return (
     <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">
       ADMIN
+    </span>
+  );
+}
+
+function EarlyAccessBadge() {
+  return (
+    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+      BETA
     </span>
   );
 }
@@ -78,11 +86,12 @@ function SkeletonRow() {
 interface DropdownProps {
   user: AdminUserRecord;
   onToggleAdmin: (userId: string) => void;
+  onToggleEarlyAccess: (userId: string) => void;
   onResetPassword: (userId: string, email: string) => void;
   loading: boolean;
 }
 
-function ActionsDropdown({ user, onToggleAdmin, onResetPassword, loading }: DropdownProps) {
+function ActionsDropdown({ user, onToggleAdmin, onToggleEarlyAccess, onResetPassword, loading }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -108,6 +117,13 @@ function ActionsDropdown({ user, onToggleAdmin, onResetPassword, loading }: Drop
       </button>
       {open && (
         <div className="absolute right-0 mt-1 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => { onToggleEarlyAccess(user.id); setOpen(false); }}
+            className="w-full text-left px-4 py-2.5 text-xs text-emerald-400 hover:bg-slate-800 hover:text-emerald-300 transition-colors"
+          >
+            {user.early_access ? 'Revoke beta access' : 'Grant beta access'}
+          </button>
           <button
             type="button"
             onClick={() => { onToggleAdmin(user.id); setOpen(false); }}
@@ -167,6 +183,27 @@ export default function AdminUsersPage() {
     setTimeout(() => setToast(null), 4000);
   }
 
+  async function handleToggleEarlyAccess(userId: string) {
+    setActionLoading(userId);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'toggle_early_access', userId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Failed');
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, early_access: data.early_access } : u)),
+      );
+      showToast(data.early_access ? 'Beta access granted' : 'Beta access revoked', 'success');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Error', 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
   async function handleToggleAdmin(userId: string) {
     setActionLoading(userId);
     try {
@@ -215,6 +252,7 @@ export default function AdminUsersPage() {
     { key: 'all', label: 'All' },
     { key: 'active', label: 'Active Subs' },
     { key: 'admins', label: 'Admins' },
+    { key: 'beta', label: 'Beta Access' },
     { key: 'waitlist', label: 'Free / Waitlist' },
   ];
 
@@ -223,6 +261,7 @@ export default function AdminUsersPage() {
 
     if (tab === 'admins') list = list.filter((u) => u.is_admin);
     else if (tab === 'active') list = list.filter((u) => u.tier === 'pro' || u.tier === 'founding');
+    else if (tab === 'beta') list = list.filter((u) => u.early_access);
     else if (tab === 'waitlist') list = list.filter((u) => !u.tier || u.tier === 'free');
 
     if (search.trim()) {
@@ -363,6 +402,7 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 text-xs font-mono text-slate-500 uppercase tracking-wide">User</th>
                 <th className="px-4 py-3 text-xs font-mono text-slate-500 uppercase tracking-wide">Tier</th>
                 <th className="px-4 py-3 text-xs font-mono text-slate-500 uppercase tracking-wide">Admin</th>
+                <th className="px-4 py-3 text-xs font-mono text-slate-500 uppercase tracking-wide">Beta</th>
                 <th className="px-4 py-3 text-xs font-mono text-slate-500 uppercase tracking-wide">Onboarded</th>
                 <th className="px-4 py-3 text-xs font-mono text-slate-500 uppercase tracking-wide">Joined</th>
                 <th className="px-4 py-3 text-xs font-mono text-slate-500 uppercase tracking-wide">Last seen</th>
@@ -374,7 +414,7 @@ export default function AdminUsersPage() {
                 Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-slate-500 text-sm">
+                  <td colSpan={8} className="px-4 py-12 text-center text-slate-500 text-sm">
                     No users found
                   </td>
                 </tr>
@@ -402,6 +442,9 @@ export default function AdminUsersPage() {
                       {user.is_admin && <AdminBadge />}
                     </td>
                     <td className="px-4 py-3">
+                      {user.early_access && <EarlyAccessBadge />}
+                    </td>
+                    <td className="px-4 py-3">
                       <span
                         className={`text-xs font-mono ${
                           user.onboarding_complete ? 'text-emerald-400' : 'text-slate-600'
@@ -420,6 +463,7 @@ export default function AdminUsersPage() {
                       <ActionsDropdown
                         user={user}
                         onToggleAdmin={handleToggleAdmin}
+                        onToggleEarlyAccess={handleToggleEarlyAccess}
                         onResetPassword={handleResetPassword}
                         loading={actionLoading === user.id}
                       />
