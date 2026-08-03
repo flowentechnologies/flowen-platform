@@ -49,6 +49,7 @@ export async function POST(req: Request) {
             product_data: {
               name: priceConfig.label,
               description: 'Price-locked for your first 12 months. Cancel any time.',
+              tax_code: 'txcd_20030000',
             },
             unit_amount: priceConfig.unit_amount,
             recurring: {
