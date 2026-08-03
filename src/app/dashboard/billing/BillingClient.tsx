@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { pixelPurchase } from '@/lib/pixel';
 
 export interface BillingProps {
   hasSubscription: boolean;
@@ -249,6 +251,17 @@ export function BillingClient({
   tier,
   stripeCustomerId,
 }: BillingProps) {
+  const params = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (params.get('success') === '1') {
+      pixelPurchase({ value: 0, currency: 'GBP', content_ids: [tier ?? 'subscription'] });
+      router.replace('/dashboard/billing');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="space-y-4">
       <CurrentPlanCard
