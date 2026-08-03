@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-async function getUserProfile(): Promise<UserProfile | null> {
+async function getProfileData(userId: string) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,29 +22,47 @@ async function getUserProfile(): Promise<UserProfile | null> {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
   const { data: profile } = await supabase
     .from('profiles')
     .select('display_name, tier, is_admin, role, early_access')
-    .eq('id', user.id)
+    .eq('id', userId)
     .single();
 
-  return {
-    email:       user.email ?? '',
-    displayName: profile?.display_name ?? null,
-    tier:        profile?.tier ?? null,
-    isAdmin:     profile?.is_admin ?? false,
-    role:        profile?.role ?? null,
-    earlyAccess: profile?.early_access ?? false,
-  };
+  return profile;
+}
+
+async function getAuthUser() {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: () => {},
+      },
+    }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const user = await getUserProfile();
-  if (!user) redirect('/auth/login');
-  if (!user.isAdmin && !user.earlyAccess) redirect('/coming-soon');
+  const authUser = await getAuthUser();
+  if (!authUser) redirect('/auth/login');
+
+  const profile = await getProfileData(authUser.id);
+  const isAdmin = profile?.is_admin ?? false;
+  const earlyAccess = profile?.early_access ?? false;
+  if (!isAdmin && !earlyAccess) redirect('/coming-soon');
+
+  const user: UserProfile = {
+    email:       authUser.email ?? '',
+    displayName: profile?.display_name ?? null,
+    tier:        profile?.tier ?? null,
+    isAdmin,
+    role:        profile?.role ?? null,
+  };
 
   return (
     <>
