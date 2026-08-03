@@ -41,6 +41,8 @@ export async function POST(req: Request) {
 
   try {
     const session = await stripe.checkout.sessions.create({
+      managed_payments: { enabled: false },
+      payment_method_types: ['card'],
       ...(customerEmail ? { customer_email: customerEmail } : {}),
       line_items: [
         {
@@ -49,7 +51,6 @@ export async function POST(req: Request) {
             product_data: {
               name: priceConfig.label,
               description: 'Price-locked for your first 12 months. Cancel any time.',
-              tax_code: 'txcd_20030000',
             },
             unit_amount: priceConfig.unit_amount,
             recurring: {
