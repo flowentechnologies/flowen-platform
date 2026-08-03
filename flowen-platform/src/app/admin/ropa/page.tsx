@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 const EFFECTIVE_DATE = '1 August 2026';
 const COMPANY = 'Flowen Technologies Ltd';
-const DPO_EMAIL = 'flowenspeech@outlook.com';
+const DPO_EMAIL = 'hello@flowen.digital';
 
 interface ProcessingActivity {
   id: string;

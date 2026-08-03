@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   const { duration_seconds, total_blocks_detected, stage_id } = body;
   if (
-    typeof duration_seconds !== 'number' || !Number.isFinite(duration_seconds) || duration_seconds <= 0 || duration_seconds > 7200 ||
+    typeof duration_seconds !== 'number' || !Number.isFinite(duration_seconds) || duration_seconds < 30 || duration_seconds > 7200 ||
     typeof total_blocks_detected !== 'number' || !Number.isInteger(total_blocks_detected) || total_blocks_detected < 0 ||
     (stage_id !== undefined && stage_id !== null && (!Number.isInteger(stage_id) || stage_id < 1))
   ) {

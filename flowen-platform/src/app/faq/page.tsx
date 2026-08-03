@@ -71,7 +71,7 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: 'Is Flowen available through the NHS?',
-        a: 'We are actively engaging with NHS Integrated Care Boards. Flowen is structured for NHS procurement under the Digital Technology Assessment Criteria (DTAC). Contact our clinical team at flowenspeech@outlook.com for a procurement conversation.',
+        a: 'We are actively engaging with NHS Integrated Care Boards. Flowen is structured for NHS procurement under the Digital Technology Assessment Criteria (DTAC). Contact our clinical team at clinical@flowen.digital for a procurement conversation.',
       },
       {
         q: 'Is there a free trial?',
@@ -131,7 +131,7 @@ export default function FAQPage() {
           <h1 className="text-4xl font-extrabold text-white tracking-tight mt-4">Frequently Asked Questions</h1>
           <p className="text-slate-400 text-sm mt-3 max-w-xl mx-auto">
             Can&apos;t find what you&apos;re looking for? Email us at{' '}
-            <a href="mailto:flowenspeech@outlook.com" className="text-emerald-400 hover:underline">flowenspeech@outlook.com</a>.
+            <a href="mailto:hello@flowen.digital" className="text-emerald-400 hover:underline">hello@flowen.digital</a>.
           </p>
         </div>
 

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 const EFFECTIVE = '1 August 2026';
 const COMPANY = 'Flowen Technologies Ltd';
-const EMAIL = 'flowenspeech@outlook.com';
+const EMAIL = 'hello@flowen.digital';
 
 interface PolicyDoc {
   id: string;

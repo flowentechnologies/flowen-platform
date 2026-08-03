@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
-import nodemailer from 'nodemailer';
+import { sendEmail, FROM } from '@/lib/email';
 
 const MAX_RECIPIENTS = 500;
-const FROM = '"Flowen" <flowenspeech@outlook.com>';
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.flowen.digital';
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://flowen.digital';
 
 function adminDb() {
   return createClient(
@@ -13,18 +12,6 @@ function adminDb() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
-}
-
-function transport() {
-  return nodemailer.createTransport({
-    host:   process.env.EMAIL_SERVER_HOST     ?? 'smtp.outlook.com',
-    port:   parseInt(process.env.EMAIL_SERVER_PORT ?? '587'),
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_SERVER_USER     ?? 'flowenspeech@outlook.com',
-      pass: process.env.EMAIL_SERVER_PASSWORD ?? '',
-    },
-  });
 }
 
 function escHtml(s: string): string {
@@ -38,7 +25,6 @@ function buildHtml(subject: string, body: string): string {
     .filter(Boolean)
     .map(l => `<p style="margin:12px 0;font-size:15px;color:#94a3b8;line-height:1.65;">${escHtml(l)}</p>`)
     .join('\n');
-  const safeSubject = escHtml(subject);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -57,14 +43,14 @@ function buildHtml(subject: string, body: string): string {
         </tr>
         <tr>
           <td style="padding:32px 40px;">
-            <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#f8fafc;letter-spacing:-0.5px;">${safeSubject}</h1>
+            <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#f8fafc;letter-spacing:-0.5px;">${escHtml(subject)}</h1>
             ${paragraphs}
           </td>
         </tr>
         <tr>
           <td style="padding:24px 40px;border-top:1px solid #334155;background:#0f172a;">
             <p style="margin:0;font-size:12px;color:#64748b;line-height:1.6;">
-              Flowen &bull; Questions? <a href="mailto:flowenspeech@outlook.com" style="color:#10b981;">flowenspeech@outlook.com</a>
+              Flowen &bull; Questions? <a href="mailto:hello@flowen.digital" style="color:#10b981;">hello@flowen.digital</a>
               &bull; <a href="${SITE}/legal" style="color:#10b981;">Unsubscribe / Privacy</a>
             </p>
           </td>
@@ -88,7 +74,6 @@ async function resolveEmails(segment: Segment): Promise<string[]> {
     return (data ?? []).map((r: { email: string }) => r.email);
   }
 
-  // For user-based segments, join auth.users with profiles via service role
   const [authRes, profileRes] = await Promise.all([
     db.schema('auth').from('users').select('id,email').limit(MAX_RECIPIENTS),
     segment === 'all_users'
@@ -125,10 +110,10 @@ export async function GET() {
 
   return NextResponse.json({
     counts: {
-      waitlist:           waitlistRes.count   ?? 0,
-      all_users:          usersRes.count       ?? 0,
-      founding:           foundingRes.count    ?? 0,
-      active_subscribers: activeSubsRes.count  ?? 0,
+      waitlist:           waitlistRes.count  ?? 0,
+      all_users:          usersRes.count     ?? 0,
+      founding:           foundingRes.count  ?? 0,
+      active_subscribers: activeSubsRes.count ?? 0,
     },
   });
 }
@@ -154,19 +139,20 @@ export async function POST(req: NextRequest) {
   }
 
   const html = buildHtml(subject, text);
-  const mailer = transport();
-
+  const BATCH = 20;
   let sent = 0;
   let failed = 0;
   const errors: string[] = [];
 
-  for (const email of emails.slice(0, MAX_RECIPIENTS)) {
-    try {
-      await mailer.sendMail({ from: FROM, to: email, subject, text, html });
-      sent++;
-    } catch (err) {
-      failed++;
-      if (errors.length < 5) errors.push(`${email}: ${err instanceof Error ? err.message : 'unknown'}`);
+  const batch = emails.slice(0, MAX_RECIPIENTS);
+  for (let i = 0; i < batch.length; i += BATCH) {
+    const chunk = batch.slice(i, i + BATCH);
+    for (const email of chunk) {
+      const ok = await sendEmail({ from: FROM.updates, to: email, subject, text, html });
+      if (ok) { sent++; } else {
+        failed++;
+        if (errors.length < 5) errors.push(email);
+      }
     }
   }
 

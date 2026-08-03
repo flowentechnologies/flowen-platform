@@ -180,7 +180,7 @@ function AddRuleForm({
 }) {
   const [name, setName] = useState('');
   const [ruleType, setRuleType] = useState<RuleType>('grant_deadline');
-  const [recipientEmail, setRecipientEmail] = useState('flowenspeech@outlook.com');
+  const [recipientEmail, setRecipientEmail] = useState('hello@flowen.digital');
   const [thresholdDays, setThresholdDays] = useState('7');
   const [thresholdCount, setThresholdCount] = useState('5');
   const [saving, setSaving] = useState(false);

@@ -162,6 +162,15 @@ async function upsertSubscription(
 ): Promise<void> {
   const priceId = sub.items.data[0]?.price.id ?? '';
   const { cycle } = resolvePlanMeta(sub.items.data[0]?.plan ?? ({} as Stripe.Plan));
+
+  // current_period_start/end moved to subscription level in Stripe API 2024-11-20+
+  const periodStart = (sub as unknown as { current_period_start?: number }).current_period_start
+    ?? sub.items.data[0]?.current_period_start
+    ?? 0;
+  const periodEnd   = (sub as unknown as { current_period_end?: number }).current_period_end
+    ?? sub.items.data[0]?.current_period_end
+    ?? 0;
+
   const { error } = await admin
     .from('subscriptions')
     .upsert(
@@ -172,8 +181,8 @@ async function upsertSubscription(
         price_id:             priceId,
         tier_interval:        cycle,
         cancel_at_period_end: sub.cancel_at_period_end,
-        current_period_start: new Date((sub.items.data[0]?.current_period_start ?? 0) * 1000).toISOString(),
-        current_period_end:   new Date((sub.items.data[0]?.current_period_end   ?? 0) * 1000).toISOString(),
+        current_period_start: new Date(periodStart * 1000).toISOString(),
+        current_period_end:   new Date(periodEnd   * 1000).toISOString(),
       },
       { onConflict: 'id' },
     );

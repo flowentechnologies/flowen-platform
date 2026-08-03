@@ -16,9 +16,17 @@ function db() {
 function BrandMark() {
   return (
     <div className="flex items-center gap-2 mb-8">
-      <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-slate-950 font-black text-sm">
-        F
-      </div>
+      <svg viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-6 w-auto">
+        <defs>
+          <linearGradient id="fw-invite" x1="0%" y1="50%" x2="100%" y2="50%">
+            <stop offset="0%" stopColor="#F59E0B"/>
+            <stop offset="35%" stopColor="#10B981"/>
+            <stop offset="100%" stopColor="#06B6D4"/>
+          </linearGradient>
+        </defs>
+        <path d="M 10 25 C 20 25, 25 38, 35 38 C 48 38, 52 12, 65 12 C 78 12, 82 42, 95 42 C 105 42, 108 30, 115 30" stroke="url(#fw-invite)" strokeWidth="6" strokeLinecap="round" fill="none"/>
+        <path d="M 10 33 C 20 33, 25 46, 35 46 C 48 46, 52 20, 65 20 C 78 20, 82 50, 95 50 C 105 50, 108 38, 115 38" stroke="url(#fw-invite)" strokeWidth="6" strokeLinecap="round" fill="none"/>
+      </svg>
       <span className="font-bold text-white text-base tracking-tight">Flowen</span>
     </div>
   );
@@ -95,7 +103,15 @@ export default async function InvitePage({ params }: PageProps) {
     return (
       <ErrorPage
         title="Invitation expired"
-        body="This invitation link has expired. Please contact hello@flowen.digital to request a new invitation."
+        body="This invitation link has expired. Request a new one and we'll send it right away."
+        cta={
+          <a
+            href="mailto:hello@flowen.digital?subject=New invitation request"
+            className="inline-block bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm px-6 py-3 rounded-xl transition-colors"
+          >
+            Request a new invitation →
+          </a>
+        }
       />
     );
   }

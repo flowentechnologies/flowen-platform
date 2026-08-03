@@ -13,7 +13,7 @@ const PATHWAY_STEPS = [
     step: '01',
     title: 'Initial Enquiry & Scoping',
     duration: 'Week 1–2',
-    detail: 'Contact Flowen at flowenspeech@outlook.com. We\'ll schedule a discovery call with your SLT service lead and procurement team to understand your patient population, caseload volume, and integration requirements. We\'ll provide our DTAC evidence pack, DCB0129 documentation, and a draft Data Processing Agreement for your IG team.',
+    detail: 'Contact Flowen at hello@flowen.digital. We\'ll schedule a discovery call with your SLT service lead and procurement team to understand your patient population, caseload volume, and integration requirements. We\'ll provide our DTAC evidence pack, DCB0129 documentation, and a draft Data Processing Agreement for your IG team.',
   },
   {
     step: '02',
@@ -101,7 +101,7 @@ const SLA = [
   { metric: 'Clinical safety incident acknowledgement', commitment: '24 hours', measurement: 'From report to written acknowledgement' },
   { metric: 'Data subject access request assistance', commitment: '3 business days', measurement: 'Providing Controller with data extract or response support' },
   { metric: 'Data breach notification', commitment: '72 hours', measurement: 'From Processor becoming aware to Controller notification' },
-  { metric: 'Support response (non-critical)', commitment: '2 business days', measurement: 'Email to flowenspeech@outlook.com' },
+  { metric: 'Support response (non-critical)', commitment: '2 business days', measurement: 'Email to hello@flowen.digital' },
 ];
 
 export default function NHSFrameworkPage() {
@@ -204,7 +204,7 @@ export default function NHSFrameworkPage() {
             ))}
           </div>
           <p className="text-slate-500 text-xs mt-4">
-            Full evidence pack provided to NHS procurement teams on request. Contact flowenspeech@outlook.com with subject line &quot;DTAC Evidence Request — [Organisation]&quot;.
+            Full evidence pack provided to NHS procurement teams on request. Contact hello@flowen.digital with subject line &quot;DTAC Evidence Request — [Organisation]&quot;.
           </p>
         </section>
 
@@ -283,7 +283,7 @@ export default function NHSFrameworkPage() {
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <a
-                href="mailto:flowenspeech@outlook.com?subject=NHS Commissioning Enquiry — [Organisation]"
+                href="mailto:hello@flowen.digital?subject=NHS Commissioning Enquiry — [Organisation]"
                 className="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm px-6 py-3 rounded-xl transition-colors"
               >
                 Commissioning Enquiry →

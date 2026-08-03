@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { FlowenLogo } from '@/components/FlowenLogo';
 
 const NAV_LINKS = [
+  { label: 'How it works', href: '/how-it-works' },
   { label: 'Technology', href: '/#technology' },
   { label: 'Pricing', href: '/#pricing' },
   { label: 'About', href: '/about' },
@@ -17,12 +19,7 @@ export default function MarketingNavbar() {
   return (
     <nav className="sticky top-0 z-40 bg-[#06080F]/90 backdrop-blur-md border-b border-slate-800/80">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center font-black text-black text-xl shadow-lg shadow-emerald-500/20">
-            F
-          </div>
-          <span className="text-2xl font-black tracking-tight text-white">FLOWEN</span>
-        </Link>
+        <FlowenLogo className="h-7" />
 
         <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
           {NAV_LINKS.map(link => (

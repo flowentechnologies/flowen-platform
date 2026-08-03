@@ -62,6 +62,117 @@ const EXERCISES = [
     ],
     tip: 'Observe any tension in your throat and jaw without judgment.',
   },
+  {
+    id: 6,
+    name: 'Box Breathing',
+    duration: 64,
+    phases: [
+      { label: 'Breathe in', duration: 4, color: 'emerald' },
+      { label: 'Hold', duration: 4, color: 'amber' },
+      { label: 'Breathe out', duration: 4, color: 'sky' },
+      { label: 'Hold empty', duration: 4, color: 'slate' },
+    ],
+    tip: 'All four sides equal. This calms the nervous system before speaking.',
+  },
+  {
+    id: 7,
+    name: 'Jaw & Neck Release',
+    duration: 30,
+    phases: [
+      { label: 'Drop jaw wide', duration: 5, color: 'amber' },
+      { label: 'Roll head slowly', duration: 5, color: 'sky' },
+      { label: 'Breathe & release', duration: 5, color: 'emerald' },
+    ],
+    tip: 'Tension in the jaw and neck directly affects voice quality. Release both.',
+  },
+  {
+    id: 8,
+    name: 'Resonant Hum',
+    duration: 45,
+    phases: [
+      { label: 'Breathe in', duration: 3, color: 'emerald' },
+      { label: 'Hum on exhale', duration: 7, color: 'violet' },
+      { label: 'Rest', duration: 2, color: 'slate' },
+    ],
+    tip: 'Feel the vibration in your lips and chest — not your throat.',
+  },
+  {
+    id: 9,
+    name: 'Slow Speech Drill',
+    duration: 60,
+    phases: [
+      { label: 'Breathe in', duration: 3, color: 'emerald' },
+      { label: 'Speak at 50% speed', duration: 7, color: 'sky' },
+      { label: 'Pause', duration: 2, color: 'amber' },
+    ],
+    tip: 'Deliberately halve your speaking rate. Slow speech builds motor control.',
+  },
+  {
+    id: 10,
+    name: 'Prolongation Drill',
+    duration: 45,
+    phases: [
+      { label: 'Inhale', duration: 3, color: 'emerald' },
+      { label: 'Stretch the vowel', duration: 6, color: 'sky' },
+      { label: 'Continue word', duration: 3, color: 'violet' },
+    ],
+    tip: 'Practise: "eeeasy", "ooopen", "aaafter". Stretch the vowel, then complete the word.',
+  },
+  {
+    id: 11,
+    name: 'Confident Pause',
+    duration: 45,
+    phases: [
+      { label: 'Speak a phrase', duration: 5, color: 'sky' },
+      { label: 'Hold the silence', duration: 4, color: 'violet' },
+      { label: 'Continue calmly', duration: 3, color: 'emerald' },
+    ],
+    tip: 'The pause is not a failure. It is a signal of control.',
+  },
+  {
+    id: 12,
+    name: 'Breath-Speech Link',
+    duration: 45,
+    phases: [
+      { label: 'Breath in', duration: 3, color: 'emerald' },
+      { label: 'Speak on exhale', duration: 6, color: 'sky' },
+      { label: 'Recover breath', duration: 3, color: 'amber' },
+    ],
+    tip: 'Speech is exhaled breath shaped into sound. Never speak on an in-breath.',
+  },
+  {
+    id: 13,
+    name: '4-7-8 Calm Breath',
+    duration: 57,
+    phases: [
+      { label: 'Breathe in', duration: 4, color: 'emerald' },
+      { label: 'Hold', duration: 7, color: 'amber' },
+      { label: 'Breathe out', duration: 8, color: 'sky' },
+    ],
+    tip: 'Use this before high-pressure speaking moments — phone calls, meetings, presentations.',
+  },
+  {
+    id: 14,
+    name: 'Throat Release',
+    duration: 30,
+    phases: [
+      { label: 'Yawn wide open', duration: 5, color: 'amber' },
+      { label: 'Hum softly', duration: 5, color: 'violet' },
+      { label: 'Sigh out slowly', duration: 5, color: 'emerald' },
+    ],
+    tip: 'A yawn is the body\'s natural laryngeal release. Use it intentionally.',
+  },
+  {
+    id: 15,
+    name: 'Confidence Anchor',
+    duration: 30,
+    phases: [
+      { label: 'Breathe in deeply', duration: 4, color: 'emerald' },
+      { label: 'Visualise fluency', duration: 6, color: 'violet' },
+      { label: 'Exhale with intent', duration: 5, color: 'sky' },
+    ],
+    tip: 'Picture yourself speaking easily. Pair the breath with that image every time.',
+  },
 ] as const;
 
 type ExerciseId = (typeof EXERCISES)[number]['id'];
@@ -353,7 +464,7 @@ export function MicroClient() {
         <h1 className="text-2xl font-extrabold text-white tracking-tight">
           Choose an exercise
         </h1>
-        <p className="text-sm text-slate-500 mt-1">3&ndash;5 minute daily exercises</p>
+        <p className="text-sm text-slate-500 mt-1">30&ndash;60 second targeted exercises</p>
       </div>
 
       {/* Exercise grid */}

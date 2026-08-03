@@ -132,7 +132,7 @@ The Processor shall impose equivalent data protection obligations on each sub-pr
 
 8.3 The Controller is responsible for DCB0160 (Deployment Clinical Safety) compliance within its own organisation, including appointing a Deployment Clinical Safety Officer.
 
-8.4 Clinical safety incidents or near-misses must be reported to the Processor at flowenspeech@outlook.com with the subject [CLINICAL SAFETY INCIDENT].`,
+8.4 Clinical safety incidents or near-misses must be reported to the Processor at hello@flowen.digital with the subject [CLINICAL SAFETY INCIDENT].`,
   },
   {
     number: '9',
@@ -195,8 +195,8 @@ export default function DPAPage() {
             For NHS organisations, this Agreement is designed to be consistent with NHS standard data sharing
             terms and the NHS Data Security and Protection Toolkit requirements. For bespoke terms or to request
             a signed DPA, contact{' '}
-            <a href="mailto:flowenspeech@outlook.com" className="text-emerald-400 hover:underline">
-              flowenspeech@outlook.com
+            <a href="mailto:hello@flowen.digital" className="text-emerald-400 hover:underline">
+              hello@flowen.digital
             </a>.
           </p>
         </div>
@@ -276,7 +276,7 @@ export default function DPAPage() {
             organisation-specific schedules and any required NHS standard terms — by contacting our team.
           </p>
           <a
-            href="mailto:flowenspeech@outlook.com?subject=DPA Request — [Organisation Name]"
+            href="mailto:hello@flowen.digital?subject=DPA Request — [Organisation Name]"
             className="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm px-6 py-3 rounded-xl transition-colors"
           >
             Request DPA →

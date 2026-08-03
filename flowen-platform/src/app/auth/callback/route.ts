@@ -1,5 +1,16 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
+
+const VS_COOKIE = '__vs';
+
+function serviceDb() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -31,12 +42,25 @@ export async function GET(request: NextRequest) {
 
     const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error && session) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin, onboarding_complete')
-        .eq('id', session.user.id)
-        .single();
+      const [profileRes] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('is_admin, onboarding_complete')
+          .eq('id', session.user.id)
+          .single(),
+        // Mark visitor session as converted
+        (async () => {
+          const vsId = cookieStore.get(VS_COOKIE)?.value;
+          if (vsId) {
+            await serviceDb()
+              .from('visitor_sessions')
+              .update({ converted: true, user_id: session.user.id })
+              .eq('id', vsId);
+          }
+        })(),
+      ]);
 
+      const profile = profileRes.data;
       let redirectTo: string;
       if (profile?.is_admin) {
         redirectTo = '/admin';

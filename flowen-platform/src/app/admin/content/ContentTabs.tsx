@@ -246,7 +246,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
                 ))}
               </div>
               <div className="px-6 py-3 border-t border-[#334155] bg-[#0f172a]">
-                <p className="text-[10px] text-slate-600">Flowen · flowenspeech@outlook.com · Unsubscribe / Privacy</p>
+                <p className="text-[10px] text-slate-600">Flowen · hello@flowen.digital · Unsubscribe / Privacy</p>
               </div>
             </div>
           </div>

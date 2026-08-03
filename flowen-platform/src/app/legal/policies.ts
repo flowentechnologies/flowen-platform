@@ -1,7 +1,7 @@
 export const MASTER_POLICIES = {
   company: "Flowen Technologies Ltd",
   jurisdiction: "England and Wales",
-  contactEmail: "flowenspeech@outlook.com",
+  contactEmail: "hello@flowen.digital",
   effectiveDate: "1 August 2026",
 
   privacyPolicy: `
@@ -18,7 +18,7 @@ Flowen Technologies Ltd ("Flowen", "we", "us", "our") is a company registered in
 For the purposes of UK data protection law, Flowen Technologies Ltd is the Data Controller.
 
 Data Protection Contact
-Email: flowenspeech@outlook.com
+Email: hello@flowen.digital
 Write to: Data Protection, Flowen Technologies Ltd, London, United Kingdom
 
 We are committed to protecting your personal data in accordance with the UK General Data Protection Regulation (UK GDPR), the Data Protection Act 2018 (DPA 2018), and the Data (Use and Access) Act 2025.
@@ -195,7 +195,7 @@ Following account closure or a valid erasure request, identifiable data is anony
 10. YOUR RIGHTS UNDER UK GDPR
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-You have the following rights. To exercise any right, contact flowenspeech@outlook.com. We will respond within one calendar month (UK GDPR Article 12). This period may be extended by two months for complex requests; we will notify you.
+You have the following rights. To exercise any right, contact hello@flowen.digital. We will respond within one calendar month (UK GDPR Article 12). This period may be extended by two months for complex requests; we will notify you.
 
 RIGHT OF ACCESS (Article 15)
 Request a copy of all personal data we hold about you.
@@ -234,7 +234,7 @@ Website: ico.org.uk | Phone: 0303 123 1113 | Post: ICO, Wycliffe House, Water La
 11. CHILDREN'S DATA
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-The Platform is intended for users aged 16 and over. We do not knowingly collect data from children under 16 without verified parental or guardian consent. If you believe we have received data from a child under 16, please contact flowenspeech@outlook.com immediately.
+The Platform is intended for users aged 16 and over. We do not knowingly collect data from children under 16 without verified parental or guardian consent. If you believe we have received data from a child under 16, please contact hello@flowen.digital immediately.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 12. UPDATES TO THIS POLICY
@@ -280,7 +280,7 @@ Individual results vary. Flowen makes no guarantee of fluency improvement, sympt
 
 You must be at least 16 years of age to use the Platform. By registering, you confirm you are at least 16. Users between 16 and 18 must have parental or guardian consent.
 
-You must provide accurate, current, and complete registration information. You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. You must notify us immediately at flowenspeech@outlook.com if you suspect unauthorised access to your account.
+You must provide accurate, current, and complete registration information. You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. You must notify us immediately at hello@flowen.digital if you suspect unauthorised access to your account.
 
 You may not create an account on behalf of another person without their explicit consent. You may not transfer your account to any other party.
 
@@ -298,10 +298,10 @@ FOUNDING MEMBER PRE-ORDERS
 Founding Member pre-launch seats are offered at a preferential rate locked for your first 12 months of subscription. Pre-launch pre-payments (made before the Platform's general availability date) are fully refundable on request at any time prior to your first active subscription period commencing. After that, standard terms apply.
 
 CANCELLATION
-You may cancel your subscription at any time via your account settings or by emailing flowenspeech@outlook.com. Cancellation takes effect at the end of your current billing period. You retain access until that date. No partial refunds are issued for mid-period cancellations, except as required by consumer law or expressly stated in a promotional offer.
+You may cancel your subscription at any time via your account settings or by emailing hello@flowen.digital. Cancellation takes effect at the end of your current billing period. You retain access until that date. No partial refunds are issued for mid-period cancellations, except as required by consumer law or expressly stated in a promotional offer.
 
 REFUNDS
-Where you have statutory cancellation rights under the Consumer Contracts (Information, Cancellation and Additional Charges) Regulations 2013 (14-day cooling-off period for digital services), we will honour these in full. Refund requests within this period should be sent to flowenspeech@outlook.com with your order reference.
+Where you have statutory cancellation rights under the Consumer Contracts (Information, Cancellation and Additional Charges) Regulations 2013 (14-day cooling-off period for digital services), we will honour these in full. Refund requests within this period should be sent to hello@flowen.digital with your order reference.
 
 PRICE CHANGES
 We will give at least 30 days' written notice of any price increases. You may cancel within this notice period without penalty if you do not wish to continue at the new price.
@@ -393,7 +393,7 @@ These Terms are effective from the date you first access the Platform and remain
 
 We may suspend or terminate your account immediately, without prior notice or liability, if you materially breach these Terms, engage in prohibited conduct, or if required to do so by law. On termination, your right to use the Platform ceases and we may delete your account data in accordance with our Privacy Policy.
 
-You may terminate your account at any time by emailing flowenspeech@outlook.com. Sections 7, 10, 11, and 13 survive termination.
+You may terminate your account at any time by emailing hello@flowen.digital. Sections 7, 10, 11, and 13 survive termination.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 13. GOVERNING LAW & DISPUTE RESOLUTION
@@ -401,7 +401,7 @@ You may terminate your account at any time by emailing flowenspeech@outlook.com.
 
 These Terms are governed by the laws of England and Wales. Any dispute arising out of or in connection with these Terms shall be subject to the exclusive jurisdiction of the courts of England and Wales. Consumer users in Scotland or Northern Ireland retain the right to bring proceedings before the courts of their home jurisdiction.
 
-We are committed to resolving disputes informally. Before commencing legal proceedings, please contact flowenspeech@outlook.com to seek resolution.
+We are committed to resolving disputes informally. Before commencing legal proceedings, please contact hello@flowen.digital to seek resolution.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 14. CHANGES TO THESE TERMS
@@ -413,7 +413,7 @@ We may revise these Terms from time to time. Material changes will be communicat
 15. CONTACT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-For questions about these Terms: flowenspeech@outlook.com
+For questions about these Terms: hello@flowen.digital
 Flowen Technologies Ltd, London, United Kingdom
   `,
 
@@ -429,7 +429,7 @@ Version: 1.2
 This statement describes Flowen Technologies Ltd's compliance with NHS Digital Standard DCB0129: Clinical Risk Management for Manufacturers of Health IT (Version 4.2). DCB0129 applies to any organisation manufacturing, developing, or deploying health IT systems that may be used in NHS or NHS-commissioned clinical environments.
 
 System: Flowen Speech Fluency Platform (flowen.digital)
-Clinical Safety Officer: Designated — contact flowenspeech@outlook.com
+Clinical Safety Officer: Designated — contact hello@flowen.digital
 Clinical Safety Manager: Flowen Technologies Ltd
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -508,7 +508,7 @@ A Clinical Safety Case Report (CSCR) has been produced and is maintained in acco
 — Evidence of residual risk acceptability
 — Clinical Safety Officer sign-off for each system version
 
-The CSCR is updated prior to each major release and following any clinical safety incident. Current CSCR version: 1.2 (August 2026). NHS commissioners and Deployment Clinical Safety Officers may request a copy by contacting flowenspeech@outlook.com.
+The CSCR is updated prior to each major release and following any clinical safety incident. Current CSCR version: 1.2 (August 2026). NHS commissioners and Deployment Clinical Safety Officers may request a copy by contacting hello@flowen.digital.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 6. DEPLOYMENT REQUIREMENTS (DCB0160 READINESS)
@@ -529,7 +529,7 @@ Flowen will provide full DCB0129 documentation pack, training materials, and a n
 7. CLINICAL SAFETY INCIDENT REPORTING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Clinical safety incidents or near-misses related to the Flowen Platform should be reported to: flowenspeech@outlook.com with the subject line [CLINICAL SAFETY INCIDENT].
+Clinical safety incidents or near-misses related to the Flowen Platform should be reported to: hello@flowen.digital with the subject line [CLINICAL SAFETY INCIDENT].
 
 We will acknowledge reports within 24 hours and investigate within 72 hours. Serious incidents will be escalated to our Clinical Safety Officer and reported to appropriate regulatory bodies as required. A written investigation report will be provided to the reporting organisation.
 
@@ -573,7 +573,7 @@ Notwithstanding the above:
 INFORMAL DISPUTE RESOLUTION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Before commencing formal legal proceedings, both parties agree to attempt to resolve any dispute informally. Please email flowenspeech@outlook.com with a description of the dispute and your proposed resolution. We will respond within 14 days. If the dispute is not resolved within 30 days of this notification, either party may proceed to formal dispute resolution.
+Before commencing formal legal proceedings, both parties agree to attempt to resolve any dispute informally. Please email hello@flowen.digital with a description of the dispute and your proposed resolution. We will respond within 14 days. If the dispute is not resolved within 30 days of this notification, either party may proceed to formal dispute resolution.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CONSUMER STATUTORY RIGHTS
@@ -587,7 +587,7 @@ CONTACT
 
 Flowen Technologies Ltd
 London, United Kingdom
-flowenspeech@outlook.com
+hello@flowen.digital
 flowen.digital
   `
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useTransition, useCallback } from 'react';
+import Link from 'next/link';
 import type { AnalyticsData } from '@/app/api/admin/analytics/route';
 import { CohortPanel } from './CohortPanel';
 import { QualityPanel } from './QualityPanel';
@@ -183,6 +184,10 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
         <div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Analytics</h1>
           <p className="text-slate-400 text-sm mt-1">Funnels · Revenue · Clinical outcomes · Engagement</p>
+          <Link href="/admin/analytics/live" className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 mt-1 font-medium">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Live visitor analytics →
+          </Link>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           {/* Range selector */}

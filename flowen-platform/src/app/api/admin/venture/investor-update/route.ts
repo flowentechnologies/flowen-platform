@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/admin/guard';
 import { logAuditEvent } from '@/lib/admin/audit';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { FROM } from '@/lib/email';
 
 // ── DB client ──────────────────────────────────────────────────────────────────
 
@@ -208,7 +209,7 @@ ${kpiBlock}`;
       const htmlBody = `<pre style="font-family:sans-serif;white-space:pre-wrap;font-size:14px;line-height:1.7;color:#1e293b;">${emailBody.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`;
 
       const result = await resend.emails.send({
-        from: 'Howard <updates@flowen.digital>',
+        from: FROM.investors,
         to: ['updates@flowen.digital'], // sender receives one copy
         bcc: recipient_emails,
         subject,

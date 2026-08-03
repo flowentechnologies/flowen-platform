@@ -48,7 +48,7 @@ export default function MediaKitPage() {
           <h1 className="text-4xl font-extrabold text-white tracking-tight mt-4">Media Kit</h1>
           <p className="text-slate-400 text-sm mt-3 max-w-2xl">
             For press inquiries, broadcast media, and editorial coverage. Contact our press team at{' '}
-            <a href="mailto:flowenspeech@outlook.com" className="text-emerald-400 hover:underline">flowenspeech@outlook.com</a>{' '}
+            <a href="mailto:press@flowen.digital" className="text-emerald-400 hover:underline">press@flowen.digital</a>{' '}
             with the subject line <span className="font-mono text-slate-300">[PRESS]</span>.
           </p>
         </section>
@@ -78,7 +78,7 @@ export default function MediaKitPage() {
                 ['Clinical standard', 'DCB0129 (NHS Digital)'],
                 ['Data governance', 'UK GDPR / DPA 2018 / Article 9'],
                 ['Primary market', 'UK (NHS, Access to Work, DSA)'],
-                ['Press contact', 'flowenspeech@outlook.com'],
+                ['Press contact', 'press@flowen.digital'],
               ].map(([k, v]) => (
                 <div key={k} className="flex flex-col">
                   <dt className="text-slate-500 text-xs">{k}</dt>
@@ -136,7 +136,7 @@ export default function MediaKitPage() {
             </div>
             <p className="text-slate-400 text-sm">
               High-resolution logo files and brand guidelines are available on request for verified press and media organisations. Email{' '}
-              <a href="mailto:flowenspeech@outlook.com" className="text-emerald-400 hover:underline">flowenspeech@outlook.com</a>{' '}
+              <a href="mailto:press@flowen.digital" className="text-emerald-400 hover:underline">press@flowen.digital</a>{' '}
               with your organisation name and publication.
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function MediaKitPage() {
             For interviews, embargoed announcements, or editorial access to Flowen — reach our press team directly.
           </p>
           <a
-            href="mailto:flowenspeech@outlook.com?subject=[PRESS] Media Inquiry"
+            href="mailto:press@flowen.digital?subject=%5BPRESS%5D Media Inquiry"
             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all"
           >
             Email Press Team

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin/guard';
+import { sendEmail, FROM, ADMIN_INBOX } from '@/lib/email';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -47,28 +48,9 @@ function db() {
 
 // ── Email sender ──────────────────────────────────────────────────────────────
 
-async function sendAlertEmail(to: string, ruleName: string, message: string): Promise<boolean> {
-  try {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      // Fall back to nodemailer (existing email infrastructure)
-      const nodemailer = await import('nodemailer');
-      const transport = nodemailer.default.createTransport({
-        host: process.env.EMAIL_SERVER_HOST ?? 'smtp.outlook.com',
-        port: parseInt(process.env.EMAIL_SERVER_PORT ?? '587'),
-        secure: false,
-        auth: {
-          user: process.env.EMAIL_SERVER_USER ?? 'flowenspeech@outlook.com',
-          pass: process.env.EMAIL_SERVER_PASSWORD ?? '',
-        },
-      });
-      const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.flowen.digital';
-      await transport.sendMail({
-        from: '"Flowen Admin" <flowenspeech@outlook.com>',
-        to,
-        subject: `[Flowen Alert] ${ruleName}`,
-        text: message,
-        html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head>
+function alertHtml(ruleName: string, message: string): string {
+  const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://flowen.digital';
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:40px 20px;">
     <tr><td align="center">
@@ -87,45 +69,17 @@ async function sendAlertEmail(to: string, ruleName: string, message: string): Pr
       </table>
     </td></tr>
   </table>
-</body></html>`,
-      });
-      return true;
-    }
+</body></html>`;
+}
 
-    // Resend path
-    const { Resend } = await import('resend');
-    const resend = new Resend(apiKey);
-    const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.flowen.digital';
-    await resend.emails.send({
-      from: 'Flowen Admin <alerts@flowen.digital>',
-      to,
-      subject: `[Flowen Alert] ${ruleName}`,
-      html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:40px 20px;">
-    <tr><td align="center">
-      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#1e293b;border-radius:16px;border:1px solid #334155;overflow:hidden;max-width:100%;">
-        <tr><td style="padding:32px 40px 24px;border-bottom:1px solid #334155;">
-          <span style="display:inline-block;background:#f59e0b;color:#0f172a;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.5px;font-family:monospace;">ALERT</span>
-          <h1 style="margin:12px 0 0;font-size:22px;font-weight:800;color:#f8fafc;letter-spacing:-0.5px;">${ruleName}</h1>
-        </td></tr>
-        <tr><td style="padding:32px 40px;">
-          <p style="margin:0;font-size:15px;color:#94a3b8;line-height:1.65;">${message}</p>
-          <a href="${SITE}/admin/notifications" style="display:inline-block;margin-top:24px;background:#10b981;color:#0f172a;font-weight:700;font-size:14px;padding:12px 28px;border-radius:10px;text-decoration:none;">View Admin Panel</a>
-        </td></tr>
-        <tr><td style="padding:24px 40px;border-top:1px solid #334155;background:#0f172a;">
-          <p style="margin:0;font-size:12px;color:#64748b;">Flowen Speech Technology Ltd &bull; Automated alert from your admin panel</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body></html>`,
-    });
-    return true;
-  } catch (err) {
-    console.error('[alert-email] send error:', err);
-    return false;
-  }
+async function sendAlertEmail(to: string, ruleName: string, message: string): Promise<boolean> {
+  return sendEmail({
+    from: FROM.alerts,
+    to,
+    subject: `[Flowen Alert] ${ruleName}`,
+    html: alertHtml(ruleName, message),
+    text: message,
+  });
 }
 
 // ── Check logic ───────────────────────────────────────────────────────────────
@@ -306,7 +260,7 @@ async function runChecks(): Promise<{ checked: number; triggered: number; result
 
 // ── Seed defaults ─────────────────────────────────────────────────────────────
 
-const DEFAULT_RECIPIENT = 'flowenspeech@outlook.com';
+const DEFAULT_RECIPIENT = ADMIN_INBOX;
 
 const DEFAULT_RULES = [
   {
