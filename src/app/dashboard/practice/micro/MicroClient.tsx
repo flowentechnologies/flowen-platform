@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import posthog from 'posthog-js';
 
 // ---------------------------------------------------------------------------
 // Exercise definitions
@@ -307,6 +308,10 @@ export function MicroClient() {
         setSecondsLeft(0);
         setRunning(false);
         setShowDone(true);
+        posthog.capture('micro_exercise_completed', {
+          exercise_id: exercise.id,
+          duration_seconds: exercise.duration,
+        });
         setCompleted(prev => {
           const next = new Set(prev);
           next.add(exercise.id);

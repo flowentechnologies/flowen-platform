@@ -6,17 +6,6 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
-if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com',
-    ui_host: 'https://eu.posthog.com',
-    capture_pageview: false,
-    capture_pageleave: true,
-    session_recording: { maskAllInputs: false, maskInputOptions: { password: true } },
-    autocapture: true,
-    opt_out_capturing_by_default: false,
-  });
-}
 
 function PageViewTracker() {
   const pathname = usePathname();
