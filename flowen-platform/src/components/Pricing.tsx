@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { pixelInitiateCheckout, pixelViewContent } from '@/lib/pixel';
 
 type BillingCycle = 'monthly' | 'quarterly' | 'six_months' | 'yearly';
 
@@ -21,6 +22,12 @@ export default function PricingSection() {
 
   const handleFoundingSeat = async () => {
     setCheckoutLoading(true);
+    pixelInitiateCheckout({
+      content_ids: ['founding_member'],
+      num_items: 1,
+      value: currentFounding.monthlyEquivalent,
+      currency: 'GBP',
+    });
     try {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
@@ -34,6 +41,11 @@ export default function PricingSection() {
       setCheckoutLoading(false);
     }
   };
+
+  // ViewContent fires once when pricing section mounts
+  React.useEffect(() => {
+    pixelViewContent({ content_name: 'pricing', content_category: 'founding_member', currency: 'GBP' });
+  }, []);
 
   return (
     <section className="py-16 px-4 max-w-7xl mx-auto text-slate-100">

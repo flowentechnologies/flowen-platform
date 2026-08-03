@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import MarketingNavbar from '@/components/MarketingNavbar';
 import MarketingFooter from '@/components/MarketingFooter';
 import { joinWaitlist } from '@/app/actions/join-waitlist';
+import { pixelLead } from '@/lib/pixel';
 
 export default function WaitlistPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -18,6 +19,7 @@ export default function WaitlistPage() {
       const result = await joinWaitlist(email);
       if (result.success) {
         setSubmitted(true);
+        pixelLead({ content_name: 'waitlist_signup', content_category: 'early_access' });
       } else {
         setError(result.message);
       }
