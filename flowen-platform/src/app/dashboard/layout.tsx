@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { DashboardNav, MobileBottomNav, type UserProfile } from '@/components/dashboard/DashboardNav';
+import FeedbackWidget from '@/components/dashboard/FeedbackWidget';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Flowen',
@@ -71,6 +72,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {children}
       </main>
       <MobileBottomNav user={user} />
+      <FeedbackWidget />
     </>
   );
 }
