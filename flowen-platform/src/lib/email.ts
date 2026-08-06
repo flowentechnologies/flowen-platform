@@ -12,18 +12,21 @@ const FONT = `-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-s
 // All aliases route through admin@flowen.digital on Google Workspace.
 
 export const FROM = {
-  hello:     'Flowen <hello@flowen.digital>',
-  noreply:   'Flowen <noreply@flowen.digital>',
-  support:   'Flowen <support@flowen.digital>',
-  clinical:  'Flowen Clinical <clinical@flowen.digital>',
-  billing:   'Flowen Billing <billing@flowen.digital>',
-  privacy:   'Flowen <privacy@flowen.digital>',
-  security:  'Flowen Security <security@flowen.digital>',
-  updates:   'Flowen <updates@flowen.digital>',
-  investors: 'Howard at Flowen <investors@flowen.digital>',
-  alerts:    'Flowen <alerts@flowen.digital>',
-  press:     'Flowen Press <press@flowen.digital>',
-  careers:   'Flowen Careers <careers@flowen.digital>',
+  hello:      'Flowen <hello@flowen.digital>',
+  noreply:    'Flowen <noreply@flowen.digital>',
+  support:    'Flowen <support@flowen.digital>',
+  clinical:   'Flowen Clinical <clinical@flowen.digital>',
+  billing:    'Flowen Billing <billing@flowen.digital>',
+  privacy:    'Flowen <privacy@flowen.digital>',
+  security:   'Flowen Security <security@flowen.digital>',
+  updates:    'Flowen <updates@flowen.digital>',
+  investors:  'Howard at Flowen <investors@flowen.digital>',
+  alerts:     'Flowen <alerts@flowen.digital>',
+  press:      'Flowen Press <press@flowen.digital>',
+  careers:    'Flowen Careers <careers@flowen.digital>',
+  info:       'Flowen <info@flowen.digital>',
+  affiliates: 'Flowen Affiliates <affiliates@flowen.digital>',
+  howard:     'Howard Henry <howard@flowen.digital>',
 } as const;
 
 export const ADMIN_INBOX = 'hello@flowen.digital';
@@ -70,17 +73,20 @@ export async function sendEmail(opts: SendOpts): Promise<boolean> {
 
 // ── Department config ─────────────────────────────────────────────────────────
 
-type Dept = 'customer' | 'clinical' | 'billing' | 'privacy' | 'product' | 'security' | 'investors' | 'internal';
+type Dept = 'customer' | 'clinical' | 'billing' | 'privacy' | 'product' | 'security' | 'investors' | 'internal' | 'info' | 'affiliates' | 'howard';
 
 const DEPT: Record<Dept, { name: string; email: string; color: string }> = {
-  customer:  { name: 'The Flowen Team',          email: 'support@flowen.digital',   color: '#10b981' },
-  clinical:  { name: 'The Flowen Clinical Team',  email: 'clinical@flowen.digital',  color: '#0ea5e9' },
-  billing:   { name: 'Flowen Billing',            email: 'billing@flowen.digital',   color: '#f59e0b' },
-  privacy:   { name: 'Flowen Privacy',            email: 'privacy@flowen.digital',   color: '#8b5cf6' },
-  product:   { name: 'The Flowen Product Team',   email: 'updates@flowen.digital',   color: '#6366f1' },
-  security:  { name: 'Flowen Security',           email: 'security@flowen.digital',  color: '#ef4444' },
-  investors: { name: 'Howard · Founder & CEO',    email: 'investors@flowen.digital', color: '#d97706' },
-  internal:  { name: 'Flowen System',             email: 'alerts@flowen.digital',    color: '#64748b' },
+  customer:   { name: 'The Flowen Team',          email: 'support@flowen.digital',     color: '#10b981' },
+  clinical:   { name: 'The Flowen Clinical Team',  email: 'clinical@flowen.digital',    color: '#0ea5e9' },
+  billing:    { name: 'Flowen Billing',            email: 'billing@flowen.digital',     color: '#f59e0b' },
+  privacy:    { name: 'Flowen Privacy',            email: 'privacy@flowen.digital',     color: '#8b5cf6' },
+  product:    { name: 'The Flowen Product Team',   email: 'updates@flowen.digital',     color: '#6366f1' },
+  security:   { name: 'Flowen Security',           email: 'security@flowen.digital',    color: '#ef4444' },
+  investors:  { name: 'Howard · Founder & CEO',    email: 'investors@flowen.digital',   color: '#d97706' },
+  internal:   { name: 'Flowen System',             email: 'alerts@flowen.digital',      color: '#64748b' },
+  info:       { name: 'The Flowen Team',           email: 'info@flowen.digital',        color: '#06b6d4' },
+  affiliates: { name: 'Flowen Affiliates',         email: 'affiliates@flowen.digital',  color: '#f97316' },
+  howard:     { name: 'Howard Henry',              email: 'howard@flowen.digital',      color: '#fbbf24' },
 };
 
 // ── HTML primitives ───────────────────────────────────────────────────────────
