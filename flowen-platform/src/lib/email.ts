@@ -419,7 +419,7 @@ export async function sendPaymentConfirmation(opts: {
       preheader: `${amount} received. Your ${tierLabel} subscription is active.`,
       body: `
         ${h1(`Payment received, ${opts.displayName}.`)}
-        ${p(`Your <strong style="color:#e8edf5;">${tierLabel}</strong> subscription is now active.`)}
+        ${p(`Your <strong style="color:#edf1f7;">${tierLabel}</strong> subscription is now active.`)}
         ${dataTable([
           ['Plan',     `${tierLabel} · ${cycleLabel}`],
           ['Amount',   amount],
@@ -564,8 +564,8 @@ export async function sendAdminSupportTicketAlert(opts: {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;">
           <tr>
             <td bgcolor="#070a0f" style="background:#070a0f;border-radius:6px;border:1px solid #141c28;padding:16px 20px;">
-              <p style="margin:0 0 10px;font-size:10px;font-weight:700;color:#3a4d66;text-transform:uppercase;letter-spacing:0.9px;font-family:${FONT};">Message</p>
-              <p style="margin:0;font-size:14px;color:#8a9ab5;line-height:1.7;white-space:pre-wrap;font-family:${FONT};">${opts.body.slice(0, 1200)}${opts.body.length > 1200 ? '…' : ''}</p>
+              <p style="margin:0 0 10px;font-size:10px;font-weight:700;color:#475d7a;text-transform:uppercase;letter-spacing:0.9px;font-family:${FONT};">Message</p>
+              <p style="margin:0;font-size:14px;color:#94a3b5;line-height:1.7;white-space:pre-wrap;font-family:${FONT};">${opts.body.slice(0, 1200)}${opts.body.length > 1200 ? '…' : ''}</p>
             </td>
           </tr>
         </table>
@@ -850,7 +850,7 @@ export async function sendSecurityAlert(opts: {
           ...(opts.detail   ? [['Details',    opts.detail]   as [string, string]] : []),
         ])}
         ${isHighSeverity
-          ? note(`If this was not you, <strong style="color:#e8edf5;">contact <a href="mailto:security@flowen.digital" style="color:#ef4444;text-decoration:none;">security@flowen.digital</a> immediately</strong> and change your password.`)
+          ? note(`If this was not you, <strong style="color:#edf1f7;">contact <a href="mailto:security@flowen.digital" style="color:#ef4444;text-decoration:none;">security@flowen.digital</a> immediately</strong> and change your password.`)
           : note(`If this was you, no action is needed. If you don't recognise this activity, write to <a href="mailto:security@flowen.digital" style="color:#ef4444;text-decoration:none;">security@flowen.digital</a>.`)
         }
         ${btn('Review account security', `${SITE}/dashboard/settings`, '#ef4444')}
@@ -885,7 +885,7 @@ export async function sendClinicalReport(opts: {
       preheader: `${opts.patientName} · ${opts.reportPeriod} · ${opts.sessionsCompleted} sessions`,
       body: `
         ${h1(`Patient report: ${opts.patientName}`)}
-        ${p(`Hi ${opts.clinicianName}, here's the practice summary for <strong style="color:#e8edf5;">${opts.reportPeriod}</strong>.`)}
+        ${p(`Hi ${opts.clinicianName}, here's the practice summary for <strong style="color:#edf1f7;">${opts.reportPeriod}</strong>.`)}
         ${dataTable([
           ['Sessions completed', String(opts.sessionsCompleted)],
           ['Average accuracy',   `${opts.avgAccuracy}%`],
@@ -896,7 +896,7 @@ export async function sendClinicalReport(opts: {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;">
           <tr>
             <td bgcolor="#070a0f" style="background:#070a0f;border-radius:6px;border:1px solid #141c28;padding:16px 20px;">
-              <p style="margin:0;font-size:14px;color:#8a9ab5;line-height:1.7;font-family:${FONT};">${opts.notes}</p>
+              <p style="margin:0;font-size:14px;color:#94a3b5;line-height:1.7;font-family:${FONT};">${opts.notes}</p>
             </td>
           </tr>
         </table>
@@ -957,8 +957,8 @@ export function buildChangelogHtml(release: ChangelogRelease): string {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;border-left:2px solid ${meta.color}40;">
             <tr>
               <td style="padding:12px 16px;">
-                <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#c4cede;font-family:${FONT};">${item.title}</p>
-                <p style="margin:0;font-size:13px;color:#3a4d66;line-height:1.6;font-family:${FONT};">${item.description}</p>
+                <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#c8d4e3;font-family:${FONT};">${item.title}</p>
+                <p style="margin:0;font-size:13px;color:#475d7a;line-height:1.6;font-family:${FONT};">${item.description}</p>
                 ${item.href ? `<a href="${item.href}" style="display:inline-block;margin-top:6px;font-size:12px;color:${meta.color};text-decoration:none;font-weight:600;font-family:${FONT};">${item.linkText ?? 'View'} &rarr;</a>` : ''}
               </td>
             </tr>
@@ -974,7 +974,7 @@ export function buildChangelogHtml(release: ChangelogRelease): string {
     unsubscribeHref:  `${SITE}/dashboard/settings`,
     body: `
       ${h1("What's new in Flowen")}
-      <p style="margin:-8px 0 20px;font-size:12px;color:#3a4d66;font-family:${FONT};">${dateLabel} &middot; ${release.version}</p>
+      <p style="margin:-8px 0 20px;font-size:12px;color:#475d7a;font-family:${FONT};">${dateLabel} &middot; ${release.version}</p>
       ${p(release.summary)}
       ${sections}
       ${divider()}
@@ -1042,14 +1042,14 @@ export function buildBroadcastHtml(subject: string, body: string): string {
     .split('\n')
     .map(l => l.trim())
     .filter(Boolean)
-    .map(l => `<p style="margin:0 0 14px;font-size:15px;color:#8a9ab5;line-height:1.75;font-family:${FONT};">${l}</p>`)
+    .map(l => `<p style="margin:0 0 14px;font-size:15px;color:#94a3b5;line-height:1.75;font-family:${FONT};">${l}</p>`)
     .join('');
 
   return wrap({
     dept:      'product',
     preheader: subject,
     body: `
-      <h1 style="margin:0 0 20px;font-size:26px;font-weight:800;color:#e8edf5;letter-spacing:-0.6px;line-height:1.25;font-family:${FONT};">${subject}</h1>
+      <h1 style="margin:0 0 20px;font-size:26px;font-weight:800;color:#edf1f7;letter-spacing:-0.6px;line-height:1.25;font-family:${FONT};">${subject}</h1>
       ${paragraphs}
     `,
     unsubscribeHref: `${SITE}/dashboard/settings`,
