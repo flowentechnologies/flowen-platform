@@ -167,8 +167,8 @@ function wrap({ dept, category, preheader, body, unsubscribeHref }: WrapOpts): s
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td valign="middle" style="padding-right:10px;line-height:0;">
-                      <!-- Dual waveform mark — renders in Outlook.com, Apple Mail, iOS Mail -->
-                      <img src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTIwIDYwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0id2ciIHgxPSIwJSIgeTE9IjUwJSIgeDI9IjEwMCUiIHkyPSI1MCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGNTlFMEIiLz48c3RvcCBvZmZzZXQ9IjM1JSIgc3RvcC1jb2xvcj0iIzEwQjk4MSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2QjZENCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxwYXRoIGQ9Ik0gMTAgMjUgQyAyMCAyNSwgMjUgMzgsIDM1IDM4IEMgNDggMzgsIDUyIDEyLCA2NSAxMiBDIDc4IDEyLCA4MiA0MiwgOTUgNDIgQyAxMDUgNDIsIDEwOCAzMCwgMTE1IDMwIiBzdHJva2U9InVybCgjd2cpIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0gMTAgMzMgQyAyMCAzMywgMjUgNDYsIDM1IDQ2IEMgNDggNDYsIDUyIDIwLCA2NSAyMCBDIDc4IDIwLCA4MiA1MCwgOTUgNTAgQyAxMDUgNTAsIDEwOCAzOCwgMTE1IDM4IiBzdHJva2U9InVybCgjd2cpIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==" width="52" height="26" alt="" style="display:block;border:0;outline:none;">
+                      <!-- Dual waveform mark — hosted URL renders in all clients incl. Gmail -->
+                      <img src="https://www.flowen.digital/email-logo.svg" width="52" height="26" alt="Flowen" style="display:block;border:0;outline:none;">
                     </td>
                     <td valign="middle">
                       <span style="font-size:20px;font-weight:900;color:#ffffff;letter-spacing:-0.8px;font-family:${FONT};">FLOWEN</span>
