@@ -427,7 +427,7 @@ export async function sendPaymentConfirmation(opts: {
           ...(opts.invoiceId ? [['Invoice', opts.invoiceId] as [string, string]] : []),
           ['Date',     gbpTime()],
         ])}
-        ${btn('Go to my dashboard', `${SITE}/dashboard`)}
+        ${btn('Go to my dashboard', `${SITE}/dashboard`, '#f59e0b')}
         ${note(`Manage or cancel your subscription at any time from <a href="${SITE}/dashboard/billing" style="color:#f59e0b;text-decoration:none;">Account &rarr; Billing</a>.`)}
       `,
     }),
