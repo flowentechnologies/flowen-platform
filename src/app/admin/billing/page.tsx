@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
-import { stripe } from '@/lib/stripe';
+import { getStripeClient } from '@/lib/stripe';
 import { assertAdmin } from '@/lib/admin/guard';
+import { StripeModeToggle } from '@/components/admin/StripeModeToggle';
 import { SubscriptionActions } from './SubscriptionRow';
 import { RefundButton } from './RefundButton';
 
@@ -95,6 +96,7 @@ export default async function BillingPage() {
   let recentRefunds: Stripe.Refund[] = [];
   let stripeError: string | null = null;
 
+  const { client: stripe, mode } = await getStripeClient();
   const monthStart = Math.floor(new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime() / 1000);
 
   try {
@@ -180,9 +182,14 @@ export default async function BillingPage() {
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Billing</h1>
           <p className="text-slate-400 text-sm mt-1">Revenue, subscriptions, payments, refunds</p>
         </div>
-        <span className={`self-start sm:self-auto px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border ${stripeError ? 'bg-red-500/10 text-red-400 border-red-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'}`}>
-          {stripeError ? 'STRIPE ERROR' : 'STRIPE LIVE'}
-        </span>
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          {stripeError && (
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border bg-red-500/10 text-red-400 border-red-500/30">
+              ERROR
+            </span>
+          )}
+          <StripeModeToggle initialMode={mode} />
+        </div>
       </div>
 
       {stripeError && (

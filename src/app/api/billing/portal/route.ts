@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
-import { stripe } from '@/lib/stripe';
+import { getStripeClient } from '@/lib/stripe';
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.flowen.digital';
 
@@ -49,8 +49,9 @@ export async function POST() {
       return NextResponse.json({ error: 'no_subscription' }, { status: 400 });
     }
 
-    // 4. Create billing portal session
-    const session = await stripe.billingPortal.sessions.create({
+    // 4. Create billing portal session (uses mode from app_config)
+    const { client } = await getStripeClient();
+    const session = await client.billingPortal.sessions.create({
       customer: customer.stripe_customer_id as string,
       return_url: `${baseUrl}/dashboard/billing`,
     });
