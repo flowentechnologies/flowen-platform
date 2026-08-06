@@ -64,6 +64,18 @@ function serviceDb() {
   );
 }
 
+// Auth Admin client — used for getUserById() which routes through the
+// Supabase Auth Admin API (/auth/v1/admin/users/:id), bypassing PostgREST.
+// The auth schema is NOT exposed through PostgREST, so .schema('auth').from()
+// does not work even with the service role key.
+function authAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  ).auth.admin;
+}
+
 /**
  * SHA-256 hash of a normalised email, as required by Meta CAPI.
  * Meta specifies: lowercase, trimmed, then hashed.
@@ -143,19 +155,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, skipped: 'meta not configured' });
   }
 
-  // 6. Fetch the user's email from auth.users via service role.
-  //    This is the only PII lookup — it goes no further than the hash.
-  const { data: authUser, error: userErr } = await serviceDb()
-    .schema('auth')
-    .from('users')
-    .select('email')
-    .eq('id', record.user_id)
-    .single();
+  // 6. Fetch the user's email via the Supabase Auth Admin API.
+  //    .auth.admin.getUserById() routes through /auth/v1/admin/users/:id —
+  //    NOT PostgREST — so the auth schema restriction does not apply.
+  //    This is the only PII lookup; it goes no further than the SHA-256 hash.
+  const { data: adminData, error: userErr } = await authAdmin().getUserById(record.user_id);
 
-  if (userErr || !authUser?.email) {
+  if (userErr || !adminData?.user?.email) {
     console.error('[track-meta] could not resolve user email:', userErr?.message);
     return NextResponse.json({ error: 'User email not found' }, { status: 500 });
   }
+
+  const authUser = { email: adminData.user.email };
 
   // 7. Build the CAPI payload — strict privacy controls apply here.
   //    - Email is SHA-256 hashed (Meta requirement, also good for privacy).
