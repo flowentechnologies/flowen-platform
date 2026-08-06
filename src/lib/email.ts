@@ -1062,6 +1062,117 @@ export function buildBroadcastHtml(subject: string, body: string): string {
   });
 }
 
+// ── 24. Info enquiry reply ────────────────────────────────────────────────────
+// Sent from info@flowen.digital in response to general enquiries.
+
+export async function sendInfoEnquiryReply(opts: {
+  email: string;
+  displayName: string;
+  message?: string;
+}) {
+  await sendEmail({
+    from:    FROM.info,
+    to:      opts.email,
+    subject: 'Thanks for getting in touch with Flowen',
+    replyTo: 'info@flowen.digital',
+    tags:    [{ name: 'type', value: 'info_enquiry_reply' }],
+    text:    `Hi ${opts.displayName},\n\nThanks for reaching out. We've received your message and will get back to you shortly.\n\nThe Flowen Team\ninfo@flowen.digital`,
+    html: wrap({
+      dept:      'info',
+      category:  'General Enquiry',
+      preheader: "We've received your message and will be in touch shortly.",
+      body: `
+        ${h1(`Thanks for getting in touch, ${opts.displayName}.`)}
+        ${p("We've received your message and someone from the team will get back to you shortly.")}
+        ${opts.message ? `
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;">
+            <tr>
+              <td bgcolor="#070a0f" style="background:#070a0f;border-radius:6px;border:1px solid #141c28;padding:16px 20px;">
+                <p style="margin:0 0 8px;font-size:10px;font-weight:700;color:#475d7a;text-transform:uppercase;letter-spacing:0.9px;font-family:${FONT};">Your message</p>
+                <p style="margin:0;font-size:14px;color:#94a3b5;line-height:1.7;font-family:${FONT};">${opts.message}</p>
+              </td>
+            </tr>
+          </table>` : ''}
+        ${note(`In the meantime, explore what Flowen offers at <a href="${SITE}" style="color:#06b6d4;text-decoration:none;">flowen.digital</a>.`)}
+      `,
+    }),
+  });
+}
+
+// ── 25. Affiliate welcome ─────────────────────────────────────────────────────
+// Sent from affiliates@flowen.digital when someone joins the affiliate programme.
+
+export async function sendAffiliateWelcome(opts: {
+  email: string;
+  displayName: string;
+  referralCode: string;
+  referralUrl: string;
+  commissionRate?: string;
+}) {
+  const commission = opts.commissionRate ?? '20%';
+  await sendEmail({
+    from:    FROM.affiliates,
+    to:      opts.email,
+    subject: "You're in — Flowen Affiliate Programme",
+    replyTo: 'affiliates@flowen.digital',
+    tags:    [{ name: 'type', value: 'affiliate_welcome' }],
+    text:    `Hi ${opts.displayName},\n\nWelcome to the Flowen Affiliate Programme.\n\nYour referral link: ${opts.referralUrl}\nYour code: ${opts.referralCode}\nCommission: ${commission} on every subscription you refer.\n\nFlowen Affiliates\naffiliates@flowen.digital`,
+    html: wrap({
+      dept:      'affiliates',
+      category:  'Affiliate Programme',
+      preheader: `Your referral link is live. Earn ${commission} on every subscription you refer.`,
+      body: `
+        ${h1(`Welcome to the programme, ${opts.displayName}.`)}
+        ${p(`You earn <strong style="color:#edf1f7;">${commission} commission</strong> on every Flowen subscription your referrals convert to — paid monthly.`)}
+        ${dataTable([
+          ['Your code',       opts.referralCode],
+          ['Commission rate', commission],
+          ['Cookie window',   '30 days'],
+          ['Payout',          'Monthly via bank transfer'],
+        ])}
+        ${btn('Copy your referral link', opts.referralUrl, '#f97316')}
+        ${note(`Questions or custom partnership ideas? Write to <a href="mailto:affiliates@flowen.digital" style="color:#f97316;text-decoration:none;">affiliates@flowen.digital</a>.`)}
+      `,
+    }),
+  });
+}
+
+// ── 26. Founder note (howard@flowen.digital) ──────────────────────────────────
+// A personal note from Howard — for high-value users, investors, or VIPs.
+
+export async function sendFounderNote(opts: {
+  email: string;
+  displayName: string;
+  subject: string;
+  body: string;
+}) {
+  const paragraphs = opts.body
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map(l => p(l))
+    .join('');
+
+  await sendEmail({
+    from:    FROM.howard,
+    to:      opts.email,
+    subject: opts.subject,
+    replyTo: 'howard@flowen.digital',
+    tags:    [{ name: 'type', value: 'founder_note' }],
+    text:    `${opts.body}\n\nHoward Henry\nFounder & CEO, Flowen\nhoward@flowen.digital`,
+    html: wrap({
+      dept:      'howard',
+      category:  'A note from Howard',
+      preheader: opts.body.slice(0, 100),
+      body: `
+        ${h1(opts.subject)}
+        ${paragraphs}
+        ${note(`Reply directly to this email — it comes straight to me.\n<a href="mailto:howard@flowen.digital" style="color:#fbbf24;text-decoration:none;">howard@flowen.digital</a>`)}
+      `,
+    }),
+  });
+}
+
 // ── Deprecated alias ──────────────────────────────────────────────────────────
 
 /** @deprecated use sendAdminWaitlistAlert */
