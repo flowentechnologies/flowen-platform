@@ -494,7 +494,7 @@ export async function sendPaymentFailedUser(email: string, displayName: string) 
       body: `
         ${h1(`Payment failed, ${displayName}.`)}
         ${p("We couldn't process your subscription renewal. Update your payment details now — Stripe will retry automatically once you do.")}
-        ${btn('Update payment details', `${SITE}/dashboard/billing`, '#ef4444')}
+        ${btn('Update payment details', `${SITE}/dashboard/billing`, '#f59e0b')}
         ${note(`Questions? Reply to this email or write to <a href="mailto:billing@flowen.digital" style="color:#f59e0b;text-decoration:none;">billing@flowen.digital</a>.`)}
       `,
     }),
@@ -655,6 +655,7 @@ export async function sendGdprRequestConfirmation(opts: {
           ['Response due',  `${due} (30-day statutory limit)`],
         ])}
         ${note("Under UK GDPR Article 12, we must respond within one calendar month. For complex requests we may extend this by a further two months and will inform you in advance.")}
+        ${btn('View my data settings', `${SITE}/dashboard/settings`, '#8b5cf6')}
         ${note(`Questions? Reply to this email or write to <a href="mailto:privacy@flowen.digital" style="color:#8b5cf6;text-decoration:none;">privacy@flowen.digital</a>.`)}
       `,
     }),
@@ -856,7 +857,7 @@ export async function sendSecurityAlert(opts: {
           ...(opts.detail   ? [['Details',    opts.detail]   as [string, string]] : []),
         ])}
         ${isHighSeverity
-          ? note(`If this was not you, <strong style="color:#edf1f7;">contact <a href="mailto:security@flowen.digital" style="color:#ef4444;text-decoration:none;">security@flowen.digital</a> immediately</strong> and change your password.`)
+          ? note(`If this was not you, contact <a href="mailto:security@flowen.digital" style="color:#ef4444;text-decoration:none;font-weight:700;">security@flowen.digital</a> immediately and change your password.`)
           : note(`If this was you, no action is needed. If you don't recognise this activity, write to <a href="mailto:security@flowen.digital" style="color:#ef4444;text-decoration:none;">security@flowen.digital</a>.`)
         }
         ${btn('Review account security', `${SITE}/dashboard/settings`, '#ef4444')}
@@ -907,6 +908,7 @@ export async function sendClinicalReport(opts: {
           </tr>
         </table>
         ${btn('View full report', opts.reportUrl, '#0ea5e9')}
+        ${note(`Questions about this report? Reply to this email or write to <a href="mailto:clinical@flowen.digital" style="color:#0ea5e9;text-decoration:none;">clinical@flowen.digital</a>.`)}
       `,
     }),
   });
