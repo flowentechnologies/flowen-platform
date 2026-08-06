@@ -12,6 +12,75 @@ const UTM_COOKIE     = '__utm';
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 const UTM_PARAMS     = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const;
 
+// ── Marketing attribution constants ───────────────────────────────────────────
+
+// Long-lived anonymous ID cookie — survives session boundaries and is the
+// primary key for the marketing_attribution table.
+const ANON_ATTR_COOKIE     = 'flowen_anon_id';
+const ANON_ATTR_MAX_AGE    = 60 * 60 * 24 * 365; // 1 year
+
+// Ad-network click ID query parameters we listen for.
+// Only capture non-null values — absent IDs are never written to the DB.
+const CLICK_ID_PARAMS = ['gclid', 'fbclid', 'ttclid', 'msclkid'] as const;
+type ClickIdParam = typeof CLICK_ID_PARAMS[number];
+
+// ── Attribution helpers ───────────────────────────────────────────────────────
+
+/**
+ * Truncates an IP address for privacy compliance.
+ * IPv4: zeroes the last octet  (e.g. 192.168.1.100 → 192.168.1.0)
+ * IPv6: keeps only the first 4 hextets (network prefix)
+ *
+ * The truncated value still provides enough signal for ad-network CAPI
+ * matching while preventing exact user localisation in our own DB.
+ */
+function anonymizeIp(ip: string): string {
+  const v4 = ip.match(/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.)\d{1,3}$/);
+  if (v4) return `${v4[1]}0`;
+  const parts = ip.split(':');
+  if (parts.length >= 4) return `${parts.slice(0, 4).join(':')}::`;
+  return ip;
+}
+
+/**
+ * Writes attribution data to marketing_attribution via the Supabase REST API.
+ *
+ * Uses a raw fetch rather than the SDK to keep the proxy bundle lightweight —
+ * the SDK adds ~20 kB that is wasted when most requests carry no click IDs.
+ *
+ * The `Prefer: resolution=merge-duplicates` header instructs PostgREST to run
+ * an upsert (INSERT … ON CONFLICT DO UPDATE). Only columns present in the body
+ * are updated, so a return visit without new click IDs won't clobber existing
+ * attribution data.
+ *
+ * Called fire-and-forget — Vercel Fluid Compute keeps the instance alive long
+ * enough for the write to settle without adding latency to the HTTP response.
+ */
+async function captureAttribution(
+  anonId: string,
+  record: Partial<{
+    gclid: string; fbclid: string; ttclid: string; msclkid: string;
+    utm_source: string; utm_medium: string; utm_campaign: string;
+    utm_content: string; utm_term: string;
+    referrer: string; landing_page: string;
+    ip_address: string; user_agent: string;
+  }>,
+): Promise<void> {
+  const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/marketing_attribution`;
+  await fetch(url, {
+    method:  'POST',
+    headers: {
+      apikey:         process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      Authorization:  `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+      'Content-Type': 'application/json',
+      // Upsert on primary key (anonymous_id). Only specified columns are
+      // updated on conflict — absent columns retain their existing values.
+      Prefer:         'resolution=merge-duplicates',
+    },
+    body: JSON.stringify({ anonymous_id: anonId, ...record }),
+  });
+}
+
 // ── In-process rate limiter ───────────────────────────────────────────────────
 // In-memory map, scoped to the serverless instance lifetime.
 // For a distributed rate limit (multi-region), replace with Upstash Redis
@@ -162,6 +231,69 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       httpOnly: true,
       sameSite: 'lax',
     });
+  }
+
+  // 10. Marketing attribution — server-side ad click capture
+  //
+  //     Runs only when the request carries click IDs (gclid, fbclid, …) or
+  //     when a brand-new anonymous ID is being minted alongside UTM params.
+  //     This prevents a DB write on every page view and limits data collection
+  //     to meaningful attribution events.
+  //
+  //     The flowen_anon_id cookie is the DB primary key. It is:
+  //       • HTTP-only  — inaccessible to client-side JS / third-party scripts
+  //       • Secure     — HTTPS only in production
+  //       • SameSite=Lax — safe for top-level navigations from ad links
+  //       • 1-year TTL — survives session closes for cross-session attribution
+  {
+    const existingAnonId = request.cookies.get(ANON_ATTR_COOKIE)?.value;
+    const isNewAnonId    = !existingAnonId;
+    const anonId         = existingAnonId ?? crypto.randomUUID();
+
+    // Collect whichever click IDs are present on this request.
+    const clickIds: Partial<Record<ClickIdParam, string>> = {};
+    for (const param of CLICK_ID_PARAMS) {
+      const v = searchParams.get(param);
+      if (v) clickIds[param] = v;
+    }
+    const hasClickIds = Object.keys(clickIds).length > 0;
+
+    // Write to DB when: a click ID just arrived, OR a brand-new visitor also
+    // has UTMs (so their organic-with-UTM attribution is captured immediately).
+    if (hasClickIds || (isNewAnonId && hasUtm)) {
+      const rawIp   = request.headers.get('x-forwarded-for')?.split(',')[0].trim();
+      const record  = {
+        ...clickIds,
+        ...(hasUtm && {
+          utm_source:   searchParams.get('utm_source')   ?? undefined,
+          utm_medium:   searchParams.get('utm_medium')   ?? undefined,
+          utm_campaign: searchParams.get('utm_campaign') ?? undefined,
+          utm_content:  searchParams.get('utm_content')  ?? undefined,
+          utm_term:     searchParams.get('utm_term')     ?? undefined,
+        }),
+        referrer:     request.headers.get('referer') ?? undefined,
+        landing_page: pathname,
+        ip_address:   rawIp ? anonymizeIp(rawIp) : undefined,
+        user_agent:   request.headers.get('user-agent') ?? undefined,
+      };
+
+      // Fire-and-forget — does not add to response latency.
+      void captureAttribution(anonId, record).catch(() => {
+        // Swallow silently — attribution failure must never impact page delivery.
+      });
+    }
+
+    // Set or refresh the anonymous ID cookie whenever it is new or click IDs
+    // have arrived (the arrival of a click ID extends the attribution window).
+    if (isNewAnonId || hasClickIds) {
+      response.cookies.set(ANON_ATTR_COOKIE, anonId, {
+        path:     '/',
+        maxAge:   ANON_ATTR_MAX_AGE,
+        httpOnly: true,
+        sameSite: 'lax',
+        secure:   process.env.NODE_ENV === 'production',
+      });
+    }
   }
 
   return response;
