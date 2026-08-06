@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
-import { stripe, stripeWebhookSecret } from '@/lib/stripe';
+import { getStripeClientForLivemode } from '@/lib/stripe';
 import {
   sendPaymentConfirmation,
   sendAdminPaymentAlert,
@@ -210,6 +210,7 @@ async function logError(
 async function handleCheckoutSessionCompleted(
   admin: AdminClient,
   session: Stripe.Checkout.Session,
+  stripe: Stripe,
 ): Promise<void> {
   const stripeCustomerId =
     typeof session.customer === 'string' ? session.customer
@@ -302,6 +303,7 @@ async function handleSubscriptionEvent(
 async function handleInvoicePaymentSucceeded(
   admin: AdminClient,
   invoice: Stripe.Invoice,
+  stripe: Stripe,
 ): Promise<void> {
   const subRef = invoice.parent?.subscription_details?.subscription;
   if (!subRef) return;
@@ -375,12 +377,6 @@ async function handleInvoicePaymentFailed(
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(req: Request): Promise<Response> {
-  // Misconfiguration must surface loudly in logs, not silently swallow events.
-  if (!stripeWebhookSecret) {
-    console.error('[stripe-webhook] STRIPE_WEBHOOK_SECRET not configured');
-    return Response.json({ error: 'Webhook secret not configured' }, { status: 500 });
-  }
-
   const rawBody   = await req.text();
   const sigHeader = req.headers.get('stripe-signature');
 
@@ -388,10 +384,23 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'Missing stripe-signature header' }, { status: 400 });
   }
 
+  // Peek at livemode before signature verification so we pick the correct
+  // webhook secret (live vs test). The signature still provides the actual
+  // authentication — peeking does not weaken security.
+  let livemode = true;
+  try { livemode = (JSON.parse(rawBody) as { livemode?: boolean }).livemode ?? true; } catch {}
+
+  const { client: stripe, webhookSecret } = getStripeClientForLivemode(livemode);
+
+  if (!webhookSecret) {
+    console.error('[stripe-webhook] Webhook secret not configured for livemode:', livemode);
+    return Response.json({ error: 'Webhook secret not configured' }, { status: 500 });
+  }
+
   // Cryptographic validation — rejects replayed, tampered, or spoofed events.
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(rawBody, sigHeader, stripeWebhookSecret);
+    event = stripe.webhooks.constructEvent(rawBody, sigHeader, webhookSecret);
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Signature verification failed';
     return Response.json({ error: msg }, { status: 400 });
@@ -416,6 +425,7 @@ export async function POST(req: Request): Promise<Response> {
         await handleCheckoutSessionCompleted(
           admin,
           event.data.object as Stripe.Checkout.Session,
+          stripe,
         );
         break;
 
@@ -426,7 +436,7 @@ export async function POST(req: Request): Promise<Response> {
         break;
 
       case 'invoice.payment_succeeded':
-        await handleInvoicePaymentSucceeded(admin, event.data.object as Stripe.Invoice);
+        await handleInvoicePaymentSucceeded(admin, event.data.object as Stripe.Invoice, stripe);
         break;
 
       case 'invoice.payment_failed':
