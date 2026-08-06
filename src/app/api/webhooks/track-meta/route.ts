@@ -159,7 +159,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   //    .auth.admin.getUserById() routes through /auth/v1/admin/users/:id —
   //    NOT PostgREST — so the auth schema restriction does not apply.
   //    This is the only PII lookup; it goes no further than the SHA-256 hash.
-  const { data: adminData, error: userErr } = await authAdmin().getUserById(record.user_id);
+  // record.user_id is guaranteed non-null here — the isNewConversion guard above
+  // checked it, but TypeScript can't narrow through the early-return pattern.
+  const { data: adminData, error: userErr } = await authAdmin().getUserById(record.user_id!);
 
   if (userErr || !adminData?.user?.email) {
     console.error('[track-meta] could not resolve user email:', userErr?.message);
