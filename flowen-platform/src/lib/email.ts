@@ -86,32 +86,32 @@ const DEPT: Record<Dept, { name: string; email: string; color: string }> = {
 // ── HTML primitives ───────────────────────────────────────────────────────────
 
 function h1(text: string) {
-  return `<h1 style="margin:0 0 16px;font-size:26px;font-weight:800;color:#e8edf5;letter-spacing:-0.6px;line-height:1.25;font-family:${FONT};">${text}</h1>`;
+  return `<h1 style="margin:0 0 18px;font-size:28px;font-weight:800;color:#edf1f7;letter-spacing:-0.7px;line-height:1.15;font-family:${FONT};">${text}</h1>`;
 }
 
 function h2(text: string) {
-  return `<p style="margin:24px 0 8px;font-size:11px;font-weight:700;letter-spacing:0.9px;text-transform:uppercase;color:#3a4d66;font-family:${FONT};">${text}</p>`;
+  return `<p style="margin:28px 0 10px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#475d7a;font-family:${FONT};">${text}</p>`;
 }
 
 function p(text: string, muted = false) {
-  return `<p style="margin:0 0 14px;font-size:15px;color:${muted ? '#3a4d66' : '#8a9ab5'};line-height:1.75;font-family:${FONT};">${text}</p>`;
+  return `<p style="margin:0 0 16px;font-size:15px;color:${muted ? '#475d7a' : '#94a3b5'};line-height:1.8;font-family:${FONT};">${text}</p>`;
 }
 
 function btn(text: string, href: string, color = '#10b981') {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 0;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;">
     <tr>
-      <td bgcolor="${color}" style="background:${color};border-radius:6px;">
-        <a href="${href}" style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:700;color:#07090f;text-decoration:none;font-family:${FONT};">${text}</a>
+      <td bgcolor="${color}" style="background:${color};border-radius:7px;">
+        <a href="${href}" style="display:inline-block;padding:14px 30px;font-size:14px;font-weight:700;color:#07090f;text-decoration:none;letter-spacing:0.1px;font-family:${FONT};">${text}</a>
       </td>
     </tr>
   </table>`;
 }
 
 function dataTable(rows: [string, string][]) {
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0;border-collapse:collapse;">
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;border-collapse:collapse;">
     ${rows.map(([k, v], i) => `<tr>
-      <td style="padding:10px 0;font-size:11px;font-weight:700;color:#3a4d66;text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;padding-right:24px;border-bottom:${i < rows.length - 1 ? '1px solid #141c28' : 'none'};vertical-align:top;font-family:${FONT};">${k}</td>
-      <td style="padding:10px 0;font-size:13px;color:#c4cede;border-bottom:${i < rows.length - 1 ? '1px solid #141c28' : 'none'};font-family:${FONT};">${v}</td>
+      <td style="padding:13px 0;font-size:11px;font-weight:700;color:#475d7a;text-transform:uppercase;letter-spacing:0.9px;white-space:nowrap;padding-right:28px;border-bottom:${i < rows.length - 1 ? '1px solid #141c28' : 'none'};vertical-align:top;font-family:${FONT};">${k}</td>
+      <td style="padding:13px 0;font-size:14px;color:#c8d4e3;border-bottom:${i < rows.length - 1 ? '1px solid #141c28' : 'none'};font-family:${FONT};">${v}</td>
     </tr>`).join('')}
   </table>`;
 }
@@ -124,7 +124,7 @@ function divider() {
 
 // Subtle note — replaces emoji callout boxes
 function note(text: string) {
-  return `<p style="margin:16px 0 0;font-size:13px;color:#3a4d66;line-height:1.7;font-family:${FONT};">${text}</p>`;
+  return `<p style="margin:18px 0 0;font-size:13px;color:#475d7a;line-height:1.75;font-family:${FONT};">${text}</p>`;
 }
 
 // ── Base HTML wrapper ─────────────────────────────────────────────────────────
@@ -162,16 +162,15 @@ function wrap({ dept, category, preheader, body, unsubscribeHref }: WrapOpts): s
 
           <!-- Logo -->
           <tr>
-            <td style="padding:0 0 22px;">
+            <td style="padding:0 0 24px;">
               <a href="${SITE}" style="text-decoration:none;display:inline-block;">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                   <tr>
-                    <td valign="middle" style="padding-right:10px;line-height:0;">
-                      <!-- Dual waveform mark — hosted URL renders in all clients incl. Gmail -->
-                      <img src="https://www.flowen.digital/email-logo.svg" width="52" height="26" alt="Flowen" style="display:block;border:0;outline:none;">
+                    <td valign="middle" style="padding-right:11px;line-height:0;">
+                      <img src="https://www.flowen.digital/email-logo.svg" width="58" height="29" alt="Flowen" style="display:block;border:0;outline:none;">
                     </td>
                     <td valign="middle">
-                      <span style="font-size:20px;font-weight:900;color:#ffffff;letter-spacing:-0.8px;font-family:${FONT};">FLOWEN</span>
+                      <span style="font-size:21px;font-weight:900;color:#f0f4f8;letter-spacing:-0.9px;font-family:${FONT};">FLOWEN</span>
                     </td>
                   </tr>
                 </table>
@@ -186,24 +185,27 @@ function wrap({ dept, category, preheader, body, unsubscribeHref }: WrapOpts): s
               <!-- Dept accent line -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td height="2" bgcolor="${sig.color}" style="background:${sig.color};border-radius:9px 9px 0 0;font-size:2px;line-height:2px;">&nbsp;</td>
+                  <td height="3" bgcolor="${sig.color}" style="background:${sig.color};border-radius:9px 9px 0 0;font-size:3px;line-height:3px;">&nbsp;</td>
                 </tr>
               </table>
 
               <!-- Content -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="padding:32px 40px 36px;">
+                  <td style="padding:38px 44px 44px;">
 
-                    ${category ? `<p style="margin:0 0 14px;font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:${sig.color};font-family:${FONT};">${category}</p>` : ''}
+                    ${category ? `<p style="margin:0 0 20px;font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:${sig.color};font-family:${FONT};">${category}</p>` : ''}
 
                     ${body}
 
                     <!-- Sign-off -->
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:28px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:32px;">
+                      <tr><td height="1" bgcolor="#1a2740" style="background:#1a2740;font-size:1px;line-height:1px;">&nbsp;</td></tr>
+                    </table>
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;">
                       <tr>
                         <td>
-                          <p style="margin:0 0 2px;font-size:13px;color:#c4cede;font-family:${FONT};">${sig.name}</p>
+                          <p style="margin:0 0 3px;font-size:13px;font-weight:600;color:#c8d4e3;font-family:${FONT};">${sig.name}</p>
                           <p style="margin:0;font-size:12px;font-family:${FONT};">
                             <a href="mailto:${sig.email}" style="color:${sig.color};text-decoration:none;">${sig.email}</a>
                           </p>
@@ -220,15 +222,15 @@ function wrap({ dept, category, preheader, body, unsubscribeHref }: WrapOpts): s
 
           <!-- Footer -->
           <tr>
-            <td style="padding:20px 4px 0;">
-              <p style="margin:0;font-size:11px;color:#1e2940;line-height:1.8;font-family:${FONT};">
+            <td style="padding:22px 4px 0;">
+              <p style="margin:0;font-size:11px;color:#263548;line-height:1.9;font-family:${FONT};">
                 Flowen Speech Technology Ltd &middot; England &amp; Wales &middot; ${now}
                 &nbsp;&middot;&nbsp;
-                <a href="${SITE}/legal" style="color:#1e2940;text-decoration:none;">Privacy</a>
+                <a href="${SITE}/legal" style="color:#263548;text-decoration:none;">Privacy</a>
                 &nbsp;&middot;&nbsp;
-                <a href="${SITE}/legal" style="color:#1e2940;text-decoration:none;">Terms</a>
+                <a href="${SITE}/legal" style="color:#263548;text-decoration:none;">Terms</a>
                 &nbsp;&middot;&nbsp;
-                <a href="${unsubscribeHref ?? `${SITE}/dashboard/settings`}" style="color:#1e2940;text-decoration:none;">Unsubscribe</a>
+                <a href="${unsubscribeHref ?? `${SITE}/dashboard/settings`}" style="color:#263548;text-decoration:none;">Unsubscribe</a>
               </p>
             </td>
           </tr>
