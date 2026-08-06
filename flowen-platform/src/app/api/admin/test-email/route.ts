@@ -26,7 +26,7 @@ import {
 
 // Temporary one-shot route — delete after use
 export async function POST(req: Request) {
-  const { to } = await req.json().catch(() => ({ to: null }));
+  const { to, only } = await req.json().catch(() => ({ to: null, only: null }));
   if (!to) return NextResponse.json({ error: 'to is required' }, { status: 400 });
 
   const now   = new Date().toISOString();
@@ -35,6 +35,7 @@ export async function POST(req: Request) {
   const results: Record<string, boolean> = {};
 
   const run = async (key: string, fn: () => Promise<unknown>) => {
+    if (only && !key.includes(only)) return;
     try { await fn(); results[key] = true; }
     catch (e) { console.error(`[test-email] ${key}:`, e); results[key] = false; }
   };
