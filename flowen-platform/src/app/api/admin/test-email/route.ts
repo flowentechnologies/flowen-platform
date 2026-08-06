@@ -22,6 +22,9 @@ import {
   sendClinicalReport,
   sendProductUpdate,
   sendInvestorUpdate,
+  sendInfoEnquiryReply,
+  sendAffiliateWelcome,
+  sendFounderNote,
 } from '@/lib/email';
 
 // Temporary one-shot route — delete after use
@@ -63,6 +66,9 @@ export async function POST(req: Request) {
   await run('21_clinical_report',        () => sendClinicalReport({ clinicianEmail: to, clinicianName: name, patientName: 'Sarah T.', reportPeriod: 'Week of 28 Jul 2026', sessionsCompleted: 6, avgAccuracy: 84, topTechnique: 'Prolonged speech', notes: 'Good consistency this week. Accuracy on Stage 3 (Rhythm Modelling) has improved from 71% to 84%. Recommend introducing Stage 4 exercises alongside current programme.', reportUrl: 'https://flowen.digital/admin' }));
   await run('22_product_update',         () => sendProductUpdate({ to, release: { version: '2.4.0', date: now, summary: 'Smoother session flow, new analytics, and a fix for mobile audio on iOS 18', items: [{ type: 'new', title: 'Session streak tracking', description: 'Your dashboard now shows your current and longest practice streaks. Consistency is everything.' }, { type: 'new', title: 'Stage 4 — Rhythm Modelling', description: 'The fourth practice stage is live. Builds on Stage 3 with real-time rhythm feedback.' }, { type: 'improved', title: 'Faster session load times', description: 'Audio assets now preload in the background. Sessions start in under a second on a good connection.' }, { type: 'fixed', title: 'iOS 18 microphone issue', description: 'Fixed a WebKit bug that caused audio capture to fail silently on iOS 18.2 and later.' }, { type: 'security', title: 'Session token rotation', description: 'Auth tokens now rotate on every login. No action needed from users.' }] } }));
   await run('23_investor_update',        () => sendInvestorUpdate({ to, subject: 'Flowen — July 2026 Investor Update', period: 'July 2026', headline: 'First paying customers, checkout live, 22 on waitlist', body: 'Stripe checkout went live this week. We have our first three Founding Member subscribers. The waitlist has grown to 22 confirmed signups since we opened the page six days ago.\n\nFull dashboard metrics and financial detail below.', metrics: [['MRR', '£179.76'], ['Founding Members', '3'], ['Waitlist', '22'], ['CAC', '£0 (organic)'], ['Runway', '14 months']] }));
+  await run('24_info_enquiry_reply',     () => sendInfoEnquiryReply({ email: to, displayName: name, message: "Hi, I'm a speech and language therapist looking for a platform to support my patients between sessions. Could you tell me more about the clinical features?" }));
+  await run('25_affiliate_welcome',      () => sendAffiliateWelcome({ email: to, displayName: name, referralCode: 'HOWARD20', referralUrl: 'https://flowen.digital/?ref=HOWARD20', commissionRate: '20%' }));
+  await run('26_founder_note',           () => sendFounderNote({ email: to, displayName: name, subject: 'A quick note from me', body: "I wanted to reach out personally to say thank you for being one of our earliest users.\n\nBuilding Flowen has been one of the most meaningful things I've worked on — and it's early supporters like you who make it possible.\n\nIf you ever want to share feedback, ideas, or just have a question, reply directly to this email. I read every one.\n\nHoward" }));
 
   const total   = Object.keys(results).length;
   const success = Object.values(results).filter(Boolean).length;
