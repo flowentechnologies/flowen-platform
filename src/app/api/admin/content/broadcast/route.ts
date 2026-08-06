@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { createClient } from '@supabase/supabase-js';
-import { sendEmail, FROM } from '@/lib/email';
+import { sendEmail, FROM, buildBroadcastHtml } from '@/lib/email';
 
 const MAX_RECIPIENTS = 500;
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://flowen.digital';
 
 function adminDb() {
   return createClient(
@@ -12,54 +11,6 @@ function adminDb() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
-}
-
-function escHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function buildHtml(subject: string, body: string): string {
-  const paragraphs = body
-    .split('\n')
-    .map(l => l.trim())
-    .filter(Boolean)
-    .map(l => `<p style="margin:12px 0;font-size:15px;color:#94a3b8;line-height:1.65;">${escHtml(l)}</p>`)
-    .join('\n');
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;padding:40px 20px;">
-    <tr><td align="center">
-      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#1e293b;border-radius:16px;border:1px solid #334155;overflow:hidden;max-width:100%;">
-        <tr>
-          <td style="padding:32px 40px 24px;border-bottom:1px solid #334155;">
-            <a href="${SITE}" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
-              <span style="width:28px;height:28px;background:#10b981;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;color:#0f172a;font-size:14px;">F</span>
-              <span style="font-weight:700;font-size:16px;color:#f8fafc;letter-spacing:-0.3px;">Flowen</span>
-            </a>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:32px 40px;">
-            <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#f8fafc;letter-spacing:-0.5px;">${escHtml(subject)}</h1>
-            ${paragraphs}
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:24px 40px;border-top:1px solid #334155;background:#0f172a;">
-            <p style="margin:0;font-size:12px;color:#64748b;line-height:1.6;">
-              Flowen &bull; Questions? <a href="mailto:hello@flowen.digital" style="color:#10b981;">hello@flowen.digital</a>
-              &bull; <a href="${SITE}/legal" style="color:#10b981;">Unsubscribe / Privacy</a>
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
 }
 
 // ── Segment resolvers ─────────────────────────────────────────────────────────
@@ -138,7 +89,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No recipients found for this segment' }, { status: 400 });
   }
 
-  const html = buildHtml(subject, text);
+  const html = buildBroadcastHtml(subject, text);
   const BATCH = 20;
   let sent = 0;
   let failed = 0;

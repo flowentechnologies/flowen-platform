@@ -4,26 +4,28 @@ import { Resend } from 'resend';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://flowen.digital';
 
+// ── Font stack ────────────────────────────────────────────────────────────────
+
+const FONT = `-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif`;
+
 // ── Email addresses ───────────────────────────────────────────────────────────
-// Google Workspace inboxes on flowen.digital. Each maps to a Google Workspace
-// user or alias. Route these groups in the Google Admin console as needed.
+// All aliases route through admin@flowen.digital on Google Workspace.
 
 export const FROM = {
-  hello:     'Flowen <hello@flowen.digital>',          // general / waitlist / welcome
-  noreply:   'Flowen <noreply@flowen.digital>',        // transactional (auth, receipts)
-  support:   'Flowen Support <support@flowen.digital>', // customer success
-  clinical:  'Flowen Clinical Team <clinical@flowen.digital>', // SLP / clinical
-  billing:   'Flowen Billing <billing@flowen.digital>', // payments / invoices
-  privacy:   'Flowen Privacy <privacy@flowen.digital>', // GDPR / data requests
-  security:  'Flowen Security <security@flowen.digital>', // vulnerability reports
-  updates:   'Flowen Updates <updates@flowen.digital>', // product changelog / newsletter
-  investors: 'Flowen Investor Relations <investors@flowen.digital>', // IR
-  alerts:    'Flowen Alerts <alerts@flowen.digital>',  // internal admin alerts
-  press:     'Flowen Press <press@flowen.digital>',    // media / PR
-  careers:   'Flowen Careers <careers@flowen.digital>', // recruitment
+  hello:     'Flowen <hello@flowen.digital>',
+  noreply:   'Flowen <noreply@flowen.digital>',
+  support:   'Flowen <support@flowen.digital>',
+  clinical:  'Flowen Clinical <clinical@flowen.digital>',
+  billing:   'Flowen Billing <billing@flowen.digital>',
+  privacy:   'Flowen <privacy@flowen.digital>',
+  security:  'Flowen Security <security@flowen.digital>',
+  updates:   'Flowen <updates@flowen.digital>',
+  investors: 'Howard at Flowen <investors@flowen.digital>',
+  alerts:    'Flowen <alerts@flowen.digital>',
+  press:     'Flowen Press <press@flowen.digital>',
+  careers:   'Flowen Careers <careers@flowen.digital>',
 } as const;
 
-// Admin receiving address (Google Workspace primary inbox)
 export const ADMIN_INBOX = 'hello@flowen.digital';
 
 // ── Resend client ─────────────────────────────────────────────────────────────
@@ -66,152 +68,79 @@ export async function sendEmail(opts: SendOpts): Promise<boolean> {
   }
 }
 
+// ── Department config ─────────────────────────────────────────────────────────
+
+type Dept = 'customer' | 'clinical' | 'billing' | 'privacy' | 'product' | 'security' | 'investors' | 'internal';
+
+const DEPT: Record<Dept, { name: string; email: string; color: string }> = {
+  customer:  { name: 'The Flowen Team',          email: 'support@flowen.digital',   color: '#10b981' },
+  clinical:  { name: 'The Flowen Clinical Team',  email: 'clinical@flowen.digital',  color: '#0ea5e9' },
+  billing:   { name: 'Flowen Billing',            email: 'billing@flowen.digital',   color: '#f59e0b' },
+  privacy:   { name: 'Flowen Privacy',            email: 'privacy@flowen.digital',   color: '#8b5cf6' },
+  product:   { name: 'The Flowen Product Team',   email: 'updates@flowen.digital',   color: '#6366f1' },
+  security:  { name: 'Flowen Security',           email: 'security@flowen.digital',  color: '#ef4444' },
+  investors: { name: 'Howard · Founder & CEO',    email: 'investors@flowen.digital', color: '#d97706' },
+  internal:  { name: 'Flowen System',             email: 'alerts@flowen.digital',    color: '#64748b' },
+};
+
 // ── HTML primitives ───────────────────────────────────────────────────────────
 
 function h1(text: string) {
-  return `<h1 style="margin:0 0 12px;font-size:26px;font-weight:900;color:#f1f5f9;letter-spacing:-0.6px;line-height:1.2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${text}</h1>`;
+  return `<h1 style="margin:0 0 16px;font-size:26px;font-weight:800;color:#e8edf5;letter-spacing:-0.6px;line-height:1.25;font-family:${FONT};">${text}</h1>`;
 }
 
 function h2(text: string) {
-  return `<h2 style="margin:24px 0 8px;font-size:16px;font-weight:700;color:#f1f5f9;letter-spacing:-0.2px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${text}</h2>`;
+  return `<p style="margin:24px 0 8px;font-size:11px;font-weight:700;letter-spacing:0.9px;text-transform:uppercase;color:#3a4d66;font-family:${FONT};">${text}</p>`;
 }
 
 function p(text: string, muted = false) {
-  return `<p style="margin:10px 0;font-size:15px;color:${muted ? '#64748b' : '#94a3b8'};line-height:1.7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${text}</p>`;
+  return `<p style="margin:0 0 14px;font-size:15px;color:${muted ? '#3a4d66' : '#8a9ab5'};line-height:1.75;font-family:${FONT};">${text}</p>`;
 }
 
 function btn(text: string, href: string, color = '#10b981') {
-  const textColor = color === '#10b981' ? '#0f172a' : '#f8fafc';
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 0;">
     <tr>
-      <td style="background:${color};border-radius:10px;">
-        <a href="${href}" style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:${textColor};text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${text} →</a>
+      <td bgcolor="${color}" style="background:${color};border-radius:6px;">
+        <a href="${href}" style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:700;color:#07090f;text-decoration:none;font-family:${FONT};">${text}</a>
       </td>
     </tr>
   </table>`;
 }
 
-function chip(text: string, color = '#10b981', bg = '#022c22') {
-  return `<span style="display:inline-block;background:${bg};color:${color};border:1px solid ${color}40;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:1.2px;text-transform:uppercase;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${text}</span>`;
-}
-
 function dataTable(rows: [string, string][]) {
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;border-radius:10px;overflow:hidden;background:#0d1117;">
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0;border-collapse:collapse;">
     ${rows.map(([k, v], i) => `<tr>
-      <td style="padding:11px 16px;font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;border-bottom:${i < rows.length - 1 ? '1px solid #1e293b' : 'none'};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${k}</td>
-      <td style="padding:11px 16px;font-size:14px;color:#e2e8f0;border-bottom:${i < rows.length - 1 ? '1px solid #1e293b' : 'none'};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${v}</td>
+      <td style="padding:10px 0;font-size:11px;font-weight:700;color:#3a4d66;text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;padding-right:24px;border-bottom:${i < rows.length - 1 ? '1px solid #141c28' : 'none'};vertical-align:top;font-family:${FONT};">${k}</td>
+      <td style="padding:10px 0;font-size:13px;color:#c4cede;border-bottom:${i < rows.length - 1 ? '1px solid #141c28' : 'none'};font-family:${FONT};">${v}</td>
     </tr>`).join('')}
   </table>`;
 }
 
 function divider() {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
-    <tr><td height="1" style="background:#1e293b;font-size:1px;">&nbsp;</td></tr>
+    <tr><td height="1" bgcolor="#141c28" style="background:#141c28;font-size:1px;line-height:1px;">&nbsp;</td></tr>
   </table>`;
 }
 
-function callout(text: string, icon = 'ℹ️') {
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;">
-    <tr>
-      <td style="background:#0f172a;border-left:3px solid #10b981;border-radius:0 8px 8px 0;padding:14px 18px;">
-        <p style="margin:0;font-size:14px;color:#94a3b8;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${icon}&nbsp; ${text}</p>
-      </td>
-    </tr>
-  </table>`;
-}
-
-// ── Department signatures ─────────────────────────────────────────────────────
-
-type Dept = 'customer' | 'clinical' | 'billing' | 'privacy' | 'product' | 'security' | 'investors' | 'internal';
-
-const SIGS: Record<Dept, { name: string; email: string; line2?: string; line3?: string; color: string }> = {
-  customer: {
-    name:  'The Flowen Customer Success Team',
-    email: 'support@flowen.digital',
-    line2: 'Monday to Friday, 9am – 6pm GMT',
-    color: '#10b981',
-  },
-  clinical: {
-    name:  'The Flowen Clinical Team',
-    email: 'clinical@flowen.digital',
-    line2: 'RCSLT-affiliated Speech & Language Therapists',
-    line3: 'Clinical matters are treated in the strictest confidence',
-    color: '#14b8a6',
-  },
-  billing: {
-    name:  'Flowen Billing Support',
-    email: 'billing@flowen.digital',
-    line2: 'Subscription & invoice queries · Monday to Friday',
-    color: '#f59e0b',
-  },
-  privacy: {
-    name:  'Flowen Data Protection Team',
-    email: 'privacy@flowen.digital',
-    line2: 'UK GDPR requests processed within 30 days',
-    line3: 'This communication is confidential',
-    color: '#8b5cf6',
-  },
-  product: {
-    name:  'The Flowen Product Team',
-    email: 'updates@flowen.digital',
-    line2: 'Share feedback: hello@flowen.digital',
-    color: '#6366f1',
-  },
-  security: {
-    name:  'Flowen Security Team',
-    email: 'security@flowen.digital',
-    line2: 'Responsible disclosure & vulnerability reports',
-    color: '#ef4444',
-  },
-  investors: {
-    name:  'Howard · Founder & CEO',
-    email: 'investors@flowen.digital',
-    line2: 'Flowen Speech Technology Ltd',
-    line3: 'Registered in England & Wales',
-    color: '#d97706',
-  },
-  internal: {
-    name:  'Flowen Automated System',
-    email: 'alerts@flowen.digital',
-    line2: 'Do not reply · Internal alert only',
-    color: '#f97316',
-  },
-};
-
-function signature(dept: Dept) {
-  const sig = SIGS[dept];
-  return `${divider()}
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-    <tr>
-      <td width="3" style="background:${sig.color};border-radius:2px;min-height:48px;">&nbsp;</td>
-      <td style="padding-left:16px;">
-        <p style="margin:0;font-size:14px;font-weight:700;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${sig.name}</p>
-        <p style="margin:4px 0 0;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-          <a href="mailto:${sig.email}" style="color:${sig.color};text-decoration:none;">${sig.email}</a>
-          <span style="color:#334155;"> · </span>
-          <a href="${SITE}" style="color:#4b5563;text-decoration:none;">flowen.digital</a>
-        </p>
-        ${sig.line2 ? `<p style="margin:3px 0 0;font-size:12px;color:#4b5563;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${sig.line2}</p>` : ''}
-        ${sig.line3 ? `<p style="margin:2px 0 0;font-size:12px;color:#4b5563;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${sig.line3}</p>` : ''}
-      </td>
-    </tr>
-  </table>`;
+// Subtle note — replaces emoji callout boxes
+function note(text: string) {
+  return `<p style="margin:16px 0 0;font-size:13px;color:#3a4d66;line-height:1.7;font-family:${FONT};">${text}</p>`;
 }
 
 // ── Base HTML wrapper ─────────────────────────────────────────────────────────
 
 interface WrapOpts {
   dept: Dept;
-  chipLabel: string;
-  chipColor?: string;
-  chipBg?: string;
+  category?: string;      // small-caps label above the h1 (e.g. 'Waitlist', 'Billing')
+  preheader?: string;     // inbox preview text
   body: string;
   unsubscribeHref?: string;
 }
 
-function wrap({ dept, chipLabel, chipColor, chipBg, body, unsubscribeHref }: WrapOpts) {
-  const sig = SIGS[dept];
+function wrap({ dept, category, preheader, body, unsubscribeHref }: WrapOpts): string {
+  const sig = DEPT[dept];
   const now = new Date().getFullYear();
+
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -221,81 +150,80 @@ function wrap({ dept, chipLabel, chipColor, chipBg, body, unsubscribeHref }: Wra
   <meta name="supported-color-schemes" content="dark">
   <title>Flowen</title>
 </head>
-<body style="margin:0;padding:0;background:#060a10;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<body style="margin:0;padding:0;background:#070a0f;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
 
-  <!-- Preheader (hidden, shows in inbox preview) -->
-  <div style="display:none;max-height:0;overflow:hidden;font-size:1px;color:#060a10;">&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;</div>
+  ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;">${preheader}&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;&nbsp;&#8203;</div>` : ''}
 
-  <!-- Outer table -->
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#060a10;min-height:100vh;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#070a0f" style="background:#070a0f;">
     <tr>
-      <td align="center" style="padding:40px 16px;">
+      <td align="center" style="padding:48px 20px 40px;" bgcolor="#070a0f">
 
-        <!-- Card -->
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background:#0d1117;border-radius:16px;border:1px solid #1e293b;overflow:hidden;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;width:100%;">
 
-          <!-- ── Header ── -->
+          <!-- Wordmark -->
           <tr>
-            <td style="padding:28px 36px 24px;border-bottom:1px solid #1e293b;background:#060a10;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td>
-                    <!-- Tricolour bar -->
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:14px;">
-                      <tr>
-                        <td width="18" height="3" style="background:#f59e0b;border-radius:2px 0 0 2px;font-size:1px;line-height:1px;">&nbsp;</td>
-                        <td width="2" style="font-size:1px;">&nbsp;</td>
-                        <td width="18" height="3" style="background:#10b981;font-size:1px;line-height:1px;">&nbsp;</td>
-                        <td width="2" style="font-size:1px;">&nbsp;</td>
-                        <td width="18" height="3" style="background:#14b8a6;border-radius:0 2px 2px 0;font-size:1px;line-height:1px;">&nbsp;</td>
-                      </tr>
-                    </table>
-                    <a href="${SITE}" style="text-decoration:none;display:block;">
-                      <span style="font-size:21px;font-weight:900;color:#10b981;letter-spacing:-1px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">flowen</span>
-                      <span style="font-size:11px;color:#374151;margin-left:6px;font-weight:400;letter-spacing:0.3px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">speech technology</span>
-                    </a>
-                  </td>
-                  <td align="right" valign="bottom">
-                    ${chip(chipLabel, chipColor ?? sig.color, chipBg ?? '#0d1117')}
-                  </td>
-                </tr>
-              </table>
+            <td style="padding:0 0 22px;">
+              <a href="${SITE}" style="text-decoration:none;">
+                <span style="font-size:19px;font-weight:900;color:#10b981;letter-spacing:-1.2px;font-family:${FONT};">flowen</span>
+              </a>
             </td>
           </tr>
 
-          <!-- ── Body ── -->
+          <!-- Card -->
           <tr>
-            <td style="padding:32px 36px 8px;background:#0d1117;">
-              ${body}
-              ${signature(dept)}
-            </td>
-          </tr>
+            <td bgcolor="#0c1018" style="background:#0c1018;border-radius:10px;border:1px solid #141c28;">
 
-          <!-- ── Footer ── -->
-          <tr>
-            <td style="padding:20px 36px;background:#060a10;border-top:1px solid #1e293b;">
+              <!-- Dept accent line -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td>
-                    <p style="margin:0 0 6px;font-size:11px;color:#1f2937;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-                      Flowen Speech Technology Ltd · Registered in England &amp; Wales · ${now}
-                    </p>
-                    <p style="margin:0;font-size:11px;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-                      <a href="${SITE}/legal" style="color:#374151;text-decoration:none;">Privacy Policy</a>
-                      <span style="color:#1f2937;"> · </span>
-                      <a href="${SITE}/legal" style="color:#374151;text-decoration:none;">Terms of Service</a>
-                      <span style="color:#1f2937;"> · </span>
-                      <a href="${unsubscribeHref ?? `${SITE}/dashboard/settings`}" style="color:#374151;text-decoration:none;">Email Preferences</a>
-                    </p>
+                  <td height="2" bgcolor="${sig.color}" style="background:${sig.color};border-radius:9px 9px 0 0;font-size:2px;line-height:2px;">&nbsp;</td>
+                </tr>
+              </table>
+
+              <!-- Content -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="padding:32px 40px 36px;">
+
+                    ${category ? `<p style="margin:0 0 14px;font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:${sig.color};font-family:${FONT};">${category}</p>` : ''}
+
+                    ${body}
+
+                    <!-- Sign-off -->
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:28px;">
+                      <tr>
+                        <td>
+                          <p style="margin:0 0 2px;font-size:13px;color:#c4cede;font-family:${FONT};">${sig.name}</p>
+                          <p style="margin:0;font-size:12px;font-family:${FONT};">
+                            <a href="mailto:${sig.email}" style="color:${sig.color};text-decoration:none;">${sig.email}</a>
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+
                   </td>
                 </tr>
               </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 4px 0;">
+              <p style="margin:0;font-size:11px;color:#1e2940;line-height:1.8;font-family:${FONT};">
+                Flowen Speech Technology Ltd &middot; England &amp; Wales &middot; ${now}
+                &nbsp;&middot;&nbsp;
+                <a href="${SITE}/legal" style="color:#1e2940;text-decoration:none;">Privacy</a>
+                &nbsp;&middot;&nbsp;
+                <a href="${SITE}/legal" style="color:#1e2940;text-decoration:none;">Terms</a>
+                &nbsp;&middot;&nbsp;
+                <a href="${unsubscribeHref ?? `${SITE}/dashboard/settings`}" style="color:#1e2940;text-decoration:none;">Unsubscribe</a>
+              </p>
             </td>
           </tr>
 
         </table>
-        <!-- /Card -->
-
       </td>
     </tr>
   </table>
@@ -319,17 +247,15 @@ export async function sendWaitlistConfirmation(email: string) {
     subject: "You're on the Flowen waitlist",
     replyTo: 'support@flowen.digital',
     tags:    [{ name: 'type', value: 'waitlist_confirmation' }],
-    text: `Thanks for joining the Flowen waitlist.\n\nWe'll email you the moment your access is ready. In the meantime, visit ${SITE} to learn more about how Flowen helps people who stutter build real fluency.\n\nThe Flowen Customer Success Team\nsupport@flowen.digital`,
+    text:    `You're on the list.\n\nWe'll email you when your spot opens. In the meantime, visit ${SITE} to learn more.\n\nFlowen\nsupport@flowen.digital`,
     html: wrap({
-      dept: 'customer',
-      chipLabel: 'WAITLIST CONFIRMED',
-      chipColor: '#10b981',
+      dept:      'customer',
+      category:  'Waitlist',
+      preheader: "We'll email you the moment your spot opens.",
       body: `
         ${h1("You're on the list.")}
-        ${p("Thanks for joining — you're now on the Flowen waitlist. We'll send you a personal invitation the moment your spot opens.")}
-        ${p("Flowen is a voice-based fluency practice platform built for people who stutter, developed with clinical input and grounded in evidence-based technique.")}
-        ${callout("We'll never share your email. Expect one email when your access is ready, and nothing else.", '🔒')}
-        ${btn('Learn more about Flowen', SITE)}
+        ${p("We'll email you when your spot opens. One email, no noise.")}
+        ${note(`Questions in the meantime? Reply here or write to <a href="mailto:support@flowen.digital" style="color:#10b981;text-decoration:none;">support@flowen.digital</a>.`)}
       `,
     }),
   });
@@ -348,11 +274,11 @@ export async function sendAdminWaitlistAlert(lead: {
     to:      ADMIN_INBOX,
     subject: `New waitlist signup: ${lead.email}`,
     tags:    [{ name: 'type', value: 'admin_waitlist_alert' }],
-    text: `New waitlist lead.\n\nEmail: ${lead.email}\nName: ${lead.fullName ?? 'N/A'}\nPlan: ${lead.planTier ?? 'N/A'}\nOrg: ${lead.organization ?? 'N/A'}\nTime: ${gbpTime()}`,
+    text:    `New waitlist lead.\n\nEmail: ${lead.email}\nName: ${lead.fullName ?? 'N/A'}\nPlan: ${lead.planTier ?? 'N/A'}\nOrg: ${lead.organization ?? 'N/A'}\nTime: ${gbpTime()}`,
     html: wrap({
-      dept: 'internal',
-      chipLabel: 'WAITLIST ALERT',
-      chipColor: '#f97316',
+      dept:      'internal',
+      category:  'Waitlist',
+      preheader: lead.email,
       body: `
         ${h1('New waitlist signup')}
         ${dataTable([
@@ -362,13 +288,13 @@ export async function sendAdminWaitlistAlert(lead: {
           ['Organisation', lead.organization ?? '—'],
           ['Time',         gbpTime()],
         ])}
-        ${btn('Open admin panel', `${SITE}/admin/waitlist`, '#f97316')}
+        ${btn('View waitlist', `${SITE}/admin/waitlist`, '#64748b')}
       `,
     }),
   });
 }
 
-// ── 3. Waitlist invite (invite link) ─────────────────────────────────────────
+// ── 3. Waitlist invite ────────────────────────────────────────────────────────
 
 export async function sendWaitlistInvite(opts: {
   email: string;
@@ -382,20 +308,20 @@ export async function sendWaitlistInvite(opts: {
   await sendEmail({
     from:    FROM.hello,
     to:      opts.email,
-    subject: "Your Flowen access is ready",
+    subject: 'Your Flowen access is ready',
     replyTo: 'support@flowen.digital',
     tags:    [{ name: 'type', value: 'waitlist_invite' }],
-    text: `Your Flowen access is ready.\n\nCreate your account here: ${opts.inviteUrl}\n\nThis link expires ${expiry}.\n\nThe Flowen Customer Success Team`,
+    text:    `Your spot is ready.\n\nCreate your account: ${opts.inviteUrl}\n\nThis link expires ${expiry}.\n\nFlowen\nsupport@flowen.digital`,
     html: wrap({
-      dept: 'customer',
-      chipLabel: 'ACCESS GRANTED',
-      chipColor: '#10b981',
+      dept:      'customer',
+      category:  'Access',
+      preheader: 'Your Flowen invitation is ready.',
       body: `
-        ${h1("Your spot is ready.")}
-        ${p("You're invited to join Flowen. Click below to create your account and start your first practice session.")}
+        ${h1('Your spot is ready.')}
+        ${p("Create your account and start your first practice session today.")}
         ${btn('Create my account', opts.inviteUrl)}
-        ${callout(`This invitation expires on ${expiry}. After that, you'll need to re-join the waitlist.`, '⏳')}
-        ${p("If you didn't sign up for the Flowen waitlist, you can safely ignore this email.", true)}
+        ${note(`This invitation expires on ${expiry}.`)}
+        ${note(`If you didn't sign up for the Flowen waitlist, you can safely ignore this email.`)}
       `,
     }),
   });
@@ -410,19 +336,17 @@ export async function sendWelcomeEmail(email: string, displayName: string) {
     subject: `Welcome to Flowen, ${displayName}`,
     replyTo: 'support@flowen.digital',
     tags:    [{ name: 'type', value: 'welcome' }],
-    text: `Hi ${displayName},\n\nYour Flowen account is set up. Head to ${SITE}/dashboard to start your first practice session.\n\nThe Flowen Customer Success Team`,
+    text:    `Hi ${displayName},\n\nYour account is ready. Head to your dashboard to start your first session.\n\n${SITE}/dashboard\n\nFlowen\nsupport@flowen.digital`,
     html: wrap({
-      dept: 'customer',
-      chipLabel: 'WELCOME',
-      chipColor: '#10b981',
+      dept:      'customer',
+      category:  'Welcome',
+      preheader: `Your account is ready, ${displayName}.`,
       body: `
-        ${h1(`Hi ${displayName}, you're in.`)}
-        ${p("Your Flowen account is ready. Your dashboard gives you daily practice exercises, session analytics, fluency tracking, and direct messaging with your speech-language pathologist.")}
+        ${h1(`You're in, ${displayName}.`)}
+        ${p("Your dashboard has everything you need — daily exercises, session history, and progress tracking.")}
+        ${p("Start with Stage 1 (Breath Control) and do at least one session today. Consistency is what moves the needle.")}
         ${btn('Open my dashboard', `${SITE}/dashboard`)}
-        ${divider()}
-        ${h2('Getting started')}
-        ${p("✦ Start with Stage 1 — Breath Control exercises (5 min).<br>✦ Complete a session daily for the first week to build your baseline.<br>✦ Your clinician will review your progress and update your plan weekly.")}
-        ${p("Reply to this email with any questions — we read every message.", true)}
+        ${note("Reply to this email with any questions.")}
       `,
     }),
   });
@@ -434,13 +358,13 @@ export async function sendAdminNewUserAlert(email: string, displayName: string, 
   await sendEmail({
     from:    FROM.alerts,
     to:      ADMIN_INBOX,
-    subject: `New user onboarded: ${displayName}`,
+    subject: `New user: ${displayName}`,
     tags:    [{ name: 'type', value: 'admin_new_user' }],
     text:    `${displayName} (${email}) completed onboarding. Role: ${role}. Time: ${gbpTime()}`,
     html: wrap({
-      dept: 'internal',
-      chipLabel: 'NEW USER',
-      chipColor: '#10b981',
+      dept:      'internal',
+      category:  'Users',
+      preheader: `${displayName} completed onboarding.`,
       body: `
         ${h1('New user onboarded')}
         ${dataTable([
@@ -449,7 +373,7 @@ export async function sendAdminNewUserAlert(email: string, displayName: string, 
           ['Role',  role],
           ['Time',  gbpTime()],
         ])}
-        ${btn('View in admin', `${SITE}/admin/users`, '#10b981')}
+        ${btn('View users', `${SITE}/admin/users`, '#64748b')}
       `,
     }),
   });
@@ -466,9 +390,9 @@ export async function sendPaymentConfirmation(opts: {
   currency: string;
   invoiceId?: string;
 }) {
-  const amount = (opts.amountPence / 100).toLocaleString('en-GB', { style: 'currency', currency: opts.currency.toUpperCase() });
+  const amount    = (opts.amountPence / 100).toLocaleString('en-GB', { style: 'currency', currency: opts.currency.toUpperCase() });
   const tierLabel = opts.tier === 'founding' ? 'Founding Member' : opts.tier.charAt(0).toUpperCase() + opts.tier.slice(1);
-  const cycleLabel = opts.cycle.replace('_', ' ');
+  const cycleLabel = opts.cycle.replace(/_/g, ' ');
 
   await sendEmail({
     from:    FROM.billing,
@@ -476,24 +400,23 @@ export async function sendPaymentConfirmation(opts: {
     subject: `Payment confirmed — Flowen ${tierLabel}`,
     replyTo: 'billing@flowen.digital',
     tags:    [{ name: 'type', value: 'payment_confirmation' }],
-    text: `Hi ${opts.displayName},\n\nThank you for your payment of ${amount}. Your ${tierLabel} (${cycleLabel}) subscription is now active.\n\nFlowen Billing\nbilling@flowen.digital`,
+    text:    `Payment confirmed.\n\n${tierLabel} (${cycleLabel}) · ${amount}\n\nYour subscription is active. Manage it at ${SITE}/dashboard/billing.\n\nFlowen Billing\nbilling@flowen.digital`,
     html: wrap({
-      dept: 'billing',
-      chipLabel: 'PAYMENT CONFIRMED',
-      chipColor: '#f59e0b',
-      chipBg: '#1c1209',
+      dept:      'billing',
+      category:  'Payment Confirmed',
+      preheader: `${amount} received. Your ${tierLabel} subscription is active.`,
       body: `
-        ${h1(`Thank you, ${opts.displayName}.`)}
-        ${p(`Your payment of <strong style="color:#f1f5f9;">${amount}</strong> has been received and your <strong style="color:#10b981;">${tierLabel}</strong> subscription is now active.`)}
+        ${h1(`Payment received, ${opts.displayName}.`)}
+        ${p(`Your <strong style="color:#e8edf5;">${tierLabel}</strong> subscription is now active.`)}
         ${dataTable([
-          ['Plan',       `${tierLabel} · ${cycleLabel}`],
-          ['Amount',     amount],
-          ['Status',     '&#10003; Active'],
+          ['Plan',     `${tierLabel} · ${cycleLabel}`],
+          ['Amount',   amount],
+          ['Status',   'Active'],
           ...(opts.invoiceId ? [['Invoice', opts.invoiceId] as [string, string]] : []),
-          ['Date',       gbpTime()],
+          ['Date',     gbpTime()],
         ])}
         ${btn('Go to my dashboard', `${SITE}/dashboard`)}
-        ${callout('Keep this email as your payment record. To manage your subscription, go to Account Settings.', '📋')}
+        ${note(`Manage or cancel your subscription at any time from <a href="${SITE}/dashboard/billing" style="color:#f59e0b;text-decoration:none;">Account &rarr; Billing</a>.`)}
       `,
     }),
   });
@@ -515,22 +438,22 @@ export async function sendAdminPaymentAlert(opts: {
     to:      ADMIN_INBOX,
     subject: `New subscriber: ${opts.email} — ${amount}`,
     tags:    [{ name: 'type', value: 'admin_payment_alert' }],
-    text: `New payment: ${opts.email} · ${opts.tier} · ${amount}`,
+    text:    `New payment: ${opts.email} · ${opts.tier} · ${amount}`,
     html: wrap({
-      dept: 'internal',
-      chipLabel: 'NEW SUBSCRIBER',
-      chipColor: '#f59e0b',
+      dept:      'internal',
+      category:  'Payment',
+      preheader: `${opts.email} · ${amount}`,
       body: `
-        ${h1('Payment received')}
+        ${h1('New subscriber')}
         ${dataTable([
           ['Email',           opts.email],
           ['Tier',            opts.tier],
-          ['Cycle',           opts.cycle.replace('_', ' ')],
+          ['Cycle',           opts.cycle.replace(/_/g, ' ')],
           ['Amount',          amount],
           ['Stripe customer', opts.stripeCustomerId],
           ['Time',            gbpTime()],
         ])}
-        ${btn('View in Stripe', 'https://dashboard.stripe.com/customers', '#f59e0b')}
+        ${btn('View in Stripe', `https://dashboard.stripe.com/customers/${opts.stripeCustomerId}`, '#f59e0b')}
       `,
     }),
   });
@@ -545,18 +468,16 @@ export async function sendPaymentFailedUser(email: string, displayName: string) 
     subject: 'Action required — Flowen payment failed',
     replyTo: 'billing@flowen.digital',
     tags:    [{ name: 'type', value: 'payment_failed_user' }],
-    text: `Hi ${displayName},\n\nWe could not process your Flowen subscription payment. Please update your payment details to avoid losing access.\n\nFlowen Billing\nbilling@flowen.digital`,
+    text:    `Hi ${displayName},\n\nWe couldn't process your Flowen subscription payment. Please update your payment details to keep your access.\n\n${SITE}/dashboard/billing\n\nFlowen Billing\nbilling@flowen.digital`,
     html: wrap({
-      dept: 'billing',
-      chipLabel: 'ACTION REQUIRED',
-      chipColor: '#ef4444',
-      chipBg: '#1c0f0f',
+      dept:      'billing',
+      category:  'Action Required',
+      preheader: 'Update your payment details to keep your access.',
       body: `
-        ${h1('Payment failed')}
-        ${p(`Hi ${displayName}, we weren't able to process your Flowen subscription payment.`)}
-        ${p("Please update your payment details to keep your access. Stripe will retry automatically — updating now avoids any interruption to your practice.")}
-        ${btn('Update payment details', `${SITE}/dashboard/settings`, '#ef4444')}
-        ${callout('Questions? Reply to this email or contact billing@flowen.digital — we\'re happy to help.', '💬')}
+        ${h1(`Payment failed, ${displayName}.`)}
+        ${p("We couldn't process your subscription renewal. Update your payment details now — Stripe will retry automatically once you do.")}
+        ${btn('Update payment details', `${SITE}/dashboard/billing`, '#ef4444')}
+        ${note(`Questions? Reply to this email or write to <a href="mailto:billing@flowen.digital" style="color:#f59e0b;text-decoration:none;">billing@flowen.digital</a>.`)}
       `,
     }),
   });
@@ -577,11 +498,11 @@ export async function sendAdminPaymentFailedAlert(opts: {
     to:      ADMIN_INBOX,
     subject: `Payment failed: ${opts.email} — attempt ${opts.attemptCount}`,
     tags:    [{ name: 'type', value: 'admin_payment_failed' }],
-    text: `Payment failure: ${opts.email} · ${amount} · attempt ${opts.attemptCount}`,
+    text:    `Payment failure: ${opts.email} · ${amount} · attempt ${opts.attemptCount}`,
     html: wrap({
-      dept: 'internal',
-      chipLabel: 'PAYMENT FAILED',
-      chipColor: '#ef4444',
+      dept:      'internal',
+      category:  'Payment Failed',
+      preheader: `${opts.email} · attempt ${opts.attemptCount} · ${amount}`,
       body: `
         ${h1('Subscription payment failed')}
         ${dataTable([
@@ -608,30 +529,35 @@ export async function sendAdminSupportTicketAlert(opts: {
   slaDueAt: string;
 }) {
   const slaLabel = new Date(opts.slaDueAt).toLocaleString('en-GB', { timeZone: 'Europe/London', dateStyle: 'medium', timeStyle: 'short' });
+  const preview  = opts.body.slice(0, 140).replace(/\n/g, ' ');
   await sendEmail({
     from:    FROM.alerts,
     to:      ADMIN_INBOX,
     subject: `[Support] ${opts.category.toUpperCase()}: ${opts.subject}`,
     replyTo: opts.userEmail,
     tags:    [{ name: 'type', value: 'admin_support_ticket' }],
-    text: `New support ticket from ${opts.userEmail}.\n\nCategory: ${opts.category}\nSubject: ${opts.subject}\nSLA: ${slaLabel}\n\n${opts.body}`,
+    text:    `New support ticket from ${opts.userEmail}.\n\nCategory: ${opts.category}\nSubject: ${opts.subject}\nSLA: ${slaLabel}\n\n${opts.body}`,
     html: wrap({
-      dept: 'internal',
-      chipLabel: 'SUPPORT TICKET',
-      chipColor: '#3b82f6',
+      dept:      'internal',
+      category:  'Support',
+      preheader: preview,
       body: `
-        ${h1('New support request')}
+        ${h1('Support request')}
         ${dataTable([
           ['From',     opts.userEmail],
           ['Category', opts.category],
           ['SLA due',  slaLabel],
           ['Ticket',   opts.ticketId],
         ])}
-        <div style="background:#060a10;border-radius:10px;padding:18px 20px;margin:16px 0;">
-          <p style="margin:0 0 8px;font-size:10px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:1px;font-family:monospace;">Message</p>
-          <p style="margin:0;font-size:14px;color:#94a3b8;line-height:1.7;white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${opts.body.slice(0, 1200)}${opts.body.length > 1200 ? '…' : ''}</p>
-        </div>
-        ${btn('Reply to user', `mailto:${opts.userEmail}?subject=Re: [${opts.ticketId}] ${encodeURIComponent(opts.subject)}`, '#3b82f6')}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;">
+          <tr>
+            <td bgcolor="#070a0f" style="background:#070a0f;border-radius:6px;border:1px solid #141c28;padding:16px 20px;">
+              <p style="margin:0 0 10px;font-size:10px;font-weight:700;color:#3a4d66;text-transform:uppercase;letter-spacing:0.9px;font-family:${FONT};">Message</p>
+              <p style="margin:0;font-size:14px;color:#8a9ab5;line-height:1.7;white-space:pre-wrap;font-family:${FONT};">${opts.body.slice(0, 1200)}${opts.body.length > 1200 ? '…' : ''}</p>
+            </td>
+          </tr>
+        </table>
+        ${btn('Reply to user', `mailto:${opts.userEmail}?subject=Re: [${opts.ticketId}] ${encodeURIComponent(opts.subject)}`, '#64748b')}
       `,
     }),
   });
@@ -653,20 +579,20 @@ export async function sendSupportTicketConfirmation(opts: {
     subject: `[${opts.ticketId}] We've received your request`,
     replyTo: 'support@flowen.digital',
     tags:    [{ name: 'type', value: 'support_confirmation' }],
-    text: `Hi ${opts.displayName},\n\nYour support request has been received (Ticket: ${opts.ticketId}).\n\nWe aim to respond by ${slaLabel}.\n\nFlowen Support\nsupport@flowen.digital`,
+    text:    `Hi ${opts.displayName},\n\nYour support request has been received (${opts.ticketId}).\n\nWe aim to respond by ${slaLabel}.\n\nFlowen\nsupport@flowen.digital`,
     html: wrap({
-      dept: 'customer',
-      chipLabel: 'TICKET RECEIVED',
-      chipColor: '#3b82f6',
+      dept:      'customer',
+      category:  'Support',
+      preheader: `Ticket ${opts.ticketId} logged. We'll respond by ${slaLabel}.`,
       body: `
-        ${h1(`We've got your request, ${opts.displayName}.`)}
-        ${p("Your support request has been logged and we're on it. Our team typically responds within one business day.")}
+        ${h1(`Got it, ${opts.displayName}.`)}
+        ${p("Your request has been logged. We'll get back to you within one business day.")}
         ${dataTable([
           ['Ticket',    opts.ticketId],
           ['Subject',   opts.subject],
-          ['SLA target', slaLabel],
+          ['Reply by',  slaLabel],
         ])}
-        ${callout("Reply to this email to add information to your ticket, or contact support@flowen.digital.", '💬')}
+        ${note(`Reply to this email to add more detail, or write to <a href="mailto:support@flowen.digital" style="color:#10b981;text-decoration:none;">support@flowen.digital</a>.`)}
       `,
     }),
   });
@@ -681,38 +607,37 @@ export async function sendGdprRequestConfirmation(opts: {
   requestId: string;
 }) {
   const typeLabels: Record<string, string> = {
-    erasure:        'Right to Erasure (Right to be Forgotten)',
+    erasure:        'Right to Erasure',
     access:         'Subject Access Request',
     portability:    'Data Portability Request',
     rectification:  'Right to Rectification',
     restriction:    'Right to Restriction of Processing',
   };
   const label = typeLabels[opts.requestType] ?? opts.requestType;
-  const due = new Date(Date.now() + 30 * 86400_000).toLocaleDateString('en-GB', { dateStyle: 'long' });
+  const due   = new Date(Date.now() + 30 * 86400_000).toLocaleDateString('en-GB', { dateStyle: 'long' });
 
   await sendEmail({
     from:    FROM.privacy,
     to:      opts.email,
-    subject: `Your GDPR request has been received — ${label}`,
+    subject: `Your data request has been received — ${label}`,
     replyTo: 'privacy@flowen.digital',
     tags:    [{ name: 'type', value: 'gdpr_confirmation' }],
-    text: `Hi ${opts.displayName},\n\nWe have received your ${label} (Ref: ${opts.requestId}).\n\nUnder UK GDPR, we will respond within 30 calendar days (by ${due}).\n\nFlowen Data Protection Team\nprivacy@flowen.digital`,
+    text:    `Hi ${opts.displayName},\n\nWe have received your ${label} (Ref: ${opts.requestId}).\n\nUnder UK GDPR, we will respond within 30 calendar days (by ${due}).\n\nFlowen\nprivacy@flowen.digital`,
     html: wrap({
-      dept: 'privacy',
-      chipLabel: 'GDPR REQUEST',
-      chipColor: '#8b5cf6',
-      chipBg: '#130d21',
+      dept:      'privacy',
+      category:  'Data Request',
+      preheader: `${label} received. We'll respond by ${due}.`,
       body: `
-        ${h1('Your data request has been received.')}
-        ${p(`Hi ${opts.displayName}, we have received your request and will process it in accordance with UK GDPR.`)}
+        ${h1('Data request received.')}
+        ${p(`Hi ${opts.displayName}, we have received your ${label} and will respond in accordance with UK GDPR.`)}
         ${dataTable([
           ['Request type',  label],
           ['Reference',     opts.requestId],
           ['Date received', gbpTime()],
-          ['Response due',  due + ' (30-day statutory limit)'],
+          ['Response due',  `${due} (30-day statutory limit)`],
         ])}
-        ${callout('Under UK GDPR Article 12, we are legally required to respond within one calendar month. If the request is complex we may extend this by a further two months and will inform you.', 'ℹ️')}
-        ${p("If you have questions about your request, reply to this email or contact privacy@flowen.digital.", true)}
+        ${note("Under UK GDPR Article 12, we must respond within one calendar month. For complex requests we may extend this by a further two months and will inform you in advance.")}
+        ${note(`Questions? Reply to this email or write to <a href="mailto:privacy@flowen.digital" style="color:#8b5cf6;text-decoration:none;">privacy@flowen.digital</a>.`)}
       `,
     }),
   });
@@ -727,16 +652,17 @@ export async function sendCheckIn3d(email: string, displayName: string) {
     subject: 'Quick check-in from Flowen',
     replyTo: 'support@flowen.digital',
     tags:    [{ name: 'type', value: 'checkin_3d' }],
-    text: `Hi ${displayName},\n\nYou've had a few days with Flowen. How's it going?\n\nIf you haven't started your first session yet, now's a great time: ${SITE}/dashboard/practice\n\nReply to this email with any questions.\n\nThe Flowen Customer Success Team`,
+    text:    `Hi ${displayName},\n\nHow's it going? If you haven't started yet, now's a good time.\n\n${SITE}/dashboard/practice\n\nReply with any questions.\n\nFlowen`,
     html: wrap({
-      dept: 'customer',
-      chipLabel: '3-DAY CHECK-IN',
+      dept:      'customer',
+      category:  'Check-in',
+      preheader: "How's it going?",
       body: `
         ${h1(`How's it going, ${displayName}?`)}
-        ${p("You've had a few days with Flowen — we wanted to check in and make sure you're finding your way around.")}
-        ${p("Your dashboard tracks every session and your progress builds with each one. If you haven't started yet, Stage 1 — Breath Control is a great place to begin.")}
-        ${btn('Open practice dashboard', `${SITE}/dashboard/practice`)}
-        ${p("Reply to this email with any questions — we read every message.", true)}
+        ${p("Three days in — we wanted to check you're finding your feet.")}
+        ${p("If you haven't started yet, Stage 1 (Breath Control) takes five minutes and is the best place to begin. Your progress builds from there.")}
+        ${btn('Open practice', `${SITE}/dashboard/practice`)}
+        ${note("Reply to this email with any questions.")}
       `,
     }),
   });
@@ -751,16 +677,15 @@ export async function sendMilestone7d(email: string, displayName: string) {
     subject: 'Your first week with Flowen',
     replyTo: 'support@flowen.digital',
     tags:    [{ name: 'type', value: 'milestone_7d' }],
-    text: `Hi ${displayName},\n\nOne week in. Consistent practice over weeks and months is where the real gains happen — you're on the right track.\n\nThe Flowen Customer Success Team`,
+    text:    `Hi ${displayName},\n\nOne week in. The research is clear: consistency over time is where the real gains happen. You're building something real.\n\nFlowen`,
     html: wrap({
-      dept: 'customer',
-      chipLabel: '7-DAY MILESTONE',
-      chipColor: '#10b981',
+      dept:      'customer',
+      category:  'One week',
+      preheader: "One week in.",
       body: `
         ${h1(`One week in, ${displayName}.`)}
-        ${p("You've been with Flowen for a week. The research is clear: consistent daily practice compounds over time. You're building habits that will lead to real, lasting change.")}
+        ${p("The research is clear: consistent daily practice compounds. You're building real, measurable progress — keep the habit going.")}
         ${btn('View my progress', `${SITE}/dashboard`)}
-        ${p("Keep going — your clinician is reviewing your sessions and will update your plan as you progress.", true)}
       `,
     }),
   });
@@ -775,16 +700,17 @@ export async function sendReEngagement(email: string, displayName: string) {
     subject: 'Come back to Flowen',
     replyTo: 'support@flowen.digital',
     tags:    [{ name: 'type', value: 're_engagement' }],
-    text: `Hi ${displayName},\n\nIt's been a while since your last session. Even 5 minutes a day makes a real difference. Your progress is saved.\n\nThe Flowen Customer Success Team`,
+    text:    `Hi ${displayName},\n\nIt's been a while. Your progress is saved — pick up exactly where you left off.\n\n${SITE}/dashboard/practice\n\nFlowen`,
     html: wrap({
-      dept: 'customer',
-      chipLabel: 'WE MISS YOU',
+      dept:      'customer',
+      category:  'We miss you',
+      preheader: "Your progress is still there.",
       body: `
         ${h1(`Come back, ${displayName}.`)}
-        ${p("It's been a while since your last session. Speech fluency practice works best when it's consistent — even five minutes a day maintains the progress you've already made.")}
-        ${p("Your sessions, analytics, and clinician notes are all still there. Pick up exactly where you left off.")}
-        ${btn('Resume my practice', `${SITE}/dashboard/practice`)}
-        ${p("If you're having any issues or need help, reply to this email — we're here.", true)}
+        ${p("It's been a while since your last session. Your progress is all saved — pick up exactly where you left off.")}
+        ${p("Even five minutes today keeps the habit alive.")}
+        ${btn('Resume practice', `${SITE}/dashboard/practice`)}
+        ${note("Having trouble? Reply to this email and we'll help.")}
       `,
     }),
   });
@@ -796,27 +722,26 @@ export async function sendFoundingOffer(email: string, displayName: string) {
   await sendEmail({
     from:    FROM.hello,
     to:      email,
-    subject: 'Founding member spot available — Flowen',
+    subject: 'Founding member spot — Flowen',
     replyTo: 'hello@flowen.digital',
     tags:    [{ name: 'type', value: 'founding_offer' }],
-    text: `Hi ${displayName},\n\nWe're inviting a select group of waitlist members to join Flowen as Founding Members — locked-in pricing for life and direct access to the product team.\n\nThis is personal to you: ${SITE}/pricing\n\nThe Flowen Team`,
+    text:    `Hi ${displayName},\n\nWe're inviting a small group of waitlist members to join Flowen as Founding Members — locked-in pricing for life and direct access to the product team.\n\n${SITE}/pricing\n\nFlowen`,
     html: wrap({
-      dept: 'customer',
-      chipLabel: 'FOUNDING MEMBER',
-      chipColor: '#d97706',
-      chipBg: '#1a1106',
+      dept:      'customer',
+      category:  'Founding Member',
+      preheader: "A founding spot — yours if you want it.",
       body: `
         ${h1(`A founding spot for you, ${displayName}.`)}
-        ${p("We're inviting a select group of waitlist members to join Flowen as Founding Members — locked-in pricing for life, direct access to the product team, and early access to everything we build.")}
-        ${p("<strong style=\"color:#f1f5f9;\">Founding Member spots are strictly limited.</strong> This invitation is personal to you.")}
+        ${p("We're inviting a small group from the waitlist to join Flowen as Founding Members.")}
+        ${p("Founding Members get price-locked access for life, direct input into what we build, and early access to everything that comes next. Spots are strictly limited.")}
         ${btn('Claim my founding spot', `${SITE}/pricing`, '#d97706')}
-        ${callout('This offer expires when spots fill up. Reply to this email with any questions.', '⏳')}
+        ${note("This offer is personal to you. Reply with any questions.")}
       `,
     }),
   });
 }
 
-// ── 17. Trial ending ──────────────────────────────────────────────────────────
+// ── 17. Trial ending / upgrade nudge ─────────────────────────────────────────
 
 export async function sendUpgradeNudge(email: string, displayName: string) {
   await sendEmail({
@@ -825,17 +750,16 @@ export async function sendUpgradeNudge(email: string, displayName: string) {
     subject: 'Your Flowen trial is ending soon',
     replyTo: 'billing@flowen.digital',
     tags:    [{ name: 'type', value: 'upgrade_nudge' }],
-    text: `Hi ${displayName},\n\nYour Flowen trial is coming to an end. Upgrade to keep access to your practice sessions, analytics, and clinical support.\n\n${SITE}/pricing\n\nFlowen Billing`,
+    text:    `Hi ${displayName},\n\nYour Flowen trial is ending soon. Upgrade to keep access to your sessions and progress.\n\n${SITE}/pricing\n\nFlowen Billing`,
     html: wrap({
-      dept: 'billing',
-      chipLabel: 'TRIAL ENDING',
-      chipColor: '#f59e0b',
-      chipBg: '#1c1209',
+      dept:      'billing',
+      category:  'Trial ending',
+      preheader: "Keep your access — upgrade before your trial ends.",
       body: `
-        ${h1(`Your trial is ending soon, ${displayName}.`)}
-        ${p("Your Flowen trial is coming to an end. To keep uninterrupted access to your practice sessions, fluency analytics, and clinician messaging, upgrade to a full subscription.")}
-        ${btn('See plans & pricing', `${SITE}/pricing`, '#f59e0b')}
-        ${callout("Questions about which plan is right for you? Reply to this email or contact billing@flowen.digital.", '💬')}
+        ${h1(`Trial ending soon, ${displayName}.`)}
+        ${p("Your Flowen trial is coming to an end. Upgrade to keep uninterrupted access to your practice sessions and progress history.")}
+        ${btn('See plans', `${SITE}/pricing`, '#f59e0b')}
+        ${note(`Questions about which plan is right for you? Reply here or write to <a href="mailto:billing@flowen.digital" style="color:#f59e0b;text-decoration:none;">billing@flowen.digital</a>.`)}
       `,
     }),
   });
@@ -854,20 +778,20 @@ export async function sendAdminWorkflowAlert(opts: {
     to:      ADMIN_INBOX,
     subject: `Workflow: ${opts.workflowName} — ${opts.userEmail}`,
     tags:    [{ name: 'type', value: 'admin_workflow_alert' }],
-    text: `Workflow: ${opts.workflowName}\nUser: ${opts.userName} <${opts.userEmail}>\nTime: ${gbpTime()}${opts.detail ? `\nDetail: ${opts.detail}` : ''}`,
+    text:    `Workflow: ${opts.workflowName}\nUser: ${opts.userName} <${opts.userEmail}>\nTime: ${gbpTime()}${opts.detail ? `\nDetail: ${opts.detail}` : ''}`,
     html: wrap({
-      dept: 'internal',
-      chipLabel: 'WORKFLOW ALERT',
-      chipColor: '#f97316',
+      dept:      'internal',
+      category:  'Workflow',
+      preheader: `${opts.workflowName} · ${opts.userEmail}`,
       body: `
         ${h1(opts.workflowName)}
         ${dataTable([
-          ['User',  opts.userName],
-          ['Email', opts.userEmail],
-          ['Time',  gbpTime()],
+          ['User',   opts.userName],
+          ['Email',  opts.userEmail],
+          ['Time',   gbpTime()],
           ...(opts.detail ? [['Detail', opts.detail] as [string, string]] : []),
         ])}
-        ${btn('View admin panel', `${SITE}/admin`, '#f97316')}
+        ${btn('View admin', `${SITE}/admin`, '#64748b')}
       `,
     }),
   });
@@ -889,24 +813,23 @@ export async function sendSecurityAlert(opts: {
     suspicious_login: 'Suspicious login detected',
     account_locked:   'Account temporarily locked',
   };
-  const label = eventLabels[opts.eventType] ?? opts.eventType;
+  const label         = eventLabels[opts.eventType] ?? opts.eventType;
   const isHighSeverity = ['suspicious_login', 'account_locked'].includes(opts.eventType);
 
   await sendEmail({
     from:    FROM.security,
     to:      opts.email,
-    subject: `Security alert: ${label} — Flowen`,
+    subject: `Security alert: ${label}`,
     replyTo: 'security@flowen.digital',
     tags:    [{ name: 'type', value: 'security_alert' }],
-    text: `Hi ${opts.displayName},\n\nSecurity alert: ${label}\n\nIf this wasn't you, contact security@flowen.digital immediately.\n\nFlowen Security Team`,
+    text:    `Security alert: ${label}\n\nIf this wasn't you, contact security@flowen.digital immediately.\n\nFlowen Security`,
     html: wrap({
-      dept: 'security',
-      chipLabel: isHighSeverity ? 'URGENT SECURITY ALERT' : 'SECURITY NOTICE',
-      chipColor: '#ef4444',
-      chipBg: '#1c0f0f',
+      dept:      'security',
+      category:  isHighSeverity ? 'Urgent Security Alert' : 'Security Notice',
+      preheader: `${label} on your Flowen account.`,
       body: `
         ${h1(label)}
-        ${p(`Hi ${opts.displayName}, we detected the following security event on your Flowen account.`)}
+        ${p(`Hi ${opts.displayName}, we detected the following event on your Flowen account.`)}
         ${dataTable([
           ['Event',    label],
           ['Time',     gbpTime()],
@@ -915,8 +838,9 @@ export async function sendSecurityAlert(opts: {
           ...(opts.detail   ? [['Details',    opts.detail]   as [string, string]] : []),
         ])}
         ${isHighSeverity
-          ? `${callout('<strong>If this was not you, contact security@flowen.digital immediately and change your password.</strong>', '🚨')}`
-          : `${callout('If this was you, no action is needed. If you don\'t recognise this activity, contact security@flowen.digital.', '🔒')}`}
+          ? note(`If this was not you, <strong style="color:#e8edf5;">contact <a href="mailto:security@flowen.digital" style="color:#ef4444;text-decoration:none;">security@flowen.digital</a> immediately</strong> and change your password.`)
+          : note(`If this was you, no action is needed. If you don't recognise this activity, write to <a href="mailto:security@flowen.digital" style="color:#ef4444;text-decoration:none;">security@flowen.digital</a>.`)
+        }
         ${btn('Review account security', `${SITE}/dashboard/settings`, '#ef4444')}
       `,
     }),
@@ -942,32 +866,35 @@ export async function sendClinicalReport(opts: {
     subject: `Patient report: ${opts.patientName} — ${opts.reportPeriod}`,
     replyTo: 'clinical@flowen.digital',
     tags:    [{ name: 'type', value: 'clinical_report' }],
-    text: `Hi ${opts.clinicianName},\n\nWeekly practice report for ${opts.patientName} (${opts.reportPeriod}).\n\nSessions: ${opts.sessionsCompleted}\nAvg. accuracy: ${opts.avgAccuracy}%\nTop technique: ${opts.topTechnique}\n\nNotes: ${opts.notes}\n\nView full report: ${opts.reportUrl}\n\nThe Flowen Clinical Team`,
+    text:    `Weekly report: ${opts.patientName} (${opts.reportPeriod})\n\nSessions: ${opts.sessionsCompleted}\nAvg. accuracy: ${opts.avgAccuracy}%\nTop technique: ${opts.topTechnique}\n\nNotes:\n${opts.notes}\n\nFull report: ${opts.reportUrl}\n\nThe Flowen Clinical Team`,
     html: wrap({
-      dept: 'clinical',
-      chipLabel: 'CLINICAL REPORT',
-      chipColor: '#14b8a6',
-      chipBg: '#091a1a',
+      dept:      'clinical',
+      category:  'Clinical Report',
+      preheader: `${opts.patientName} · ${opts.reportPeriod} · ${opts.sessionsCompleted} sessions`,
       body: `
         ${h1(`Patient report: ${opts.patientName}`)}
-        ${p(`Hi ${opts.clinicianName}, here is the automated practice summary for ${opts.patientName} covering <strong style="color:#f1f5f9;">${opts.reportPeriod}</strong>.`)}
+        ${p(`Hi ${opts.clinicianName}, here's the practice summary for <strong style="color:#e8edf5;">${opts.reportPeriod}</strong>.`)}
         ${dataTable([
           ['Sessions completed', String(opts.sessionsCompleted)],
           ['Average accuracy',   `${opts.avgAccuracy}%`],
           ['Top technique',      opts.topTechnique],
           ['Generated',          gbpTime()],
         ])}
-        <div style="background:#060a10;border-radius:10px;padding:18px 20px;margin:16px 0;">
-          <p style="margin:0 0 8px;font-size:10px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:1px;font-family:monospace;">Clinical notes</p>
-          <p style="margin:0;font-size:14px;color:#94a3b8;line-height:1.7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${opts.notes}</p>
-        </div>
-        ${btn('View full report', opts.reportUrl, '#14b8a6')}
+        ${h2('Clinical notes')}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;">
+          <tr>
+            <td bgcolor="#070a0f" style="background:#070a0f;border-radius:6px;border:1px solid #141c28;padding:16px 20px;">
+              <p style="margin:0;font-size:14px;color:#8a9ab5;line-height:1.7;font-family:${FONT};">${opts.notes}</p>
+            </td>
+          </tr>
+        </table>
+        ${btn('View full report', opts.reportUrl, '#0ea5e9')}
       `,
     }),
   });
 }
 
-// ── 21. Product update / changelog email ──────────────────────────────────────
+// ── 21. Product update / changelog ────────────────────────────────────────────
 
 export type ChangeType = 'new' | 'improved' | 'fixed' | 'security' | 'policy';
 
@@ -980,49 +907,47 @@ export interface ChangelogItem {
 }
 
 export interface ChangelogRelease {
-  version: string;         // e.g. "1.2.0" or "August 2026"
-  date: string;            // ISO date string
-  summary: string;         // one-line overview shown at top
+  version: string;
+  date: string;
+  summary: string;
   items: ChangelogItem[];
 }
 
-const CHANGE_META: Record<ChangeType, { label: string; color: string; bg: string; icon: string }> = {
-  new:      { label: 'NEW',      color: '#10b981', bg: '#022c22', icon: '✨' },
-  improved: { label: 'IMPROVED', color: '#6366f1', bg: '#0f0e2a', icon: '🔧' },
-  fixed:    { label: 'FIXED',    color: '#3b82f6', bg: '#0a1628', icon: '🐛' },
-  security: { label: 'SECURITY', color: '#ef4444', bg: '#1c0f0f', icon: '🔐' },
-  policy:   { label: 'POLICY',   color: '#8b5cf6', bg: '#130d21', icon: '📋' },
+const CHANGE_META: Record<ChangeType, { label: string; color: string }> = {
+  new:      { label: 'New',      color: '#10b981' },
+  improved: { label: 'Improved', color: '#6366f1' },
+  fixed:    { label: 'Fixed',    color: '#3b82f6' },
+  security: { label: 'Security', color: '#ef4444' },
+  policy:   { label: 'Policy',   color: '#8b5cf6' },
 };
 
 export function buildChangelogHtml(release: ChangelogRelease): string {
   const dateLabel = new Date(release.date).toLocaleDateString('en-GB', { dateStyle: 'long' });
-  const grouped = new Map<ChangeType, ChangelogItem[]>();
   const order: ChangeType[] = ['security', 'policy', 'new', 'improved', 'fixed'];
+  const grouped = new Map<ChangeType, ChangelogItem[]>();
   for (const type of order) grouped.set(type, []);
-  for (const item of release.items) {
-    grouped.get(item.type)!.push(item);
-  }
+  for (const item of release.items) grouped.get(item.type)!.push(item);
 
   const sections = order
     .filter(t => grouped.get(t)!.length > 0)
     .map(type => {
-      const meta = CHANGE_META[type];
+      const meta  = CHANGE_META[type];
       const items = grouped.get(type)!;
       return `
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 4px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 0;">
           <tr>
             <td>
-              <span style="display:inline-block;background:${meta.bg};color:${meta.color};border:1px solid ${meta.color}30;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;font-family:monospace;">${meta.icon} ${meta.label}</span>
+              <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:${meta.color};font-family:${FONT};">${meta.label}</p>
             </td>
           </tr>
         </table>
         ${items.map(item => `
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:10px 0;background:#060a10;border-radius:10px;overflow:hidden;border-left:3px solid ${meta.color}40;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;border-left:2px solid ${meta.color}40;">
             <tr>
-              <td style="padding:14px 16px;">
-                <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${item.title}</p>
-                <p style="margin:0;font-size:13px;color:#64748b;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${item.description}</p>
-                ${item.href ? `<a href="${item.href}" style="display:inline-block;margin-top:8px;font-size:12px;color:${meta.color};text-decoration:none;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${item.linkText ?? 'View change'} →</a>` : ''}
+              <td style="padding:12px 16px;">
+                <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#c4cede;font-family:${FONT};">${item.title}</p>
+                <p style="margin:0;font-size:13px;color:#3a4d66;line-height:1.6;font-family:${FONT};">${item.description}</p>
+                ${item.href ? `<a href="${item.href}" style="display:inline-block;margin-top:6px;font-size:12px;color:${meta.color};text-decoration:none;font-weight:600;font-family:${FONT};">${item.linkText ?? 'View'} &rarr;</a>` : ''}
               </td>
             </tr>
           </table>
@@ -1031,25 +956,18 @@ export function buildChangelogHtml(release: ChangelogRelease): string {
     }).join('');
 
   return wrap({
-    dept: 'product',
-    chipLabel: `VERSION ${release.version}`,
-    chipColor: '#6366f1',
-    chipBg: '#0f0e2a',
-    unsubscribeHref: `${SITE}/dashboard/settings`,
+    dept:             'product',
+    category:         `Version ${release.version}`,
+    preheader:        release.summary,
+    unsubscribeHref:  `${SITE}/dashboard/settings`,
     body: `
-      ${h1('What\'s new in Flowen')}
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
-        <tr>
-          <td>
-            <span style="font-size:12px;color:#374151;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">${dateLabel} · ${release.version}</span>
-          </td>
-        </tr>
-      </table>
+      ${h1("What's new in Flowen")}
+      <p style="margin:-8px 0 20px;font-size:12px;color:#3a4d66;font-family:${FONT};">${dateLabel} &middot; ${release.version}</p>
       ${p(release.summary)}
       ${sections}
       ${divider()}
-      ${btn('See full changelog', `${SITE}/changelog`)}
-      ${p("Questions about any of these changes? Reply to this email or contact updates@flowen.digital.", true)}
+      ${btn('See full changelog', `${SITE}/changelog`, '#6366f1')}
+      ${note(`Questions? Reply to this email or write to <a href="mailto:updates@flowen.digital" style="color:#6366f1;text-decoration:none;">updates@flowen.digital</a>.`)}
     `,
   });
 }
@@ -1059,17 +977,14 @@ export async function sendProductUpdate(opts: {
   release: ChangelogRelease;
 }): Promise<boolean> {
   const dateLabel = new Date(opts.release.date).toLocaleDateString('en-GB', { dateStyle: 'long' });
-  const typeCount = new Set(opts.release.items.map(i => i.type)).size;
-  const summary = `${opts.release.items.length} update${opts.release.items.length !== 1 ? 's' : ''} across ${typeCount} categor${typeCount !== 1 ? 'ies' : 'y'}`;
-
   return sendEmail({
     from:    FROM.updates,
     to:      opts.to,
     subject: `Flowen ${opts.release.version} — ${opts.release.summary}`,
     replyTo: 'updates@flowen.digital',
     tags:    [{ name: 'type', value: 'product_update' }],
-    text: `Flowen ${opts.release.version} · ${dateLabel}\n\n${opts.release.summary}\n\n${opts.release.items.map(i => `[${i.type.toUpperCase()}] ${i.title}\n${i.description}${i.href ? `\n${i.href}` : ''}`).join('\n\n')}\n\nSee full changelog: ${SITE}/changelog`,
-    html: buildChangelogHtml(opts.release),
+    text:    `Flowen ${opts.release.version} · ${dateLabel}\n\n${opts.release.summary}\n\n${opts.release.items.map(i => `[${i.type.toUpperCase()}] ${i.title}\n${i.description}${i.href ? `\n${i.href}` : ''}`).join('\n\n')}\n\nSee full changelog: ${SITE}/changelog`,
+    html:    buildChangelogHtml(opts.release),
   });
 }
 
@@ -1090,20 +1005,42 @@ export async function sendInvestorUpdate(opts: {
     subject: opts.subject,
     replyTo: 'investors@flowen.digital',
     tags:    [{ name: 'type', value: 'investor_update' }],
-    text: `${opts.headline}\n\n${opts.body}\n\nHoward · Flowen Founder & CEO\ninvestors@flowen.digital`,
+    text:    `${opts.headline}\n\n${opts.body}\n\nHoward · Flowen Founder & CEO\ninvestors@flowen.digital`,
     html: wrap({
-      dept: 'investors',
-      chipLabel: `INVESTOR UPDATE · ${opts.period}`,
-      chipColor: '#d97706',
-      chipBg: '#1a1106',
+      dept:      'investors',
+      category:  `Investor Update · ${opts.period}`,
+      preheader: opts.headline,
       body: `
         ${h1(opts.headline)}
         ${p(opts.body)}
         ${opts.metrics && opts.metrics.length > 0 ? dataTable(opts.metrics) : ''}
-        ${opts.attachments ? callout(opts.attachments, '📎') : ''}
+        ${opts.attachments ? note(opts.attachments) : ''}
         ${btn('Investor portal', `${SITE}/admin/venture`, '#d97706')}
       `,
     }),
+  });
+}
+
+// ── Broadcast HTML builder (used by admin broadcast route) ────────────────────
+// Takes freeform subject + plain-text body from the admin UI and wraps it in
+// the shared email shell. Paragraphs are split on newlines.
+
+export function buildBroadcastHtml(subject: string, body: string): string {
+  const paragraphs = body
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map(l => `<p style="margin:0 0 14px;font-size:15px;color:#8a9ab5;line-height:1.75;font-family:${FONT};">${l}</p>`)
+    .join('');
+
+  return wrap({
+    dept:      'product',
+    preheader: subject,
+    body: `
+      <h1 style="margin:0 0 20px;font-size:26px;font-weight:800;color:#e8edf5;letter-spacing:-0.6px;line-height:1.25;font-family:${FONT};">${subject}</h1>
+      ${paragraphs}
+    `,
+    unsubscribeHref: `${SITE}/dashboard/settings`,
   });
 }
 
