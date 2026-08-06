@@ -1175,6 +1175,62 @@ export async function sendFounderNote(opts: {
   });
 }
 
+// ── 27. NPS survey ───────────────────────────────────────────────────────────
+// Sent from hello@flowen.digital. Scores 0-10 are clickable links that land
+// on /nps?score=N&token=T for the follow-up comment form.
+
+export async function sendNpsSurvey(opts: {
+  email: string;
+  displayName: string;
+  token: string;
+}) {
+  const scores = [0,1,2,3,4,5,6,7,8,9,10];
+
+  // Colour zone per NPS category
+  function scoreColor(s: number): string {
+    if (s <= 6) return '#ef4444';   // detractor — red
+    if (s <= 8) return '#f59e0b';   // passive   — amber
+    return '#10b981';               // promoter  — green
+  }
+
+  const scoreButtons = `
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 8px;">
+      <tr>
+        ${scores.map(s => `
+          <td style="padding:0 3px 0 0;">
+            <a href="${SITE}/nps?score=${s}&token=${opts.token}"
+               style="display:inline-block;width:36px;height:36px;line-height:36px;text-align:center;background:${scoreColor(s)}1a;border:1px solid ${scoreColor(s)}40;border-radius:6px;font-size:13px;font-weight:700;color:${scoreColor(s)};text-decoration:none;font-family:${FONT};">${s}</a>
+          </td>`).join('')}
+      </tr>
+    </table>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 4px;">
+      <tr>
+        <td style="font-size:10px;color:#475d7a;font-family:${FONT};">Not at all likely</td>
+        <td style="font-size:10px;color:#475d7a;text-align:right;font-family:${FONT};">Extremely likely</td>
+      </tr>
+    </table>`;
+
+  await sendEmail({
+    from:    FROM.hello,
+    to:      opts.email,
+    subject: 'Quick question — how likely are you to recommend Flowen?',
+    replyTo: 'support@flowen.digital',
+    tags:    [{ name: 'type', value: 'nps_survey' }],
+    text:    `Hi ${opts.displayName},\n\nOn a scale of 0–10, how likely are you to recommend Flowen to a friend or colleague?\n\nClick your score here: ${SITE}/nps?token=${opts.token}\n\nThanks for your time.\n\nThe Flowen Team`,
+    html: wrap({
+      dept:      'customer',
+      category:  'Quick question',
+      preheader: 'How likely are you to recommend Flowen? Takes 30 seconds.',
+      body: `
+        ${h1(`Hi ${opts.displayName} — quick question.`)}
+        ${p('On a scale of 0–10, how likely are you to recommend Flowen to a friend or colleague who stammers?')}
+        ${scoreButtons}
+        ${note('Clicking a number takes 30 seconds and helps us improve Flowen for everyone.')}
+      `,
+    }),
+  });
+}
+
 // ── Deprecated alias ──────────────────────────────────────────────────────────
 
 /** @deprecated use sendAdminWaitlistAlert */
