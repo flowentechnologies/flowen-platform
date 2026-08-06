@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
+import { bridgeAttribution } from '@/lib/attribution';
 
 const VS_COOKIE = '__vs';
 
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
           .select('is_admin, onboarding_complete')
           .eq('id', session.user.id)
           .single(),
-        // Mark visitor session as converted
+        // Mark visitor session as converted (existing analytics system).
         (async () => {
           const vsId = cookieStore.get(VS_COOKIE)?.value;
           if (vsId) {
@@ -58,6 +59,13 @@ export async function GET(request: NextRequest) {
               .eq('id', vsId);
           }
         })(),
+        // Bridge marketing attribution — links the flowen_anon_id cookie to the
+        // newly authenticated user, triggering the Meta CAPI DB webhook.
+        bridgeAttribution(
+          cookieStore.get('flowen_anon_id')?.value,
+          session.user.id,
+          'signup',
+        ),
       ]);
 
       const profile = profileRes.data;

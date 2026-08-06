@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { bridgeAttribution } from "@/lib/attribution";
 
 async function getSupabaseClient() {
   const cookieStore = await cookies();
@@ -44,11 +45,15 @@ export async function login(formData: FormData) {
     return redirect(`/auth/login?error=${encodeURIComponent(error.message)}`);
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('is_admin, onboarding_complete')
-    .eq('id', authData.user.id)
-    .single();
+  const [{ data: profile }, cookieStore] = await Promise.all([
+    supabase.from('profiles').select('is_admin, onboarding_complete').eq('id', authData.user.id).single(),
+    cookies(),
+  ]);
+
+  // Bridge the anonymous attribution record to this user on every login.
+  // No-ops gracefully if the cookie is absent or no ad click is on record.
+  const anonId = cookieStore.get('flowen_anon_id')?.value;
+  await bridgeAttribution(anonId, authData.user.id, 'signup');
 
   revalidatePath("/", "layout");
   if (profile?.is_admin) redirect("/admin");
