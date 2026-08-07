@@ -258,7 +258,17 @@ export function BillingClient({
 
   useEffect(() => {
     if (params.get('success') === '1') {
+      // Meta Pixel — Purchase
       pixelPurchase({ value: 0, currency: 'GBP', content_ids: [tier ?? 'subscription'] });
+
+      // Google Ads — Purchase conversion
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', 'conversion', {
+          send_to: 'AW-18375319306/wyB9CP-pmt0cEIq-hLpE',
+          currency: 'GBP',
+        });
+      }
+
       router.replace('/dashboard/billing');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

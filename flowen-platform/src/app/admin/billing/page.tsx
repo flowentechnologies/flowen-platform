@@ -278,7 +278,6 @@ export default async function BillingPage() {
                     <SubscriptionActions
                       subscriptionId={sub.id}
                       cancelAtPeriodEnd={sub.cancelAtPeriodEnd}
-                      onCancelled={() => {}}
                     />
                   </td>
                 </tr>
@@ -327,7 +326,6 @@ export default async function BillingPage() {
                       <SubscriptionActions
                         subscriptionId={sub.id}
                         cancelAtPeriodEnd={sub.cancelAtPeriodEnd}
-                        onCancelled={() => {}}
                       />
                     </td>
                   </tr>
