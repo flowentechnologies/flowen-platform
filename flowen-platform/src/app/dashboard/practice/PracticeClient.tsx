@@ -560,7 +560,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       // Formant analysis → viseme driver → avatar (bypasses React state entirely)
       if (visemeDriverRef.current && ctx.sampleRate) {
         const { f1, f2 } = extractFormants(formantBuf, ctx.sampleRate);
-        visemeDriverRef.current.updateFormants(f1, f2);
+        visemeDriverRef.current.updateFormants(f1, f2, rms); // rms gates formant blending
         visemeDriverRef.current.tick(Date.now());
         avatarRef.current?.updateBlends(visemeDriverRef.current.getBlends(), rms > 18);
       }

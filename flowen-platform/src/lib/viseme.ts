@@ -85,7 +85,7 @@ export const ZERO_BLENDS: VisemeBlends = {
 // ----------------------------------------------------------------------------
 
 export type PhonemeClass =
-  | 'SIL' | 'PP' | 'FF' | 'TH' | 'DD' | 'KK' | 'CH' | 'SS' | 'NN' | 'RR'
+  | 'SIL' | 'PP' | 'FF' | 'TH' | 'DD' | 'KK' | 'CH' | 'SS' | 'NN' | 'LL' | 'RR'
   | 'AA' | 'AE' | 'AH' | 'AO' | 'AW' | 'AY' | 'EH' | 'ER' | 'EY' | 'IH'
   | 'IY' | 'OW' | 'OY' | 'UH' | 'UW' | 'WW' | 'YY' | 'HH';
 
@@ -153,6 +153,18 @@ export const VISEME_TARGETS: Record<PhonemeClass, Partial<VisemeBlends>> = {
     mouthClose: 0.3,
     tongueUp: 0.9,
     tongueFlat: 0.5,
+  },
+
+  // Lateral approximant /l/ — tongue tip contacts alveolar ridge (same as NN) but
+  // the sides of the tongue drop to allow lateral airflow, giving a slightly more
+  // open jaw and less bilabial closure than the nasal /n/.
+  LL: {
+    jawOpen: 0.15,
+    mouthClose: 0.15,
+    tongueUp: 0.9,
+    tongueFlat: 0.2,        // sides drop vs NN (lateral airflow channel)
+    mouthStretchLeft: 0.1,
+    mouthStretchRight: 0.1,
   },
 
   RR: {
@@ -370,8 +382,8 @@ export const ARPABET_MAP: Record<string, PhonemeClass> = {
   JH: 'CH',
   // Consonant — K (velar plosive)
   K: 'KK',
-  // Consonant — L (lateral → NN)
-  L: 'NN',
+  // Consonant — L (lateral approximant — distinct from nasal N)
+  L: 'LL', EL: 'LL',
   // Consonant — M (bilabial nasal → PP)
   M: 'PP',
   // Consonant — N (alveolar nasal)
@@ -447,7 +459,7 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   not: ['NN', 'AO', 'DD'],
   but: ['PP', 'AH', 'DD'],
   what: ['WW', 'AH', 'DD'],
-  all: ['AO', 'NN'],
+  all: ['AO', 'LL'],
   were: ['WW', 'ER'],
   we: ['WW', 'IY'],
   when: ['WW', 'EH', 'NN'],
@@ -464,7 +476,7 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   how: ['HH', 'AW'],
   their: ['DD', 'EH', 'RR'],
   if: ['IH', 'FF'],
-  will: ['WW', 'IH', 'NN'],
+  will: ['WW', 'IH', 'LL'],
   up: ['AH', 'PP'],
   other: ['AH', 'DD', 'ER'],
   about: ['AH', 'PP', 'AW', 'DD'],
@@ -478,12 +490,12 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   her: ['HH', 'ER'],
   would: ['WW', 'UH', 'DD'],
   make: ['PP', 'EY', 'KK'],
-  like: ['NN', 'AY', 'KK'],
+  like: ['LL', 'AY', 'KK'],
   him: ['HH', 'IH', 'PP'],
   into: ['IH', 'NN', 'DD', 'UW'],
   time: ['DD', 'AY', 'PP'],
   has: ['HH', 'AE', 'SS'],
-  look: ['NN', 'UH', 'KK'],
+  look: ['LL', 'UH', 'KK'],
   two: ['DD', 'UW'],
   more: ['PP', 'AO', 'RR'],
   write: ['RR', 'AY', 'DD'],
@@ -493,19 +505,19 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   no: ['NN', 'OW'],
   way: ['WW', 'EY'],
   could: ['KK', 'UH', 'DD'],
-  people: ['PP', 'IY', 'PP', 'AH', 'NN'],
+  people: ['PP', 'IY', 'PP', 'AH', 'LL'],
   my: ['PP', 'AY'],
   than: ['DD', 'AE', 'NN'],
   first: ['FF', 'ER', 'SS', 'DD'],
   water: ['WW', 'AO', 'DD', 'ER'],
   been: ['PP', 'IH', 'NN'],
-  call: ['KK', 'AO', 'NN'],
+  call: ['KK', 'AO', 'LL'],
   who: ['HH', 'UW'],
-  oil: ['AO', 'IH', 'NN'],
+  oil: ['AO', 'IH', 'LL'],
   its: ['IH', 'DD', 'SS'],
   now: ['NN', 'AW'],
   find: ['FF', 'AY', 'NN', 'DD'],
-  long: ['NN', 'AO', 'NN'],
+  long: ['LL', 'AO', 'NN'],
   down: ['DD', 'AW', 'NN'],
   day: ['DD', 'EY'],
   did: ['DD', 'IH', 'DD'],
@@ -519,13 +531,13 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   new: ['NN', 'UW'],
   sound: ['SS', 'AW', 'NN', 'DD'],
   take: ['DD', 'EY', 'KK'],
-  only: ['OW', 'NN', 'NN', 'IY'],
-  little: ['NN', 'IH', 'DD', 'AH', 'NN'],
+  only: ['OW', 'NN', 'LL', 'IY'],
+  little: ['LL', 'IH', 'DD', 'AH', 'LL'],
   work: ['WW', 'ER', 'KK'],
   know: ['NN', 'OW'],
-  place: ['PP', 'NN', 'EY', 'SS'],
+  place: ['PP', 'LL', 'EY', 'SS'],
   year: ['YY', 'IH', 'RR'],
-  live: ['NN', 'IH', 'FF'],
+  live: ['LL', 'IH', 'FF'],
   back: ['PP', 'AE', 'KK'],
   give: ['KK', 'IH', 'FF'],
   most: ['PP', 'OW', 'SS', 'DD'],
@@ -541,35 +553,35 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   say: ['SS', 'EY'],
   great: ['KK', 'RR', 'EY', 'DD'],
   where: ['WW', 'EH', 'RR'],
-  help: ['HH', 'EH', 'NN', 'PP'],
+  help: ['HH', 'EH', 'LL', 'PP'],
   through: ['DD', 'RR', 'UW'],
   much: ['PP', 'AH', 'CH'],
   before: ['PP', 'IH', 'FF', 'AO', 'RR'],
-  line: ['NN', 'AY', 'NN'],
+  line: ['LL', 'AY', 'NN'],
   right: ['RR', 'AY', 'DD'],
   too: ['DD', 'UW'],
   means: ['PP', 'IY', 'NN', 'SS'],
-  old: ['OW', 'NN', 'DD'],
+  old: ['OW', 'LL', 'DD'],
   any: ['EH', 'NN', 'IY'],
   same: ['SS', 'EY', 'PP'],
-  tell: ['DD', 'EH', 'NN'],
+  tell: ['DD', 'EH', 'LL'],
   boy: ['PP', 'AO', 'IY'],
-  follow: ['FF', 'AO', 'NN', 'OW'],
+  follow: ['FF', 'AO', 'LL', 'OW'],
   came: ['KK', 'EY', 'PP'],
   want: ['WW', 'AO', 'NN', 'DD'],
   show: ['SS', 'OW'],
-  also: ['AO', 'NN', 'SS', 'OW'],
+  also: ['AO', 'LL', 'SS', 'OW'],
   around: ['AH', 'RR', 'AW', 'NN', 'DD'],
   form: ['FF', 'AO', 'RR', 'PP'],
   three: ['DD', 'RR', 'IY'],
-  small: ['SS', 'PP', 'AO', 'NN'],
+  small: ['SS', 'PP', 'AO', 'LL'],
   set: ['SS', 'EH', 'DD'],
   put: ['PP', 'UH', 'DD'],
   end: ['EH', 'NN', 'DD'],
   does: ['DD', 'AH', 'SS'],
   another: ['AH', 'NN', 'AH', 'DD', 'ER'],
-  well: ['WW', 'EH', 'NN'],
-  large: ['NN', 'AA', 'RR', 'DD'],
+  well: ['WW', 'EH', 'LL'],
+  large: ['LL', 'AA', 'RR', 'DD'],
   must: ['PP', 'AH', 'SS', 'DD'],
   big: ['PP', 'IH', 'KK'],
   even: ['IY', 'FF', 'AH', 'NN'],
@@ -583,7 +595,7 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   men: ['PP', 'EH', 'NN'],
   read: ['RR', 'IY', 'DD'],
   need: ['NN', 'IY', 'DD'],
-  land: ['NN', 'AE', 'NN', 'DD'],
+  land: ['LL', 'AE', 'NN', 'DD'],
   different: ['DD', 'IH', 'FF', 'RR', 'AH', 'NN', 'DD'],
   home: ['HH', 'OW', 'PP'],
   us: ['AH', 'SS'],
@@ -595,23 +607,23 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   again: ['AH', 'KK', 'EH', 'NN'],
   change: ['CH', 'EY', 'NN', 'DD'],
   off: ['AO', 'FF'],
-  play: ['PP', 'NN', 'EY'],
-  spell: ['SS', 'PP', 'EH', 'NN'],
+  play: ['PP', 'LL', 'EY'],
+  spell: ['SS', 'PP', 'EH', 'LL'],
   air: ['EH', 'RR'],
   away: ['AH', 'WW', 'EY'],
-  animal: ['AE', 'NN', 'AH', 'PP', 'AH', 'NN'],
+  animal: ['AE', 'NN', 'AH', 'PP', 'AH', 'LL'],
   house: ['HH', 'AW', 'SS'],
   point: ['PP', 'AO', 'IH', 'NN', 'DD'],
   page: ['PP', 'EY', 'DD'],
-  letter: ['NN', 'EH', 'DD', 'ER'],
+  letter: ['LL', 'EH', 'DD', 'ER'],
   mother: ['PP', 'AH', 'DD', 'ER'],
   answer: ['AE', 'NN', 'SS', 'ER'],
   found: ['FF', 'AW', 'NN', 'DD'],
   still: ['SS', 'DD', 'IH', 'NN'],
-  learn: ['NN', 'ER', 'NN'],
+  learn: ['LL', 'ER', 'NN'],
   should: ['SS', 'UH', 'DD'],
   american: ['AH', 'PP', 'EH', 'RR', 'AH', 'KK', 'AH', 'NN'],
-  world: ['WW', 'ER', 'NN', 'DD'],
+  world: ['WW', 'ER', 'LL', 'DD'],
   high: ['HH', 'AY'],
   every: ['EH', 'FF', 'RR', 'IY'],
   near: ['NN', 'IH', 'RR'],
@@ -619,11 +631,11 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   food: ['FF', 'UW', 'DD'],
   between: ['PP', 'IH', 'DD', 'WW', 'IY', 'NN'],
   own: ['OW', 'NN'],
-  below: ['PP', 'IH', 'NN', 'OW'],
+  below: ['PP', 'IH', 'LL', 'OW'],
   country: ['KK', 'AH', 'NN', 'DD', 'RR', 'IY'],
-  plant: ['PP', 'NN', 'AE', 'NN', 'DD'],
-  last: ['NN', 'AE', 'SS', 'DD'],
-  school: ['SS', 'KK', 'UW', 'NN'],
+  plant: ['PP', 'LL', 'AE', 'NN', 'DD'],
+  last: ['LL', 'AE', 'SS', 'DD'],
+  school: ['SS', 'KK', 'UW', 'LL'],
   father: ['FF', 'AA', 'DD', 'ER'],
   keep: ['KK', 'IY', 'PP'],
   tree: ['DD', 'RR', 'IY'],
@@ -632,28 +644,28 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   city: ['SS', 'IH', 'DD', 'IY'],
   earth: ['ER', 'TH'],
   eye: ['AY'],
-  light: ['NN', 'AY', 'DD'],
+  light: ['LL', 'AY', 'DD'],
   thought: ['TH', 'AO', 'DD'],
   head: ['HH', 'EH', 'DD'],
   under: ['AH', 'NN', 'DD', 'ER'],
   story: ['SS', 'DD', 'AO', 'RR', 'IY'],
   saw: ['SS', 'AO'],
-  left: ['NN', 'EH', 'FF', 'DD'],
+  left: ['LL', 'EH', 'FF', 'DD'],
   dont: ['DD', 'OW', 'NN', 'DD'],
   few: ['FF', 'YY', 'UW'],
-  while: ['WW', 'AY', 'NN'],
-  along: ['AH', 'NN', 'AO', 'NN'],
+  while: ['WW', 'AY', 'LL'],
+  along: ['AH', 'LL', 'AO', 'NN'],
   might: ['PP', 'AY', 'DD'],
-  close: ['KK', 'NN', 'OW', 'SS'],
+  close: ['KK', 'LL', 'OW', 'SS'],
   something: ['SS', 'AH', 'PP', 'TH', 'IH', 'NN'],
   seem: ['SS', 'IY', 'PP'],
   next: ['NN', 'EH', 'KK', 'SS', 'DD'],
   hard: ['HH', 'AA', 'RR', 'DD'],
   open: ['OW', 'PP', 'AH', 'NN'],
-  example: ['IH', 'KK', 'SS', 'AE', 'PP', 'AH', 'NN'],
+  example: ['IH', 'KK', 'SS', 'AE', 'PP', 'AH', 'LL'],
   begin: ['PP', 'IH', 'KK', 'IH', 'NN'],
-  life: ['NN', 'AY', 'FF'],
-  always: ['AO', 'NN', 'WW', 'EY', 'SS'],
+  life: ['LL', 'AY', 'FF'],
+  always: ['AO', 'LL', 'WW', 'EY', 'SS'],
   those: ['DD', 'OW', 'SS'],
   both: ['PP', 'OW', 'TH'],
   paper: ['PP', 'EY', 'PP', 'ER'],
@@ -663,12 +675,12 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   often: ['AO', 'FF', 'AH', 'NN'],
   run: ['RR', 'AH', 'NN'],
   important: ['IH', 'PP', 'PP', 'AO', 'RR', 'DD', 'AH', 'NN', 'DD'],
-  until: ['AH', 'NN', 'DD', 'IH', 'NN'],
-  children: ['CH', 'IH', 'NN', 'DD', 'RR', 'AH', 'NN'],
+  until: ['AH', 'NN', 'DD', 'IH', 'LL'],
+  children: ['CH', 'IH', 'LL', 'DD', 'RR', 'AH', 'NN'],
   side: ['SS', 'AY', 'DD'],
   feet: ['FF', 'IY', 'DD'],
   car: ['KK', 'AA', 'RR'],
-  mile: ['PP', 'AY', 'NN'],
+  mile: ['PP', 'AY', 'LL'],
   night: ['NN', 'AY', 'DD'],
   walk: ['WW', 'AO', 'KK'],
   white: ['WW', 'AY', 'DD'],
@@ -686,7 +698,7 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   stop: ['SS', 'DD', 'AO', 'PP'],
   without: ['WW', 'IH', 'DD', 'AW', 'DD'],
   second: ['SS', 'EH', 'KK', 'AH', 'NN', 'DD'],
-  later: ['NN', 'EY', 'DD', 'ER'],
+  later: ['LL', 'EY', 'DD', 'ER'],
   miss: ['PP', 'IH', 'SS'],
   idea: ['AY', 'DD', 'IY', 'AH'],
   enough: ['IH', 'NN', 'AH', 'FF'],
@@ -695,36 +707,22 @@ export const WORD_PHONEMES: Record<string, PhonemeClass[]> = {
   watch: ['WW', 'AO', 'CH'],
   far: ['FF', 'AA', 'RR'],
   indian: ['IH', 'NN', 'DD', 'IY', 'AH', 'NN'],
-  real: ['RR', 'IY', 'AH', 'NN'],
-  almost: ['AO', 'NN', 'PP', 'OW', 'SS', 'DD'],
-  let: ['NN', 'EH', 'DD'],
+  real: ['RR', 'IY', 'AH', 'LL'],
+  almost: ['AO', 'LL', 'PP', 'OW', 'SS', 'DD'],
+  let: ['LL', 'EH', 'DD'],
   above: ['AH', 'PP', 'AH', 'FF'],
-  girl: ['KK', 'ER', 'NN'],
+  girl: ['KK', 'ER', 'LL'],
   sometimes: ['SS', 'AH', 'PP', 'DD', 'AY', 'PP', 'SS'],
   mountain: ['PP', 'AW', 'NN', 'DD', 'AH', 'NN'],
   cut: ['KK', 'AH', 'DD'],
   young: ['YY', 'AH', 'NN'],
   talk: ['DD', 'AO', 'KK'],
   soon: ['SS', 'UW', 'NN'],
-  list: ['NN', 'IH', 'SS', 'DD'],
+  list: ['LL', 'IH', 'SS', 'DD'],
   song: ['SS', 'AO', 'NN'],
   being: ['PP', 'IY', 'IH', 'NN'],
 };
 
-// Fix 'NN' references — these should map to NN (lateral approximant)
-// (We used LL as a label but it's not a PhonemeClass — replace with NN)
-// Actually, let's post-process: scan and ensure all arrays only contain valid PhonemeClass.
-// Since we used LL above as a stand-in for lateral /l/, replace all LL with NN at runtime.
-(function normalizeWordPhonemes() {
-  for (const word of Object.keys(WORD_PHONEMES)) {
-    WORD_PHONEMES[word] = WORD_PHONEMES[word].map(p => {
-      if ((p as string) === 'NN') return 'NN' as PhonemeClass;
-      if ((p as string) === 'TH') return 'TH' as PhonemeClass;
-      if ((p as string) === 'TT') return 'DD' as PhonemeClass;
-      return p;
-    });
-  }
-})();
 
 // ----------------------------------------------------------------------------
 // F. buildTargetBlends — merge ZERO_BLENDS with a viseme target
@@ -988,7 +986,7 @@ export function predictPhonemeFromWord(word: string): PhonemeClass[] {
           case 'h': result.push('HH'); break;
           case 'j': result.push('CH'); break;
           case 'k': result.push('KK'); break;
-          case 'l': result.push('NN'); break;
+          case 'l': result.push('LL'); break;
           case 'm': result.push('PP'); break;
           case 'n': result.push('NN'); break;
           case 'p': result.push('PP'); break;
