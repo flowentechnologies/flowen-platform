@@ -16,21 +16,32 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { duration_seconds: number; total_blocks_detected: number; stage_id: number };
+  let body: {
+    duration_seconds: number;
+    total_blocks_detected: number;
+    stage_id: number;
+    transcript?: string;
+  };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { duration_seconds, total_blocks_detected, stage_id } = body;
+  const { duration_seconds, total_blocks_detected, stage_id, transcript } = body;
   if (
     typeof duration_seconds !== 'number' || !Number.isFinite(duration_seconds) || duration_seconds < 30 || duration_seconds > 7200 ||
     typeof total_blocks_detected !== 'number' || !Number.isInteger(total_blocks_detected) || total_blocks_detected < 0 ||
-    (stage_id !== undefined && stage_id !== null && (!Number.isInteger(stage_id) || stage_id < 1))
+    (stage_id !== undefined && stage_id !== null && (!Number.isInteger(stage_id) || stage_id < 1)) ||
+    (transcript !== undefined && typeof transcript !== 'string')
   ) {
     return NextResponse.json({ error: 'Invalid session data' }, { status: 400 });
   }
+
+  // Cap transcript length so a runaway client can't write an unbounded TEXT blob.
+  const transcriptValue = typeof transcript === 'string'
+    ? transcript.trim().slice(0, 20_000) || null
+    : null;
 
   const admin = db();
 
@@ -43,6 +54,7 @@ export async function POST(req: Request) {
     total_prolongations_detected: 0,
     average_latency_ms: null,
     stage_id: body.stage_id,
+    transcript: transcriptValue,
   }).select('id, created_at').single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

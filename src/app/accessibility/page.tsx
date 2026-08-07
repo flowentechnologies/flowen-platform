@@ -82,7 +82,7 @@ export default function AccessibilityPage() {
           ACCESSIBILITY
         </span>
         <h1 className="text-4xl font-extrabold text-white tracking-tight mt-4">Accessibility Statement</h1>
-        <p className="text-slate-500 text-xs mt-2">Last updated: 28 July 2026</p>
+        <p className="text-slate-500 text-xs mt-2">Last updated: 8 August 2026</p>
 
         <div className="mt-10 space-y-10 text-sm text-slate-300 leading-relaxed">
 
@@ -107,14 +107,15 @@ export default function AccessibilityPage() {
             {/* Summary bar */}
             {(() => {
               const all = [
-                // Perceivable
+                // Perceivable — 1.3.1 still Partial (chart a11y), 1.4.13 still In Progress
                 'C','C','C','C','P','C','C','C','C','C','C','C','C','C','C','C','I',
-                // Operable
+                // Operable — 2.1.1 now Compliant (all buttons have accessible names);
+                //            2.2.1 still Partial (pitch-deck time-limit exception)
                 'C','C','C','P','C','C','C','C','C','C','C','C','C','C','C',
-                // Understandable
+                // Understandable — all Compliant
                 'C','C','C','C','C','C','C','C','C','C',
-                // Robust
-                'C','P','P',
+                // Robust — 4.1.2 and 4.1.3 now Compliant (ARIA roles, live regions)
+                'C','C','C',
               ] as const;
               const compliant    = all.filter(s => s === 'C').length;
               const partial      = all.filter(s => s === 'P').length;
@@ -147,7 +148,7 @@ export default function AccessibilityPage() {
               rows={[
                 { sc: '1.1.1', title: 'Non-text Content', status: 'Compliant',     note: 'All images include meaningful alt text. Decorative images use empty alt="". The 3D avatar canvas exposes a text description via aria-label.' },
                 { sc: '1.2.2', title: 'Captions (Prerecorded)', status: 'Compliant',  note: 'No prerecorded video content is published without captions. Tutorial videos include English closed captions.' },
-                { sc: '1.2.4', title: 'Captions (Live)',         status: 'Compliant',  note: 'No live broadcast or streaming events are hosted on the platform.' },
+                { sc: '1.2.4', title: 'Captions (Live)',         status: 'Compliant',  note: 'No live broadcast or streaming events are hosted on the platform. The practice engine captures a live caption transcript via the Web Speech API during each session; the full text is saved with the session record so users can retrieve it after practice.' },
                 { sc: '1.2.5', title: 'Audio Description',       status: 'Compliant',  note: 'Tutorial videos do not rely on visual-only information to convey meaning. Narration tracks cover all visual content.' },
                 { sc: '1.3.1', title: 'Info and Relationships',  status: 'Partial',    note: 'Semantic HTML5 elements (nav, main, section, aside) are used throughout. Chart data in the clinician analytics view is being supplemented with accessible data table equivalents.' },
                 { sc: '1.3.2', title: 'Meaningful Sequence',     status: 'Compliant',  note: 'Reading order follows the visual order. No CSS that visually reorders content independently of the DOM order.' },
@@ -171,7 +172,7 @@ export default function AccessibilityPage() {
               label="Operable"
               description="UI components and navigation must be operable."
               rows={[
-                { sc: '2.1.1', title: 'Keyboard',                status: 'Partial',   note: 'Core flows — login, dashboard, session controls, settings, and billing — are fully keyboard operable. The advanced clinician scheduling panel and some data export options are being updated.' },
+                { sc: '2.1.1', title: 'Keyboard',                status: 'Compliant', note: 'All interactive elements are standard HTML button, a, input, and select elements and are fully keyboard operable. Stage selector buttons carry aria-label and aria-pressed so their state is conveyed without relying on visual position. Settings toggle buttons and the voice-coach mute button all have accessible names. No functionality requires mouse-only interaction.' },
                 { sc: '2.1.2', title: 'No Keyboard Trap',        status: 'Compliant', note: 'Focus is managed inside modal dialogs and dismissed with Escape. No mechanism exists that prevents the keyboard focus from moving away.' },
                 { sc: '2.1.4', title: 'Character Key Shortcuts',  status: 'Compliant', note: 'The application does not implement single-character keyboard shortcuts that could be accidentally triggered.' },
                 { sc: '2.2.1', title: 'Timing Adjustable',       status: 'Partial',   note: 'Session timers can be paused and extended. The investor pitch deck link has a time-limited expiry set by the sender; users who need an extension should contact Flowen directly.' },
@@ -215,8 +216,8 @@ export default function AccessibilityPage() {
               description="Content must be robust enough to be interpreted by a wide variety of user agents, including assistive technologies."
               rows={[
                 { sc: '4.1.1', title: 'Parsing',            status: 'Compliant',    note: 'React/Next.js generates well-formed HTML. Automated Lighthouse and axe scans confirm no duplicate IDs, unclosed tags, or invalid nesting in any page.' },
-                { sc: '4.1.2', title: 'Name, Role, Value',  status: 'Partial',      note: 'Standard HTML elements and ARIA roles are applied throughout. The WebGL biofeedback canvas and custom audio visualiser are being reviewed to ensure their state changes are exposed to assistive technologies via aria-live.' },
-                { sc: '4.1.3', title: 'Status Messages',    status: 'Partial',      note: 'Toast notifications use role="status" and aria-live="polite". Session-state changes (recording started, limit reached) use aria-live="assertive". The progress dashboard chart updates are being converted to include live region announcements.' },
+                { sc: '4.1.2', title: 'Name, Role, Value',  status: 'Compliant',    note: 'Standard HTML elements and ARIA roles are applied throughout. The 3D biofeedback avatar is wrapped in role="img" with a descriptive aria-label and a speaking-state aria-live region. Custom toggle switches carry aria-pressed and aria-label. Stage selector buttons expose their selected state via aria-pressed. The voice-coach mute control carries aria-label and aria-pressed.' },
+                { sc: '4.1.3', title: 'Status Messages',    status: 'Compliant',    note: 'Toast notifications use role="status" and aria-live="polite". The recording indicator carries role="status". Block detections are announced via aria-live="polite" on the blocks counter. The voice-coach feedback text and breathing pacer phase text both use aria-live="polite". The live captions area uses role="log" (which implies polite live updates). Decorative waveform bars are excluded from the accessibility tree with aria-hidden="true".' },
               ]}
             />
           </section>
@@ -226,15 +227,15 @@ export default function AccessibilityPage() {
             <ul className="space-y-3 text-slate-400">
               <li className="flex items-start gap-3">
                 <span className="text-slate-600 flex-shrink-0 font-bold mt-0.5">—</span>
-                The real-time 3D avatar biofeedback view requires WebGL. A 2D text-only fallback is in development for users who cannot use WebGL.
+                The audio capture feature requires a microphone. Users without microphone access receive a static reference guide mode instead of a live session.
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-slate-600 flex-shrink-0 font-bold mt-0.5">—</span>
-                The audio capture feature requires a microphone. Users without microphone access receive a static reference guide mode.
+                Data visualisation charts in the clinician analytics dashboard are currently accompanied by summary statistics but lack full ARIA table equivalents. We are adding accessible data tables alongside each chart (SC 1.3.1).
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-slate-600 flex-shrink-0 font-bold mt-0.5">—</span>
-                Some data visualisation charts in the analytics dashboard currently lack text alternatives. We are adding ARIA table equivalents.
+                The investor pitch deck link includes a sender-defined time-limited expiry. Users who need an extension should contact <a href="mailto:hello@flowen.digital" className="text-emerald-400 hover:underline">hello@flowen.digital</a> (SC 2.2.1).
               </li>
             </ul>
           </section>
