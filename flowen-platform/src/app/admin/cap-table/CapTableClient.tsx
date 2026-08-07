@@ -757,15 +757,306 @@ function SEISTracker({ entries }: { entries: CapTableEntry[] }) {
   );
 }
 
+// ── Dilution Modeller ─────────────────────────────────────────────────────────
+
+interface DilutionScenario {
+  label:        string;
+  preMoney:     number;    // pence
+  raiseAmount:  number;    // pence
+}
+
+function calcDilution(
+  entries: CapTableEntry[],
+  fullyDiluted: number,
+  preMoney: number,
+  raiseAmount: number,
+) {
+  if (fullyDiluted === 0 || preMoney === 0) return null;
+
+  const postMoney       = preMoney + raiseAmount;
+  const pricePerShare   = preMoney / fullyDiluted;  // pence per share
+  const newShares       = Math.round(raiseAmount / pricePerShare);
+  const newTotal        = fullyDiluted + newShares;
+  const investorPct     = (newShares / newTotal) * 100;
+
+  // Group existing holders
+  const groups: Record<string, { label: string; shares: number; type: HolderType; beforePct: number; afterPct: number }> = {};
+  const typeLabels: Record<HolderType, string> = {
+    founder: 'Founders', investor: 'Existing Investors', employee: 'Employees', advisor: 'Advisors', pool: 'Option Pool',
+  };
+  for (const e of entries) {
+    if (!e.shares || isConvertible(e.instrument)) continue;
+    const key = e.holder_type;
+    if (!groups[key]) groups[key] = { label: typeLabels[e.holder_type], shares: 0, type: e.holder_type, beforePct: 0, afterPct: 0 };
+    groups[key].shares += e.shares;
+  }
+  for (const g of Object.values(groups)) {
+    g.beforePct = (g.shares / fullyDiluted) * 100;
+    g.afterPct  = (g.shares / newTotal)     * 100;
+  }
+
+  return { postMoney, pricePerShare, newShares, newTotal, investorPct, groups: Object.values(groups) };
+}
+
+function DilutionModeller({
+  entries, totalIssued, fullyDiluted,
+}: {
+  entries: CapTableEntry[];
+  totalIssued: number;
+  fullyDiluted: number;
+}) {
+  const [preMoney,    setPreMoney]    = useState('150000000');   // £1.5m in pence as string
+  const [raiseAmount, setRaiseAmount] = useState('15000000');    // £150k
+  const [scenarios, setScenarios] = useState<DilutionScenario[]>([]);
+
+  const pm = parseInt(preMoney, 10)  || 0;
+  const ra = parseInt(raiseAmount, 10) || 0;
+
+  const result = useMemo(() => calcDilution(entries, fullyDiluted, pm, ra), [entries, fullyDiluted, pm, ra]);
+
+  function saveScenario() {
+    if (!result) return;
+    const label = `${fmtGBP(ra)} raise @ ${fmtGBP(pm)} pre-money`;
+    setScenarios(prev => [{ label, preMoney: pm, raiseAmount: ra }, ...prev].slice(0, 5));
+  }
+
+  const PRESET_SCENARIOS: DilutionScenario[] = [
+    { label: 'SEIS max (£250k @ £1.5m)',    preMoney: 150_000_000, raiseAmount: 25_000_000  },
+    { label: 'Pre-seed (£500k @ £2.5m)',     preMoney: 250_000_000, raiseAmount: 50_000_000  },
+    { label: 'Seed (£750k @ £3.5m)',         preMoney: 350_000_000, raiseAmount: 75_000_000  },
+    { label: 'Seed+ (£1.5m @ £6m)',          preMoney: 600_000_000, raiseAmount: 150_000_000 },
+  ];
+
+  function applyScenario(s: DilutionScenario) {
+    setPreMoney(String(s.preMoney));
+    setRaiseAmount(String(s.raiseAmount));
+  }
+
+  const inputCls = 'w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors';
+  const labelCls = 'block text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 mb-1.5';
+
+  return (
+    <div className="space-y-6">
+      {/* Warning if no shares */}
+      {fullyDiluted === 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-sm text-amber-300">
+          Add shareholders to the cap table first — dilution modelling requires existing fully diluted shares.
+        </div>
+      )}
+
+      {/* Input panel */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-5">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h3 className="text-sm font-bold text-white">New Round Parameters</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Model dilution impact of a new investment round on existing holders</p>
+          </div>
+          <button
+            type="button"
+            onClick={saveScenario}
+            disabled={!result}
+            className="px-3.5 py-1.5 text-xs font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
+          >
+            Save scenario
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Pre-Money Valuation (pence)</label>
+            <input
+              type="number" min="0" step="1000000"
+              value={preMoney}
+              onChange={e => setPreMoney(e.target.value)}
+              className={inputCls}
+            />
+            <p className="text-[10px] font-mono text-slate-600 mt-1">= {fmtGBP(pm)}</p>
+          </div>
+          <div>
+            <label className={labelCls}>Raise Amount (pence)</label>
+            <input
+              type="number" min="0" step="1000000"
+              value={raiseAmount}
+              onChange={e => setRaiseAmount(e.target.value)}
+              className={inputCls}
+            />
+            <p className="text-[10px] font-mono text-slate-600 mt-1">= {fmtGBP(ra)}</p>
+          </div>
+        </div>
+
+        {/* Quick presets */}
+        <div className="flex flex-wrap gap-2">
+          <span className="text-[10px] font-mono text-slate-600 self-center">Quick scenarios:</span>
+          {PRESET_SCENARIOS.map(s => (
+            <button
+              key={s.label}
+              type="button"
+              onClick={() => applyScenario(s)}
+              className={`px-2.5 py-1 text-[10px] font-mono rounded-lg border transition-colors ${
+                pm === s.preMoney && ra === s.raiseAmount
+                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Results */}
+      {result && fullyDiluted > 0 && (
+        <div className="space-y-4">
+          {/* Summary stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Post-Money',    value: fmtGBP(result.postMoney),                   color: 'text-amber-400'  },
+              { label: 'Price/Share',   value: fmtPence(Math.round(result.pricePerShare)),  color: 'text-white'      },
+              { label: 'New Shares',    value: fmtShares(result.newShares),                 color: 'text-sky-400'    },
+              { label: 'Investor %',    value: fmtPct(result.investorPct),                  color: 'text-purple-400' },
+            ].map(s => (
+              <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 text-center">
+                <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">{s.label}</p>
+                <p className={`text-xl font-extrabold tabular-nums ${s.color}`}>{s.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Before / After ownership table */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-800">
+              <h4 className="text-xs font-bold text-white">Ownership — Before vs After</h4>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-slate-800">
+                    <th className="text-left px-5 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Holder</th>
+                    <th className="text-right px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Shares</th>
+                    <th className="text-right px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Before %</th>
+                    <th className="text-right px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">After %</th>
+                    <th className="text-right px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Δ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
+                  {result.groups.map(g => (
+                    <tr key={g.type} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${HOLDER_COLORS[g.type]}`} />
+                          <span className="text-white font-medium">{g.label}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-slate-400">{fmtShares(g.shares)}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-slate-300 font-bold">{fmtPct(g.beforePct)}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-amber-400 font-bold">{fmtPct(g.afterPct)}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-red-400 font-mono text-[11px]">
+                        {fmtPct(g.afterPct - g.beforePct)}
+                      </td>
+                    </tr>
+                  ))}
+                  {/* New investor row */}
+                  <tr className="bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full shrink-0 bg-purple-500" />
+                        <span className="text-purple-300 font-medium">New Investors (this round)</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-purple-400">{fmtShares(result.newShares)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-slate-600">—</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-purple-400 font-bold">{fmtPct(result.investorPct)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-emerald-400 font-mono text-[11px]">new</td>
+                  </tr>
+                  {/* Total row */}
+                  <tr className="border-t-2 border-slate-700 bg-slate-950">
+                    <td className="px-5 py-3 font-bold text-white">Total (FD post-round)</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-white font-bold">{fmtShares(result.newTotal)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-slate-400">100.00%</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-slate-400">100.00%</td>
+                    <td className="px-4 py-3 text-right" />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Visual bar before/after */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <h4 className="text-xs font-bold text-white">Ownership Strip — After Round</h4>
+            <div className="flex h-7 rounded-lg overflow-hidden w-full">
+              {result.groups.map(g => (
+                <div
+                  key={g.type}
+                  className={`${HOLDER_COLORS[g.type]} transition-all`}
+                  style={{ width: `${g.afterPct}%`, minWidth: g.afterPct > 2 ? undefined : '2px' }}
+                  title={`${g.label}: ${g.afterPct.toFixed(1)}%`}
+                />
+              ))}
+              <div
+                className="bg-purple-500 transition-all"
+                style={{ width: `${result.investorPct}%`, minWidth: result.investorPct > 2 ? undefined : '2px' }}
+                title={`New Investors: ${result.investorPct.toFixed(1)}%`}
+              />
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+              {result.groups.map(g => (
+                <div key={g.type} className="flex items-center gap-1.5">
+                  <div className={`w-2.5 h-2.5 rounded-sm ${HOLDER_COLORS[g.type]} shrink-0`} />
+                  <span className="text-xs text-slate-300">{g.label}</span>
+                  <span className={`text-xs font-bold tabular-nums ${HOLDER_TEXT[g.type]}`}>{g.afterPct.toFixed(1)}%</span>
+                </div>
+              ))}
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-sm bg-purple-500 shrink-0" />
+                <span className="text-xs text-slate-300">New Investors</span>
+                <span className="text-xs font-bold tabular-nums text-purple-400">{result.investorPct.toFixed(1)}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Saved scenarios */}
+      {scenarios.length > 0 && (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <h4 className="text-xs font-bold text-white">Saved Scenarios</h4>
+          <div className="space-y-2">
+            {scenarios.map((s, i) => {
+              const r = calcDilution(entries, fullyDiluted, s.preMoney, s.raiseAmount);
+              return (
+                <div key={i} className="flex items-center justify-between gap-4 py-2 border-b border-slate-800 last:border-b-0">
+                  <div>
+                    <p className="text-sm text-white">{s.label}</p>
+                    {r && <p className="text-xs text-slate-500 font-mono">Post-money: {fmtGBP(r.postMoney)} · Investor: {fmtPct(r.investorPct)}</p>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => applyScenario(s)}
+                    className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white shrink-0 transition-colors"
+                  >
+                    Load
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main client ───────────────────────────────────────────────────────────────
 
 export default function CapTableClient({ initialEntries }: { initialEntries: CapTableEntry[] }) {
   const [entries, setEntries] = useState<CapTableEntry[]>(initialEntries);
-  const [activeTab, setActiveTab] = useState<'cap-table' | 'instruments'>('cap-table');
+  const [activeTab, setActiveTab] = useState<'cap-table' | 'instruments' | 'dilution'>('cap-table');
   const [showForm, setShowForm] = useState(false);
   const [editingEntry, setEditingEntry] = useState<CapTableEntry | undefined>();
   const [deletingId, startDeleting] = useTransition();
   const [copyMsg, setCopyMsg] = useState('');
+  const [seeding, setSeeding] = useState(false);
 
   // ── Derived numbers ────────────────────────────────────────────────────────
 
@@ -888,6 +1179,18 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
     setShowForm(true);
   }
 
+  async function handleSeed() {
+    if (!confirm('Seed with example Flowen cap table data? This adds founders, option pool, and a SAFE note.')) return;
+    setSeeding(true);
+    const res = await apiCall('seed');
+    setSeeding(false);
+    if (res.error) { alert(res.error); return; }
+    // Reload entries from API
+    const fresh = await fetch('/api/admin/cap-table');
+    const data = await fresh.json();
+    if (data.entries) setEntries(data.entries);
+  }
+
   const convertibleEntries = entries.filter(e => isConvertible(e.instrument));
   const optionEntries = entries.filter(e => isOption(e.instrument));
 
@@ -896,8 +1199,9 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
       {/* Tabs */}
       <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 w-fit">
         {([
-          { id: 'cap-table', label: 'Cap Table' },
+          { id: 'cap-table',   label: 'Cap Table' },
           { id: 'instruments', label: 'Instruments' },
+          { id: 'dilution',    label: 'Dilution Model' },
         ] as const).map(tab => (
           <button
             key={tab.id}
@@ -1000,17 +1304,36 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
               onDelete={handleDelete}
             />
           ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center space-y-3">
               <p className="text-slate-500 text-sm">No cap table entries yet.</p>
-              <button
-                onClick={handleAddNew}
-                className="mt-4 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors"
-              >
-                Add First Entry
-              </button>
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <button
+                  onClick={handleAddNew}
+                  className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors"
+                >
+                  Add First Entry
+                </button>
+                <button
+                  onClick={handleSeed}
+                  disabled={seeding}
+                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors disabled:opacity-50"
+                >
+                  {seeding ? 'Seeding…' : '⚡ Seed example data'}
+                </button>
+              </div>
+              <p className="text-xs text-slate-700">Seed adds founders, EMI pool, and example SAFE note</p>
             </div>
           )}
         </div>
+      )}
+
+      {/* ── TAB 3: Dilution Model ────────────────────────────────────── */}
+      {activeTab === 'dilution' && (
+        <DilutionModeller
+          entries={entries}
+          totalIssued={totalIssued}
+          fullyDiluted={fullyDiluted}
+        />
       )}
 
       {/* ── TAB 2: Instruments ───────────────────────────────────────── */}
