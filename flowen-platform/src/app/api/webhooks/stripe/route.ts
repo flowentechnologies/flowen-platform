@@ -99,14 +99,12 @@ async function resolveUserId(
   if (row?.id) return row.id as string;
   if (!fallbackEmail) return null;
 
-  const { data: authUser } = await admin
-    .schema('auth')
-    .from('users')
-    .select('id')
-    .eq('email', fallbackEmail)
-    .maybeSingle();
+  // PostgREST does not expose the auth schema, so we route through a
+  // SECURITY DEFINER function instead of .schema('auth').from('users').
+  const { data: userId } = await admin
+    .rpc('get_user_id_by_email', { p_email: fallbackEmail });
 
-  return (authUser?.id as string) ?? null;
+  return (userId as string | null) ?? null;
 }
 
 // Fetch the auth email + display_name for a given user ID.
@@ -114,11 +112,12 @@ async function getUserDetails(
   admin: AdminClient,
   userId: string,
 ): Promise<{ email: string; displayName: string } | null> {
-  const [authResult, profileResult] = await Promise.all([
-    admin.schema('auth').from('users').select('email').eq('id', userId).maybeSingle(),
+  // Use the Auth Admin API — PostgREST does not expose auth.users.
+  const [{ data: authData }, profileResult] = await Promise.all([
+    admin.auth.admin.getUserById(userId),
     admin.from('profiles').select('display_name').eq('id', userId).maybeSingle(),
   ]);
-  const email = (authResult.data as { email: string } | null)?.email;
+  const email = authData?.user?.email;
   if (!email) return null;
   return {
     email,
