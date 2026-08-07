@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import type Anthropic from '@anthropic-ai/sdk';
 import { getAnthropicClient, requireAnthropicKey } from '@/lib/anthropic';
+import { checkAiRateLimit } from '@/lib/rate-limit';
 
 const STAGE_PROMPTS: Record<number, string> = {
   1: 'The user is practising diaphragmatic breathing — 4-count inhale, 6-count exhale. Give one short, warm encouragement about their breathing rhythm. Mention belly expansion or steady exhale if relevant.',
@@ -15,6 +16,16 @@ export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Per-user rate limit: 30 coach requests per hour.
+  // Prevents a single user from generating unbounded Claude API costs.
+  const withinLimit = await checkAiRateLimit(user.id);
+  if (!withinLimit) {
+    return NextResponse.json(
+      { error: 'Rate limit reached — maximum 30 coaching requests per hour.' },
+      { status: 429 },
+    );
+  }
 
   const keyError = requireAnthropicKey();
   if (keyError) return keyError;

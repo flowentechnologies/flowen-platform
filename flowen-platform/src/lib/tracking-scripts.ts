@@ -7,8 +7,43 @@ export interface ScriptPair {
   body_html: string | null;
 }
 
+// Per-provider pixel ID format rules.  The ID is interpolated directly into
+// script string templates, so an unvalidated value could inject arbitrary JS
+// or HTML into every page that loads the tracking snippet.
+//
+// Each regex accepts only the characters the real provider IDs contain — no
+// quotes, angle brackets, semicolons, or whitespace — so an XSS payload like
+// `');alert(1)//` will be rejected before template interpolation.
+const PIXEL_ID_PATTERNS: Partial<Record<ProviderKey, RegExp>> = {
+  gtm:      /^GTM-[A-Z0-9]{4,10}$/,
+  ga4:      /^G-[A-Z0-9]{8,12}$/,
+  meta:     /^\d{10,20}$/,
+  tiktok:   /^[A-Z0-9]{15,20}$/i,
+  linkedin: /^\d{4,12}$/,
+  twitter:  /^[a-z0-9]{5,12}$/i,
+  hotjar:   /^\d{4,12}$/,
+  clarity:  /^[a-z0-9]{10,15}$/i,
+};
+
+/**
+ * Generates the head/body HTML snippets for a third-party tracking provider.
+ *
+ * Returns `{ head_html: null, body_html: null }` if:
+ *   - the pixelId fails the per-provider format check (prevents script injection)
+ *   - the providerKey is 'custom' or unrecognised
+ *
+ * Callers should surface an error to the admin UI when null is returned for a
+ * non-custom provider, because a format mismatch indicates an invalid ID.
+ */
 export function generateScripts(providerKey: ProviderKey, pixelId: string): ScriptPair {
   const id = pixelId.trim();
+
+  const pattern = PIXEL_ID_PATTERNS[providerKey];
+  if (pattern && !pattern.test(id)) {
+    // Invalid format — refuse to interpolate into the script template.
+    return { head_html: null, body_html: null };
+  }
+
   switch (providerKey) {
     case 'gtm':      return generateGtm(id);
     case 'ga4':      return generateGa4(id);

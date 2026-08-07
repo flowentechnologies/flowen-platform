@@ -84,12 +84,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'segment, subject, and body are required' }, { status: 400 });
   }
 
+  // Length guards — prevent accidental paste of huge documents and keep
+  // emails within Resend's accepted payload limits.
+  if (subject.trim().length > 200) {
+    return NextResponse.json({ error: 'subject must be 200 characters or fewer' }, { status: 400 });
+  }
+  if (text.trim().length > 10_000) {
+    return NextResponse.json({ error: 'body must be 10 000 characters or fewer' }, { status: 400 });
+  }
+
   const emails = await resolveEmails(segment);
   if (emails.length === 0) {
     return NextResponse.json({ error: 'No recipients found for this segment' }, { status: 400 });
   }
 
   const html = buildBroadcastHtml(subject, text);
+  // Batch size 20, sends parallelised within each batch to avoid sequential
+  // await chains that would exhaust the Vercel function timeout on large lists.
   const BATCH = 20;
   let sent = 0;
   let failed = 0;
@@ -98,11 +109,16 @@ export async function POST(req: NextRequest) {
   const batch = emails.slice(0, MAX_RECIPIENTS);
   for (let i = 0; i < batch.length; i += BATCH) {
     const chunk = batch.slice(i, i + BATCH);
-    for (const email of chunk) {
-      const ok = await sendEmail({ from: FROM.updates, to: email, subject, text, html });
-      if (ok) { sent++; } else {
+    const results = await Promise.allSettled(
+      chunk.map(email => sendEmail({ from: FROM.updates, to: email, subject, text, html })),
+    );
+    for (let j = 0; j < results.length; j++) {
+      const r = results[j];
+      if (r.status === 'fulfilled' && r.value) {
+        sent++;
+      } else {
         failed++;
-        if (errors.length < 5) errors.push(email);
+        if (errors.length < 5) errors.push(chunk[j]);
       }
     }
   }

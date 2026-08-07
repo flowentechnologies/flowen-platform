@@ -1,35 +1,33 @@
-// Error gateway endpoint — receives runtime exceptions from client components
-// and the Next.js error boundary, persists them to system_error_logs, and
-// drops a trigger file for the self-healing agent to pick up.
+// Error gateway — receives runtime exceptions from client components and the
+// Next.js error boundary, persists them to system_error_logs for ops visibility.
 //
 // Client usage:
 //   fetch('/api/infra/error-boundary', {
 //     method: 'POST',
 //     body: JSON.stringify({ message, stack, file, digest })
 //   })
+//
+// Note: the self-heal agent (scripts/infra/self-heal-agent.js) watches a local
+// filesystem queue that is NOT available on Vercel (read-only function root).
+// To re-enable self-healing in production, replace the filesystem queue with a
+// DB-backed queue table and poll via cron.
 
 import { createClient } from '@supabase/supabase-js';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { checkErrorBoundaryRateLimit } from '@/lib/rate-limit';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface ErrorReport {
-  message:        string;
-  stack?:         string;
+  message:         string;
+  stack?:          string;
   componentStack?: string;
-  file?:          string;
-  line?:          number;
-  column?:        number;
-  digest?:        string;
-  environment?:   string;
-  userAgent?:     string;
-  url?:           string;
-}
-
-interface HealTrigger extends ErrorReport {
-  id:         string;
-  receivedAt: string;
+  file?:           string;
+  line?:           number;
+  column?:         number;
+  digest?:         string;
+  environment?:    string;
+  userAgent?:      string;
+  url?:            string;
 }
 
 // ── Admin client ──────────────────────────────────────────────────────────────
@@ -43,28 +41,18 @@ function createAdminClient() {
   });
 }
 
-// ── Heal queue ────────────────────────────────────────────────────────────────
-// The agent watches this directory; each file is a self-contained trigger.
-
-const HEAL_QUEUE_DIR = path.join(process.cwd(), 'diagnostics', 'heal-queue');
-
-async function enqueueForHealing(trigger: HealTrigger): Promise<void> {
-  if (process.env.SELF_HEAL_ENABLED !== 'true') return;
-  // Only enqueue errors that point to a fixable source file.
-  if (!trigger.file?.startsWith('src/')) return;
-
-  await mkdir(HEAL_QUEUE_DIR, { recursive: true });
-  const fileName = `${trigger.id}.json`;
-  await writeFile(
-    path.join(HEAL_QUEUE_DIR, fileName),
-    JSON.stringify(trigger, null, 2),
-    'utf8',
-  );
-}
-
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 export async function POST(req: Request): Promise<Response> {
+  // Rate-limit: 20 reports / IP / minute prevents unauthenticated callers from
+  // flooding system_error_logs.  Legitimate error boundaries fire once per crash,
+  // so this threshold is generous for real users and tight for abusers.
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown';
+  const allowed = await checkErrorBoundaryRateLimit(ip);
+  if (!allowed) {
+    return Response.json({ error: 'Too Many Requests' }, { status: 429 });
+  }
+
   let body: ErrorReport;
   try {
     body = await req.json() as ErrorReport;
@@ -80,7 +68,7 @@ export async function POST(req: Request): Promise<Response> {
   const receivedAt  = new Date().toISOString();
   const environment = body.environment ?? process.env.NODE_ENV ?? 'production';
 
-  // 1. Persist to Supabase for ops visibility.
+  // Persist to Supabase for ops visibility.
   try {
     const admin = createAdminClient();
     await admin.from('system_error_logs').insert({
@@ -90,6 +78,7 @@ export async function POST(req: Request): Promise<Response> {
       stack_trace: body.stack?.slice(0, 8000),
       metadata: {
         id,
+        receivedAt,
         componentStack: body.componentStack?.slice(0, 4000),
         url:            body.url,
         userAgent:      body.userAgent,
@@ -104,12 +93,6 @@ export async function POST(req: Request): Promise<Response> {
     // should not cascade into a second error.
     console.error('[error-boundary] DB write failed:', dbErr instanceof Error ? dbErr.message : dbErr);
   }
-
-  // 2. Drop trigger file for the self-healing agent.
-  const trigger: HealTrigger = { ...body, id, receivedAt };
-  enqueueForHealing(trigger).catch(e => {
-    console.warn('[error-boundary] heal queue write failed:', e instanceof Error ? e.message : e);
-  });
 
   return Response.json({ received: true, id });
 }

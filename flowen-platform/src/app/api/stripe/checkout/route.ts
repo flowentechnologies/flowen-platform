@@ -36,24 +36,26 @@ export async function POST(req: Request) {
     );
   }
 
-  // Attach the logged-in user's email so the webhook can resolve their account.
-  let customerEmail: string | undefined;
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user?.email) customerEmail = user.email;
-  } catch { /* unauthenticated — proceed without email */ }
+  // Authentication is required — an anonymous checkout session cannot be linked
+  // to a Flowen user account. The Stripe webhook resolves the user via their email
+  // (get_user_id_by_email RPC) or the customers table. Without a known email,
+  // checkout.session.completed throws "Cannot resolve user" and the subscription
+  // is never activated. Reject unauthenticated requests up-front.
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+  }
+  const customerEmail = user.email;
 
   try {
     const session = await client.checkout.sessions.create({
       managed_payments: { enabled: false },
       payment_method_types: ['card'],
-      ...(customerEmail ? { customer_email: customerEmail } : {}),
+      customer_email: customerEmail,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
-      success_url: customerEmail
-        ? `${baseUrl}/dashboard/billing?success=1`
-        : `${baseUrl}/?success=true`,
+      success_url: `${baseUrl}/dashboard/billing?success=1`,
       cancel_url: `${baseUrl}/pricing`,
     });
 

@@ -3,6 +3,30 @@ import { getStripeMode, type StripeMode } from './stripe-mode';
 
 const API_VERSION = '2026-07-29.dahlia' as const;
 
+// ── Placeholder guard ─────────────────────────────────────────────────────────
+//
+// The 'sk_test_placeholder_for_static_builds' sentinel exists so `next build`
+// succeeds in environments where Stripe env vars are absent (e.g. CI preview
+// builds that only run static analysis).  In production — where Stripe API
+// calls are actually made — the placeholder must never reach the Stripe SDK.
+//
+// This guard is called at module-evaluation time in Node.js (server bundle
+// only). The check is skipped during build because NODE_ENV is 'production'
+// only at runtime on Vercel.  If a key resolves to the placeholder value at
+// runtime, the process exits loudly rather than silently passing invalid keys
+// to Stripe and receiving cryptic 401 errors at checkout/webhook time.
+
+const PLACEHOLDER = 'sk_test_placeholder_for_static_builds';
+
+function assertNotPlaceholder(key: string, envVarHint: string): void {
+  if (process.env.NODE_ENV === 'production' && key === PLACEHOLDER) {
+    throw new Error(
+      `[stripe] Missing secret key in production — set ${envVarHint} ` +
+      `(or STRIPE_SECRET_KEY) in your Vercel environment variables.`,
+    );
+  }
+}
+
 // ── Static exports (backward-compat) ─────────────────────────────────────────
 //
 // These read NEXT_PUBLIC_STRIPE_ENV which is baked into the build.
@@ -15,7 +39,12 @@ const _staticSecretKey =
   (_isLive
     ? process.env.STRIPE_LIVE_SECRET_KEY || process.env.STRIPE_SECRET_KEY
     : process.env.STRIPE_TEST_SECRET_KEY || process.env.STRIPE_SECRET_KEY) ||
-  'sk_test_placeholder_for_static_builds';
+  PLACEHOLDER;
+
+assertNotPlaceholder(
+  _staticSecretKey,
+  _isLive ? 'STRIPE_LIVE_SECRET_KEY' : 'STRIPE_TEST_SECRET_KEY',
+);
 
 /** @deprecated Use getStripeClient() for runtime mode resolution. */
 export const stripe = new Stripe(_staticSecretKey, {
@@ -63,7 +92,9 @@ export async function getStripeClient(): Promise<StripeContext> {
     (live
       ? process.env.STRIPE_LIVE_SECRET_KEY || process.env.STRIPE_SECRET_KEY
       : process.env.STRIPE_TEST_SECRET_KEY || process.env.STRIPE_SECRET_KEY) ||
-    'sk_test_placeholder_for_static_builds';
+    PLACEHOLDER;
+
+  assertNotPlaceholder(secretKey, live ? 'STRIPE_LIVE_SECRET_KEY' : 'STRIPE_TEST_SECRET_KEY');
 
   return {
     client: new Stripe(secretKey, { apiVersion: API_VERSION, typescript: true }),
@@ -96,7 +127,9 @@ export function getStripeClientForLivemode(livemode: boolean): {
     (livemode
       ? process.env.STRIPE_LIVE_SECRET_KEY || process.env.STRIPE_SECRET_KEY
       : process.env.STRIPE_TEST_SECRET_KEY || process.env.STRIPE_SECRET_KEY) ||
-    'sk_test_placeholder_for_static_builds';
+    PLACEHOLDER;
+
+  assertNotPlaceholder(secretKey, livemode ? 'STRIPE_LIVE_SECRET_KEY' : 'STRIPE_TEST_SECRET_KEY');
 
   return {
     client: new Stripe(secretKey, { apiVersion: API_VERSION, typescript: true }),

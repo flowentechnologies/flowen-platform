@@ -26,6 +26,25 @@ function db() {
 }
 
 // ── In-process cache ──────────────────────────────────────────────────────────
+//
+// KNOWN RACE WINDOW — concurrent-write safety:
+//
+//   Vercel Fluid Compute reuses function instances, so multiple concurrent
+//   requests can share this module's `_cache` variable.  When the cache is
+//   stale, every in-flight request that reaches `getStripeMode()` before the
+//   first DB read completes will each issue its own query and each write back
+//   to `_cache` independently.  The last write wins.
+//
+//   This is a benign race: all concurrent reads return the same DB value and
+//   write the same (or nearly-same) `expiresAt`.  There is no data corruption
+//   and no window where one request reads 'live' while another reads 'test'.
+//
+//   The only observable effect is N simultaneous DB round-trips rather than 1
+//   during the brief warm-up period when the cache is cold.  At the admin-panel
+//   usage frequency (a handful of requests per minute) this is negligible.
+//
+//   If this ever becomes a problem (very high-concurrency admin traffic), replace
+//   the module-level variable with Upstash Redis to share state across instances.
 
 let _cache: { mode: StripeMode; expiresAt: number } | null = null;
 const TTL_MS = 30_000; // 30 s — toggle is visible within this window

@@ -91,13 +91,16 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     client.from('profiles').select('*', { count: 'exact', head: true }),
     client.from('profiles').select('*', { count: 'exact', head: true }).eq('onboarding_complete', true),
     client.from('waitlist_signups').select('*', { count: 'exact', head: true }),
-    client.from('profiles').select('created_at').gte('created_at', cutoff.toISOString()),
-    client.from('profiles').select('created_at').gte('created_at', prevCutoff.toISOString()).lt('created_at', cutoff.toISOString()),
-    client.from('profiles').select('tier'),
-    client.from('practice_sessions').select('user_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at').gte('created_at', cutoff.toISOString()),
+    // Capped at 5 000 rows for in-process aggregation (signup trends, tier counts,
+    // session stats).  At scale these should migrate to DB-side aggregation queries
+    // or be served from a materialised view / data warehouse.
+    client.from('profiles').select('created_at').gte('created_at', cutoff.toISOString()).limit(5000),
+    client.from('profiles').select('created_at').gte('created_at', prevCutoff.toISOString()).lt('created_at', cutoff.toISOString()).limit(5000),
+    client.from('profiles').select('tier').limit(5000),
+    client.from('practice_sessions').select('user_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at').gte('created_at', cutoff.toISOString()).limit(5000),
     client.from('practice_sessions').select('*', { count: 'exact', head: true }),
     // Fetch 90d window for DAU/WAU/MAU so we always have context even in 7d view
-    client.from('practice_sessions').select('user_id,created_at').gte('created_at', new Date(now.getTime() - 90 * 86400_000).toISOString()),
+    client.from('practice_sessions').select('user_id,created_at').gte('created_at', new Date(now.getTime() - 90 * 86400_000).toISOString()).limit(5000),
     client.from('practice_sessions').select('*', { count: 'exact', head: true }).gte('created_at', prevCutoff.toISOString()).lt('created_at', cutoff.toISOString()),
   ]);
 
