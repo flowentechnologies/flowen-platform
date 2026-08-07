@@ -4,6 +4,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { applyIdentityGuard } from '@/middleware/identity-guard';
+import { applyAffiliateReferral } from '@/middleware/affiliate-referral';
 
 // ── Analytics constants ───────────────────────────────────────────────────────
 
@@ -295,6 +296,17 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       });
     }
   }
+
+  // 11. Affiliate referral tracking
+  //
+  //     Detects ?ref=CODE on any public URL, sets a 30-day httpOnly cookie
+  //     (flowen_ref), and fire-and-forgets a click record into affiliate_clicks.
+  //     The cookie is later read server-side at signup / subscription to create
+  //     a conversion and commission record.
+  //
+  //     Attribution model: last-touch — a new ?ref= param overwrites the existing
+  //     cookie so the most-recent referrer receives credit.
+  applyAffiliateReferral(request, response);
 
   return response;
 }

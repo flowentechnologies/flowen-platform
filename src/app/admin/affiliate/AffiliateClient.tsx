@@ -34,9 +34,9 @@ async function api(payload: Record<string, unknown>) {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const TIER_CONFIG: Record<AffiliateTier, { label: string; badge: string; commission: number; months: number }> = {
-  standard: { label: 'Standard',  badge: 'bg-slate-700 text-slate-300 border-slate-600',            commission: 20, months: 3  },
-  premium:  { label: 'Premium',   badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',       commission: 25, months: 6  },
-  partner:  { label: 'Partner',   badge: 'bg-purple-500/15 text-purple-400 border-purple-500/30',    commission: 30, months: 12 },
+  standard: { label: 'Standard',  badge: 'bg-slate-700 text-slate-300 border-slate-600',            commission: 7.5, months: 3  },
+  premium:  { label: 'Premium',   badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',       commission: 10,  months: 6  },
+  partner:  { label: 'Partner',   badge: 'bg-purple-500/15 text-purple-400 border-purple-500/30',    commission: 15,  months: 12 },
 };
 
 const STATUS_CONFIG: Record<AffiliateStatus, { label: string; dot: string; badge: string }> = {
@@ -103,7 +103,7 @@ interface AffForm {
 
 const BLANK_AFF: AffForm = {
   name: '', email: '', code: '', tier: 'standard', status: 'pending',
-  commission_pct: '20', recurring_months: '3', channel: '', website: '', notes: '',
+  commission_pct: '7.5', recurring_months: '3', channel: '', website: '', notes: '',
 };
 
 function affiliateToForm(a: AffiliateWithStats): AffForm {
