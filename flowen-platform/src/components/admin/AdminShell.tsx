@@ -49,6 +49,7 @@ const NAV: NavSection[] = [
       { label: 'Pitch Deck', href: '/admin/pitch-deck' },
       { label: 'IP Register', href: '/admin/ip' },
       { label: 'IP Debt & Readiness', href: '/admin/ip-readiness' },
+      { label: 'Valuation', href: '/admin/valuation' },
       { label: 'Cap Table', href: '/admin/cap-table' },
     ],
   },
