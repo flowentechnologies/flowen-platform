@@ -24,6 +24,7 @@
  *   from webhook retries.
  */
 
+import { timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -40,7 +41,13 @@ function isAuthorized(req: Request): boolean {
   // Falls back to allowing server-side calls on localhost in dev.
   const secret = process.env.INTERNAL_API_SECRET;
   if (!secret) return process.env.NODE_ENV !== 'production';
-  return req.headers.get('x-internal-secret') === secret;
+  const provided = req.headers.get('x-internal-secret') ?? '';
+  // Constant-time comparison prevents timing-oracle attacks where an attacker
+  // enumerates the secret byte-by-byte by measuring response latency differences.
+  const a = Buffer.from(secret,   'utf8');
+  const b = Buffer.from(provided, 'utf8');
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }
 
 export async function POST(req: Request) {

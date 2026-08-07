@@ -57,36 +57,44 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   let errors = 0;
 
   try {
-    // Pull all non-canceled subscriptions from Stripe with customer + items expanded
-    const subscriptions = await stripe.subscriptions.list({
+    // Stream subscriptions page-by-page using the Stripe async iterator instead
+    // of autoPagingToArray({ limit: 10_000 }).  autoPagingToArray buffers every
+    // subscription into a single array before any processing starts — at 10 000
+    // objects that can exhaust the Vercel function's 1 GB memory allocation and
+    // delays DB writes until the full list is fetched.
+    //
+    // The for-await pattern processes each page as it arrives: a customer map
+    // lookup batch runs per page, keeping memory usage proportional to
+    // page size (max 100 rows) rather than the total subscription count.
+
+    const iter = stripe.subscriptions.list({
       status: 'all',
       expand: ['data.customer', 'data.items.data.price'],
       limit: 100,
-    }).autoPagingToArray({ limit: 10_000 });
+    });
 
-    // Build a map of stripe_customer_id → internal user_id from our customers table
-    const stripeIds = [
-      ...new Set(
-        subscriptions
-          .map(s => typeof s.customer === 'string' ? s.customer : (s.customer as Stripe.Customer).id)
-          .filter(Boolean),
-      ),
-    ];
+    // Per-request customer ID → user ID cache — avoids a DB query for each
+    // subscription when a customer has multiple subscriptions.
+    const customerCache = new Map<string, string | null>();
 
-    const { data: customerRows } = await admin
-      .from('customers')
-      .select('id, stripe_customer_id')
-      .in('stripe_customer_id', stripeIds);
-
-    const customerMap = new Map<string, string>(
-      (customerRows ?? []).map(r => [r.stripe_customer_id as string, r.id as string]),
-    );
-
-    for (const sub of subscriptions) {
+    for await (const sub of iter) {
       const stripeCustomerId =
         typeof sub.customer === 'string' ? sub.customer : (sub.customer as Stripe.Customer).id;
 
-      const userId = customerMap.get(stripeCustomerId);
+      let userId: string | null;
+      const cached = customerCache.get(stripeCustomerId);
+      if (cached !== undefined) {
+        userId = cached;
+      } else {
+        const { data } = await admin
+          .from('customers')
+          .select('id')
+          .eq('stripe_customer_id', stripeCustomerId)
+          .maybeSingle();
+        userId = (data?.id as string | undefined) ?? null;
+        customerCache.set(stripeCustomerId, userId);
+      }
+
       if (!userId) { skipped++; continue; }
 
       try {

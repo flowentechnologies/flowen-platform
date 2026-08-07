@@ -5,6 +5,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { applyIdentityGuard } from '@/middleware/identity-guard';
 import { applyAffiliateReferral } from '@/middleware/affiliate-referral';
+import { checkProxyRateLimit } from '@/lib/rate-limit';
 
 // ── Analytics constants ───────────────────────────────────────────────────────
 
@@ -82,31 +83,8 @@ async function captureAttribution(
   });
 }
 
-// ── In-process rate limiter ───────────────────────────────────────────────────
-// In-memory map, scoped to the serverless instance lifetime.
-// For a distributed rate limit (multi-region), replace with Upstash Redis
-// using @upstash/ratelimit — the dependency is already present.
-
-const ipCache = new Map<string, { count: number; reset: number }>();
-
-const RATE_LIMIT_API  = 60;   // requests / minute for /api paths
-const RATE_LIMIT_PAGE = 120;  // requests / minute for all other paths
-const WINDOW_MS       = 60_000;
-
-function checkRateLimit(ip: string, isApi: boolean): boolean {
-  const now   = Date.now();
-  const limit = isApi ? RATE_LIMIT_API : RATE_LIMIT_PAGE;
-  const rec   = ipCache.get(ip) ?? { count: 0, reset: now + WINDOW_MS };
-
-  if (now > rec.reset) {
-    rec.count = 0;
-    rec.reset = now + WINDOW_MS;
-  }
-  rec.count += 1;
-  ipCache.set(ip, rec);
-
-  return rec.count <= limit;
-}
+// Rate limiting is handled by the distributed Upstash-backed checkProxyRateLimit
+// imported above.  See src/lib/rate-limit.ts for limits and fallback behaviour.
 
 // ── Proxy function ────────────────────────────────────────────────────────────
 
@@ -114,8 +92,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'anonymous';
 
-  // 1. Rate limiting
-  if (!checkRateLimit(ip, pathname.startsWith('/api'))) {
+  // 1. Rate limiting — distributed via Upstash Redis (falls back to in-process
+  //    Map in dev when UPSTASH_REDIS_REST_URL is absent).
+  const allowed = await checkProxyRateLimit(ip, pathname.startsWith('/api'));
+  if (!allowed) {
     return new NextResponse('Too Many Requests', { status: 429 });
   }
 
@@ -177,9 +157,18 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // 7. Onboarding gate — redirect new users to profile setup on first dashboard visit.
-  //    Uses a cookie (flowen_ob) so the DB is only queried once per device.
-  if (isDashboardRoute && user && !request.cookies.get('flowen_ob')) {
+  // 7. Onboarding gate — redirect new users to profile setup before dashboard.
+  //
+  //    Queries the DB on every dashboard visit for authenticated users.
+  //    The previous approach used a flowen_ob=1 cookie as a skip-flag, but
+  //    httpOnly cookies can still be set via browser DevTools or direct HTTP
+  //    requests, allowing a user to bypass onboarding and reach the dashboard
+  //    with an incomplete profile (null display_name, etc.).
+  //
+  //    A single .maybeSingle() on an indexed primary-key column costs ~1ms on
+  //    Supabase; the dashboard already issues several DB calls per render, so
+  //    this has no measurable impact on page-load latency.
+  if (isDashboardRoute && user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('onboarding_complete')
@@ -189,17 +178,6 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     if (profile && !profile.onboarding_complete) {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }
-
-    // Mark as checked — set a 1-year cookie so we skip this query on future visits.
-    const next = NextResponse.next({ request });
-    next.cookies.set('flowen_ob', '1', {
-      path:     '/',
-      maxAge:   60 * 60 * 24 * 365,
-      sameSite: 'lax',
-      httpOnly: true,
-      secure:   process.env.NODE_ENV === 'production',
-    });
-    return next;
   }
 
   // 8. Portal identity guard

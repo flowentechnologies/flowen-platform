@@ -2,17 +2,17 @@
  * Flowen Mobile — Root Application Component
  *
  * React Native (Expo bare workflow) app wrapper.
- * Manages auth state, syncs the user profile over a secure WebSocket,
+ * Manages auth state, syncs the user profile via Supabase Realtime,
  * and renders the session-gated navigation stack.
  *
  * Dependencies (add to flowen-mobile/package.json):
  *   expo ~52.x, react-native ~0.76.x,
  *   @react-navigation/native, @react-navigation/native-stack,
  *   expo-secure-store, expo-status-bar, react-native-safe-area-context,
- *   react-native-screens
+ *   react-native-screens, @supabase/supabase-js
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -24,6 +24,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
+import { createClient } from '@supabase/supabase-js';
 import { useAudioPipeline, type AudioPipelineState } from './src/lib/audio/AudioPipeline';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -37,54 +38,66 @@ interface UserProfile {
 
 type AppScreen = 'loading' | 'login' | 'verify-identity' | 'session';
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// ── Supabase client ───────────────────────────────────────────────────────────
 
-const WS_URL = process.env.EXPO_PUBLIC_WS_URL ?? 'wss://api.flowen.digital/ws/profile';
-const RECONNECT_DELAY_MS = 3000;
+// Module-level singleton — createClient is lightweight and safe to call once.
+// Use EXPO_PUBLIC_ prefix so Expo's bundler inlines the values at build time.
+const supabase = createClient(
+  process.env.EXPO_PUBLIC_SUPABASE_URL!,
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+);
 
-// ── Profile WebSocket ─────────────────────────────────────────────────────────
+// ── Profile sync via Supabase Realtime ────────────────────────────────────────
+//
+// Previously this used a custom WebSocket (wss://api.flowen.digital/ws/profile)
+// that did not exist, and passed the user ID as a query-string parameter
+// (`?uid=…`) — exposing it in network logs, proxies, and server access logs.
+//
+// Replacement: Supabase Realtime postgres_changes subscription on the profiles
+// row, authenticated via the Supabase JWT (never in the URL).  An initial fetch
+// hydrates the profile immediately; subsequent DB writes push updates in real time.
 
 function useProfileSync(userId: string | null) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const wsRef  = useRef<WebSocket | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const connect = useCallback(() => {
-    if (!userId) return;
-
-    const ws = new WebSocket(`${WS_URL}?uid=${encodeURIComponent(userId)}`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'subscribe', resource: 'profile' }));
-    };
-
-    ws.onmessage = (ev) => {
-      try {
-        const msg = JSON.parse(ev.data as string);
-        if (msg.type === 'profile' && msg.data) {
-          setProfile(msg.data as UserProfile);
-        }
-      } catch { /* ignore malformed frames */ }
-    };
-
-    ws.onerror = () => {
-      ws.close();
-    };
-
-    ws.onclose = () => {
-      // Reconnect with backoff — maintains live profile sync across network changes.
-      timerRef.current = setTimeout(connect, RECONNECT_DELAY_MS);
-    };
-  }, [userId]);
 
   useEffect(() => {
-    connect();
+    if (!userId) {
+      setProfile(null);
+      return;
+    }
+
+    // Hydrate synchronously with the current row before the channel opens.
+    supabase
+      .from('profiles')
+      .select('id, tier, id_verified, pacer_bpm')
+      .eq('id', userId)
+      .single()
+      .then(({ data }) => {
+        if (data) setProfile(data as UserProfile);
+      });
+
+    // Subscribe to UPDATE events on this user's profiles row.
+    // The channel name is local-only; the filter is evaluated server-side.
+    const channel = supabase
+      .channel(`profile_sync:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event:  'UPDATE',
+          schema: 'public',
+          table:  'profiles',
+          filter: `id=eq.${userId}`,
+        },
+        (payload) => {
+          setProfile(payload.new as UserProfile);
+        },
+      )
+      .subscribe();
+
     return () => {
-      wsRef.current?.close();
-      if (timerRef.current) clearTimeout(timerRef.current);
+      supabase.removeChannel(channel);
     };
-  }, [connect]);
+  }, [userId]);
 
   return profile;
 }

@@ -28,7 +28,10 @@ export async function GET() {
     admin.from('practice_sessions')
       .select('created_at, duration_seconds, total_blocks_detected')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: true }),
+      .order('created_at', { ascending: true })
+      // Cap at 500 rows — more than any patient could realistically accumulate and
+      // prevents a full-table scan from loading into the PDF generation process.
+      .limit(500),
     admin.from('treatment_plans')
       .select('prescribed_stages, sessions_per_week, minutes_per_session, phase, goals, slp_user_id')
       .eq('patient_user_id', user.id)

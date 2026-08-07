@@ -409,14 +409,33 @@ export async function POST(req: Request): Promise<Response> {
   // DB errors are logged internally so Stripe doesn't endlessly re-queue.
   const admin = createAdminClient();
 
-  // Idempotency — silently skip events already processed (Stripe retries on network failure)
-  const { data: existing } = await admin
+  // Atomic idempotency guard — INSERT ON CONFLICT DO NOTHING before any processing.
+  //
+  // The previous SELECT → process → INSERT pattern had a race window: two concurrent
+  // Stripe retries for the same event could both pass the SELECT check and both
+  // process the event (double commissions, duplicate emails, duplicate upserts).
+  //
+  // Inserting first is atomic: the DB unique constraint on event_id ensures only
+  // one concurrent request wins the INSERT. The loser sees count=0 and skips
+  // immediately, before touching any business logic.
+  //
+  // On handler failure below we delete this record so Stripe can retry. We still
+  // return 200 on handler errors (not 500) to avoid Stripe re-delivering events
+  // that partially succeeded and could cause double-billing on retry.
+  const { count: insertedCount, error: idempotencyErr } = await admin
     .from('processed_webhook_events')
-    .select('event_id')
-    .eq('event_id', event.id)
-    .maybeSingle();
+    .upsert(
+      { event_id: event.id, event_type: event.type },
+      { onConflict: 'event_id', ignoreDuplicates: true, count: 'exact' },
+    );
 
-  if (existing) return Response.json({ received: true, skipped: true });
+  if (idempotencyErr) {
+    console.error('[stripe-webhook] idempotency insert error:', idempotencyErr.message);
+    // Proceed rather than block — a DB hiccup here should not stop payment processing.
+  } else if (insertedCount === 0) {
+    // Unique constraint fired: this event_id is already in the table → already processed.
+    return Response.json({ received: true, skipped: true });
+  }
 
   try {
     switch (event.type) {
@@ -450,16 +469,18 @@ export async function POST(req: Request): Promise<Response> {
     const stack = err instanceof Error ? err.stack   : undefined;
     await logError(admin, event.type, msg, { event_id: event.id, stack }).catch(() => null);
     console.error(`[stripe-webhook] ${event.type} error:`, msg);
+
+    // Remove the idempotency record so Stripe can retry this event.
+    await admin
+      .from('processed_webhook_events')
+      .delete()
+      .eq('event_id', event.id)
+      .then(({ error }) => {
+        if (error) console.error('[stripe-webhook] idempotency rollback failed:', error.message);
+      });
+
     return Response.json({ received: true });
   }
-
-  // Mark processed only on success so failed events can be retried
-  await admin
-    .from('processed_webhook_events')
-    .insert({ event_id: event.id, event_type: event.type })
-    .then(({ error }) => {
-      if (error) console.error('[stripe-webhook] idempotency insert failed:', error.message);
-    });
 
   return Response.json({ received: true });
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
+import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { headers } from 'next/headers';
 
@@ -48,16 +48,23 @@ export async function GET(
   const ip = headerList.get('x-forwarded-for')?.split(',')[0] ?? null;
   const ua = headerList.get('user-agent') ?? null;
 
+  // Fire-and-forget view tracking — does not block the response.
+  // view_count is incremented atomically via an RPC to avoid a read-modify-write
+  // race where two concurrent requests could both read the same count and write
+  // the same incremented value, losing one increment.
   Promise.all([
     client.from('deck_views').insert({ invite_id: invite.id, ip_address: ip, user_agent: ua }),
-    client.from('deck_invites').update({
-      view_count: (invite.view_count ?? 0) + 1,
-      last_viewed_at: new Date().toISOString(),
-    }).eq('id', invite.id),
+    client.rpc('increment_deck_view_count', {
+      p_invite_id: invite.id,
+      p_last_viewed_at: new Date().toISOString(),
+    }),
   ]).catch(() => {/* ignore tracking errors */});
 
   try {
-    const html = readFileSync(join(process.cwd(), 'public', 'deck.html'), 'utf8');
+    // Use async readFile (fs/promises) — readFileSync blocks the event loop for
+    // the duration of the disk read, which can delay concurrent requests sharing
+    // the same Fluid Compute instance.
+    const html = await readFile(join(process.cwd(), 'public', 'deck.html'), 'utf8');
     return new NextResponse(html, {
       status: 200,
       headers: {

@@ -69,10 +69,14 @@ export async function GET(
     admin.from('practice_sessions')
       .select('id, stage_id, duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, created_at')
       .eq('user_id', patientId)
-      .order('created_at', { ascending: true }),
+      .order('created_at', { ascending: false })
+      // Most-recent 500 sessions — prevents full-table scan on active patients.
+      .limit(500),
     admin.from('slp_session_notes')
       .select('session_id, note')
-      .eq('slp_user_id', clinician.id),
+      .eq('slp_user_id', clinician.id)
+      // Matching cap — a clinician won't have notes beyond the 500 sessions above.
+      .limit(500),
   ]);
 
   const noteMap = new Map((notesRes.data ?? []).map(n => [n.session_id, n.note]));
