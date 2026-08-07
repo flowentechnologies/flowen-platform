@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   subscriptionId: string;
   cancelAtPeriodEnd: boolean;
-  onCancelled: (subId: string) => void;
 }
 
-export function SubscriptionActions({ subscriptionId, cancelAtPeriodEnd, onCancelled }: Props) {
+export function SubscriptionActions({ subscriptionId, cancelAtPeriodEnd }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -38,8 +39,8 @@ export function SubscriptionActions({ subscriptionId, cancelAtPeriodEnd, onCance
         setMarkedCancelled(true);
         setToast('Set to cancel at period end');
       } else {
-        onCancelled(subscriptionId);
         setToast('Subscription cancelled immediately');
+        router.refresh();
       }
     } catch (err) {
       setToast(err instanceof Error ? err.message : 'Error');
