@@ -201,6 +201,7 @@ export default function SettingsPage() {
               type="button"
               onClick={() => setRemindersEnabled(v => !v)}
               aria-pressed={remindersEnabled}
+              aria-label="Practice reminders"
               className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${remindersEnabled ? 'bg-emerald-500' : 'bg-slate-700'}`}
             >
               <span
@@ -217,6 +218,7 @@ export default function SettingsPage() {
               type="button"
               onClick={() => setStreakEnabled(v => !v)}
               aria-pressed={streakEnabled}
+              aria-label="Streak milestone notifications"
               className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${streakEnabled ? 'bg-emerald-500' : 'bg-slate-700'}`}
             >
               <span

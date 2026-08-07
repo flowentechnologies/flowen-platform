@@ -174,7 +174,11 @@ function makeLipTube(
 }
 
 const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(function FaceAvatar({ blends, speaking },  ref) {
-  const mountRef = useRef<HTMLDivElement>(null);
+  const mountRef    = useRef<HTMLDivElement>(null);
+  // Visually-hidden live region — receives speaking-state text so screen readers
+  // can announce when the avatar transitions between idle and active articulation.
+  const statusRef   = useRef<HTMLSpanElement>(null);
+  const prevSpeakingRef = useRef<boolean>(speaking);
 
   // Three.js object refs — never cause re-renders
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -201,6 +205,12 @@ const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(function FaceAvatar({ ble
   useImperativeHandle(ref, () => ({
     updateBlends(newBlends: VisemeBlends, newSpeaking: boolean) {
       blendsRef.current = newBlends;
+      // Announce speaking state transitions to assistive technology.  Only
+      // fire when the state actually changes to avoid noisy, repetitive reads.
+      if (newSpeaking !== prevSpeakingRef.current && statusRef.current) {
+        statusRef.current.textContent = newSpeaking ? 'Avatar speaking' : '';
+      }
+      prevSpeakingRef.current = newSpeaking;
       speakingRef.current = newSpeaking;
     },
   }));
@@ -557,18 +567,41 @@ const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(function FaceAvatar({ ble
   }, []); // only mount/unmount
 
   return (
+    // Outer wrapper is the accessible landmark: role="img" gives AT a meaningful
+    // group name instead of exposing the raw WebGL canvas (which is opaque to
+    // screen readers).  The inner mount div is aria-hidden because all semantic
+    // information is conveyed through the label and the live-region span below.
     <div
-      ref={mountRef}
+      role="img"
+      aria-label="Speech therapy biofeedback avatar — animated lip and facial movements mirror your phoneme articulation during practice"
       style={{
+        position: 'relative',
         width: '100%',
         maxWidth: W,
-        aspectRatio: `${W} / ${H}`,
         borderRadius: '1rem',
         overflow: 'hidden',
         background: '#0d1117',
-        display: 'block',
       }}
-    />
+    >
+      {/* Three.js renderer mounts here — hidden from assistive tech */}
+      <div
+        ref={mountRef}
+        aria-hidden="true"
+        style={{
+          width: '100%',
+          aspectRatio: `${W} / ${H}`,
+          display: 'block',
+        }}
+      />
+      {/* Visually-hidden live region: announces 'Avatar speaking' when the avatar
+          transitions to active articulation so screen-reader users know it's live. */}
+      <span
+        ref={statusRef}
+        className="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+      />
+    </div>
   );
 });
 

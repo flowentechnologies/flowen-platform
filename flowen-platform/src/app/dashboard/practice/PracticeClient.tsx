@@ -238,10 +238,16 @@ function BreathingPacer() {
         }}
       />
       <div className="text-center space-y-1.5">
-        <p className={`text-xs font-semibold uppercase tracking-widest ${breathPhase === 'in' ? 'text-emerald-400' : 'text-sky-400'}`}>
+        {/* aria-live announces phase changes ("Breathe in" / "Breathe out") to screen readers */}
+        <p
+          className={`text-xs font-semibold uppercase tracking-widest ${breathPhase === 'in' ? 'text-emerald-400' : 'text-sky-400'}`}
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {breathPhase === 'in' ? 'Breathe in' : 'Breathe out'}
         </p>
-        <div className="flex gap-1.5 justify-center">
+        {/* Progress dots are purely decorative */}
+        <div className="flex gap-1.5 justify-center" aria-hidden="true">
           {Array.from({ length: maxSteps }, (_, i) => (
             <div
               key={i}
@@ -654,6 +660,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         duration_seconds: elapsed,
         total_blocks_detected: blocksRef.current,
         stage_id: stageId,
+        // Persist the Web Speech API transcript alongside the session so
+        // users can retrieve it later and it fulfils the captions commitment.
+        transcript: finalTranscript.trim() || undefined,
       }),
     });
     if (!res.ok) {
@@ -807,6 +816,12 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
                     <button
                       onClick={() => !locked && setStageId(s.id as StageId)}
                       disabled={locked}
+                      aria-pressed={!locked && s.id === stageId}
+                      aria-label={
+                        locked
+                          ? `Stage ${s.id}: ${s.name} — locked, complete your current programme week to unlock`
+                          : `Stage ${s.id}: ${s.name}${s.id === stageId ? ' (selected)' : ''}`
+                      }
                       title={locked ? 'Complete your current programme week to unlock' : undefined}
                       className={`w-12 h-12 rounded-full text-sm font-bold border-2 transition-all ${
                         locked
@@ -817,10 +832,10 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
                       }`}
                     >
                       {locked ? (
-                        <svg viewBox="0 0 20 20" className="w-4 h-4 mx-auto" fill="currentColor">
+                        <svg viewBox="0 0 20 20" className="w-4 h-4 mx-auto" fill="currentColor" aria-hidden="true">
                           <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
                         </svg>
-                      ) : s.id}
+                      ) : <span aria-hidden="true">{s.id}</span>}
                     </button>
                   </div>
                 );
@@ -1003,22 +1018,23 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
         {/* Waveform card */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-          {/* Recording indicator */}
+          {/* Recording indicator — role="status" lets screen readers announce this on mount */}
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
               {stage.name}
             </span>
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
+            <div className="flex items-center gap-2" role="status" aria-label="Recording in progress">
+              {/* Animated dot is decorative — the accessible name is on the parent */}
+              <span className="relative flex h-2 w-2" aria-hidden="true">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-red-400">Recording</span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-red-400" aria-hidden="true">Recording</span>
             </div>
           </div>
 
-          {/* Waveform bars */}
-          <div className="flex items-end gap-0.5 h-16 justify-center">
+          {/* Waveform bars — purely visual; excluded from AT */}
+          <div className="flex items-end gap-0.5 h-16 justify-center" aria-hidden="true">
             {freqData.map((v, i) => {
               const h = Math.max(2, Math.round((v / 255) * 64));
               return (
@@ -1039,7 +1055,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
             </div>
             <div className="space-y-1">
               <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks</p>
-              <p className={`text-xl font-bold font-mono ${blocks > 0 ? 'text-red-400' : 'text-white'}`}>{blocks}</p>
+              {/* aria-live: announces each new block detection to screen readers */}
+              <p className={`text-xl font-bold font-mono ${blocks > 0 ? 'text-red-400' : 'text-white'}`}
+                 aria-live="polite" aria-atomic="true" aria-label={`${blocks} blocks detected`}>{blocks}</p>
             </div>
             <div className="space-y-1">
               <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks/min</p>
@@ -1049,8 +1067,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
             </div>
           </div>
 
-          {/* Feedback */}
-          <p className={`text-center text-xs font-mono transition-colors ${feedbackClass}`}>
+          {/* Feedback — polite live region keeps screen-reader users informed */}
+          <p className={`text-center text-xs font-mono transition-colors ${feedbackClass}`}
+             aria-live="polite" aria-atomic="true">
             {feedbackText}
           </p>
 
@@ -1085,16 +1104,20 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
                 setCoachEnabled(next);
                 if (!next) { window.speechSynthesis?.cancel(); setCoachSpeaking(false); }
               }}
+              aria-pressed={coachEnabled}
+              aria-label={coachEnabled ? 'Mute voice coach' : 'Unmute voice coach'}
               className={`text-[10px] font-mono px-2.5 py-1 rounded-lg border transition-all ${
                 coachEnabled
                   ? 'border-emerald-500/30 text-emerald-500/80 hover:border-emerald-500/50 hover:text-emerald-400'
                   : 'border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400'
               }`}
             >
-              {coachEnabled ? 'Mute' : 'Unmute'}
+              <span aria-hidden="true">{coachEnabled ? 'Mute' : 'Unmute'}</span>
             </button>
           </div>
-          <p className={`text-sm leading-relaxed transition-colors ${coachText ? 'text-slate-300' : 'text-slate-600 italic text-xs'}`}>
+          {/* Coach feedback — polite live region so AT reads new coaching cues */}
+          <p className={`text-sm leading-relaxed transition-colors ${coachText ? 'text-slate-300' : 'text-slate-600 italic text-xs'}`}
+             aria-live="polite" aria-atomic="true">
             {coachText ?? (coachEnabled ? 'Listening to your practice…' : 'Coach muted')}
           </p>
         </div>
@@ -1103,8 +1126,12 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         {captionSupported && (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Live captions</p>
+            {/* role="log" implies aria-live="polite" + aria-relevant="additions" —
+                ideal for a scrolling transcript that accumulates new speech. */}
             <div
               ref={captionBoxRef}
+              role="log"
+              aria-label="Live session captions"
               className="h-24 overflow-y-auto text-sm leading-relaxed scroll-smooth"
             >
               {finalTranscript || interimTranscript ? (
