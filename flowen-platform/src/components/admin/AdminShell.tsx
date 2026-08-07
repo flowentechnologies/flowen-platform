@@ -37,6 +37,7 @@ const NAV: NavSection[] = [
       { label: 'Clinician Assignments', href: '/admin/clinician-assignments' },
       { label: 'Feature Flags', href: '/admin/feature-flags' },
       { label: 'Waitlist', href: '/admin/waitlist' },
+      { label: 'Affiliates', href: '/admin/affiliate' },
     ],
   },
   {
