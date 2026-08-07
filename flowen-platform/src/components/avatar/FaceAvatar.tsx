@@ -229,6 +229,9 @@ const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(function FaceAvatar({ ble
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountRef.current.appendChild(renderer.domElement);
+    // The canvas is visual-only; hide it from AT so screen readers use the
+    // accessible name on the parent role="figure" element instead.
+    renderer.domElement.setAttribute('aria-hidden', 'true');
     rendererRef.current = renderer;
 
     // -----------------------------------------------------------------------
@@ -567,34 +570,28 @@ const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(function FaceAvatar({ ble
   }, []); // only mount/unmount
 
   return (
-    // Outer wrapper is the accessible landmark: role="img" gives AT a meaningful
-    // group name instead of exposing the raw WebGL canvas (which is opaque to
-    // screen readers).  The inner mount div is aria-hidden because all semantic
-    // information is conveyed through the label and the live-region span below.
+    // role="figure" (unlike role="img") keeps children in the AT tree, so the
+    // sr-only aria-live span below is still announced.  The Three.js canvas gets
+    // aria-hidden="true" set imperatively after it is appended (see useEffect),
+    // so screen readers receive only the accessible name on this container.
     <div
-      role="img"
+      ref={mountRef}
+      role="figure"
       aria-label="Speech therapy biofeedback avatar — animated lip and facial movements mirror your phoneme articulation during practice"
       style={{
         position: 'relative',
         width: '100%',
         maxWidth: W,
+        aspectRatio: `${W} / ${H}`,
         borderRadius: '1rem',
         overflow: 'hidden',
         background: '#0d1117',
+        display: 'block',
       }}
     >
-      {/* Three.js renderer mounts here — hidden from assistive tech */}
-      <div
-        ref={mountRef}
-        aria-hidden="true"
-        style={{
-          width: '100%',
-          aspectRatio: `${W} / ${H}`,
-          display: 'block',
-        }}
-      />
-      {/* Visually-hidden live region: announces 'Avatar speaking' when the avatar
-          transitions to active articulation so screen-reader users know it's live. */}
+      {/* Visually-hidden live region: announces 'Avatar speaking' on idle→active
+          transitions.  Kept inside (not sibling) so it's contained by the same
+          scroll/stacking context.  role="figure" allows AT to reach it. */}
       <span
         ref={statusRef}
         className="sr-only"
