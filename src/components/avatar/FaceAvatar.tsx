@@ -23,6 +23,10 @@ interface Props {
 const W = 400;
 const H = 480;
 
+// Lip tube geometry constants — kept small to stay GPU-friendly
+const TUBE_SEGS   = 20; // tubular segments
+const TUBE_RADIAL = 8;  // radial segments
+
 // Skin color
 const SKIN_COLOR = new THREE.Color(0xd4956a);
 const SKIN_DARK_COLOR = new THREE.Color(0xbf8560);
@@ -79,26 +83,94 @@ function computeLowerLipPoints(b: VisemeBlends): THREE.Vector3[] {
   ];
 }
 
-// Create a tube along a CatmullRom curve
+// ── Allocation-free lip tube helpers ──────────────────────────────────────────
+//
+// TubeGeometry allocates new Float32Array buffers every frame, creating ~10 kB
+// of GC pressure at 60 fps for both lips. Instead we pre-allocate one
+// BufferGeometry per lip and update only the position/normal attributes in-place.
+//
+// Vertex count: (TUBE_SEGS + 1) × (TUBE_RADIAL + 1)
+// Index count:   TUBE_SEGS × TUBE_RADIAL × 6
+
+function createLipBufferGeo(): THREE.BufferGeometry {
+  const geo      = new THREE.BufferGeometry();
+  const vertCount = (TUBE_SEGS + 1) * (TUBE_RADIAL + 1);
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertCount * 3), 3));
+  geo.setAttribute('normal',   new THREE.BufferAttribute(new Float32Array(vertCount * 3), 3));
+  geo.setAttribute('uv',       new THREE.BufferAttribute(new Float32Array(vertCount * 2), 2));
+  const indices: number[] = [];
+  for (let i = 0; i < TUBE_SEGS; i++) {
+    for (let j = 0; j < TUBE_RADIAL; j++) {
+      const a = (TUBE_RADIAL + 1) * i + j;
+      const b = (TUBE_RADIAL + 1) * (i + 1) + j;
+      const c = (TUBE_RADIAL + 1) * (i + 1) + j + 1;
+      const d = (TUBE_RADIAL + 1) * i + j + 1;
+      indices.push(a, b, d, b, c, d);
+    }
+  }
+  geo.setIndex(indices);
+  return geo;
+}
+
+// Reusable scratch vectors — allocated once per module, never per frame
+const _lipCenter   = new THREE.Vector3();
+const _lipNormal   = new THREE.Vector3();
+const _lipBinormal = new THREE.Vector3();
+
+function updateLipTubeGeo(
+  geo:    THREE.BufferGeometry,
+  points: THREE.Vector3[],
+  radius: number,
+): void {
+  const curve    = new THREE.CatmullRomCurve3(points);
+  const frames   = curve.computeFrenetFrames(TUBE_SEGS, false);
+  const positions = geo.attributes.position as THREE.BufferAttribute;
+  const normals   = geo.attributes.normal   as THREE.BufferAttribute;
+  const uvs       = geo.attributes.uv       as THREE.BufferAttribute;
+
+  let vi = 0;
+  for (let i = 0; i <= TUBE_SEGS; i++) {
+    curve.getPoint(i / TUBE_SEGS, _lipCenter);
+    _lipNormal.copy(frames.normals[i]);
+    _lipBinormal.copy(frames.binormals[i]);
+
+    for (let j = 0; j <= TUBE_RADIAL; j++) {
+      const angle = (j / TUBE_RADIAL) * Math.PI * 2;
+      const cos   = Math.cos(angle);
+      const sin   = Math.sin(angle);
+      positions.setXYZ(
+        vi,
+        _lipCenter.x + radius * (cos * _lipNormal.x + sin * _lipBinormal.x),
+        _lipCenter.y + radius * (cos * _lipNormal.y + sin * _lipBinormal.y),
+        _lipCenter.z + radius * (cos * _lipNormal.z + sin * _lipBinormal.z),
+      );
+      normals.setXYZ(vi,
+        cos * _lipNormal.x + sin * _lipBinormal.x,
+        cos * _lipNormal.y + sin * _lipBinormal.y,
+        cos * _lipNormal.z + sin * _lipBinormal.z,
+      );
+      uvs.setXY(vi, i / TUBE_SEGS, j / TUBE_RADIAL);
+      vi++;
+    }
+  }
+  positions.needsUpdate = true;
+  normals.needsUpdate   = true;
+  geo.computeBoundingSphere();
+}
+
+// Create a tube mesh with pre-allocated geometry (initial fill via updateLipTubeGeo)
 function makeLipTube(
   points: THREE.Vector3[],
   radius: number,
-  color: THREE.Color,
-  scene: THREE.Scene,
+  color:  THREE.Color,
+  scene:  THREE.Scene,
 ): THREE.Mesh {
-  const curve = new THREE.CatmullRomCurve3(points);
-  const geo = new THREE.TubeGeometry(curve, 20, radius, 8, false);
-  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.05 });
+  const geo = createLipBufferGeo();
+  updateLipTubeGeo(geo, points, radius);
+  const mat  = new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.05 });
   const mesh = new THREE.Mesh(geo, mat);
   scene.add(mesh);
   return mesh;
-}
-
-// Rebuild tube geometry in-place
-function rebuildLipTube(mesh: THREE.Mesh, points: THREE.Vector3[], radius: number): void {
-  mesh.geometry.dispose();
-  const curve = new THREE.CatmullRomCurve3(points);
-  mesh.geometry = new THREE.TubeGeometry(curve, 20, radius, 8, false);
 }
 
 const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(function FaceAvatar({ blends, speaking },  ref) {
@@ -389,12 +461,12 @@ const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(function FaceAvatar({ ble
         jawPivotRef.current.rotation.x = -b.jawOpen * 0.35;
       }
 
-      // Recompute lip geometry
+      // Update lip geometry in-place — no allocations, no GC pressure
       if (upperLipRef.current) {
-        rebuildLipTube(upperLipRef.current, computeUpperLipPoints(b), 0.028);
+        updateLipTubeGeo(upperLipRef.current.geometry, computeUpperLipPoints(b), 0.028);
       }
       if (lowerLipRef.current) {
-        rebuildLipTube(lowerLipRef.current, computeLowerLipPoints(b), 0.032);
+        updateLipTubeGeo(lowerLipRef.current.geometry, computeLowerLipPoints(b), 0.032);
       }
 
       // Teeth visibility
