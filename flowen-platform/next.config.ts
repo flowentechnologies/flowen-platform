@@ -11,7 +11,8 @@ const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
   {
     key: 'Permissions-Policy',
-    value: 'camera=(), geolocation=(), microphone=(self), payment=(self "https://js.stripe.com")',
+    // camera=(self) allows getUserMedia on the page itself (face tracking)
+    value: 'camera=(self), geolocation=(), microphone=(self), payment=(self "https://js.stripe.com")',
   },
   {
     key: 'Strict-Transport-Security',
@@ -21,12 +22,14 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       `default-src 'self'`,
-      `script-src 'self' 'unsafe-inline' https://js.stripe.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://*.doubleclick.net https://connect.facebook.net https://analytics.tiktok.com https://snap.licdn.com https://static.hotjar.com https://www.clarity.ms https://static.ads-twitter.com https://*.posthog.com`,
+      // 'wasm-unsafe-eval' required for WebAssembly compilation (MediaPipe)
+      `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://js.stripe.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://*.doubleclick.net https://connect.facebook.net https://analytics.tiktok.com https://snap.licdn.com https://static.hotjar.com https://www.clarity.ms https://static.ads-twitter.com https://*.posthog.com`,
       `style-src 'self' 'unsafe-inline'`,
       `img-src 'self' data: blob: https:`,
       `font-src 'self' data:`,
       // Sentry tunnel proxies browser events through /monitoring — no external ingest needed
-      `connect-src 'self' ${SUPABASE_URL} wss://*.supabase.co https://*.supabase.co https://api.stripe.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net https://*.facebook.com https://analytics.tiktok.com https://px.ads.linkedin.com https://static.ads-twitter.com https://*.hotjar.com https://www.clarity.ms https://eu.i.posthog.com`,
+      // cdn.jsdelivr.net + storage.googleapis.com needed for MediaPipe WASM + model download
+      `connect-src 'self' ${SUPABASE_URL} wss://*.supabase.co https://*.supabase.co https://api.stripe.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net https://*.facebook.com https://analytics.tiktok.com https://px.ads.linkedin.com https://static.ads-twitter.com https://*.hotjar.com https://www.clarity.ms https://eu.i.posthog.com https://cdn.jsdelivr.net https://storage.googleapis.com`,
       `frame-src https://js.stripe.com https://hooks.stripe.com https://*.doubleclick.net`,
       `worker-src 'self' blob:`,
       `media-src 'self' blob:`,
