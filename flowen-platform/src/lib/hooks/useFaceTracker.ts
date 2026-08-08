@@ -2,14 +2,22 @@
 
 // =============================================================================
 // useFaceTracker — MediaPipe FaceLandmarker camera-based blend shape driver
+//                  with per-user neutral-face calibration
 //
-// Loads @mediapipe/tasks-vision lazily (browser-only, dynamic import) and runs
-// GPU-accelerated face landmark detection at 60 fps.  Blend shapes are passed
-// directly to the caller via `onBlends` — no React state, no re-renders.
+// Calibration flow
+// ────────────────
+// 1. Camera goes active → `calibrate()` is called automatically (or manually).
+// 2. Status changes to 'calibrating' for CAL_DURATION_MS (3 s).
+// 3. Every detect frame during that window is collected into calibrateFramesRef.
+// 4. On completion, each blend shape key gets a personal baseline (the average
+//    value seen on a relaxed neutral face).
+// 5. Live frames are then normalised:
+//      calibrated[key] = clamp((raw[key] − baseline[key]) / (1 − baseline[key]), 0, 1)
+//    This ensures the avatar rests at zero for this specific user's neutral face
+//    and expands the dynamic range to 1 for their maximum expression.
 //
-// The 52 MediaPipe ARKit blend shape names (jaw*, mouth*, cheek*, nose*,
-// tongueOut) are a strict superset of our VisemeBlends keys.  The mapping is a
-// direct key lookup; unrecognised categories are silently ignored.
+// The calibration baseline persists across stop/start cycles so re-enabling
+// the camera in the same session skips recalibration unless the user asks.
 // =============================================================================
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -22,27 +30,29 @@ import type { VisemeBlends } from '@/lib/viseme';
 // -----------------------------------------------------------------------------
 
 export type FaceTrackerStatus =
-  | 'idle'       // hook created, camera not yet started
-  | 'loading'    // downloading MediaPipe WASM + model (~6 MB, first use only)
-  | 'requesting' // waiting for camera permission grant
-  | 'active'     // camera running, blend shapes firing each frame
-  | 'denied'     // user denied camera permission
-  | 'error';     // any other failure (no camera, WebGL unavailable, etc.)
+  | 'idle'         // hook created, camera not yet started
+  | 'loading'      // downloading MediaPipe WASM + model (~6 MB, first use only)
+  | 'requesting'   // waiting for camera permission grant
+  | 'calibrating'  // capturing neutral-face baseline (CAL_DURATION_MS)
+  | 'active'       // calibrated, blend shapes firing each frame
+  | 'denied'       // user denied camera permission
+  | 'error';       // any other failure (no camera, WebGL unavailable, etc.)
 
 export interface UseFaceTrackerResult {
-  status:   FaceTrackerStatus;
-  errorMsg: string | null;
-  videoRef: RefObject<HTMLVideoElement | null>;
-  start():  Promise<void>;
-  stop():   void;
+  status:       FaceTrackerStatus;
+  errorMsg:     string | null;
+  isCalibrated: boolean;
+  videoRef:     RefObject<HTMLVideoElement | null>;
+  start():      Promise<void>;
+  stop():       void;
+  calibrate():  void; // trigger a fresh 3-second baseline capture
 }
 
 // -----------------------------------------------------------------------------
 // Constants
 // -----------------------------------------------------------------------------
 
-// Use a pinned CDN path so the WASM sibling files resolve correctly.
-// MediaPipe tasks-vision loads vision_wasm_internal.wasm / .js from this base.
+// Pinned CDN path so the WASM sibling files resolve correctly.
 const WASM_BASE =
   'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
 
@@ -51,47 +61,104 @@ const MODEL_URL =
   'https://storage.googleapis.com/mediapipe-models/' +
   'face_landmarker/face_landmarker/float16/latest/face_landmarker.task';
 
-// jawOpen threshold above which we consider the user speaking.
+// Duration of the neutral-face capture window in milliseconds.
+const CAL_DURATION_MS = 3_000;
+
+// jawOpen threshold (post-calibration) above which we consider the user speaking.
 const SPEAKING_JAW_THRESHOLD = 0.08;
 
-// All keys in VisemeBlends — used for O(1) membership checks.
+// All keys in VisemeBlends — used for O(1) membership checks and iteration.
 const VISEME_KEYS = new Set<string>(Object.keys(ZERO_BLENDS));
+const VISEME_KEY_ARRAY = Object.keys(ZERO_BLENDS) as (keyof VisemeBlends)[];
 
 // -----------------------------------------------------------------------------
 // Hook
 // -----------------------------------------------------------------------------
 
 /**
- * Camera-based face tracking hook.
+ * Camera-based face tracking hook with neutral-face calibration.
  *
- * @param onBlends  Called each animation frame (~60 fps) with the latest
- *                  ARKit blend shapes and a `speaking` flag derived from
- *                  jaw aperture.  Keep this stable (use useCallback or define
- *                  outside the component) — it is stored in a ref and not a
- *                  dependency of any effect, so instability won't re-trigger
- *                  the camera initialisation.
+ * @param onBlends  Called each animation frame (~60 fps) with calibrated ARKit
+ *                  blend shapes and a `speaking` flag.  Keep this stable (wrap
+ *                  in useCallback with empty deps) — it's stored in a ref.
  */
 export function useFaceTracker(
   onBlends: (blends: VisemeBlends, speaking: boolean) => void,
 ): UseFaceTrackerResult {
-  const [status,   setStatus]   = useState<FaceTrackerStatus>('idle');
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [status,       setStatus]       = useState<FaceTrackerStatus>('idle');
+  const [errorMsg,     setErrorMsg]     = useState<string | null>(null);
+  const [isCalibrated, setIsCalibrated] = useState(false);
+  // Ref mirror so start()'s useCallback doesn't need isCalibrated as a dep
+  // (would rebuild the closure + restart camera unnecessarily on every calibration).
+  const isCalibratedRef = useRef(false);
 
-  // Stable video element shared between hook logic and JSX.
+  // statusRef mirrors the React state so the RAF detect loop (a closure) can
+  // read the current phase without stale state from the capture time.
+  const statusRef = useRef<FaceTrackerStatus>('idle');
+
   const videoRef      = useRef<HTMLVideoElement | null>(null);
-  // Cache the FaceLandmarker instance across start/stop cycles in the same
-  // session so the model is only downloaded and compiled once per page load.
   const landmarkerRef = useRef<FaceLandmarkerInstance | null>(null);
   const streamRef     = useRef<MediaStream | null>(null);
   const rafRef        = useRef<number | null>(null);
-  // Callback ref: keeps the latest `onBlends` without re-running effects.
-  const onBlendsRef   = useRef(onBlends);
+  const calTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Calibration storage
+  const calibrateFramesRef = useRef<VisemeBlends[]>([]);
+  // Neutral-face baseline per blend key — starts at ZERO so uncalibrated sessions
+  // pass raw values through unchanged (subtract 0, divide by 1).
+  const baselineRef = useRef<VisemeBlends>({ ...ZERO_BLENDS });
+
+  // Callback ref: keeps the latest onBlends without re-running effects.
+  const onBlendsRef = useRef(onBlends);
   useEffect(() => { onBlendsRef.current = onBlends; });
 
+  // Helper that keeps statusRef and React state atomically in sync.
+  const updateStatus = useCallback((s: FaceTrackerStatus) => {
+    statusRef.current = s;
+    setStatus(s);
+  }, []);
+
   // ---------------------------------------------------------------------------
-  // stop — tears down camera + RAF loop; preserves compiled landmarker
+  // calibrate — start a fresh baseline capture
+  // ---------------------------------------------------------------------------
+  const calibrate = useCallback(() => {
+    if (statusRef.current !== 'active' && statusRef.current !== 'calibrating') return;
+
+    // Cancel any in-progress calibration first
+    if (calTimerRef.current !== null) {
+      clearTimeout(calTimerRef.current);
+      calTimerRef.current = null;
+    }
+
+    calibrateFramesRef.current = [];
+    statusRef.current = 'calibrating';
+    setStatus('calibrating');
+
+    calTimerRef.current = setTimeout(() => {
+      calTimerRef.current = null;
+      const frames = calibrateFramesRef.current;
+
+      if (frames.length >= 10) {
+        baselineRef.current = averageBlends(frames);
+        isCalibratedRef.current = true;
+        setIsCalibrated(true);
+      }
+
+      // Remain in active regardless of whether we got enough frames
+      statusRef.current = 'active';
+      setStatus('active');
+    }, CAL_DURATION_MS);
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // stop — tears down camera + RAF loop; preserves compiled landmarker +
+  //        calibration baseline so re-enabling is instant and re-uses baseline
   // ---------------------------------------------------------------------------
   const stop = useCallback(() => {
+    if (calTimerRef.current !== null) {
+      clearTimeout(calTimerRef.current);
+      calTimerRef.current = null;
+    }
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
@@ -105,18 +172,19 @@ export function useFaceTracker(
       vid.srcObject = null;
     }
 
-    setStatus('idle');
-  }, []);
+    updateStatus('idle');
+  }, [updateStatus]);
 
   // ---------------------------------------------------------------------------
-  // start — loads model (first time), requests camera, begins detect loop
+  // start — loads model (first time), requests camera, auto-calibrates, begins
+  //         detect loop
   // ---------------------------------------------------------------------------
   const start = useCallback(async () => {
     setErrorMsg(null);
 
     try {
-      // ── 1. Load MediaPipe (dynamic import — browser only, deferred bundle) ──
-      setStatus('loading');
+      // ── 1. Load MediaPipe (dynamic import — browser only) ──────────────────
+      updateStatus('loading');
 
       const { FaceLandmarker, FilesetResolver } =
         await import('@mediapipe/tasks-vision');
@@ -127,8 +195,6 @@ export function useFaceTracker(
         landmarkerRef.current = await FaceLandmarker.createFromOptions(vision, {
           baseOptions: {
             modelAssetPath: MODEL_URL,
-            // Prefer GPU for 60-fps inference; MediaPipe falls back to CPU
-            // automatically on devices without suitable WebGL2 support.
             delegate: 'GPU',
           },
           outputFaceBlendshapes: true,
@@ -138,7 +204,7 @@ export function useFaceTracker(
       }
 
       // ── 2. Request camera ─────────────────────────────────────────────────
-      setStatus('requesting');
+      updateStatus('requesting');
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -151,7 +217,7 @@ export function useFaceTracker(
       });
       streamRef.current = stream;
 
-      // ── 3. Attach stream to the video element ─────────────────────────────
+      // ── 3. Attach stream to video element ─────────────────────────────────
       const video = videoRef.current;
       if (!video) throw new Error('Video element not mounted');
 
@@ -162,15 +228,33 @@ export function useFaceTracker(
         video.play().catch(reject);
       });
 
-      setStatus('active');
+      // ── 4. Auto-calibrate on first activation; skip if already calibrated ─
+      if (!isCalibratedRef.current) {
+        calibrateFramesRef.current = [];
+        statusRef.current = 'calibrating';
+        setStatus('calibrating');
 
-      // ── 4. Detection loop (RAF — matches display refresh rate) ────────────
+        calTimerRef.current = setTimeout(() => {
+          calTimerRef.current = null;
+          const frames = calibrateFramesRef.current;
+          if (frames.length >= 10) {
+            baselineRef.current = averageBlends(frames);
+            isCalibratedRef.current = true;
+            setIsCalibrated(true);
+          }
+          statusRef.current = 'active';
+          setStatus('active');
+        }, CAL_DURATION_MS);
+      } else {
+        updateStatus('active');
+      }
+
+      // ── 5. Detection loop ─────────────────────────────────────────────────
       const landmarker = landmarkerRef.current;
 
       function detect(): void {
         const vid = videoRef.current;
 
-        // Guard: stop if stream was torn down
         if (!vid || !streamRef.current || vid.readyState < 2) {
           rafRef.current = requestAnimationFrame(detect);
           return;
@@ -180,12 +264,23 @@ export function useFaceTracker(
           const result = landmarker.detectForVideo(vid, performance.now());
 
           if (result.faceBlendshapes?.length) {
-            const blends   = mapCategories(result.faceBlendshapes[0].categories);
-            const speaking = blends.jawOpen > SPEAKING_JAW_THRESHOLD;
-            onBlendsRef.current(blends, speaking);
+            const raw = mapCategories(result.faceBlendshapes[0].categories);
+
+            if (statusRef.current === 'calibrating') {
+              // Collect raw frames for baseline averaging
+              calibrateFramesRef.current.push(raw);
+              // Drive avatar with raw values during calibration so the user can
+              // see it's working and position themselves correctly
+              onBlendsRef.current(raw, raw.jawOpen > SPEAKING_JAW_THRESHOLD);
+            } else {
+              // Apply per-user normalisation
+              const blends  = applyCalibration(raw, baselineRef.current);
+              const speaking = blends.jawOpen > SPEAKING_JAW_THRESHOLD;
+              onBlendsRef.current(blends, speaking);
+            }
           }
         } catch {
-          // Individual frame failures are non-fatal; skip and continue.
+          // Individual frame failures are non-fatal; continue.
         }
 
         rafRef.current = requestAnimationFrame(detect);
@@ -194,39 +289,64 @@ export function useFaceTracker(
       rafRef.current = requestAnimationFrame(detect);
 
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg    = err instanceof Error ? err.message : String(err);
       const denied = /NotAllowed|Permission|denied/i.test(msg);
 
-      setStatus(denied ? 'denied' : 'error');
+      updateStatus(denied ? 'denied' : 'error');
       setErrorMsg(
         denied
           ? 'Camera access denied. Allow camera access in your browser settings to enable face tracking.'
           : `Face tracking unavailable: ${msg}`,
       );
     }
-  }, []);
+  }, [updateStatus]);
 
   // Cleanup on unmount
   useEffect(() => () => { stop(); }, [stop]);
 
-  return { status, errorMsg, videoRef, start, stop };
+  return { status, errorMsg, isCalibrated, videoRef, start, stop, calibrate };
 }
 
 // -----------------------------------------------------------------------------
-// mapCategories — MediaPipe category array → VisemeBlends
+// averageBlends — mean of a frame buffer
+// -----------------------------------------------------------------------------
+
+function averageBlends(frames: VisemeBlends[]): VisemeBlends {
+  const n   = frames.length;
+  const out = { ...ZERO_BLENDS };
+  for (const key of VISEME_KEY_ARRAY) {
+    out[key] = frames.reduce((s, f) => s + f[key], 0) / n;
+  }
+  return out;
+}
+
+// -----------------------------------------------------------------------------
+// applyCalibration — shift + scale raw values by neutral-face baseline
 //
-// MediaPipe ARKit blend shape names match VisemeBlends keys exactly:
-//   jawOpen, jawForward, jawLeft, jawRight,
-//   mouthClose, mouthFunnel, mouthPucker, mouthLeft, mouthRight,
-//   mouthSmileLeft/Right, mouthFrownLeft/Right, mouthDimpleLeft/Right,
-//   mouthStretchLeft/Right, mouthRollLower, mouthRollUpper,
-//   mouthShrugLower, mouthShrugUpper, mouthPressLeft/Right,
-//   mouthLowerDownLeft/Right, mouthUpperUpLeft/Right,
-//   cheekPuff, cheekSquintLeft/Right,
-//   noseSneerLeft/Right, tongueOut
+// For each blend shape key k:
+//   range      = 1 − baseline[k]          (how far from baseline to maximum)
+//   calibrated = clamp((raw[k] − baseline[k]) / range, 0, 1)
 //
-// Fields not emitted by MediaPipe (tongueUp/Down/Left/Right, tongueRoll,
-// tongueBendDown, tongueCurlUp, tongueSquish, tongueFlat) remain at 0.
+// If range < 0.05 (the baseline is already near 1.0 and movement headroom is
+// tiny), we zero that key to avoid divide-by-near-zero amplification.
+// -----------------------------------------------------------------------------
+
+function applyCalibration(raw: VisemeBlends, baseline: VisemeBlends): VisemeBlends {
+  const out = { ...ZERO_BLENDS };
+  for (const key of VISEME_KEY_ARRAY) {
+    const b     = baseline[key];
+    const range = 1 - b;
+    if (range < 0.05) {
+      out[key] = 0;
+    } else {
+      out[key] = Math.max(0, Math.min(1, (raw[key] - b) / range));
+    }
+  }
+  return out;
+}
+
+// -----------------------------------------------------------------------------
+// mapCategories — MediaPipe category array → VisemeBlends (raw, pre-calibration)
 // -----------------------------------------------------------------------------
 
 function mapCategories(
@@ -235,8 +355,6 @@ function mapCategories(
   const out = { ...ZERO_BLENDS };
   for (const { categoryName, score } of categories) {
     if (VISEME_KEYS.has(categoryName)) {
-      // Clamp to [0, 1] — MediaPipe can occasionally emit slightly out-of-range
-      // values on edge-case frames.
       (out as Record<string, number>)[categoryName] = Math.max(0, Math.min(1, score));
     }
   }
@@ -244,14 +362,12 @@ function mapCategories(
 }
 
 // -----------------------------------------------------------------------------
-// Private — minimal type shim for the dynamically-imported FaceLandmarker so
-// TypeScript can type-check the hook without importing the full library at the
-// module level (which would break SSR).
+// Private type shim — avoids SSR import of the full MediaPipe library
 // -----------------------------------------------------------------------------
 
 interface FaceLandmarkerInstance {
   detectForVideo(
-    video: HTMLVideoElement,
+    video:     HTMLVideoElement,
     timestamp: number,
   ): {
     faceBlendshapes?: Array<{

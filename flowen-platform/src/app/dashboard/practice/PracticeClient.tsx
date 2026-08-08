@@ -301,12 +301,25 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   );
 
   const {
-    status:   faceStatus,
-    errorMsg: faceErrorMsg,
-    videoRef: cameraVideoRef,
-    start:    startCamera,
-    stop:     stopCamera,
+    status:       faceStatus,
+    errorMsg:     faceErrorMsg,
+    isCalibrated: faceCalibrated,
+    videoRef:     cameraVideoRef,
+    start:        startCamera,
+    stop:         stopCamera,
+    calibrate:    recalibrate,
   } = useFaceTracker(handleFaceBlends);
+
+  // Calibration countdown (3→2→1→0) shown while faceStatus === 'calibrating'
+  const [calCountdown, setCalCountdown] = useState(0);
+  useEffect(() => {
+    if (faceStatus !== 'calibrating') { setCalCountdown(0); return; }
+    setCalCountdown(3);
+    const id = setInterval(() => {
+      setCalCountdown(n => Math.max(0, n - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [faceStatus]);
 
   // Captions + playback
   const [finalTranscript, setFinalTranscript] = useState('');
@@ -1042,71 +1055,137 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         {/* Step bar */}
         <StepBar current="recording" />
 
-        {/* 3D Avatar with camera face-tracking PiP overlay */}
+        {/* 3D Avatar with camera face-tracking PiP + calibration overlay */}
         <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-2xl shadow-black/40">
           <FaceAvatar ref={avatarRef} blends={ZERO_BLENDS} speaking={false} />
-          {/* Camera PiP — video element is always in DOM (useFaceTracker videoRef
-              must stay mounted), CSS size is 0×0 until tracking goes active. */}
+
+          {/* Calibration overlay — covers avatar with instruction + countdown */}
+          {faceStatus === 'calibrating' && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950/80 backdrop-blur-sm">
+              <p className="text-xs font-mono uppercase tracking-widest text-slate-300">
+                Relax your face and look at the camera
+              </p>
+              <span className="text-5xl font-extrabold font-mono text-emerald-400 tabular-nums leading-none">
+                {calCountdown > 0 ? calCountdown : '✓'}
+              </span>
+              <p className="text-[10px] font-mono text-slate-500">Capturing neutral baseline…</p>
+            </div>
+          )}
+
+          {/* Camera PiP — video element always in DOM (ref must stay mounted).
+              Size animates 0→visible when active or calibrating. */}
           <div
             className="absolute bottom-3 right-3 rounded-xl overflow-hidden border transition-all duration-300"
             style={{
-              width:  faceStatus === 'active' ? 112 : 0,
-              height: faceStatus === 'active' ? 80  : 0,
-              borderColor: faceStatus === 'active' ? 'rgba(100,116,139,0.6)' : 'transparent',
+              width:       faceStatus === 'active' || faceStatus === 'calibrating' ? 112 : 0,
+              height:      faceStatus === 'active' || faceStatus === 'calibrating' ? 80  : 0,
+              borderColor: faceStatus === 'active' || faceStatus === 'calibrating'
+                ? 'rgba(100,116,139,0.6)'
+                : 'transparent',
             }}
           >
             <CameraFeed videoRef={cameraVideoRef} status={faceStatus} />
           </div>
         </div>
 
-        {/* Camera face-tracking control row */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 shrink-0">
-              Face Tracking
-            </span>
-            {faceStatus === 'loading' && (
-              <span className="text-[10px] font-mono text-slate-500 truncate">Loading model…</span>
-            )}
-            {faceStatus === 'requesting' && (
-              <span className="text-[10px] font-mono text-slate-500 truncate">Allow camera access…</span>
-            )}
-            {faceStatus === 'active' && (
-              <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400 shrink-0">
-                <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
-                </span>
-                Active
+        {/* Camera face-tracking control */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 shrink-0">
+                Face Tracking
               </span>
-            )}
-            {(faceStatus === 'denied' || faceStatus === 'error') && faceErrorMsg && (
-              <span className="text-[10px] text-amber-400/80 truncate">{faceErrorMsg}</span>
-            )}
-          </div>
-          <button
-            onClick={faceStatus === 'active' ? stopCamera : startCamera}
-            disabled={faceStatus === 'loading' || faceStatus === 'requesting'}
-            aria-pressed={faceStatus === 'active'}
-            aria-label={
-              faceStatus === 'active'
-                ? 'Disable camera face tracking'
-                : 'Enable camera face tracking — avatar will mirror your facial movements'
-            }
-            className={`shrink-0 text-[10px] font-mono px-2.5 py-1 rounded-lg border transition-all ${
-              faceStatus === 'active'
-                ? 'border-emerald-500/30 text-emerald-500/80 hover:border-emerald-500/50 hover:text-emerald-400'
+
+              {/* Status label */}
+              {faceStatus === 'loading' && (
+                <span className="text-[10px] font-mono text-slate-500 truncate">Loading model…</span>
+              )}
+              {faceStatus === 'requesting' && (
+                <span className="text-[10px] font-mono text-slate-500 truncate">Allow camera…</span>
+              )}
+              {faceStatus === 'calibrating' && (
+                <span className="text-[10px] font-mono text-amber-400 truncate">
+                  Calibrating — hold still {calCountdown > 0 ? `(${calCountdown}s)` : ''}
+                </span>
+              )}
+              {faceStatus === 'active' && faceCalibrated && (
+                <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400 shrink-0">
+                  <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+                  </span>
+                  Active · Calibrated
+                </span>
+              )}
+              {faceStatus === 'active' && !faceCalibrated && (
+                <span className="text-[10px] font-mono text-amber-400 shrink-0">Active · Not calibrated</span>
+              )}
+              {(faceStatus === 'denied' || faceStatus === 'error') && faceErrorMsg && (
+                <span className="text-[10px] text-amber-400/80 truncate">{faceErrorMsg}</span>
+              )}
+            </div>
+
+            {/* Primary action button */}
+            <button
+              onClick={
+                faceStatus === 'active' || faceStatus === 'calibrating'
+                  ? stopCamera
+                  : startCamera
+              }
+              disabled={faceStatus === 'loading' || faceStatus === 'requesting' || faceStatus === 'calibrating'}
+              aria-pressed={faceStatus === 'active' || faceStatus === 'calibrating'}
+              aria-label={
+                faceStatus === 'active' || faceStatus === 'calibrating'
+                  ? 'Disable camera face tracking'
+                  : 'Enable camera face tracking — avatar will mirror your facial movements'
+              }
+              className={`shrink-0 text-[10px] font-mono px-2.5 py-1 rounded-lg border transition-all ${
+                faceStatus === 'active' || faceStatus === 'calibrating'
+                  ? 'border-emerald-500/30 text-emerald-500/80 hover:border-emerald-500/50 hover:text-emerald-400'
+                  : faceStatus === 'loading' || faceStatus === 'requesting'
+                    ? 'border-slate-700 text-slate-600 cursor-not-allowed'
+                    : 'border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400'
+              }`}
+            >
+              {faceStatus === 'active' || faceStatus === 'calibrating'
+                ? 'Disable'
                 : faceStatus === 'loading' || faceStatus === 'requesting'
-                  ? 'border-slate-700 text-slate-600 cursor-not-allowed'
-                  : 'border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400'
-            }`}
-          >
-            {faceStatus === 'active'
-              ? 'Disable'
-              : faceStatus === 'loading' || faceStatus === 'requesting'
-                ? '…'
-                : 'Enable'}
-          </button>
+                  ? '…'
+                  : 'Enable'}
+            </button>
+          </div>
+
+          {/* Recalibrate row — shown when active and already calibrated */}
+          {faceStatus === 'active' && faceCalibrated && (
+            <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+              <p className="text-[10px] text-slate-600">
+                Face not tracking well? Recalibrate with a fresh neutral expression.
+              </p>
+              <button
+                onClick={recalibrate}
+                className="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded border border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400 transition-all"
+                aria-label="Recalibrate face tracking baseline"
+              >
+                Recalibrate
+              </button>
+            </div>
+          )}
+
+          {/* First-time prompt — nudge user to calibrate if active but not yet done */}
+          {faceStatus === 'active' && !faceCalibrated && (
+            <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+              <p className="text-[10px] text-amber-400/70">
+                Relax your face, then calibrate so the avatar matches your neutral expression.
+              </p>
+              <button
+                onClick={recalibrate}
+                className="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded border border-amber-500/40 text-amber-400 hover:border-amber-500/70 hover:text-amber-300 transition-all"
+                aria-label="Calibrate face tracking baseline"
+              >
+                Calibrate
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Waveform card */}
