@@ -4,8 +4,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { ZERO_BLENDS, extractFormants } from '@/lib/viseme';
+import type { VisemeBlends } from '@/lib/viseme';
 import { VisemeDriver } from '@/components/avatar/VisemeDriver';
 import type { FaceAvatarHandle } from '@/components/avatar/FaceAvatar';
+import { useFaceTracker } from '@/lib/hooks/useFaceTracker';
+import { CameraFeed } from '@/components/avatar/CameraFeed';
 import { ExercisePanel } from './ExercisePanel';
 import posthog from 'posthog-js';
 
@@ -287,6 +290,24 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   const avatarRef = useRef<FaceAvatarHandle | null>(null);
   const visemeDriverRef = useRef<VisemeDriver | null>(null);
 
+  // Face tracking — camera-driven blend shapes override audio formants when active
+  const faceTrackingActiveRef = useRef(false);
+
+  const handleFaceBlends = useCallback(
+    (blends: VisemeBlends, speaking: boolean) => {
+      avatarRef.current?.updateBlends(blends, speaking);
+    },
+    [],
+  );
+
+  const {
+    status:   faceStatus,
+    errorMsg: faceErrorMsg,
+    videoRef: cameraVideoRef,
+    start:    startCamera,
+    stop:     stopCamera,
+  } = useFaceTracker(handleFaceBlends);
+
   // Captions + playback
   const [finalTranscript, setFinalTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
@@ -371,6 +392,10 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   useEffect(() => { coachEnabledRef.current = coachEnabled; }, [coachEnabled]);
   useEffect(() => { coachSpeakingRef.current = coachSpeaking; }, [coachSpeaking]);
   useEffect(() => { coachTextRef.current = coachText; }, [coachText]);
+
+  // Sync face-tracking active flag so the audio tick loop can skip avatar updates
+  // when the camera is driving blend shapes at 60 fps instead.
+  useEffect(() => { faceTrackingActiveRef.current = faceStatus === 'active'; }, [faceStatus]);
 
   // ---------------------------------------------------------------------------
   // Voice coach
@@ -563,12 +588,16 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       for (let i = 0; i < 32; i++) bars.push(buf[i * step]);
       setFreqData(bars);
 
-      // Formant analysis → viseme driver → avatar (bypasses React state entirely)
+      // Formant analysis → viseme driver → avatar (bypasses React state entirely).
+      // Skip avatar update when camera face tracking is active — useFaceTracker
+      // drives the avatar directly via handleFaceBlends at ~60 fps.
       if (visemeDriverRef.current && ctx.sampleRate) {
         const { f1, f2 } = extractFormants(formantBuf, ctx.sampleRate);
         visemeDriverRef.current.updateFormants(f1, f2, rms); // rms gates formant blending
         visemeDriverRef.current.tick(Date.now());
-        avatarRef.current?.updateBlends(visemeDriverRef.current.getBlends(), rms > 18);
+        if (!faceTrackingActiveRef.current) {
+          avatarRef.current?.updateBlends(visemeDriverRef.current.getBlends(), rms > 18);
+        }
       }
 
       const SPEECH_THRESH = 18;
@@ -607,6 +636,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     if (timerRef.current) clearInterval(timerRef.current);
     streamRef.current?.getTracks().forEach(t => t.stop());
     audioCtxRef.current?.close().catch(() => {});
+    stopCamera(); // tear down camera + RAF loop if face tracking was active
 
     if (mediaRecorderRef.current?.state !== 'inactive') {
       try { mediaRecorderRef.current?.stop(); } catch { /* noop */ }
@@ -623,13 +653,14 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     visemeDriverRef.current?.reset();
 
     setScreen('summary');
-  }, []);
+  }, [stopCamera]);
 
   // ---------------------------------------------------------------------------
   // Save
   // ---------------------------------------------------------------------------
 
   const discardAndReset = useCallback(() => {
+    stopCamera();
     blocksRef.current = 0;
     isSpeakingRef.current = false;
     silenceStartRef.current = null;
@@ -648,7 +679,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     lastCoachWordCountRef.current = 0;
     lastCoachTimeRef.current = 0;
     setScreen('select');
-  }, []);
+  }, [stopCamera]);
 
   const saveSession = useCallback(async (andRepeat = false) => {
     setSaving(true);
@@ -1011,9 +1042,71 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         {/* Step bar */}
         <StepBar current="recording" />
 
-        {/* 3D Avatar — updates via imperative ref, zero React re-renders */}
-        <div className="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl shadow-black/40">
+        {/* 3D Avatar with camera face-tracking PiP overlay */}
+        <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-2xl shadow-black/40">
           <FaceAvatar ref={avatarRef} blends={ZERO_BLENDS} speaking={false} />
+          {/* Camera PiP — video element is always in DOM (useFaceTracker videoRef
+              must stay mounted), CSS size is 0×0 until tracking goes active. */}
+          <div
+            className="absolute bottom-3 right-3 rounded-xl overflow-hidden border transition-all duration-300"
+            style={{
+              width:  faceStatus === 'active' ? 112 : 0,
+              height: faceStatus === 'active' ? 80  : 0,
+              borderColor: faceStatus === 'active' ? 'rgba(100,116,139,0.6)' : 'transparent',
+            }}
+          >
+            <CameraFeed videoRef={cameraVideoRef} status={faceStatus} />
+          </div>
+        </div>
+
+        {/* Camera face-tracking control row */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 shrink-0">
+              Face Tracking
+            </span>
+            {faceStatus === 'loading' && (
+              <span className="text-[10px] font-mono text-slate-500 truncate">Loading model…</span>
+            )}
+            {faceStatus === 'requesting' && (
+              <span className="text-[10px] font-mono text-slate-500 truncate">Allow camera access…</span>
+            )}
+            {faceStatus === 'active' && (
+              <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400 shrink-0">
+                <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+                </span>
+                Active
+              </span>
+            )}
+            {(faceStatus === 'denied' || faceStatus === 'error') && faceErrorMsg && (
+              <span className="text-[10px] text-amber-400/80 truncate">{faceErrorMsg}</span>
+            )}
+          </div>
+          <button
+            onClick={faceStatus === 'active' ? stopCamera : startCamera}
+            disabled={faceStatus === 'loading' || faceStatus === 'requesting'}
+            aria-pressed={faceStatus === 'active'}
+            aria-label={
+              faceStatus === 'active'
+                ? 'Disable camera face tracking'
+                : 'Enable camera face tracking — avatar will mirror your facial movements'
+            }
+            className={`shrink-0 text-[10px] font-mono px-2.5 py-1 rounded-lg border transition-all ${
+              faceStatus === 'active'
+                ? 'border-emerald-500/30 text-emerald-500/80 hover:border-emerald-500/50 hover:text-emerald-400'
+                : faceStatus === 'loading' || faceStatus === 'requesting'
+                  ? 'border-slate-700 text-slate-600 cursor-not-allowed'
+                  : 'border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400'
+            }`}
+          >
+            {faceStatus === 'active'
+              ? 'Disable'
+              : faceStatus === 'loading' || faceStatus === 'requesting'
+                ? '…'
+                : 'Enable'}
+          </button>
         </div>
 
         {/* Waveform card */}
