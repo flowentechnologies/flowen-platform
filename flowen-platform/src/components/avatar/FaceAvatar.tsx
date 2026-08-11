@@ -2,8 +2,6 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { VisemeBlends } from '@/lib/viseme';
 import { ZERO_BLENDS } from '@/lib/viseme';
@@ -135,19 +133,13 @@ export const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(
       const ambient = new THREE.AmbientLight(0xffeedd, 0.25);
       scene.add(ambient);
 
-      // ── Load facecap.glb ────────────────────────────────────────────────────
-      // facecap.glb uses EXT_meshopt_compression + KHR_texture_basisu — both
-      // are extensionsRequired so GLTFLoader will hard-fail without these.
-      const ktx2Loader = new KTX2Loader();
-      // basis_transcoder.{js,wasm} are copied to /public/ — served from root
-      ktx2Loader.setTranscoderPath('/');
-      ktx2Loader.detectSupport(renderer);
-
+      // ── Load facecap_clean.glb ──────────────────────────────────────────────
+      // facecap_clean.glb is derived from the Three.js facecap example (MIT).
+      // KTX2 textures stripped + meshopt geometry decompressed offline —
+      // no extensionsRequired, so plain GLTFLoader loads it without any plugins.
       const loader = new GLTFLoader();
-      loader.setKTX2Loader(ktx2Loader);
-      loader.setMeshoptDecoder(MeshoptDecoder);
       loader.load(
-        '/models/facecap.glb',
+        '/models/facecap_clean.glb',
         (gltf) => {
           const model = gltf.scene;
 
@@ -228,7 +220,6 @@ export const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(
         cancelAnimationFrame(rafRef.current);
         loadedRef.current   = false;
         morphMeshes.current = [];
-        ktx2Loader.dispose();
         renderer.dispose();
         if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
       };

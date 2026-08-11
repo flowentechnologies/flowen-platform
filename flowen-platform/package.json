@@ -35,6 +35,9 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^0.1.0",
+    "@gltf-transform/core": "^4.4.2",
+    "@gltf-transform/extensions": "^4.4.2",
+    "@gltf-transform/functions": "^4.4.2",
     "@types/node": "^20.0.0",
     "@types/nodemailer": "^6.4.24",
     "@types/react": "^19.0.0",
