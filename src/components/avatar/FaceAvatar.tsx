@@ -10,9 +10,32 @@ import { ZERO_BLENDS } from '@/lib/viseme';
 // FaceAvatar — Three.js glTF face model driven by 42 ARKit-style blend shapes
 //
 // Model: facecap.glb — part of Three.js examples, MIT licence.
-// Morph target names in the model are ARKit-compatible and map 1:1 to
-// VisemeBlends keys (jawOpen, mouthSmileLeft, cheekPuff, etc.).
+// Morph target names in the model use ARKit underscore notation (mouthSmile_L)
+// while VisemeBlends uses camelCase (mouthSmileLeft). BLEND_REMAP bridges them.
 // ============================================================================
+
+// Maps VisemeBlends key → facecap.glb morph target name where they differ.
+// Symmetric shapes use _L / _R; the 15 mismatched ones are listed here.
+const BLEND_REMAP: Record<string, string> = {
+  mouthSmileLeft:      'mouthSmile_L',
+  mouthSmileRight:     'mouthSmile_R',
+  mouthFrownLeft:      'mouthFrown_L',
+  mouthFrownRight:     'mouthFrown_R',
+  mouthDimpleLeft:     'mouthDimple_L',
+  mouthDimpleRight:    'mouthDimple_R',
+  mouthStretchLeft:    'mouthStretch_L',
+  mouthStretchRight:   'mouthStretch_R',
+  mouthPressLeft:      'mouthPress_L',
+  mouthPressRight:     'mouthPress_R',
+  mouthLowerDownLeft:  'mouthLowerDown_L',
+  mouthLowerDownRight: 'mouthLowerDown_R',
+  mouthUpperUpLeft:    'mouthUpperUp_L',
+  mouthUpperUpRight:   'mouthUpperUp_R',
+  cheekSquintLeft:     'cheekSquint_L',
+  cheekSquintRight:    'cheekSquint_R',
+  noseSneerLeft:       'noseSneer_L',
+  noseSneerRight:      'noseSneer_R',
+};
 
 export interface FaceAvatarHandle {
   /** Zero-re-render live blend shape update called at ~60 fps. */
@@ -152,18 +175,34 @@ export const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(
       );
 
       // ── Render loop ─────────────────────────────────────────────────────────
+      let startTime = performance.now();
+
       const tick = () => {
         rafRef.current = requestAnimationFrame(tick);
 
         if (loadedRef.current) {
           const blends = blendsRef.current;
+          const speaking = speakingRef.current;
+          const t = (performance.now() - startTime) / 1000; // seconds
+
+          // Idle breathing — subtle jaw flutter when silent
+          // amplitude ramps to 0 once speaking kicks in
+          const breathAmp = speaking ? 0 : 0.045;
+          const breathTarget = breathAmp * (0.5 + 0.5 * Math.sin(t * 0.9));
 
           for (const { mesh, map } of morphMeshes.current) {
             const influences = mesh.morphTargetInfluences!;
+
             for (const [key, value] of Object.entries(blends) as [keyof VisemeBlends, number][]) {
-              const idx = map.get(key);
+              // Translate VisemeBlends key → model morph target name
+              const modelKey = BLEND_REMAP[key] ?? key;
+              const idx = map.get(modelKey);
               if (idx !== undefined) {
-                influences[idx] = THREE.MathUtils.lerp(influences[idx] ?? 0, value, LERP);
+                // Add breath contribution only to jawOpen
+                const target = key === 'jawOpen' && !speaking
+                  ? Math.max(value, breathTarget)
+                  : value;
+                influences[idx] = THREE.MathUtils.lerp(influences[idx] ?? 0, target, LERP);
               }
             }
           }
