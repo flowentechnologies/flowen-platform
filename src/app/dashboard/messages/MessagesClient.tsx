@@ -30,6 +30,7 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const fetchMessages = useCallback(async (initial = false) => {
@@ -65,6 +66,7 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
     const trimmed = content.trim();
     if (!trimmed || sending) return;
     setSending(true);
+    setSendError(null);
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
@@ -76,7 +78,11 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
         setMessages(prev => [...prev, data.message]);
         setContent('');
         posthog.capture('message_sent', { recipient_type: 'clinician' });
+      } else {
+        setSendError('Message could not be sent. Please try again.');
       }
+    } catch {
+      setSendError('Network error — check your connection and try again.');
     } finally {
       setSending(false);
     }
@@ -142,7 +148,11 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
       </div>
 
       {/* Input area */}
-      <div className="border-t border-slate-800 p-4 flex gap-3 items-end">
+      <div className="border-t border-slate-800 p-4 flex flex-col gap-2">
+        {sendError && (
+          <p className="text-rose-400 text-xs px-1" role="alert">{sendError}</p>
+        )}
+        <div className="flex gap-3 items-end">
         <textarea
           rows={2}
           value={content}
@@ -159,6 +169,7 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
         >
           {sending ? 'Sending…' : 'Send'}
         </button>
+        </div>
       </div>
     </div>
   );

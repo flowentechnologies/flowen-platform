@@ -697,51 +697,59 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   const saveSession = useCallback(async (andRepeat = false) => {
     setSaving(true);
     setSaveError(null);
-    const res = await fetch('/api/practice/sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        duration_seconds: elapsed,
-        total_blocks_detected: blocksRef.current,
+    // Snapshot transcript at call time to avoid stale closure: finalTranscript
+    // is read here, not from a captured closure value, so it's always current.
+    const transcriptSnapshot = finalTranscript.trim() || undefined;
+    try {
+      const res = await fetch('/api/practice/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          duration_seconds: elapsed,
+          total_blocks_detected: blocksRef.current,
+          stage_id: stageId,
+          transcript: transcriptSnapshot,
+        }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({})) as { error?: string };
+        setSaveError(json.error ?? 'Failed to save session. Please try again.');
+        setSaving(false);
+        return;
+      }
+      const json = await res.json() as { ok: boolean; session?: { id: string; created_at: string } | null; progression?: ProgressionInfo | null };
+      if (json.session) {
+        const bpm = elapsed > 0 ? blocksRef.current / (elapsed / 60) : 0;
+        setRecentSessions(prev => [{
+          id: json.session!.id,
+          created_at: json.session!.created_at,
+          duration_seconds: elapsed,
+          total_blocks_detected: blocksRef.current,
+          bpm: Math.round(bpm * 10) / 10,
+        }, ...prev].slice(0, 5));
+      }
+      posthog.capture('practice_session_saved', {
         stage_id: stageId,
-        // Persist the Web Speech API transcript alongside the session so
-        // users can retrieve it later and it fulfils the captions commitment.
-        transcript: finalTranscript.trim() || undefined,
-      }),
-    });
-    if (!res.ok) {
-      const json = await res.json().catch(() => ({})) as { error?: string };
-      setSaveError(json.error ?? 'Failed to save session');
-      setSaving(false);
-      return;
-    }
-    const json = await res.json() as { ok: boolean; session?: { id: string; created_at: string } | null; progression?: ProgressionInfo | null };
-    if (json.session) {
-      const bpm = elapsed > 0 ? blocksRef.current / (elapsed / 60) : 0;
-      setRecentSessions(prev => [{
-        id: json.session!.id,
-        created_at: json.session!.created_at,
         duration_seconds: elapsed,
-        total_blocks_detected: blocksRef.current,
-        bpm: Math.round(bpm * 10) / 10,
-      }, ...prev].slice(0, 5));
-    }
-    posthog.capture('practice_session_saved', {
-      stage_id: stageId,
-      duration_seconds: elapsed,
-      repeated_session: andRepeat,
-    });
-    if (json.progression?.advanced) {
-      setProgression(json.progression);
-      setScreen('progression');
+        repeated_session: andRepeat,
+      });
+      if (json.progression?.advanced) {
+        setProgression(json.progression);
+        setScreen('progression');
+        setSaving(false);
+      } else if (andRepeat) {
+        discardAndReset();
+        setSaving(false);
+      } else {
+        window.location.href = '/dashboard';
+      }
+    } catch {
+      // Network failure (offline, DNS, timeout) — always reset saving so the
+      // user can retry or discard without needing a full page reload.
+      setSaveError('Network error — check your connection and try again.');
       setSaving(false);
-    } else if (andRepeat) {
-      discardAndReset();
-      setSaving(false);
-    } else {
-      window.location.href = '/dashboard';
     }
-  }, [elapsed, stageId, discardAndReset]);
+  }, [elapsed, stageId, finalTranscript, discardAndReset]);
 
   // ---------------------------------------------------------------------------
   // Derived

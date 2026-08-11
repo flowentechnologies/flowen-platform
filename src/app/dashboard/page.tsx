@@ -52,9 +52,7 @@ export default async function DashboardPage() {
   // Clinicians have no practice data — send them to their patient list.
   const { data: roleRow } = await supabase.from('profiles').select('role').eq('id', user.id).single();
   if (roleRow?.role === 'clinician') redirect('/dashboard/clinician');
-  const weekStart = new Date(Date.now() - 7 * 86400_000).toISOString();
-
-  const [sessionsRes, profileRes, progRes, weekCountRes, hasPlanRes] = await Promise.all([
+  const [sessionsRes, profileRes, progRes, hasPlanRes] = await Promise.all([
     supabase
       .from('practice_sessions')
       .select('id,stage_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at')
@@ -62,7 +60,6 @@ export default async function DashboardPage() {
       .order('created_at', { ascending: true }),
     supabase.from('profiles').select('display_name,tier').eq('id', user.id).single(),
     admin.from('user_programme').select('*').eq('user_id', user.id).maybeSingle(),
-    admin.from('practice_sessions').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', weekStart),
     admin.from('treatment_plans').select('id', { count: 'exact', head: true }).eq('patient_user_id', user.id).eq('active', true),
   ]);
 

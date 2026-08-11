@@ -26,7 +26,7 @@ export interface AuditEntry {
 // Realistic seed entries covering a range of admin actions
 const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
   {
-    actor_email: 'admin@flowen.ai',
+    actor_email: 'admin@flowen.digital',
     actor_id: null,
     action: 'user.delete',
     resource_type: 'user',
@@ -36,7 +36,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'critical',
   },
   {
-    actor_email: 'admin@flowen.ai',
+    actor_email: 'admin@flowen.digital',
     actor_id: null,
     action: 'gdpr.export_requested',
     resource_type: 'user',
@@ -46,7 +46,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'warning',
   },
   {
-    actor_email: 'admin@flowen.ai',
+    actor_email: 'admin@flowen.digital',
     actor_id: null,
     action: 'investor.add',
     resource_type: 'investor',
@@ -56,7 +56,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'info',
   },
   {
-    actor_email: 'ops@flowen.ai',
+    actor_email: 'ops@flowen.digital',
     actor_id: null,
     action: 'compliance.status_update',
     resource_type: 'compliance_item',
@@ -66,7 +66,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'info',
   },
   {
-    actor_email: 'admin@flowen.ai',
+    actor_email: 'admin@flowen.digital',
     actor_id: null,
     action: 'hazard.add',
     resource_type: 'hazard',
@@ -76,7 +76,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'warning',
   },
   {
-    actor_email: 'admin@flowen.ai',
+    actor_email: 'admin@flowen.digital',
     actor_id: null,
     action: 'deck.invite_created',
     resource_type: 'pitch_deck',
@@ -86,7 +86,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'info',
   },
   {
-    actor_email: 'ops@flowen.ai',
+    actor_email: 'ops@flowen.digital',
     actor_id: null,
     action: 'staff.invite_sent',
     resource_type: 'staff',
@@ -96,7 +96,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'info',
   },
   {
-    actor_email: 'admin@flowen.ai',
+    actor_email: 'admin@flowen.digital',
     actor_id: null,
     action: 'billing.refund_issued',
     resource_type: 'subscription',
@@ -106,17 +106,17 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'warning',
   },
   {
-    actor_email: 'admin@flowen.ai',
+    actor_email: 'admin@flowen.digital',
     actor_id: null,
     action: 'user.toggle_admin',
     resource_type: 'user',
     resource_id: 'usr_9d1f77',
-    metadata: { email: 'newadmin@flowen.ai', new_is_admin: true },
+    metadata: { email: 'newadmin@flowen.digital', new_is_admin: true },
     ip_address: '82.45.123.9',
     severity: 'critical',
   },
   {
-    actor_email: 'ops@flowen.ai',
+    actor_email: 'ops@flowen.digital',
     actor_id: null,
     action: 'data_room.document_uploaded',
     resource_type: 'data_room_doc',
@@ -126,7 +126,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'info',
   },
   {
-    actor_email: 'admin@flowen.ai',
+    actor_email: 'admin@flowen.digital',
     actor_id: null,
     action: 'workflow.trigger',
     resource_type: 'workflow',
@@ -136,7 +136,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'info',
   },
   {
-    actor_email: 'ops@flowen.ai',
+    actor_email: 'ops@flowen.digital',
     actor_id: null,
     action: 'gdpr.data_deleted',
     resource_type: 'user',
@@ -146,7 +146,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'critical',
   },
   {
-    actor_email: 'admin@flowen.ai',
+    actor_email: 'admin@flowen.digital',
     actor_id: null,
     action: 'ip.asset_registered',
     resource_type: 'ip_asset',
@@ -156,7 +156,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'info',
   },
   {
-    actor_email: 'ops@flowen.ai',
+    actor_email: 'ops@flowen.digital',
     actor_id: null,
     action: 'cron.job_failed',
     resource_type: 'cron_job',
@@ -166,7 +166,7 @@ const SEED_ENTRIES: Omit<AuditEntry, 'id' | 'created_at'>[] = [
     severity: 'warning',
   },
   {
-    actor_email: 'admin@flowen.ai',
+    actor_email: 'admin@flowen.digital',
     actor_id: null,
     action: 'investor.update',
     resource_type: 'investor',

@@ -9,11 +9,11 @@ const SECTIONS = [
     screenshot: '/assets/screenshots/dashboard-home.jpg',
     badge: 'Home',
     description:
-      'Your daily overview. Shows your current stage, session streak, fluency score trend, and a one-click button to start today\'s session. Recent sessions are listed below with score and duration.',
+      'Your daily overview. Shows your current programme stage, recent session history, and a one-click button to start a new session. Each session card displays the duration and blocks-per-minute reading.',
     tips: [
-      '"Begin Practice" launches your next un-completed exercise in the current stage.',
-      '"Start drill" opens the 45-second micro exercise — useful when you only have a moment.',
-      'Your fluency score is a 0–100 composite updated after each session.',
+      '"Begin Practice" takes you straight to the practice screen for the current stage.',
+      'Blocks per minute (BPM) is the core fluency metric — lower is better.',
+      'Check Messages to stay in touch with your clinician without leaving the platform.',
     ],
   },
   {
@@ -23,12 +23,11 @@ const SECTIONS = [
     screenshot: '/assets/screenshots/dashboard-practice.jpg',
     badge: 'Core',
     description:
-      'Five progressive therapy stages, each with 10 daily-rotating exercises. Exercises advance automatically as you complete them. The stage progress bar shows how far through the current stage you are.',
+      'Five progressive therapy stages. Record a session, then stop to save your results. The avatar provides real-time visual biofeedback for lip and facial movements. Optional camera face tracking can be enabled for higher-fidelity feedback.',
     tips: [
-      'Stages unlock sequentially: complete Stage 1 before Stage 2 becomes available.',
-      'Exercises rotate daily so you always see a fresh set — the rotation resets at midnight.',
-      'Hit "Skip" if an exercise isn\'t suitable — it won\'t affect your score.',
-      'A 30-second minimum session duration is required for a session to be saved.',
+      'Stages advance automatically once the algorithm detects consistent improvement across sessions.',
+      'Enable captions (CC) during a session to see a live transcript of your speech.',
+      'A 30-second minimum session duration is required for the session to be saved.',
     ],
   },
   {
@@ -38,11 +37,11 @@ const SECTIONS = [
     screenshot: '/assets/screenshots/dashboard-analytics.jpg',
     badge: 'Progress',
     description:
-      'Your complete 30-day fluency telemetry. The bar chart shows your daily fluency score. The stage completion panel shows progress through all five stages. The activity grid shows which days you practised.',
+      'Your 30-day session history visualised. The chart shows blocks-per-minute over time. The activity grid highlights which days you practised. Use this to spot trends and identify your best and worst sessions.',
     tips: [
-      'A higher fluency score means smoother, more controlled speech that session.',
-      'The 7-day streak badge motivates consistency — daily practice compounds faster than irregular sessions.',
-      'Stage completion percentages are based on exercises attempted, not score achieved.',
+      'Blocks per minute trending downward is the key signal of improvement.',
+      'Regular short sessions compound faster than infrequent long ones.',
+      'Filter by date range to focus on a specific period of your programme.',
     ],
   },
   {
@@ -52,9 +51,10 @@ const SECTIONS = [
     screenshot: '/assets/screenshots/dashboard-home.jpg',
     badge: 'Log',
     description:
-      'A chronological log of every session you\'ve completed. Filter by stage, date range, or score threshold. Each entry shows the exercise name, stage, duration, and fluency score.',
+      'A chronological log of every session you\'ve completed. Filter by stage. Each entry shows the date, stage, duration, total blocks detected, blocks-per-minute, and the intensity bar. Sessions with captions enabled also display their transcript.',
     tips: [
-      'Use History to spot patterns — e.g. which stages consistently yield higher scores.',
+      'Click "View" on any row to expand the full session transcript.',
+      'Use the stage filter to compare performance within a single programme stage.',
       'Sessions shorter than 30 seconds are not recorded.',
     ],
   },
@@ -67,8 +67,9 @@ const SECTIONS = [
     description:
       'Fifteen targeted drills — each 30 to 60 seconds. Ideal before a meeting, phone call, or stressful situation. No recording required. Categories include breathing reset, jaw release, resonance, and confidence anchoring.',
     tips: [
-      'Access micro exercises from the Dashboard "Start drill" shortcut or the Practice page.',
+      'Access micro exercises via the Practice page.',
       'These do not count toward stage progression — they are supplementary tools.',
+      'Use the breathing reset drill before any high-pressure speaking situation.',
     ],
   },
   {
@@ -78,11 +79,11 @@ const SECTIONS = [
     screenshot: '/assets/screenshots/clinician.jpg',
     badge: 'SLT',
     description:
-      'Visible only to Speech & Language Therapists. Lists all assigned patients with their current stage, last session date, 7-day fluency score, and status flag. Clicking a patient opens their full telemetry timeline.',
+      'Visible only to Speech & Language Therapists. Lists all assigned patients with their current stage, last session date, average blocks-per-minute, and trend direction. Clicking a patient opens their full session history and allows you to write session notes.',
     tips: [
-      'Amber "Needs review" flags appear when a patient\'s score drops more than 15 points in a week.',
+      'Trend indicators (Improving / Plateauing / Regressing) are calculated from the last six sessions.',
       'Use the Messages tab to send feedback or schedule a session directly within the platform.',
-      'Clinicians do not see the Analytics or History tabs — those are patient-only views.',
+      'Treatment plans can be created and updated from each patient\'s profile.',
     ],
   },
   {
