@@ -342,6 +342,8 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   const coachEnabledRef = useRef(true);
   const coachSpeakingRef = useRef(false);
   const stage1FiredRef = useRef<Set<number>>(new Set());
+  const coachSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transcriptRef = useRef('');
 
   // Audio refs
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -365,12 +367,19 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
   const stage = STAGES[stageId - 1];
 
-  // Check SpeechRecognition support on mount
+  // Check SpeechRecognition support on mount + pre-warm voice list
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any;
     const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition;
     setCaptionSupported(!!SR);
+
+    // Chrome loads voices asynchronously — trigger the load now so the list
+    // is populated before the first coach utterance fires.
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
   }, []);
 
   // Auto-scroll caption box
@@ -400,6 +409,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       }
       formantAnalyserRef.current = null;
       window.speechSynthesis?.cancel();
+      if (coachSilenceTimerRef.current) clearTimeout(coachSilenceTimerRef.current);
     };
   }, []);
 
@@ -408,6 +418,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   useEffect(() => { coachEnabledRef.current = coachEnabled; }, [coachEnabled]);
   useEffect(() => { coachSpeakingRef.current = coachSpeaking; }, [coachSpeaking]);
   useEffect(() => { coachTextRef.current = coachText; }, [coachText]);
+  useEffect(() => { transcriptRef.current = finalTranscript; }, [finalTranscript]);
 
   // Sync face-tracking active flag so the audio tick loop can skip avatar updates
   // when the camera is driving blend shapes at 60 fps instead.
@@ -417,9 +428,34 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   // Voice coach
   // ---------------------------------------------------------------------------
 
+  /** Pick the most natural-sounding English voice available in this browser. */
+  const getBestVoice = useCallback((): SpeechSynthesisVoice | null => {
+    if (typeof window === 'undefined') return null;
+    const voices = window.speechSynthesis?.getVoices() ?? [];
+    // Ordered from most to least preferred — neural/online voices sound far more natural
+    const PREFER = [
+      'Samantha', 'Karen', 'Moira', 'Tessa',       // macOS natural
+      'Google UK English Female',                     // Chrome WaveNet
+      'Google US English',
+      'Microsoft Aria Online (Natural)',              // Edge neural
+      'Microsoft Jenny Online (Natural)',
+      'Microsoft Natasha Online (Natural)',
+    ];
+    for (const name of PREFER) {
+      const v = voices.find(v => v.name.includes(name));
+      if (v) return v;
+    }
+    // Any English neural/online voice
+    const neural = voices.find(v => v.lang.startsWith('en') &&
+      (v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Neural')));
+    if (neural) return neural;
+    // Any English voice, avoiding robotic fallbacks
+    return voices.find(v => v.lang.startsWith('en') && !v.name.includes('Zira')) ?? null;
+  }, []);
+
   const triggerCoach = useCallback(async (transcript: string) => {
     if (!coachEnabledRef.current || coachSpeakingRef.current) return;
-    if (coachCallCountRef.current >= 12) return;
+    if (coachCallCountRef.current >= 15) return;
 
     coachCallCountRef.current++;
     lastCoachWordCountRef.current = transcript.trim().split(/\s+/).filter(Boolean).length;
@@ -444,27 +480,57 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       setCoachSpeaking(true);
 
       const utter = new SpeechSynthesisUtterance(data.reply);
-      utter.rate = 0.92;
-      utter.pitch = 1.05;
-      utter.volume = 0.85;
+      utter.rate = 0.9;    // relaxed speaking pace
+      utter.pitch = 1.0;   // neutral — avoid uncanny valley
+      utter.volume = 0.88;
+
+      // Prefer a natural-sounding voice; voices load async in Chrome so
+      // we try immediately and fall back to the browser default if not ready yet
+      const voice = getBestVoice();
+      if (voice) utter.voice = voice;
+
       utter.onend = () => setCoachSpeaking(false);
       utter.onerror = () => setCoachSpeaking(false);
       window.speechSynthesis.speak(utter);
     } catch { /* silent — coach is best-effort */ }
-  }, [stageId]);
+  }, [stageId, getBestVoice]);
 
-  // Trigger after transcript grows by 20+ words with a 20s cooldown
+  // Silence-based trigger: when the user has said enough words and then
+  // goes quiet for 3 seconds, fire the coach (feels like natural turn-taking).
   useEffect(() => {
-    if (screen !== 'recording') return;
-    const wordCount = finalTranscript.trim().split(/\s+/).filter(Boolean).length;
-    if (wordCount < 5) return;
-    const wordsSinceLast = wordCount - lastCoachWordCountRef.current;
-    const timeSinceLast = Date.now() - lastCoachTimeRef.current;
-    const minWords = stageId === 5 ? 12 : 20;
-    if (wordsSinceLast >= minWords && timeSinceLast >= 20_000) {
-      triggerCoach(finalTranscript);
+    if (screen !== 'recording' || stageId === 1) return; // stage 1 uses time-based below
+    const speaking = amplitude > 18;
+
+    if (speaking) {
+      // User is speaking — cancel any pending silence-trigger
+      if (coachSilenceTimerRef.current) {
+        clearTimeout(coachSilenceTimerRef.current);
+        coachSilenceTimerRef.current = null;
+      }
+    } else if (!coachSilenceTimerRef.current) {
+      // User is silent — schedule a coach response after 3s pause
+      const wordCount = transcriptRef.current.trim().split(/\s+/).filter(Boolean).length;
+      const wordsSinceLast = wordCount - lastCoachWordCountRef.current;
+      const timeSinceLast = Date.now() - lastCoachTimeRef.current;
+      const minWords = stageId === 5 ? 6 : 10;  // fewer words needed for conversation stage
+      const cooldown  = stageId === 5 ? 10_000 : 14_000;
+
+      if (wordsSinceLast >= minWords && timeSinceLast >= cooldown) {
+        coachSilenceTimerRef.current = setTimeout(() => {
+          coachSilenceTimerRef.current = null;
+          triggerCoach(transcriptRef.current);
+        }, 3_000);
+      }
     }
-  }, [finalTranscript, screen, stageId, triggerCoach]);
+  }, [amplitude, screen, stageId, triggerCoach]);
+
+  // Cleanup silence timer when leaving recording screen
+  useEffect(() => {
+    if (screen !== 'recording' && coachSilenceTimerRef.current) {
+      clearTimeout(coachSilenceTimerRef.current);
+      coachSilenceTimerRef.current = null;
+    }
+  }, [screen]);
 
   // Stage 1: time-based triggers — use >= so skipped seconds (e.g. 29→31) still fire
   useEffect(() => {
@@ -473,7 +539,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     for (const t of THRESHOLDS) {
       if (elapsed >= t && !stage1FiredRef.current.has(t)) {
         const timeSinceLast = Date.now() - lastCoachTimeRef.current;
-        if (timeSinceLast >= 25_000) {
+        if (timeSinceLast >= 20_000) {
           stage1FiredRef.current.add(t);
           triggerCoach('');
         }
