@@ -1,605 +1,249 @@
 'use client';
 
 import * as THREE from 'three';
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { VisemeBlends } from '@/lib/viseme';
+import { ZERO_BLENDS } from '@/lib/viseme';
 
 // ============================================================================
-// FaceAvatar — Three.js speech therapy avatar driven by 42 viseme parameters
+// FaceAvatar — Three.js glTF face model driven by 42 ARKit-style blend shapes
+//
+// Model: facecap.glb — part of Three.js examples, MIT licence.
+// Morph target names in the model are ARKit-compatible and map 1:1 to
+// VisemeBlends keys (jawOpen, mouthSmileLeft, cheekPuff, etc.).
 // ============================================================================
 
 export interface FaceAvatarHandle {
-  /** Directly update blend values without going through React state (zero re-renders). */
+  /** Zero-re-render live blend shape update called at ~60 fps. */
   updateBlends(blends: VisemeBlends, speaking: boolean): void;
 }
 
 interface Props {
-  /** Initial pose only — live updates go through the imperative handle. */
   blends: VisemeBlends;
   speaking: boolean;
 }
 
-// Canvas dimensions
 const W = 400;
 const H = 480;
 
-// Lip tube geometry constants — kept small to stay GPU-friendly
-const TUBE_SEGS   = 20; // tubular segments
-const TUBE_RADIAL = 8;  // radial segments
+// Smoothing factor for morph target lerp (0 = instant, 1 = never moves)
+const LERP = 0.3;
 
-// Skin color
-const SKIN_COLOR = new THREE.Color(0xd4956a);
-const SKIN_DARK_COLOR = new THREE.Color(0xbf8560);
-const BROW_COLOR = new THREE.Color(0x7a4b2a);
-const EYE_BLUE_COLOR = new THREE.Color(0x2e4a8b);
-const LIP_COLOR = new THREE.Color(0xc07060);
-const TEETH_COLOR = new THREE.Color(0xf5f0e8);
-const TONGUE_COLOR = new THREE.Color(0xe06070);
+export const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(
+  function FaceAvatar(_props, ref) {
+    const mountRef  = useRef<HTMLDivElement>(null);
+    const statusRef = useRef<HTMLSpanElement>(null);
 
-// Upper lip control point helper — 7 points defining the Cupid's bow
-function computeUpperLipPoints(b: VisemeBlends): THREE.Vector3[] {
-  const smileL = b.mouthSmileLeft * 0.07;
-  const smileR = b.mouthSmileRight * 0.07;
-  const funnel = b.mouthFunnel * 0.04;
-  const pucker = b.mouthPucker * 0.03;
-  const upL = b.mouthUpperUpLeft * 0.04;
-  const upR = b.mouthUpperUpRight * 0.04;
-  const strL = b.mouthStretchLeft * 0.05;
-  const strR = b.mouthStretchRight * 0.05;
+    // Live refs — no React state so 60 fps updates never trigger re-renders
+    const blendsRef   = useRef<VisemeBlends>(ZERO_BLENDS);
+    const speakingRef = useRef(false);
 
-  const z = 0.88;
-  const centerY = -0.18 + funnel - pucker * 0.5;
+    // Three.js objects — stored in refs so cleanup is reliable
+    const rendererRef  = useRef<THREE.WebGLRenderer | null>(null);
+    const cameraRef    = useRef<THREE.PerspectiveCamera | null>(null);
+    const rafRef       = useRef<number>(0);
+    // All meshes that carry morph targets (head + teeth in facecap.glb)
+    const morphMeshes  = useRef<{ mesh: THREE.Mesh; map: Map<string, number> }[]>([]);
+    const loadedRef    = useRef(false);
 
-  return [
-    new THREE.Vector3(-0.20 - strL, -0.20 + smileL, z),            // left corner
-    new THREE.Vector3(-0.13, -0.15 + smileL + upL * 0.5, z + 0.01), // left wing
-    new THREE.Vector3(-0.055, -0.14 + upL, z + 0.02),               // left peak (Cupid's bow)
-    new THREE.Vector3(0, centerY, z + 0.025),                        // center dip
-    new THREE.Vector3(0.055, -0.14 + upR, z + 0.02),                // right peak
-    new THREE.Vector3(0.13, -0.15 + smileR + upR * 0.5, z + 0.01), // right wing
-    new THREE.Vector3(0.20 + strR, -0.20 + smileR, z),              // right corner
-  ];
-}
+    const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading');
 
-// Lower lip control point helper — 5 points
-function computeLowerLipPoints(b: VisemeBlends): THREE.Vector3[] {
-  const frownL = b.mouthFrownLeft * 0.05;
-  const frownR = b.mouthFrownRight * 0.05;
-  const downL = b.mouthLowerDownLeft * 0.06;
-  const downR = b.mouthLowerDownRight * 0.06;
-  const jawDrop = b.jawOpen * 0.05;
-  const strL = b.mouthStretchLeft * 0.05;
-  const strR = b.mouthStretchRight * 0.05;
-
-  const z = 0.88;
-  const centerY = -0.28 - jawDrop;
-
-  return [
-    new THREE.Vector3(-0.20 - strL, -0.22 - frownL, z),          // left corner
-    new THREE.Vector3(-0.10, -0.25 - downL * 0.7 - frownL * 0.3, z + 0.01),
-    new THREE.Vector3(0, centerY - downL * 0.3 - downR * 0.3, z + 0.02),
-    new THREE.Vector3(0.10, -0.25 - downR * 0.7 - frownR * 0.3, z + 0.01),
-    new THREE.Vector3(0.20 + strR, -0.22 - frownR, z),           // right corner
-  ];
-}
-
-// ── Allocation-free lip tube helpers ──────────────────────────────────────────
-//
-// TubeGeometry allocates new Float32Array buffers every frame, creating ~10 kB
-// of GC pressure at 60 fps for both lips. Instead we pre-allocate one
-// BufferGeometry per lip and update only the position/normal attributes in-place.
-//
-// Vertex count: (TUBE_SEGS + 1) × (TUBE_RADIAL + 1)
-// Index count:   TUBE_SEGS × TUBE_RADIAL × 6
-
-function createLipBufferGeo(): THREE.BufferGeometry {
-  const geo      = new THREE.BufferGeometry();
-  const vertCount = (TUBE_SEGS + 1) * (TUBE_RADIAL + 1);
-  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertCount * 3), 3));
-  geo.setAttribute('normal',   new THREE.BufferAttribute(new Float32Array(vertCount * 3), 3));
-  geo.setAttribute('uv',       new THREE.BufferAttribute(new Float32Array(vertCount * 2), 2));
-  const indices: number[] = [];
-  for (let i = 0; i < TUBE_SEGS; i++) {
-    for (let j = 0; j < TUBE_RADIAL; j++) {
-      const a = (TUBE_RADIAL + 1) * i + j;
-      const b = (TUBE_RADIAL + 1) * (i + 1) + j;
-      const c = (TUBE_RADIAL + 1) * (i + 1) + j + 1;
-      const d = (TUBE_RADIAL + 1) * i + j + 1;
-      indices.push(a, b, d, b, c, d);
-    }
-  }
-  geo.setIndex(indices);
-  return geo;
-}
-
-// Reusable scratch vectors — allocated once per module, never per frame
-const _lipCenter   = new THREE.Vector3();
-const _lipNormal   = new THREE.Vector3();
-const _lipBinormal = new THREE.Vector3();
-
-function updateLipTubeGeo(
-  geo:    THREE.BufferGeometry,
-  points: THREE.Vector3[],
-  radius: number,
-): void {
-  const curve    = new THREE.CatmullRomCurve3(points);
-  const frames   = curve.computeFrenetFrames(TUBE_SEGS, false);
-  const positions = geo.attributes.position as THREE.BufferAttribute;
-  const normals   = geo.attributes.normal   as THREE.BufferAttribute;
-  const uvs       = geo.attributes.uv       as THREE.BufferAttribute;
-
-  let vi = 0;
-  for (let i = 0; i <= TUBE_SEGS; i++) {
-    curve.getPoint(i / TUBE_SEGS, _lipCenter);
-    _lipNormal.copy(frames.normals[i]);
-    _lipBinormal.copy(frames.binormals[i]);
-
-    for (let j = 0; j <= TUBE_RADIAL; j++) {
-      const angle = (j / TUBE_RADIAL) * Math.PI * 2;
-      const cos   = Math.cos(angle);
-      const sin   = Math.sin(angle);
-      positions.setXYZ(
-        vi,
-        _lipCenter.x + radius * (cos * _lipNormal.x + sin * _lipBinormal.x),
-        _lipCenter.y + radius * (cos * _lipNormal.y + sin * _lipBinormal.y),
-        _lipCenter.z + radius * (cos * _lipNormal.z + sin * _lipBinormal.z),
-      );
-      normals.setXYZ(vi,
-        cos * _lipNormal.x + sin * _lipBinormal.x,
-        cos * _lipNormal.y + sin * _lipBinormal.y,
-        cos * _lipNormal.z + sin * _lipBinormal.z,
-      );
-      uvs.setXY(vi, i / TUBE_SEGS, j / TUBE_RADIAL);
-      vi++;
-    }
-  }
-  positions.needsUpdate = true;
-  normals.needsUpdate   = true;
-  geo.computeBoundingSphere();
-}
-
-// Create a tube mesh with pre-allocated geometry (initial fill via updateLipTubeGeo)
-function makeLipTube(
-  points: THREE.Vector3[],
-  radius: number,
-  color:  THREE.Color,
-  scene:  THREE.Scene,
-): THREE.Mesh {
-  const geo = createLipBufferGeo();
-  updateLipTubeGeo(geo, points, radius);
-  const mat  = new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.05 });
-  const mesh = new THREE.Mesh(geo, mat);
-  scene.add(mesh);
-  return mesh;
-}
-
-const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(function FaceAvatar({ blends, speaking },  ref) {
-  const mountRef    = useRef<HTMLDivElement>(null);
-  // Visually-hidden live region — receives speaking-state text so screen readers
-  // can announce when the avatar transitions between idle and active articulation.
-  const statusRef   = useRef<HTMLSpanElement>(null);
-  const prevSpeakingRef = useRef<boolean>(speaking);
-
-  // Three.js object refs — never cause re-renders
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const blendsRef = useRef<VisemeBlends>(blends);
-  const speakingRef = useRef<boolean>(speaking);
-
-  // Mesh refs
-  const avatarGroupRef = useRef<THREE.Group | null>(null);
-  const jawPivotRef = useRef<THREE.Object3D | null>(null);
-  const upperLipRef = useRef<THREE.Mesh | null>(null);
-  const lowerLipRef = useRef<THREE.Mesh | null>(null);
-  const teethRef = useRef<THREE.Mesh | null>(null);
-  const tongueRef = useRef<THREE.Mesh | null>(null);
-  const cheekLRef = useRef<THREE.Mesh | null>(null);
-  const cheekRRef = useRef<THREE.Mesh | null>(null);
-  const browLRef = useRef<THREE.Mesh | null>(null);
-  const browRRef = useRef<THREE.Mesh | null>(null);
-  const rimLightRef = useRef<THREE.PointLight | null>(null);
-
-  // Imperative handle — lets callers push blend updates without React state
-  useImperativeHandle(ref, () => ({
-    updateBlends(newBlends: VisemeBlends, newSpeaking: boolean) {
-      blendsRef.current = newBlends;
-      // Announce speaking state transitions to assistive technology.  Only
-      // fire when the state actually changes to avoid noisy, repetitive reads.
-      if (newSpeaking !== prevSpeakingRef.current && statusRef.current) {
-        statusRef.current.textContent = newSpeaking ? 'Avatar speaking' : '';
-      }
-      prevSpeakingRef.current = newSpeaking;
-      speakingRef.current = newSpeaking;
-    },
-  }));
-
-  // Build scene on mount; destroy on unmount
-  useEffect(() => {
-    if (typeof window === 'undefined' || !mountRef.current) return;
-
-    // -----------------------------------------------------------------------
-    // Renderer
-    // -----------------------------------------------------------------------
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(W, H);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x0d1117, 1);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    mountRef.current.appendChild(renderer.domElement);
-    // The canvas is visual-only; hide it from AT so screen readers use the
-    // accessible name on the parent role="figure" element instead.
-    renderer.domElement.setAttribute('aria-hidden', 'true');
-    rendererRef.current = renderer;
-
-    // -----------------------------------------------------------------------
-    // Scene & camera
-    // -----------------------------------------------------------------------
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0d1117);
-    sceneRef.current = scene;
-
-    const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
-    camera.position.set(0, 0.15, 3.2);
-    cameraRef.current = camera;
-
-    // -----------------------------------------------------------------------
-    // Lights
-    // -----------------------------------------------------------------------
-    const ambient = new THREE.AmbientLight(0xffeedd, 0.6);
-    scene.add(ambient);
-
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(1.5, 2, 2);
-    dirLight.castShadow = true;
-    scene.add(dirLight);
-
-    const fillLight = new THREE.PointLight(0xffd0b0, 0.5);
-    fillLight.position.set(-1, 0.5, 1);
-    scene.add(fillLight);
-
-    // Iridescent rim light — pulses when speaking
-    const rimLight = new THREE.PointLight(0x88ccff, 0, 2);
-    rimLight.position.set(0, 0.5, -1.5);
-    scene.add(rimLight);
-    rimLightRef.current = rimLight;
-
-    // -----------------------------------------------------------------------
-    // Avatar group (idle bob)
-    // -----------------------------------------------------------------------
-    const avatarGroup = new THREE.Group();
-    scene.add(avatarGroup);
-    avatarGroupRef.current = avatarGroup;
-
-    // -----------------------------------------------------------------------
-    // Cranium
-    // -----------------------------------------------------------------------
-    const craniumGeo = new THREE.SphereGeometry(1, 48, 48);
-    const skinMat = new THREE.MeshStandardMaterial({
-      color: SKIN_COLOR,
-      roughness: 0.65,
-      metalness: 0,
-    });
-    const cranium = new THREE.Mesh(craniumGeo, skinMat);
-    cranium.scale.set(1, 1.25, 0.9);
-    cranium.castShadow = true;
-    cranium.receiveShadow = true;
-    avatarGroup.add(cranium);
-
-    // -----------------------------------------------------------------------
-    // Jaw (lower face, pivots at y = -0.35)
-    // -----------------------------------------------------------------------
-    const jawPivot = new THREE.Object3D();
-    jawPivot.position.set(0, -0.35, 0);
-    avatarGroup.add(jawPivot);
-    jawPivotRef.current = jawPivot;
-
-    // Lower face shell — clipped sphere
-    const jawGeo = new THREE.SphereGeometry(1, 48, 24, 0, Math.PI * 2, Math.PI * 0.45, Math.PI * 0.55);
-    const jawMesh = new THREE.Mesh(jawGeo, skinMat);
-    jawMesh.scale.set(1, 1.25, 0.9);
-    jawMesh.position.set(0, 0, 0);
-    jawPivot.add(jawMesh);
-
-    // -----------------------------------------------------------------------
-    // Eyes
-    // -----------------------------------------------------------------------
-    const eyePositions: [number, number, number][] = [
-      [-0.38, 0.25, 0.7],
-      [0.38, 0.25, 0.7],
-    ];
-
-    for (const [ex, ey, ez] of eyePositions) {
-      // Sclera
-      const scleraGeo = new THREE.SphereGeometry(0.12, 24, 24);
-      const scleraMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
-      const sclera = new THREE.Mesh(scleraGeo, scleraMat);
-      sclera.position.set(ex, ey, ez);
-      avatarGroup.add(sclera);
-
-      // Iris
-      const irisGeo = new THREE.CircleGeometry(0.08, 32);
-      const irisMat = new THREE.MeshStandardMaterial({ color: EYE_BLUE_COLOR, side: THREE.FrontSide });
-      const iris = new THREE.Mesh(irisGeo, irisMat);
-      iris.position.set(ex, ey, ez + 0.115);
-      avatarGroup.add(iris);
-
-      // Pupil
-      const pupilGeo = new THREE.CircleGeometry(0.04, 24);
-      const pupilMat = new THREE.MeshStandardMaterial({ color: 0x080808, side: THREE.FrontSide });
-      const pupil = new THREE.Mesh(pupilGeo, pupilMat);
-      pupil.position.set(ex, ey, ez + 0.116);
-      avatarGroup.add(pupil);
-
-      // Eye highlight
-      const hlGeo = new THREE.CircleGeometry(0.018, 16);
-      const hlMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const highlight = new THREE.Mesh(hlGeo, hlMat);
-      highlight.position.set(ex + 0.025, ey + 0.025, ez + 0.118);
-      avatarGroup.add(highlight);
-    }
-
-    // -----------------------------------------------------------------------
-    // Brows
-    // -----------------------------------------------------------------------
-    const browPositions: [number, number, number, boolean][] = [
-      [-0.38, 0.47, 0.75, true],
-      [0.38, 0.47, 0.75, false],
-    ];
-    const browMat = new THREE.MeshStandardMaterial({ color: BROW_COLOR, roughness: 0.7 });
-
-    for (const [bx, by, bz, isLeft] of browPositions) {
-      const browGeo = new THREE.BoxGeometry(0.28, 0.04, 0.08);
-      const brow = new THREE.Mesh(browGeo, browMat);
-      brow.position.set(bx, by, bz);
-      brow.rotation.z = isLeft ? 0.05 : -0.05;
-      avatarGroup.add(brow);
-      if (isLeft) browLRef.current = brow;
-      else browRRef.current = brow;
-    }
-
-    // -----------------------------------------------------------------------
-    // Nose
-    // -----------------------------------------------------------------------
-    const noseTipGeo = new THREE.SphereGeometry(0.06, 16, 16);
-    const noseDarkMat = new THREE.MeshStandardMaterial({
-      color: SKIN_DARK_COLOR,
-      roughness: 0.7,
-    });
-    const noseTip = new THREE.Mesh(noseTipGeo, noseDarkMat);
-    noseTip.position.set(0, -0.02, 0.82);
-    avatarGroup.add(noseTip);
-
-    const noseBridgeGeo = new THREE.CylinderGeometry(0.03, 0.05, 0.22, 12);
-    const noseBridge = new THREE.Mesh(noseBridgeGeo, noseDarkMat);
-    noseBridge.position.set(0, 0.12, 0.78);
-    noseBridge.rotation.x = 0.25;
-    avatarGroup.add(noseBridge);
-
-    // Nostrils
-    for (const nx of [-0.055, 0.055]) {
-      const nostrilGeo = new THREE.SphereGeometry(0.04, 12, 12);
-      const nostrilMat = new THREE.MeshStandardMaterial({ color: 0xa06040, roughness: 0.8 });
-      const nostril = new THREE.Mesh(nostrilGeo, nostrilMat);
-      nostril.scale.set(1, 0.7, 0.8);
-      nostril.position.set(nx, -0.05, 0.8);
-      avatarGroup.add(nostril);
-    }
-
-    // -----------------------------------------------------------------------
-    // Cheeks (for cheekPuff)
-    // -----------------------------------------------------------------------
-    const cheekGeo = new THREE.SphereGeometry(0.18, 16, 16);
-    const cheekMat = new THREE.MeshStandardMaterial({ color: SKIN_COLOR, roughness: 0.7, transparent: true, opacity: 0.0 });
-    const cheekL = new THREE.Mesh(cheekGeo, cheekMat);
-    cheekL.position.set(-0.38, -0.12, 0.72);
-    avatarGroup.add(cheekL);
-    cheekLRef.current = cheekL;
-
-    const cheekR = new THREE.Mesh(cheekGeo.clone(), cheekMat.clone());
-    cheekR.position.set(0.38, -0.12, 0.72);
-    avatarGroup.add(cheekR);
-    cheekRRef.current = cheekR;
-
-    // -----------------------------------------------------------------------
-    // Lips (CatmullRom tubes)
-    // -----------------------------------------------------------------------
-    const initialBlends: VisemeBlends = {
-      jawOpen: 0, jawForward: 0, jawLeft: 0, jawRight: 0,
-      mouthClose: 0, mouthFunnel: 0, mouthPucker: 0, mouthLeft: 0, mouthRight: 0,
-      mouthSmileLeft: 0, mouthSmileRight: 0, mouthFrownLeft: 0, mouthFrownRight: 0,
-      mouthDimpleLeft: 0, mouthDimpleRight: 0, mouthStretchLeft: 0, mouthStretchRight: 0,
-      mouthRollLower: 0, mouthRollUpper: 0,
-      mouthShrugLower: 0, mouthShrugUpper: 0, mouthPressLeft: 0, mouthPressRight: 0,
-      mouthLowerDownLeft: 0, mouthLowerDownRight: 0, mouthUpperUpLeft: 0, mouthUpperUpRight: 0,
-      cheekPuff: 0, cheekSquintLeft: 0, cheekSquintRight: 0,
-      noseSneerLeft: 0, noseSneerRight: 0,
-      tongueOut: 0, tongueUp: 0, tongueDown: 0, tongueLeft: 0, tongueRight: 0,
-      tongueRoll: 0, tongueBendDown: 0, tongueCurlUp: 0, tongueSquish: 0, tongueFlat: 0,
-    };
-
-    const upperLip = makeLipTube(computeUpperLipPoints(initialBlends), 0.028, LIP_COLOR, scene);
-    upperLipRef.current = upperLip;
-
-    const lowerLip = makeLipTube(computeLowerLipPoints(initialBlends), 0.032, LIP_COLOR, scene);
-    lowerLipRef.current = lowerLip;
-
-    // -----------------------------------------------------------------------
-    // Teeth
-    // -----------------------------------------------------------------------
-    const teethGeo = new THREE.PlaneGeometry(0.30, 0.08);
-    const teethMat = new THREE.MeshStandardMaterial({ color: TEETH_COLOR, roughness: 0.3, side: THREE.FrontSide });
-    const teeth = new THREE.Mesh(teethGeo, teethMat);
-    teeth.position.set(0, -0.21, 0.85);
-    teeth.visible = false;
-    scene.add(teeth);
-    teethRef.current = teeth;
-
-    // -----------------------------------------------------------------------
-    // Tongue
-    // -----------------------------------------------------------------------
-    const tongueGeo = new THREE.SphereGeometry(1, 16, 12);
-    const tongueMat = new THREE.MeshStandardMaterial({ color: TONGUE_COLOR, roughness: 0.6 });
-    const tongue = new THREE.Mesh(tongueGeo, tongueMat);
-    tongue.scale.set(0.12, 0.06, 0.08);
-    tongue.position.set(0, -0.24, 0.85);
-    tongue.visible = false;
-    scene.add(tongue);
-    tongueRef.current = tongue;
-
-    // -----------------------------------------------------------------------
-    // Animation loop
-    // -----------------------------------------------------------------------
-    let time = 0;
-
-    function animate() {
-      rafRef.current = requestAnimationFrame(animate);
-      time += 0.016;
-
-      const b = blendsRef.current;
-      const isSpeaking = speakingRef.current;
-
-      // Idle head bob
-      if (avatarGroupRef.current) {
-        avatarGroupRef.current.position.y = 0.03 * Math.sin(time * 0.8);
-        // Subtle sway
-        avatarGroupRef.current.rotation.y = 0.015 * Math.sin(time * 0.4);
-        avatarGroupRef.current.rotation.z = 0.008 * Math.sin(time * 0.6 + 1.2);
-      }
-
-      // Jaw rotation
-      if (jawPivotRef.current) {
-        jawPivotRef.current.rotation.x = -b.jawOpen * 0.35;
-      }
-
-      // Update lip geometry in-place — no allocations, no GC pressure
-      if (upperLipRef.current) {
-        updateLipTubeGeo(upperLipRef.current.geometry, computeUpperLipPoints(b), 0.028);
-      }
-      if (lowerLipRef.current) {
-        updateLipTubeGeo(lowerLipRef.current.geometry, computeLowerLipPoints(b), 0.032);
-      }
-
-      // Teeth visibility
-      if (teethRef.current) {
-        teethRef.current.visible = b.jawOpen > 0.2;
-        teethRef.current.position.y = -0.21 - b.jawOpen * 0.025;
-      }
-
-      // Tongue
-      if (tongueRef.current) {
-        tongueRef.current.visible = b.tongueOut > 0.2;
-        if (b.tongueOut > 0.2) {
-          tongueRef.current.position.set(
-            b.tongueLeft * 0.05 - b.tongueRight * 0.05,
-            -0.24 + b.tongueUp * 0.04 - b.tongueDown * 0.04,
-            0.85 + b.tongueOut * 0.06,
-          );
+    useImperativeHandle(ref, () => ({
+      updateBlends(blends: VisemeBlends, speaking: boolean) {
+        blendsRef.current  = blends;
+        speakingRef.current = speaking;
+        if (statusRef.current) {
+          statusRef.current.textContent = speaking ? 'Avatar speaking' : '';
         }
-      }
+      },
+    }), []);
 
-      // Cheek puff
-      if (cheekLRef.current && cheekRRef.current) {
-        const puff = 1 + b.cheekPuff * 0.3;
-        cheekLRef.current.scale.setScalar(puff);
-        cheekRRef.current.scale.setScalar(puff);
-        (cheekLRef.current.material as THREE.MeshStandardMaterial).opacity = b.cheekPuff * 0.25;
-        (cheekRRef.current.material as THREE.MeshStandardMaterial).opacity = b.cheekPuff * 0.25;
-      }
+    useEffect(() => {
+      const mount = mountRef.current;
+      if (!mount) return;
 
-      // Brow squint (cheekSquint drives brow compression inward)
-      if (browLRef.current) {
-        browLRef.current.rotation.z = 0.05 + b.cheekSquintLeft * 0.18;
-        browLRef.current.position.y = 0.47 - b.cheekSquintLeft * 0.04;
-      }
-      if (browRRef.current) {
-        browRRef.current.rotation.z = -0.05 - b.cheekSquintRight * 0.18;
-        browRRef.current.position.y = 0.47 - b.cheekSquintRight * 0.04;
-      }
+      // ── Scene ───────────────────────────────────────────────────────────────
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0d1117);
 
-      // Rim light pulse
-      if (rimLightRef.current) {
-        if (isSpeaking) {
-          const pulse = 0.4 + 0.3 * Math.sin(time * 6);
-          rimLightRef.current.intensity = pulse;
-          rimLightRef.current.color.setHSL(0.55 + 0.1 * Math.sin(time * 2), 0.9, 0.6);
-        } else {
-          rimLightRef.current.intensity *= 0.92;
-        }
-      }
+      // Subtle gradient fog to give depth
+      scene.fog = new THREE.FogExp2(0x0d1117, 1.2);
 
-      renderer.render(scene, camera);
-    }
+      // ── Camera ──────────────────────────────────────────────────────────────
+      const camera = new THREE.PerspectiveCamera(28, W / H, 0.01, 50);
+      // Framed close on face — slightly above eye-level, looking down a touch
+      camera.position.set(0, 0.08, 0.55);
+      camera.lookAt(0, 0, 0);
+      cameraRef.current = camera;
 
-    rafRef.current = requestAnimationFrame(animate);
+      // ── Renderer ────────────────────────────────────────────────────────────
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(W, H);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping      = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.1;
+      renderer.shadowMap.enabled = true;
+      renderer.domElement.setAttribute('aria-hidden', 'true');
+      rendererRef.current = renderer;
+      mount.appendChild(renderer.domElement);
 
-    // -----------------------------------------------------------------------
-    // Cleanup
-    // -----------------------------------------------------------------------
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
+      // ── Lighting — three-point rig for skin ─────────────────────────────────
+      // Key light: warm front-top
+      const keyLight = new THREE.DirectionalLight(0xfff5e4, 3.0);
+      keyLight.position.set(0.6, 1.2, 1.5);
+      keyLight.castShadow = true;
+      scene.add(keyLight);
 
-      // Dispose geometries and materials
-      scene.traverse((obj) => {
-        if ((obj as THREE.Mesh).isMesh) {
-          const mesh = obj as THREE.Mesh;
-          mesh.geometry?.dispose();
-          if (Array.isArray(mesh.material)) {
-            mesh.material.forEach((m) => m.dispose());
-          } else {
-            (mesh.material as THREE.Material)?.dispose();
+      // Fill light: cool left-side (reduces harsh shadows)
+      const fillLight = new THREE.DirectionalLight(0xd0e8ff, 1.0);
+      fillLight.position.set(-1.5, 0.4, 0.8);
+      scene.add(fillLight);
+
+      // Rim light: warm back-top (hair / head separation from bg)
+      const rimLight = new THREE.DirectionalLight(0xffcc88, 0.8);
+      rimLight.position.set(0.2, 0.8, -1.5);
+      scene.add(rimLight);
+
+      // Ambient: very low fill so shadows don't go fully black
+      const ambient = new THREE.AmbientLight(0xffeedd, 0.25);
+      scene.add(ambient);
+
+      // ── Load facecap.glb ────────────────────────────────────────────────────
+      const loader = new GLTFLoader();
+      loader.load(
+        '/models/facecap.glb',
+        (gltf) => {
+          const model = gltf.scene;
+
+          // Collect all meshes that have morph targets
+          model.traverse((obj) => {
+            if (
+              (obj instanceof THREE.SkinnedMesh || obj instanceof THREE.Mesh) &&
+              obj.morphTargetDictionary &&
+              obj.morphTargetInfluences
+            ) {
+              const map = new Map<string, number>(
+                Object.entries(obj.morphTargetDictionary),
+              );
+              // Initialise all influences to 0
+              obj.morphTargetInfluences.fill(0);
+              morphMeshes.current.push({ mesh: obj as THREE.Mesh, map });
+            }
+          });
+
+          // Centre the model so the face sits at the world origin
+          const box    = new THREE.Box3().setFromObject(model);
+          const centre = box.getCenter(new THREE.Vector3());
+          model.position.sub(centre);
+
+          // Slight upward nudge so we see chin-to-brow, not chin-to-neck
+          model.position.y += 0.015;
+
+          scene.add(model);
+          loadedRef.current = true;
+          setLoadState('ready');
+        },
+        undefined,
+        () => {
+          setLoadState('error');
+        },
+      );
+
+      // ── Render loop ─────────────────────────────────────────────────────────
+      const tick = () => {
+        rafRef.current = requestAnimationFrame(tick);
+
+        if (loadedRef.current) {
+          const blends = blendsRef.current;
+
+          for (const { mesh, map } of morphMeshes.current) {
+            const influences = mesh.morphTargetInfluences!;
+            for (const [key, value] of Object.entries(blends) as [keyof VisemeBlends, number][]) {
+              const idx = map.get(key);
+              if (idx !== undefined) {
+                influences[idx] = THREE.MathUtils.lerp(influences[idx] ?? 0, value, LERP);
+              }
+            }
           }
         }
-      });
 
-      renderer.dispose();
+        renderer.render(scene, camera);
+      };
+      rafRef.current = requestAnimationFrame(tick);
 
-      if (mountRef.current && renderer.domElement.parentNode === mountRef.current) {
-        mountRef.current.removeChild(renderer.domElement);
-      }
+      // ── Cleanup ─────────────────────────────────────────────────────────────
+      return () => {
+        cancelAnimationFrame(rafRef.current);
+        loadedRef.current   = false;
+        morphMeshes.current = [];
+        renderer.dispose();
+        if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+      };
+    }, []);
 
-      sceneRef.current = null;
-      rendererRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // only mount/unmount
+    return (
+      <div
+        ref={mountRef}
+        role="figure"
+        aria-label="Speech therapy biofeedback avatar — animated lip and facial movements mirror your phoneme articulation during practice"
+        style={{
+          position:    'relative',
+          width:       '100%',
+          maxWidth:    W,
+          aspectRatio: `${W} / ${H}`,
+          borderRadius: '1rem',
+          overflow:    'hidden',
+          background:  '#0d1117',
+          display:     'block',
+        }}
+      >
+        {/* Screen-reader live region */}
+        <span ref={statusRef} className="sr-only" aria-live="polite" aria-atomic="true" />
 
-  return (
-    // role="figure" (unlike role="img") keeps children in the AT tree, so the
-    // sr-only aria-live span below is still announced.  The Three.js canvas gets
-    // aria-hidden="true" set imperatively after it is appended (see useEffect),
-    // so screen readers receive only the accessible name on this container.
-    <div
-      ref={mountRef}
-      role="figure"
-      aria-label="Speech therapy biofeedback avatar — animated lip and facial movements mirror your phoneme articulation during practice"
-      style={{
-        position: 'relative',
-        width: '100%',
-        maxWidth: W,
-        aspectRatio: `${W} / ${H}`,
-        borderRadius: '1rem',
-        overflow: 'hidden',
-        background: '#0d1117',
-        display: 'block',
-      }}
-    >
-      {/* Visually-hidden live region: announces 'Avatar speaking' on idle→active
-          transitions.  Kept inside (not sibling) so it's contained by the same
-          scroll/stacking context.  role="figure" allows AT to reach it. */}
-      <span
-        ref={statusRef}
-        className="sr-only"
-        aria-live="polite"
-        aria-atomic="true"
-      />
-    </div>
-  );
-});
+        {/* Loading overlay */}
+        {loadState === 'loading' && (
+          <div
+            style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              gap: '12px', background: '#0d1117',
+              pointerEvents: 'none',
+            }}
+            aria-hidden="true"
+          >
+            {/* Spinner */}
+            <div style={{
+              width: 36, height: 36,
+              border: '3px solid #1e293b',
+              borderTop: '3px solid #10b981',
+              borderRadius: '50%',
+              animation: 'spin 0.9s linear infinite',
+            }} />
+            <span style={{ color: '#475569', fontSize: 12, fontFamily: 'monospace', letterSpacing: '0.08em' }}>
+              LOADING AVATAR
+            </span>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        )}
 
-export default FaceAvatar;
+        {/* Error fallback */}
+        {loadState === 'error' && (
+          <div
+            style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: '#0d1117', color: '#64748b',
+              fontSize: 13, textAlign: 'center', padding: '2rem',
+            }}
+            aria-hidden="true"
+          >
+            Avatar unavailable — audio feedback still active
+          </div>
+        )}
+      </div>
+    );
+  },
+);

@@ -12,7 +12,10 @@ import { CameraFeed } from '@/components/avatar/CameraFeed';
 import { ExercisePanel } from './ExercisePanel';
 import posthog from 'posthog-js';
 
-const FaceAvatar = dynamic(() => import('@/components/avatar/FaceAvatar'), { ssr: false });
+const FaceAvatar = dynamic<React.ComponentPropsWithRef<typeof import('@/components/avatar/FaceAvatar').FaceAvatar>>(
+  () => import('@/components/avatar/FaceAvatar').then(m => m.FaceAvatar),
+  { ssr: false },
+);
 
 // ---------------------------------------------------------------------------
 // Stage definitions
