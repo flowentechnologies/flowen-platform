@@ -224,7 +224,7 @@ async function runChecks(): Promise<{ checked: number; triggered: number; result
       message = `Check failed: ${err instanceof Error ? err.message : String(err)}`;
     }
 
-    // Record history
+    // Record history only when triggered — non-triggered checks are noise in the log.
     let sent = false;
     let emailError: string | null = null;
 
@@ -232,17 +232,17 @@ async function runChecks(): Promise<{ checked: number; triggered: number; result
       triggeredCount++;
       sent = await sendAlertEmail(rule.recipient_email, rule.name, message);
       if (!sent) emailError = 'Email delivery failed';
-    }
 
-    try {
-      await supabase.from('alert_history').insert({
-        rule_id: rule.id,
-        message,
-        sent,
-        error: emailError,
-        triggered_at: now.toISOString(),
-      });
-    } catch { /* non-fatal */ }
+      try {
+        await supabase.from('alert_history').insert({
+          rule_id: rule.id,
+          message,
+          sent,
+          error: emailError,
+          triggered_at: now.toISOString(),
+        });
+      } catch { /* non-fatal */ }
+    }
 
     // Update rule timestamps
     const updatePayload: Record<string, string> = { last_checked_at: now.toISOString() };

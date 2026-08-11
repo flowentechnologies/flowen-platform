@@ -81,4 +81,4 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, results });
 }
 
-export { POST as GET };
+

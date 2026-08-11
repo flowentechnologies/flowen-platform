@@ -55,15 +55,26 @@ function NoteCell({ session, patientId }: { session: PatientSession; patientId: 
 
   const save = async () => {
     setSaving(true);
-    await fetch(`/api/clinician/patients/${patientId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_id: session.id, note: text }),
-    });
-    setSaving(false);
-    setSaved(true);
-    setEditing(false);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      const res = await fetch(`/api/clinician/patients/${patientId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: session.id, note: text }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({})) as { error?: string };
+        alert(`Failed to save note: ${json.error ?? 'Unknown error'}`);
+        setSaving(false);
+        return;
+      }
+      setSaved(true);
+      setEditing(false);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      alert('Network error — note could not be saved. Check your connection and try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (editing) {
@@ -134,7 +145,8 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
   useEffect(() => {
     fetch(`/api/clinician/patients/${patientId}/plan`)
       .then(r => r.json())
-      .then((j: { plan: TreatmentPlan | null }) => { setPlan(j.plan); setLoading(false); });
+      .then((j: { plan: TreatmentPlan | null }) => { setPlan(j.plan); setLoading(false); })
+      .catch(() => { setLoading(false); });
   }, [patientId]);
 
   const startEdit = () => {
@@ -156,12 +168,24 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
 
   const save = async () => {
     setSaving(true);
-    const res = await fetch(`/api/clinician/patients/${patientId}/plan`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft),
-    });
-    const json = await res.json() as { plan: TreatmentPlan };
-    setPlan(json.plan); setSaving(false); setSaved(true); setEditing(false);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      const res = await fetch(`/api/clinician/patients/${patientId}/plan`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({})) as { error?: string };
+        alert(`Failed to save plan: ${json.error ?? 'Unknown error'}`);
+        setSaving(false);
+        return;
+      }
+      const json = await res.json() as { plan: TreatmentPlan };
+      setPlan(json.plan); setSaved(true); setEditing(false);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      alert('Network error — plan could not be saved. Check your connection and try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) return (
@@ -319,6 +343,7 @@ function MiniChat({ patientId, myId }: { patientId: string; myId: string | null 
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const fetchMessages = useCallback(async (initial = false) => {
@@ -350,6 +375,7 @@ function MiniChat({ patientId, myId }: { patientId: string; myId: string | null 
     const trimmed = content.trim();
     if (!trimmed || sending) return;
     setSending(true);
+    setSendError(null);
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
@@ -360,7 +386,11 @@ function MiniChat({ patientId, myId }: { patientId: string; myId: string | null 
         const data = (await res.json()) as SendResponse;
         setMessages(prev => [...prev, data.message]);
         setContent('');
+      } else {
+        setSendError('Message could not be sent. Please try again.');
       }
+    } catch {
+      setSendError('Network error — check your connection and try again.');
     } finally {
       setSending(false);
     }
@@ -414,23 +444,28 @@ function MiniChat({ patientId, myId }: { patientId: string; myId: string | null 
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-slate-800 p-4 flex gap-3 items-end">
-        <textarea
-          rows={2}
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          onKeyDown={handleKeyDown}
-          maxLength={2000}
-          placeholder="Type a message… (Enter to send)"
-          className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500 transition-colors"
-        />
-        <button
-          onClick={() => send().catch(console.error)}
-          disabled={sending || !content.trim()}
-          className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-        >
-          {sending ? 'Sending…' : 'Send'}
-        </button>
+      <div className="border-t border-slate-800 p-4 flex flex-col gap-2">
+        {sendError && (
+          <p className="text-rose-400 text-xs px-1" role="alert">{sendError}</p>
+        )}
+        <div className="flex gap-3 items-end">
+          <textarea
+            rows={2}
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            onKeyDown={handleKeyDown}
+            maxLength={2000}
+            placeholder="Type a message… (Enter to send)"
+            className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500 transition-colors"
+          />
+          <button
+            onClick={() => send().catch(console.error)}
+            disabled={sending || !content.trim()}
+            className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          >
+            {sending ? 'Sending…' : 'Send'}
+          </button>
+        </div>
       </div>
     </div>
   );

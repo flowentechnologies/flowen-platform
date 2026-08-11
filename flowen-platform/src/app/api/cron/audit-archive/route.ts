@@ -82,4 +82,4 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ ok: true, ...result });
 }
 
-export { POST as GET };
+

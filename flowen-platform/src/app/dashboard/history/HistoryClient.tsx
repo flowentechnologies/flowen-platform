@@ -5,6 +5,19 @@ import Link from 'next/link';
 import type { PracticeSession } from './page';
 import { formatDate, formatDuration, formatTotalTime } from '@/lib/format';
 
+function TranscriptRow({ transcript, colSpan }: { transcript: string; colSpan: number }) {
+  return (
+    <tr className="bg-slate-800/30">
+      <td colSpan={colSpan} className="px-6 py-4">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1.5">Transcript</p>
+        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap break-words max-h-40 overflow-y-auto">
+          {transcript}
+        </p>
+      </td>
+    </tr>
+  );
+}
+
 const STAGE_NAMES: Record<number, string> = {
   1: 'Breathing',
   2: 'Easy Onset',
@@ -45,6 +58,7 @@ export function HistoryClient({ sessions }: Props) {
   const [filter, setFilter] = useState('');
   const [stageFilter, setStageFilter] = useState<number | null>(null);
   const [page, setPage] = useState(1);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     let result = sessions;
@@ -261,6 +275,9 @@ export function HistoryClient({ sessions }: Props) {
                   <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap min-w-[100px]">
                     Intensity
                   </th>
+                  <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
+                    Transcript
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
@@ -268,35 +285,55 @@ export function HistoryClient({ sessions }: Props) {
                   const bpm = calcBpm(s.total_blocks_detected, s.duration_seconds);
                   const barWidth = bpmBarWidth(bpm);
                   const stageName = s.stage_id ? (STAGE_NAMES[s.stage_id] ?? `Stage ${s.stage_id}`) : '—';
+                  const isExpanded = expandedId === s.id;
                   return (
-                    <tr
-                      key={s.id}
-                      className="hover:bg-slate-800/40 transition-colors"
-                    >
-                      <td className="px-6 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
-                        {formatDate(s.created_at)}
-                      </td>
-                      <td className="px-6 py-3 text-slate-300 text-xs whitespace-nowrap">
-                        {stageName}
-                      </td>
-                      <td className="px-6 py-3 text-slate-300 text-xs whitespace-nowrap">
-                        {formatDuration(s.duration_seconds)}
-                      </td>
-                      <td className={`px-6 py-3 text-xs font-semibold tabular-nums ${blocksColor(s.total_blocks_detected)}`}>
-                        {s.total_blocks_detected}
-                      </td>
-                      <td className="px-6 py-3 text-xs font-semibold tabular-nums text-slate-300 whitespace-nowrap">
-                        {bpm.toFixed(1)}
-                      </td>
-                      <td className="px-6 py-3">
-                        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden min-w-[80px]">
-                          <div
-                            className={`h-full rounded-full transition-all ${bpmBarColor(bpm)}`}
-                            style={{ width: `${barWidth}%` }}
-                          />
-                        </div>
-                      </td>
-                    </tr>
+                    <>
+                      <tr
+                        key={s.id}
+                        className="hover:bg-slate-800/40 transition-colors"
+                      >
+                        <td className="px-6 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
+                          {formatDate(s.created_at)}
+                        </td>
+                        <td className="px-6 py-3 text-slate-300 text-xs whitespace-nowrap">
+                          {stageName}
+                        </td>
+                        <td className="px-6 py-3 text-slate-300 text-xs whitespace-nowrap">
+                          {formatDuration(s.duration_seconds)}
+                        </td>
+                        <td className={`px-6 py-3 text-xs font-semibold tabular-nums ${blocksColor(s.total_blocks_detected)}`}>
+                          {s.total_blocks_detected}
+                        </td>
+                        <td className="px-6 py-3 text-xs font-semibold tabular-nums text-slate-300 whitespace-nowrap">
+                          {bpm.toFixed(1)}
+                        </td>
+                        <td className="px-6 py-3">
+                          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden min-w-[80px]">
+                            <div
+                              className={`h-full rounded-full transition-all ${bpmBarColor(bpm)}`}
+                              style={{ width: `${barWidth}%` }}
+                            />
+                          </div>
+                        </td>
+                        <td className="px-6 py-3 text-center">
+                          {s.transcript ? (
+                            <button
+                              onClick={() => setExpandedId(isExpanded ? null : s.id)}
+                              className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors font-semibold"
+                              aria-expanded={isExpanded}
+                              aria-label={isExpanded ? 'Hide transcript' : 'Show transcript'}
+                            >
+                              {isExpanded ? 'Hide' : 'View'}
+                            </button>
+                          ) : (
+                            <span className="text-xs text-slate-700">—</span>
+                          )}
+                        </td>
+                      </tr>
+                      {isExpanded && s.transcript && (
+                        <TranscriptRow key={`${s.id}-transcript`} transcript={s.transcript} colSpan={7} />
+                      )}
+                    </>
                   );
                 })}
               </tbody>

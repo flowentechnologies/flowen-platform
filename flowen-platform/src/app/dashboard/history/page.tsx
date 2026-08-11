@@ -11,6 +11,7 @@ export type PracticeSession = {
   total_repetitions_detected: number;
   total_prolongations_detected: number;
   created_at: string;
+  transcript: string | null;
 };
 
 export default async function HistoryPage() {
@@ -34,7 +35,7 @@ export default async function HistoryPage() {
   const { data: rawSessions } = await supabase
     .from('practice_sessions')
     .select(
-      'id,stage_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at'
+      'id,stage_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at,transcript'
     )
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })

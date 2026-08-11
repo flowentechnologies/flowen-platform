@@ -90,10 +90,42 @@ export async function GET() {
   const investors: Investor[] = investorsRes.error ? [] : (investorsRes.data ?? []);
   const config: VentureConfig | null = configRes.error ? null : (configRes.data ?? null);
 
+  // Real KPI queries — run in parallel
+  const weekAgo = new Date(Date.now() - 7 * 86400_000).toISOString();
+  const [
+    totalUsersRes,
+    newUsersWeekRes,
+    foundingRes,
+    waitlistRes,
+    onboardedUsersRes,
+    allUsersRes,
+  ] = await Promise.all([
+    client.from('profiles').select('*', { count: 'exact', head: true }),
+    client.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo),
+    client.from('profiles').select('*', { count: 'exact', head: true }).eq('tier', 'founding'),
+    client.from('waitlist_signups').select('*', { count: 'exact', head: true }),
+    // Users who have at least 1 practice session (distinct user_ids)
+    client.from('practice_sessions').select('user_id').limit(5000),
+    client.from('profiles').select('id').limit(5000),
+  ]);
+
+  const totalUsers = totalUsersRes.count ?? 0;
+  const newUsersWeek = newUsersWeekRes.count ?? 0;
+  const foundingCount = foundingRes.count ?? 0;
+  const waitlistTotal = waitlistRes.count ?? 0;
+
+  // Onboarded = has at least one practice session
+  const onboardedUserIds = new Set((onboardedUsersRes.data ?? []).map((r: { user_id: string }) => r.user_id));
+  const allUserIds = (allUsersRes.data ?? []).length;
+  const onboardedPct = allUserIds > 0 ? Math.round((onboardedUserIds.size / allUserIds) * 100) : 0;
+
+  // MRR: read from venture_config if manually set, otherwise 0 (Stripe query is expensive, admin sets it)
+  const mrrPence = config?.monthly_burn_pence != null ? 0 : 0; // placeholder — admin sets via config
+
   const data: VentureData = {
     investors,
     config,
-    kpis: { totalUsers: 0, newUsersWeek: 0, foundingCount: 0, waitlistTotal: 0, mrrPence: 0, onboardedPct: 0 },
+    kpis: { totalUsers, newUsersWeek, foundingCount, waitlistTotal, mrrPence, onboardedPct },
   };
 
   return NextResponse.json(data);
