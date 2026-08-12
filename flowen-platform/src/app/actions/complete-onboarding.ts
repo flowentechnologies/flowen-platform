@@ -7,6 +7,7 @@ import { sendAdminNewUserAlert } from '@/lib/email';
 import { fireEventWorkflows } from '@/lib/workflow-executor';
 
 const ALLOWED_ROLES = new Set(['pwds', 'clinician', 'researcher', 'parent_carer', 'other']);
+const ALLOWED_COUNTRIES = new Set(['GB', 'IE', 'OTHER']);
 
 function adminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,6 +20,14 @@ export async function completeOnboarding(opts: {
   displayName: string;
   role: string;
   consentAt: string;
+  // KYC fields
+  dateOfBirth?: string;          // ISO date string 'YYYY-MM-DD'
+  countryOfResidence?: string;   // ISO 3166-1 alpha-2, e.g. 'GB'
+  phoneNumber?: string;
+  employerName?: string;
+  hcpcNumber?: string;
+  institutionName?: string;
+  marketingConsent?: boolean;
 }): Promise<{ error?: string }> {
   // Derive identity from session cookie — never trust client-supplied user IDs
   const cookieStore = await cookies();
@@ -33,19 +42,52 @@ export async function completeOnboarding(opts: {
   if (!ALLOWED_ROLES.has(opts.role)) return { error: 'Invalid role' };
   if (!opts.displayName.trim() || opts.displayName.length > 100) return { error: 'Invalid display name' };
 
+  // Validate KYC fields
+  if (opts.countryOfResidence && !ALLOWED_COUNTRIES.has(opts.countryOfResidence)) {
+    return { error: 'Invalid country selection' };
+  }
+  if (opts.dateOfBirth) {
+    const dob = new Date(opts.dateOfBirth);
+    if (isNaN(dob.getTime())) return { error: 'Invalid date of birth' };
+    // Must be at least 13 years old; flag under-18 but don't hard-block (parent/carer accounts)
+    const ageMs = Date.now() - dob.getTime();
+    const ageYears = ageMs / (1000 * 60 * 60 * 24 * 365.25);
+    if (ageYears < 13) return { error: 'You must be at least 13 years old to use Flowen' };
+  }
+  if (opts.phoneNumber && !/^[+\d\s\-().]{7,20}$/.test(opts.phoneNumber)) {
+    return { error: 'Invalid phone number format' };
+  }
+  if (opts.hcpcNumber && !/^[A-Z]{2}\d{6}$/i.test(opts.hcpcNumber.replace(/\s/g, ''))) {
+    return { error: 'HCPC numbers follow the format TS999999 — please check and try again' };
+  }
+
   const admin = adminClient();
+
+  const profileUpdate: Record<string, unknown> = {
+    display_name:         opts.displayName.trim(),
+    role:                 opts.role,
+    brand:                'flowen',
+    onboarding_complete:  true,
+    gdpr_consent_at:      opts.consentAt,
+    gdpr_consent_version: '2026-07-01',
+    opt_in_telemetry:     true,
+  };
+
+  // Persist KYC fields that were provided
+  if (opts.dateOfBirth)        profileUpdate.date_of_birth        = opts.dateOfBirth;
+  if (opts.countryOfResidence) profileUpdate.country_of_residence = opts.countryOfResidence;
+  if (opts.phoneNumber)        profileUpdate.phone_number         = opts.phoneNumber.trim();
+  if (opts.employerName)       profileUpdate.employer_name        = opts.employerName.trim();
+  if (opts.hcpcNumber)         profileUpdate.hcpc_number          = opts.hcpcNumber.replace(/\s/g, '').toUpperCase();
+  if (opts.institutionName)    profileUpdate.institution_name     = opts.institutionName.trim();
+  if (opts.marketingConsent !== undefined) {
+    profileUpdate.marketing_consent    = opts.marketingConsent;
+    profileUpdate.marketing_consent_at = opts.marketingConsent ? opts.consentAt : null;
+  }
 
   const { error } = await admin
     .from('profiles')
-    .update({
-      display_name:         opts.displayName.trim(),
-      role:                 opts.role,
-      brand:                'flowen',
-      onboarding_complete:  true,
-      gdpr_consent_at:      opts.consentAt,
-      gdpr_consent_version: '2026-07-01',
-      opt_in_telemetry:     true,
-    })
+    .update(profileUpdate)
     .eq('id', user.id);
 
   if (error) return { error: 'Could not save your profile. Please try again.' };
@@ -61,8 +103,8 @@ export async function completeOnboarding(opts: {
     // Fire all active user_event workflows registered for onboarding_complete
     // (handles welcome email + deferred check-in/milestone steps)
     fireEventWorkflows('onboarding_complete', {
-      userId: user.id,
-      email: user.email ?? '',
+      userId:      user.id,
+      email:       user.email ?? '',
       displayName: opts.displayName.trim(),
       triggeredBy: 'onboarding',
     }),
