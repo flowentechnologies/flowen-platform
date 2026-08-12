@@ -67,12 +67,17 @@ export default function WhitepaperPage() {
         and progress is difficult to quantify for commissioning purposes.
       </DocP>
       <DocP>
-        Flowen was founded in 2024 to address this gap by deploying consumer-grade device hardware
-        — a smartphone or laptop microphone — and specialist deep-learning models to deliver the
-        kind of acoustic feedback previously available only in specialist clinical settings or
-        expensive hardware devices (e.g. SpeechEasy® delayed auditory feedback devices). By
-        making biofeedback accessible at home, at work, and on-demand, Flowen aims to compress
-        the gap between clinic-guided therapy and independent practice.
+        Flowen was founded in July 2026 by a person who stammers — someone who has lived with
+        the condition for 29 of his 31 years. That founding context is not incidental; it shapes
+        every product decision. The platform was built first as the tool the founder needed and
+        could not find: objective, on-demand feedback available outside the clinic, without a
+        waiting list, without expensive hardware, and without the self-consciousness of practising
+        in front of another person. Flowen deploys consumer-grade device hardware — a smartphone
+        or laptop microphone — and specialist deep-learning models to deliver the kind of acoustic
+        feedback previously available only in specialist clinical settings or expensive hardware
+        devices (e.g. SpeechEasy® delayed auditory feedback devices). By making biofeedback
+        accessible at home, at work, and on-demand, Flowen aims to compress the gap between
+        clinic-guided therapy and independent practice.
       </DocP>
       <DocCallout variant="info">
         <DocP>
