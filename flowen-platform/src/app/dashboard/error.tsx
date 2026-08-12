@@ -24,12 +24,12 @@ export default function DashboardError({
           </svg>
         </div>
         <div className="space-y-1">
-          <h2 className="text-xl font-extrabold text-white">Something went wrong</h2>
-          <p className="text-slate-400 text-sm">
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Something went wrong</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">
             This page failed to load. Our team has been notified.
           </p>
           {error.digest && (
-            <p className="text-[10px] text-slate-600 font-mono pt-1">ref: {error.digest}</p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-600 font-mono pt-1">ref: {error.digest}</p>
           )}
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -41,7 +41,7 @@ export default function DashboardError({
           </button>
           <Link
             href="/dashboard"
-            className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition-colors"
+            className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm transition-colors"
           >
             Back to dashboard
           </Link>
