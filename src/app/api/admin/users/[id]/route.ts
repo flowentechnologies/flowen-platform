@@ -31,6 +31,13 @@ export interface AdminUserProfile {
   marketing_consent: boolean;
   id_verified: boolean;
   id_verified_at: string | null;
+  // Address
+  address_line1: string | null;
+  address_line2: string | null;
+  address_city: string | null;
+  address_postcode: string | null;
+  address_region: string | null;
+  address_verified_at: string | null;
   // practice stats
   total_sessions: number;
   total_duration_seconds: number;
@@ -61,7 +68,7 @@ export async function GET(
     client
       .from('profiles')
       // eslint-disable-next-line max-len
-      .select('id,display_name,tier,role,is_admin,early_access,onboarding_complete,created_at,date_of_birth,country_of_residence,phone_number,employer_name,hcpc_number,institution_name,marketing_consent,id_verified,id_verified_at')
+      .select('id,display_name,tier,role,is_admin,early_access,onboarding_complete,created_at,date_of_birth,country_of_residence,phone_number,employer_name,hcpc_number,institution_name,marketing_consent,id_verified,id_verified_at,address_line1,address_line2,address_city,address_postcode,address_region,address_verified_at')
       .eq('id', id)
       .single(),
     client.schema('auth').from('users').select('id,email,last_sign_in_at').eq('id', id).single(),
@@ -107,6 +114,13 @@ export async function GET(
     marketing_consent:    profile.marketing_consent ?? false,
     id_verified:          profile.id_verified ?? false,
     id_verified_at:       profile.id_verified_at ?? null,
+    // Address
+    address_line1:        profile.address_line1 ?? null,
+    address_line2:        profile.address_line2 ?? null,
+    address_city:         profile.address_city ?? null,
+    address_postcode:     profile.address_postcode ?? null,
+    address_region:       profile.address_region ?? null,
+    address_verified_at:  profile.address_verified_at ?? null,
     // practice stats
     total_sessions: sessions.length,
     total_duration_seconds: totalDuration,

@@ -308,6 +308,36 @@ export default function AdminUserProfilePage() {
             </div>
           )}
         </dl>
+
+        {/* Address sub-section */}
+        {user.address_line1 && (
+          <div className="mt-6 pt-5 border-t border-slate-800">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Home address</p>
+              {user.address_verified_at ? (
+                <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+                  <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd"/>
+                  </svg>
+                  Postcode verified {fmt(user.address_verified_at)}
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono text-amber-500">Postcode not verified</span>
+              )}
+            </div>
+            <address className="not-italic text-sm text-slate-200 leading-relaxed">
+              {user.address_line1}<br />
+              {user.address_line2 && <>{user.address_line2}<br /></>}
+              {user.address_city && <>{user.address_city}<br /></>}
+              {user.address_postcode && (
+                <span className="font-mono font-semibold">{user.address_postcode}</span>
+              )}
+              {user.address_region && (
+                <span className="text-slate-500 text-xs ml-2">({user.address_region})</span>
+              )}
+            </address>
+          </div>
+        )}
       </div>
 
       {/* Recent sessions */}
