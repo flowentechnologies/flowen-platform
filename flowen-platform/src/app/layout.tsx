@@ -7,6 +7,12 @@ import type { TrackingProvider } from '@/components/TrackingScripts';
 import { JsonLd } from '@/components/JsonLd';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import PostHogProvider from '@/components/PostHogProvider';
+import { ThemeProvider } from '@/components/ThemeProvider';
+
+// Inline script evaluated synchronously before first paint — prevents flash of
+// unstyled (wrong-theme) content. Reads localStorage and applies the `dark`
+// class to <html> before React hydrates so there is never a visible flicker.
+const FOUC_SCRIPT = `(function(){try{var t=localStorage.getItem('flowen-theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
 
 export const metadata: Metadata = {
   title: 'Flowen — Retraining the Brain to Speak Freely',
@@ -69,8 +75,10 @@ export default async function RootLayout({
   const trackingProviders = await getTrackingProviders();
 
   return (
-    <html lang="en">
-      <body className="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
+    <html lang="en" suppressHydrationWarning>
+      {/* Anti-FOUC: runs synchronously before React paint */}
+      <script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
+      <body className="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
         <JsonLd data={{
           '@context': 'https://schema.org',
           '@type': 'Organization',
@@ -131,12 +139,14 @@ export default async function RootLayout({
             },
           ],
         }} />
-        <PostHogProvider>
-          {children}
-        </PostHogProvider>
-        <AnalyticsTracker />
-        <CookieConsent />
-        <TrackingScripts providers={trackingProviders} />
+        <ThemeProvider>
+          <PostHogProvider>
+            {children}
+          </PostHogProvider>
+          <AnalyticsTracker />
+          <CookieConsent />
+          <TrackingScripts providers={trackingProviders} />
+        </ThemeProvider>
       </body>
     </html>
   );
