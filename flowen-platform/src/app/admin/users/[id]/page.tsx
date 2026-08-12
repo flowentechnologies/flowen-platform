@@ -156,6 +156,10 @@ export default function AdminUserProfilePage() {
               {user.is_admin && <Badge label="ADMIN" colour="bg-purple-500/10 text-purple-400 border-purple-500/30" />}
               {user.early_access && <Badge label="BETA" colour="bg-emerald-500/10 text-emerald-400 border-emerald-500/30" />}
               {user.onboarding_complete && <Badge label="ONBOARDED" colour="bg-teal-500/10 text-teal-400 border-teal-500/30" />}
+              {user.id_verified
+                ? <Badge label="ID VERIFIED" colour="bg-emerald-500/10 text-emerald-400 border-emerald-500/30" />
+                : <Badge label="UNVERIFIED" colour="bg-slate-700/50 text-slate-500 border-slate-600/30" />
+              }
             </div>
           </div>
           <div className="shrink-0 text-right text-[10px] font-mono text-slate-600 space-y-1">
@@ -193,22 +197,116 @@ export default function AdminUserProfilePage() {
         <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400 mb-5">Account details</h2>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
           {[
-            { label: 'User ID', value: user.id, mono: true },
-            { label: 'Email', value: user.email, mono: true },
-            { label: 'Display name', value: user.display_name ?? '—', mono: false },
-            { label: 'Tier', value: user.tier ?? 'None', mono: true },
-            { label: 'Admin', value: user.is_admin ? 'Yes' : 'No', mono: false },
-            { label: 'Beta access', value: user.early_access ? 'Yes' : 'No', mono: false },
-            { label: 'Onboarding complete', value: user.onboarding_complete ? 'Yes' : 'No', mono: false },
-            { label: 'Joined', value: fmt(user.created_at), mono: true },
-            { label: 'Last sign-in', value: fmt(user.last_sign_in_at), mono: true },
-            { label: 'Last session', value: fmt(user.last_session_at), mono: true },
+            { label: 'User ID',            value: user.id,                                    mono: true },
+            { label: 'Email',              value: user.email,                                 mono: true },
+            { label: 'Display name',       value: user.display_name ?? '—',                   mono: false },
+            { label: 'Role',               value: user.role ?? '—',                           mono: true },
+            { label: 'Tier',               value: user.tier ?? 'None',                        mono: true },
+            { label: 'Admin',              value: user.is_admin ? 'Yes' : 'No',               mono: false },
+            { label: 'Beta access',        value: user.early_access ? 'Yes' : 'No',           mono: false },
+            { label: 'Onboarding complete',value: user.onboarding_complete ? 'Yes' : 'No',    mono: false },
+            { label: 'Joined',             value: fmt(user.created_at),                       mono: true },
+            { label: 'Last sign-in',       value: fmt(user.last_sign_in_at),                  mono: true },
+            { label: 'Last session',       value: fmt(user.last_session_at),                  mono: true },
           ].map(({ label, value, mono }) => (
             <div key={label} className="flex flex-col gap-0.5">
               <dt className="text-[10px] font-mono uppercase tracking-widest text-slate-600">{label}</dt>
               <dd className={`text-sm text-slate-200 break-all ${mono ? 'font-mono' : ''}`}>{value}</dd>
             </div>
           ))}
+        </dl>
+      </div>
+
+      {/* KYC & Identity */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">KYC & Identity</h2>
+          {user.id_verified
+            ? (
+              <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400">
+                <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd"/>
+                </svg>
+                Verified {user.id_verified_at ? fmt(user.id_verified_at) : ''}
+              </span>
+            ) : (
+              <span className="text-[10px] font-mono text-slate-600">Not yet verified</span>
+            )
+          }
+        </div>
+
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+          {/* Date of birth — show age, not raw DOB, to reduce exposure */}
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Date of birth</dt>
+            <dd className="text-sm text-slate-200 font-mono">
+              {user.date_of_birth
+                ? (() => {
+                    const dob = new Date(user.date_of_birth);
+                    const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+                    return `${dob.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} (age ${age})`;
+                  })()
+                : '—'}
+            </dd>
+          </div>
+
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Country of residence</dt>
+            <dd className="text-sm text-slate-200 font-mono">
+              {user.country_of_residence === 'GB'
+                ? '🇬🇧 United Kingdom'
+                : user.country_of_residence === 'IE'
+                ? '🇮🇪 Republic of Ireland'
+                : user.country_of_residence === 'OTHER'
+                ? '🌍 Other'
+                : user.country_of_residence ?? '—'}
+            </dd>
+          </div>
+
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Phone number</dt>
+            <dd className="text-sm text-slate-200 font-mono">
+              {user.phone_number
+                ? <a href={`tel:${user.phone_number}`} className="hover:text-emerald-400 transition-colors">{user.phone_number}</a>
+                : '—'}
+            </dd>
+          </div>
+
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Marketing consent</dt>
+            <dd className={`text-sm font-mono ${user.marketing_consent ? 'text-emerald-400' : 'text-slate-500'}`}>
+              {user.marketing_consent ? 'Opted in' : 'Not opted in'}
+            </dd>
+          </div>
+
+          {/* Funding / professional fields — only show non-null ones */}
+          {user.employer_name && (
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Employer (AtW)</dt>
+              <dd className="text-sm text-slate-200">{user.employer_name}</dd>
+            </div>
+          )}
+          {user.hcpc_number && (
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-[10px] font-mono uppercase tracking-widest text-slate-600">HCPC number</dt>
+              <dd className="text-sm text-slate-200 font-mono">
+                <a
+                  href={`https://www.hcpc-uk.org/check-the-register/?registrantId=${user.hcpc_number}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-emerald-400 transition-colors underline underline-offset-2"
+                >
+                  {user.hcpc_number} ↗
+                </a>
+              </dd>
+            </div>
+          )}
+          {user.institution_name && (
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Institution (DSA / NHS)</dt>
+              <dd className="text-sm text-slate-200">{user.institution_name}</dd>
+            </div>
+          )}
         </dl>
       </div>
 
