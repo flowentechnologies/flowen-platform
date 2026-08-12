@@ -7,15 +7,25 @@ import posthog from 'posthog-js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Step = 1 | 2 | 3 | 4 | 5;
+// Internal step: 1 Name · 2 Role · 3 Stammer (PWS only) · 4 Funding · 5 KYC · 6 Recommendation
+type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
 interface State {
+  // Core
   name: string;
   role: string;
-  duration: string;          // how long stammering
-  challenges: string[];      // multi-select situations
-  currentSupport: string;    // therapy history
-  fundingPath: string;       // employer / student / nhs / self
+  // Step 3 (stammer experience) — PWS/parent only
+  duration: string;
+  challenges: string[];
+  // Step 4 (funding)
+  fundingPath: string;
+  // Step 5 (KYC)
+  dobDay: string;
+  dobMonth: string;
+  dobYear: string;
+  country: string;           // 'GB' | 'IE' | 'OTHER'
+  phone: string;             // optional
+  contextualField: string;   // employer / university / hcpc / trust name
 }
 
 type RecommendationType = 'funded_atw' | 'funded_dsa' | 'funded_nhs' | 'standard' | 'clinician' | 'researcher';
@@ -89,17 +99,17 @@ const ROLES = [
 ];
 
 const DURATIONS = [
-  { value: 'recent',   label: 'Just recently', sub: 'Less than a year' },
-  { value: '1_5yrs',  label: 'A few years', sub: '1–5 years' },
-  { value: '5plus',   label: 'Most of my life', sub: '5+ years' },
+  { value: 'recent',  label: 'Just recently', sub: 'Less than a year' },
+  { value: '1_5yrs', label: 'A few years',    sub: '1–5 years' },
+  { value: '5plus',  label: 'Most of my life', sub: '5+ years' },
 ];
 
 const CHALLENGES = [
-  { value: 'work_presentations', label: 'Work presentations' },
-  { value: 'job_interviews',     label: 'Job interviews' },
-  { value: 'phone_calls',        label: 'Phone calls' },
-  { value: 'social_situations',  label: 'Social situations' },
-  { value: 'meeting_people',     label: 'Meeting new people' },
+  { value: 'work_presentations',  label: 'Work presentations' },
+  { value: 'job_interviews',      label: 'Job interviews' },
+  { value: 'phone_calls',         label: 'Phone calls' },
+  { value: 'social_situations',   label: 'Social situations' },
+  { value: 'meeting_people',      label: 'Meeting new people' },
   { value: 'daily_conversations', label: 'Daily conversations' },
 ];
 
@@ -134,6 +144,51 @@ const FUNDING_PATHS = [
   },
 ];
 
+const COUNTRIES = [
+  { value: 'GB',    label: 'United Kingdom' },
+  { value: 'IE',    label: 'Republic of Ireland' },
+  { value: 'OTHER', label: 'Other country' },
+];
+
+const MONTHS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+];
+
+// ─── KYC contextual field config ─────────────────────────────────────────────
+
+function kycContextField(role: string, fundingPath: string): { label: string; placeholder: string; hint: string } | null {
+  if (role === 'clinician') {
+    return {
+      label: 'HCPC registration number',
+      placeholder: 'e.g. TS123456',
+      hint: 'Optional — helps us verify your professional status for clinical features',
+    };
+  }
+  if (fundingPath === 'employer') {
+    return {
+      label: 'Employer name',
+      placeholder: 'e.g. Lloyds Banking Group',
+      hint: 'The organisation that will submit your Access to Work claim',
+    };
+  }
+  if (fundingPath === 'student') {
+    return {
+      label: 'University or college',
+      placeholder: 'e.g. University of Manchester',
+      hint: 'Your DSA assessor will need this to process your application',
+    };
+  }
+  if (fundingPath === 'nhs') {
+    return {
+      label: 'NHS Trust or clinic name',
+      placeholder: 'e.g. South London and Maudsley NHS',
+      hint: 'Helps us prepare the procurement documentation for your ICB',
+    };
+  }
+  return null;
+}
+
 // ─── Recommendation logic ─────────────────────────────────────────────────────
 
 function deriveRecommendation(state: State): Recommendation {
@@ -151,72 +206,66 @@ function deriveRecommendation(state: State): Recommendation {
       primaryHref: '/dashboard/clinician',
     };
   }
-
   if (role === 'researcher') {
     return {
       type: 'researcher',
       headline: 'Research & Academic Access',
-      subline: 'Interested in the evidence base or research collaboration? Our team would love to hear from you.',
+      subline: 'Interested in the evidence base or collaboration? Our team would love to hear from you.',
       badge: 'RESEARCH',
       badgeColor: 'bg-violet-500/10 text-violet-400 border-violet-500/30',
-      features: ['Access to anonymised aggregate data', 'API access on request', 'Academic licensing', 'Evidence base documentation'],
+      features: ['Anonymised aggregate data', 'API access on request', 'Academic licensing', 'Evidence base documentation'],
       primaryLabel: 'Get in touch →',
       primaryHref: '/#contact',
       secondaryLabel: 'Explore the platform',
       secondaryHref: '/dashboard',
     };
   }
-
   if (fundingPath === 'employer') {
     return {
       type: 'funded_atw',
       headline: 'Funded Access via Access to Work',
-      subline: 'Great news — as an employed person, your employer or the government can cover the full cost of Flowen through the Access to Work scheme.',
+      subline: 'Good news — the UK government can cover the full cost of Flowen through Access to Work. Your employer pays nothing either.',
       badge: 'FUNDED',
       badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-      features: ['All Standard features included', 'SLT progress monitoring', 'Funding application guide included', '£0 to you — employer/grant pays'],
+      features: ['All Standard features', 'SLT progress monitoring', 'Funding application guide', '£0 to you — government pays'],
       primaryLabel: 'Read the Access to Work guide →',
       primaryHref: '/resources/access-to-work',
       secondaryLabel: 'Go to dashboard first',
       secondaryHref: '/dashboard',
     };
   }
-
   if (fundingPath === 'student') {
     return {
       type: 'funded_dsa',
       headline: "Funded Access via DSA",
-      subline: "As a UK university student, Disabled Students' Allowance (DSA) can fund Flowen entirely. Most DSA assessors approve assistive speech technology.",
+      subline: "As a UK student, Disabled Students' Allowance can fund Flowen entirely. Most assessors approve speech biofeedback tools.",
       badge: 'FUNDED',
       badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-      features: ['All Standard features included', 'SLT progress monitoring', 'DSA evidence pack included', '£0 to you — DSA pays'],
+      features: ['All Standard features', 'SLT progress monitoring', 'DSA evidence pack', '£0 to you — DSA pays'],
       primaryLabel: 'Read the DSA guide →',
       primaryHref: '/resources/dsa-guide',
       secondaryLabel: 'Go to dashboard first',
       secondaryHref: '/dashboard',
     };
   }
-
   if (fundingPath === 'nhs') {
     return {
       type: 'funded_nhs',
       headline: 'NHS Funded Access',
-      subline: "Your therapist or NHS ICB can procure Flowen on your behalf under the DTAC framework. We'll support the paperwork.",
+      subline: "Your therapist or NHS ICB can procure Flowen under the DTAC framework. We'll support every step of the paperwork.",
       badge: 'NHS',
       badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-      features: ['All Standard features included', 'SLT monitoring dashboard', 'DTAC/DCB0129 documentation', '£0 to you if NHS funded'],
+      features: ['All Standard features', 'SLT monitoring dashboard', 'DTAC/DCB0129 documentation', '£0 to you if NHS funded'],
       primaryLabel: 'NHS procurement guide →',
       primaryHref: '/resources/nhs-procurement',
       secondaryLabel: 'Go to dashboard first',
       secondaryHref: '/dashboard',
     };
   }
-
-  // Self-funded / other
   return {
     type: 'standard',
     headline: 'Standard Access',
-    subline: "The full Flowen experience — real-time acoustic biofeedback, your 8-week programme, and fluency analytics — for less than a coffee a day.",
+    subline: "Real-time acoustic biofeedback, your 8-week programme, and fluency analytics — for less than a coffee a day.",
     badge: 'STANDARD',
     badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
     features: ['Unlimited practice sessions', 'Real-time acoustic biofeedback', '8-week guided programme', 'Fluency progress analytics'],
@@ -227,36 +276,57 @@ function deriveRecommendation(state: State): Recommendation {
   };
 }
 
-// ─── Step components ──────────────────────────────────────────────────────────
+// ─── DOB validation ───────────────────────────────────────────────────────────
 
-function ProgressBar({ step, total }: { step: Step; total: number }) {
+function validateDob(day: string, month: string, year: string): { iso: string } | { error: string } {
+  const d = parseInt(day, 10);
+  const m = parseInt(month, 10);
+  const y = parseInt(year, 10);
+  if (isNaN(d) || isNaN(m) || isNaN(y)) return { error: 'Please enter a complete date of birth' };
+  if (y < 1900 || y > new Date().getFullYear()) return { error: 'Please enter a valid year of birth' };
+  if (m < 1 || m > 12) return { error: 'Please enter a valid month' };
+  if (d < 1 || d > 31) return { error: 'Please enter a valid day' };
+  const date = new Date(y, m - 1, d);
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+    return { error: 'That date doesn\'t exist — please check' };
+  }
+  const ageMs = Date.now() - date.getTime();
+  const ageYears = ageMs / (365.25 * 24 * 60 * 60 * 1000);
+  if (ageYears < 13) return { error: 'You must be at least 13 years old to create an account' };
+  const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  return { iso };
+}
+
+// ─── Step wrapper components ──────────────────────────────────────────────────
+
+function ProgressBar({ current, total }: { current: number; total: number }) {
   return (
     <div className="flex items-center gap-2 mb-8">
       {Array.from({ length: total }).map((_, i) => (
         <div
           key={i}
           className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-            i + 1 <= step ? 'bg-emerald-500' : 'bg-slate-800'
+            i + 1 <= current ? 'bg-emerald-500' : 'bg-slate-800'
           }`}
         />
       ))}
       <span className="text-[10px] font-mono text-slate-600 shrink-0 ml-1">
-        {step}/{total}
+        {current}/{total}
       </span>
     </div>
   );
 }
 
-function StepWrapper({ children, step, total, onBack }: {
+function StepWrapper({ children, displayStep, totalSteps, onBack }: {
   children: React.ReactNode;
-  step: Step;
-  total: number;
+  displayStep: number;
+  totalSteps: number;
   onBack?: () => void;
 }) {
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
       <div className="max-w-lg w-full">
-        <ProgressBar step={step} total={total} />
+        <ProgressBar current={displayStep} total={totalSteps} />
         {children}
         {onBack && (
           <button
@@ -281,6 +351,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [gdprConsent, setGdprConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -289,18 +360,29 @@ export default function OnboardingPage() {
     role: '',
     duration: '',
     challenges: [],
-    currentSupport: '',
     fundingPath: '',
+    dobDay: '',
+    dobMonth: '',
+    dobYear: '',
+    country: 'GB',
+    phone: '',
+    contextualField: '',
   });
 
+  // Whether the user has a stammer (determines if step 3 appears)
   const isStammerer = ['pwds', 'parent_carer'].includes(state.role);
-  const totalSteps: number = (isStammerer || step < 2) ? 5 : 4;
 
-  // Map internal step (1/2/4/5 for non-stammerers) to a visible display step
-  function displayStep(s: Step): Step {
+  // Total visible steps: 6 for stammerers (includes stammer experience step), 5 for others
+  const totalSteps = (isStammerer || step < 2) ? 6 : 5;
+
+  // Map internal step number (1-6, with possible gap at 3 for non-stammerers)
+  // to the displayed progress position
+  function toDisplay(s: Step): number {
     if (isStammerer || s <= 2) return s;
-    if (s === 4) return 3 as Step;
-    if (s === 5) return 4 as Step;
+    // Non-stammerers skip step 3: internal 4→display 3, 5→4, 6→5
+    if (s === 4) return 3;
+    if (s === 5) return 4;
+    if (s === 6) return 5;
     return s;
   }
 
@@ -319,25 +401,24 @@ export default function OnboardingPage() {
 
   function nextStep() {
     setError(null);
-    if (step === 2 && !['pwds', 'parent_carer'].includes(state.role)) {
-      // Skip the stammer experience step for non-PWS roles
-      setStep(4);
-    } else {
-      setStep(s => Math.min(s + 1, 5) as Step);
-    }
+    setStep(s => {
+      // Skip step 3 (stammer experience) for non-stammerers
+      if (s === 2 && !isStammerer) return 4;
+      return Math.min(s + 1, 6) as Step;
+    });
   }
 
   function prevStep() {
     setError(null);
-    if (step === 4 && !['pwds', 'parent_carer'].includes(state.role)) {
-      // Skip back over step 3 for non-PWS
-      setStep(2);
-    } else {
-      setStep(s => Math.max(s - 1, 1) as Step);
-    }
+    setStep(s => {
+      // Skip back over step 3 for non-stammerers
+      if (s === 4 && !isStammerer) return 2;
+      return Math.max(s - 1, 1) as Step;
+    });
   }
 
   const rec = deriveRecommendation(state);
+  const ctxField = kycContextField(state.role, state.fundingPath);
 
   function handleComplete(href: string) {
     if (!gdprConsent) {
@@ -345,29 +426,56 @@ export default function OnboardingPage() {
       return;
     }
     setError(null);
+
     startTransition(async () => {
+      const consentAt = new Date().toISOString();
+
+      // Build DOB ISO string (validated already in step 5)
+      let dobIso: string | undefined;
+      if (state.dobDay && state.dobMonth && state.dobYear) {
+        const result = validateDob(state.dobDay, state.dobMonth, state.dobYear);
+        if ('error' in result) { setError(result.error); return; }
+        dobIso = result.iso;
+      }
+
       const { error: actionError } = await completeOnboarding({
-        displayName: state.name.trim(),
-        role: state.role,
-        consentAt: new Date().toISOString(),
+        displayName:         state.name.trim(),
+        role:                state.role,
+        consentAt,
+        dateOfBirth:         dobIso,
+        countryOfResidence:  state.country || 'GB',
+        phoneNumber:         state.phone || undefined,
+        // Route contextual field to the right column
+        employerName:        (state.role !== 'clinician' && state.fundingPath === 'employer') ? state.contextualField || undefined : undefined,
+        hcpcNumber:          state.role === 'clinician' ? state.contextualField || undefined : undefined,
+        institutionName:     (['student','nhs'].includes(state.fundingPath) && state.role !== 'clinician') ? state.contextualField || undefined : undefined,
+        marketingConsent,
       });
+
       if (actionError) { setError(actionError); return; }
+
       posthog.capture('onboarding_completed', {
-        role: state.role,
-        funding_path: state.fundingPath,
-        recommendation: rec.type,
-        challenges: state.challenges,
-        duration: state.duration,
+        role:              state.role,
+        funding_path:      state.fundingPath,
+        recommendation:    rec.type,
+        challenges:        state.challenges,
+        duration:          state.duration,
+        country:           state.country,
+        has_dob:           !!dobIso,
+        has_phone:         !!state.phone,
+        has_contextual:    !!state.contextualField,
+        marketing_consent: marketingConsent,
       });
+
       document.cookie = 'flowen_ob=1; path=/; max-age=31536000; SameSite=Lax';
       router.push(href);
     });
   }
 
-  // ─── Step 1: Name ───────────────────────────────────────────────────────────
+  // ─── Step 1: Name ────────────────────────────────────────────────────────────
   if (step === 1) {
     return (
-      <StepWrapper step={displayStep(step)} total={totalSteps}>
+      <StepWrapper displayStep={1} totalSteps={totalSteps}>
         <div className="space-y-8">
           <div>
             <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest">
@@ -380,23 +488,16 @@ export default function OnboardingPage() {
               Just your first name — we&apos;ll personalise your experience from here.
             </p>
           </div>
-
-          <div>
-            <input
-              type="text"
-              autoFocus
-              value={state.name}
-              onChange={e => patch({ name: e.target.value })}
-              onKeyDown={e => { if (e.key === 'Enter' && state.name.trim()) nextStep(); }}
-              placeholder="Your first name"
-              className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 text-xl text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition"
-            />
-          </div>
-
-          {error && (
-            <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">{error}</p>
-          )}
-
+          <input
+            type="text"
+            autoFocus
+            value={state.name}
+            onChange={e => patch({ name: e.target.value })}
+            onKeyDown={e => { if (e.key === 'Enter' && state.name.trim()) nextStep(); }}
+            placeholder="Your first name"
+            className="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 text-xl text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition"
+          />
+          {error && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">{error}</p>}
           <button
             type="button"
             disabled={!state.name.trim()}
@@ -410,20 +511,17 @@ export default function OnboardingPage() {
     );
   }
 
-  // ─── Step 2: Role ───────────────────────────────────────────────────────────
+  // ─── Step 2: Role ─────────────────────────────────────────────────────────────
   if (step === 2) {
     return (
-      <StepWrapper step={displayStep(step)} total={totalSteps} onBack={prevStep}>
+      <StepWrapper displayStep={toDisplay(step)} totalSteps={totalSteps} onBack={prevStep}>
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-extrabold text-white tracking-tight">
               Hi {state.name} — what brings you here?
             </h1>
-            <p className="text-slate-400 text-sm mt-2">
-              This shapes your experience from day one.
-            </p>
+            <p className="text-slate-400 text-sm mt-2">This shapes your experience from day one.</p>
           </div>
-
           <div className="space-y-2">
             {ROLES.map(r => (
               <button
@@ -453,10 +551,10 @@ export default function OnboardingPage() {
     );
   }
 
-  // ─── Step 3: Stammer experience (PWS/parent only) ──────────────────────────
+  // ─── Step 3: Stammer experience (PWS/parent only) ─────────────────────────
   if (step === 3) {
     return (
-      <StepWrapper step={displayStep(step)} total={totalSteps} onBack={prevStep}>
+      <StepWrapper displayStep={toDisplay(step)} totalSteps={totalSteps} onBack={prevStep}>
         <div className="space-y-8">
           <div>
             <h1 className="text-2xl font-extrabold text-white tracking-tight">
@@ -494,7 +592,8 @@ export default function OnboardingPage() {
           {/* Challenges */}
           <div>
             <p className="text-xs font-mono uppercase tracking-widest text-slate-500 mb-3">
-              Where does it affect you most? <span className="normal-case tracking-normal text-slate-600">(pick any)</span>
+              Where does it affect you most?{' '}
+              <span className="normal-case tracking-normal text-slate-600">(pick any)</span>
             </p>
             <div className="grid grid-cols-2 gap-2">
               {CHALLENGES.map(c => {
@@ -526,11 +625,7 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={nextStep}
-            className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all"
-          >
+          <button type="button" onClick={nextStep} className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all">
             Continue →
           </button>
           <button type="button" onClick={nextStep} className="w-full text-xs text-slate-600 hover:text-slate-400 transition-colors">
@@ -541,10 +636,10 @@ export default function OnboardingPage() {
     );
   }
 
-  // ─── Step 4: Funding path ───────────────────────────────────────────────────
+  // ─── Step 4: Funding path ────────────────────────────────────────────────────
   if (step === 4) {
     return (
-      <StepWrapper step={displayStep(step)} total={totalSteps} onBack={prevStep}>
+      <StepWrapper displayStep={toDisplay(step)} totalSteps={totalSteps} onBack={prevStep}>
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-extrabold text-white tracking-tight">
@@ -554,7 +649,6 @@ export default function OnboardingPage() {
               Many users pay £0 — we want to make sure you know your options.
             </p>
           </div>
-
           <div className="space-y-2">
             {FUNDING_PATHS.map(f => (
               <button
@@ -584,9 +678,164 @@ export default function OnboardingPage() {
     );
   }
 
-  // ─── Step 5: Plan recommendation + GDPR ───────────────────────────────────
+  // ─── Step 5: KYC ─────────────────────────────────────────────────────────────
+  if (step === 5) {
+    function handleKycNext() {
+      setError(null);
+      // Validate DOB if any part is entered
+      if (state.dobDay || state.dobMonth || state.dobYear) {
+        const result = validateDob(state.dobDay, state.dobMonth, state.dobYear);
+        if ('error' in result) { setError(result.error); return; }
+      }
+      // Phone is optional but must be plausible if given
+      if (state.phone && !/^[+\d\s\-().]{7,20}$/.test(state.phone)) {
+        setError('Please enter a valid phone number, or leave it blank');
+        return;
+      }
+      nextStep();
+    }
+
+    return (
+      <StepWrapper displayStep={toDisplay(step)} totalSteps={totalSteps} onBack={prevStep}>
+        <div className="space-y-7">
+          <div>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">
+              A few details about you
+            </h1>
+            <p className="text-slate-400 text-sm mt-2">
+              Required for age verification and funding eligibility. Stored securely under UK GDPR.
+            </p>
+          </div>
+
+          {/* Date of birth */}
+          <div>
+            <label className="block text-xs font-mono uppercase tracking-widest text-slate-500 mb-3">
+              Date of birth <span className="text-red-400">*</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={state.dobDay}
+                  onChange={e => patch({ dobDay: e.target.value })}
+                  placeholder="DD"
+                  min={1} max={31}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-3 text-white text-sm text-center placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition tabular-nums"
+                />
+                <span className="block text-[10px] text-slate-600 text-center mt-1">Day</span>
+              </div>
+              <div>
+                <select
+                  value={state.dobMonth}
+                  onChange={e => patch({ dobMonth: e.target.value })}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-2 py-3 text-white text-sm focus:outline-none focus:border-emerald-500/60 transition appearance-none text-center"
+                >
+                  <option value="">Month</option>
+                  {MONTHS.map((m, i) => (
+                    <option key={m} value={String(i + 1)}>{m}</option>
+                  ))}
+                </select>
+                <span className="block text-[10px] text-slate-600 text-center mt-1">Month</span>
+              </div>
+              <div>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={state.dobYear}
+                  onChange={e => patch({ dobYear: e.target.value })}
+                  placeholder="YYYY"
+                  min={1900} max={new Date().getFullYear()}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-3 text-white text-sm text-center placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition tabular-nums"
+                />
+                <span className="block text-[10px] text-slate-600 text-center mt-1">Year</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Country of residence */}
+          <div>
+            <label className="block text-xs font-mono uppercase tracking-widest text-slate-500 mb-3">
+              Country of residence <span className="text-red-400">*</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {COUNTRIES.map(c => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => patch({ country: c.value })}
+                  className={`py-3 px-2 rounded-xl border text-center text-xs font-semibold transition-all ${
+                    state.country === c.value
+                      ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-300'
+                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-600'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            {state.country === 'OTHER' && (
+              <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2.5 mt-3">
+                Access to Work and NHS funding pathways are currently UK-only. Standard subscription is available in all countries.
+              </p>
+            )}
+          </div>
+
+          {/* Phone number (optional) */}
+          <div>
+            <label className="block text-xs font-mono uppercase tracking-widest text-slate-500 mb-2">
+              Phone number <span className="text-slate-600 normal-case tracking-normal">(optional)</span>
+            </label>
+            <input
+              type="tel"
+              inputMode="tel"
+              value={state.phone}
+              onChange={e => patch({ phone: e.target.value })}
+              placeholder="+44 7700 000000"
+              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition"
+            />
+            <p className="text-[11px] text-slate-600 mt-1.5">
+              Used for Access to Work coordination and clinical support only — never for marketing without consent.
+            </p>
+          </div>
+
+          {/* Contextual field based on role + funding path */}
+          {ctxField && (
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-widest text-slate-500 mb-2">
+                {ctxField.label} <span className="text-slate-600 normal-case tracking-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={state.contextualField}
+                onChange={e => patch({ contextualField: e.target.value })}
+                placeholder={ctxField.placeholder}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition"
+              />
+              <p className="text-[11px] text-slate-600 mt-1.5">{ctxField.hint}</p>
+            </div>
+          )}
+
+          {error && (
+            <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">{error}</p>
+          )}
+
+          <button
+            type="button"
+            disabled={!state.dobDay || !state.dobMonth || !state.dobYear}
+            onClick={handleKycNext}
+            className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed text-slate-950 font-bold text-sm transition-all"
+          >
+            Continue →
+          </button>
+        </div>
+      </StepWrapper>
+    );
+  }
+
+  // ─── Step 6: Plan recommendation + consent ───────────────────────────────────
   return (
-    <StepWrapper step={displayStep(step)} total={totalSteps} onBack={prevStep}>
+    <StepWrapper displayStep={toDisplay(step)} totalSteps={totalSteps} onBack={prevStep}>
       <div className="space-y-6">
         <div>
           <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-mono font-bold border ${rec.badgeColor} mb-3`}>
@@ -595,9 +844,7 @@ export default function OnboardingPage() {
           <h1 className="text-2xl font-extrabold text-white tracking-tight">
             {rec.headline}
           </h1>
-          <p className="text-slate-400 text-sm mt-2 leading-relaxed">
-            {rec.subline}
-          </p>
+          <p className="text-slate-400 text-sm mt-2 leading-relaxed">{rec.subline}</p>
         </div>
 
         {/* Feature list */}
@@ -612,22 +859,40 @@ export default function OnboardingPage() {
           ))}
         </div>
 
-        {/* GDPR consent */}
-        <label className="flex items-start gap-3 cursor-pointer group">
-          <input
-            type="checkbox"
-            checked={gdprConsent}
-            onChange={e => setGdprConsent(e.target.checked)}
-            className="mt-0.5 w-4 h-4 rounded border border-slate-600 bg-slate-950 accent-emerald-500 flex-shrink-0"
-          />
-          <span className="text-xs text-slate-400 leading-relaxed">
-            I consent to Flowen processing my voice and speech data to provide personalised practice, in accordance with the{' '}
-            <a href="/legal" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Privacy Policy</a>
-            {' '}and{' '}
-            <a href="/legal" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">Terms of Service</a>
-            . You can withdraw consent at any time from account settings.
-          </span>
-        </label>
+        {/* Consent block */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <p className="text-xs font-mono uppercase tracking-widest text-slate-500">Your consents</p>
+
+          {/* GDPR — required */}
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={gdprConsent}
+              onChange={e => setGdprConsent(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border border-slate-600 bg-slate-950 accent-emerald-500 shrink-0"
+            />
+            <span className="text-xs text-slate-400 leading-relaxed">
+              <span className="text-white font-medium">Data processing (required) — </span>
+              I consent to Flowen processing my voice and speech data to provide personalised practice, under{' '}
+              <a href="/legal" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">UK GDPR and our Privacy Policy</a>.
+              You can withdraw consent at any time from account settings.
+            </span>
+          </label>
+
+          {/* Marketing — optional */}
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={marketingConsent}
+              onChange={e => setMarketingConsent(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border border-slate-600 bg-slate-950 accent-emerald-500 shrink-0"
+            />
+            <span className="text-xs text-slate-400 leading-relaxed">
+              <span className="text-white font-medium">Research & updates (optional) — </span>
+              Receive occasional product updates, evidence summaries, and research insights. Unsubscribe anytime.
+            </span>
+          </label>
+        </div>
 
         {error && (
           <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">{error}</p>
