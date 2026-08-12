@@ -68,7 +68,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <>
       <DashboardNav user={user} />
-      <main className="pt-16 pb-16 sm:pb-0 min-h-screen bg-slate-950">
+      <main className="pt-16 pb-16 sm:pb-0 min-h-screen bg-slate-50 dark:bg-slate-950">
         {children}
       </main>
       <MobileBottomNav user={user} />

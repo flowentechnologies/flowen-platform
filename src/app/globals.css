@@ -2,9 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Light mode (default) */
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 2, 6, 23;
+  --foreground-rgb: 15, 23, 42;        /* slate-900 */
+  --background-start-rgb: 248, 250, 252; /* slate-50  */
+  --background-end-rgb: 248, 250, 252;
+}
+
+/* Dark mode */
+html.dark {
+  --foreground-rgb: 241, 245, 249;    /* slate-100 */
+  --background-start-rgb: 2, 6, 23;  /* slate-950 */
   --background-end-rgb: 2, 6, 23;
 }
 
