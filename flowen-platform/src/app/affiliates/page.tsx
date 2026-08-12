@@ -81,7 +81,15 @@ const HOW_IT_WORKS = [
   },
 ];
 
-export default function AffiliatesPage() {
+export default function AffiliatesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ applied?: string; error?: string; info?: string }>;
+}) {
+  // searchParams is a Promise in Next.js 15+ — unwrap synchronously via use() or read statically
+  // We read the raw object; Next coerces it at build boundary.
+  const params = searchParams as unknown as { applied?: string; error?: string; info?: string };
+
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-100 font-sans antialiased">
       <MarketingNavbar />
@@ -221,99 +229,134 @@ export default function AffiliatesPage() {
       {/* Apply form */}
       <section id="apply" className="max-w-2xl mx-auto px-6 pb-32">
         <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-8 md:p-10">
-          <h2 className="text-2xl font-bold text-white mb-2 text-center">Apply to join</h2>
-          <p className="text-xs text-slate-500 text-center mb-8">
-            We review every application and reply within 2 business days.
-          </p>
 
-          {/* Static form — submits to waitlist contact endpoint */}
-          <form
-            action="/api/affiliate/apply"
-            method="POST"
-            className="space-y-5"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Full name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  placeholder="Jane Smith"
-                  className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-                />
+          {/* Success state */}
+          {params.applied === '1' ? (
+            <div className="text-center py-6">
+              <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-5">
+                <svg className="w-7 h-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  placeholder="jane@example.com"
-                  className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                Tier you&apos;re applying for
-              </label>
-              <select
-                name="tier"
-                defaultValue="standard"
-                className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white focus:outline-none focus:border-emerald-500 text-sm"
+              <h2 className="text-xl font-bold text-white mb-2">Application received</h2>
+              <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+                Thanks for applying. We review every application personally and will reply to your
+                email within 2 business days.
+              </p>
+              <Link
+                href="/"
+                className="inline-block text-xs text-slate-500 hover:text-emerald-400 transition-colors"
               >
-                <option value="standard">Standard — 7.5% / 3 months</option>
-                <option value="premium">Premium — 10% / 6 months</option>
-                <option value="partner">Partner — 15% / 12 months</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                How will you promote Flowen?
-              </label>
-              <textarea
-                name="promotion_method"
-                required
-                rows={4}
-                placeholder="e.g. SLT podcast with 3,000 listeners, SEND school network of 80 schools, YouTube channel..."
-                className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm resize-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                Website / social / channel URL <span className="text-slate-600 normal-case font-normal">(optional)</span>
-              </label>
-              <input
-                type="url"
-                name="url"
-                placeholder="https://"
-                className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all shadow-lg shadow-emerald-500/20"
-            >
-              Submit application
-            </button>
-
-            <p className="text-[11px] text-slate-600 text-center">
-              By applying you agree to the{' '}
-              <Link href="/legal" className="underline hover:text-slate-400 transition-colors">
-                Flowen Affiliate Terms
+                ← Back to home
               </Link>
-              {' '}(part of our Terms of Service).
-            </p>
-          </form>
+            </div>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-white mb-2 text-center">Apply to join</h2>
+              <p className="text-xs text-slate-500 text-center mb-8">
+                We review every application and reply within 2 business days.
+              </p>
+
+              {/* Error banner */}
+              {params.error && (
+                <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-300">
+                  {params.error}
+                </div>
+              )}
+
+              {/* Info banner (duplicate / suspended) */}
+              {params.info && (
+                <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-300">
+                  {params.info}
+                </div>
+              )}
+
+              <form action="/api/affiliate/apply" method="POST" className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                      Full name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      placeholder="Jane Smith"
+                      className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      placeholder="jane@example.com"
+                      className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Tier you&apos;re applying for
+                  </label>
+                  <select
+                    name="tier"
+                    defaultValue="standard"
+                    className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white focus:outline-none focus:border-emerald-500 text-sm"
+                  >
+                    <option value="standard">Standard — 7.5% / 3 months</option>
+                    <option value="premium">Premium — 10% / 6 months</option>
+                    <option value="partner">Partner — 15% / 12 months</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    How will you promote Flowen?
+                  </label>
+                  <textarea
+                    name="promotion_method"
+                    required
+                    rows={4}
+                    placeholder="e.g. SLT podcast with 3,000 listeners, SEND school network of 80 schools, YouTube channel..."
+                    className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Website / social / channel URL{' '}
+                    <span className="text-slate-600 normal-case font-normal">(optional)</span>
+                  </label>
+                  <input
+                    type="url"
+                    name="url"
+                    placeholder="https://"
+                    className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all shadow-lg shadow-emerald-500/20"
+                >
+                  Submit application
+                </button>
+
+                <p className="text-[11px] text-slate-600 text-center">
+                  By applying you agree to the{' '}
+                  <Link href="/legal" className="underline hover:text-slate-400 transition-colors">
+                    Flowen Affiliate Terms
+                  </Link>
+                  {' '}(part of our Terms of Service).
+                </p>
+              </form>
+            </>
+          )}
         </div>
       </section>
 
