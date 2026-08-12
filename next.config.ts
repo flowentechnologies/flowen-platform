@@ -50,6 +50,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  // pdfkit reads AFM font metrics and ICC colour profiles from disk at runtime.
+  // Vercel's output-file-tracing misses these because they're accessed via
+  // dynamic require paths inside the library, so we explicitly include them
+  // for the PDF generation route so they're bundled into the serverless function.
+  outputFileTracingIncludes: {
+    '/api/reports/my-progress': ['./node_modules/pdfkit/js/data/**/*'],
+  },
 };
 
 export default withSentryConfig(nextConfig, {

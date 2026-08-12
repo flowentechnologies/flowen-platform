@@ -277,8 +277,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const { data: adminData, error: userErr } = await authAdmin().getUserById(record.user_id!);
 
   if (userErr || !adminData?.user?.email) {
-    console.error('[track-meta] could not resolve user email:', userErr?.message);
-    return NextResponse.json({ error: 'User email not found' }, { status: 500 });
+    // The user may have been deleted since the attribution record was written,
+    // or user_id could be a test/seed value. Without an email we can't hash
+    // anything to send to ad networks, so skip silently. Return 200 so
+    // pg_net does not record a failure against the trigger.
+    console.warn('[track-meta] skipping — user email not resolvable for user_id:', record.user_id, userErr?.message ?? '(no user found)');
+    return NextResponse.json({ ok: true, skipped: 'user email not found' });
   }
 
   const email      = adminData.user.email;
