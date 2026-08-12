@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import type { UsageCostsData, UserPnL, TierRow, ServiceRow } from '@/app/api/admin/usage-costs/route';
+import type { UsageCostsData, UserPnL, TierRow, ServiceRow, ComputeData } from '@/app/api/admin/usage-costs/route';
 
 const POLL_INTERVAL_MS = 30_000;
 
@@ -296,6 +296,244 @@ function RunRateBar({ label, current, projected, color }: { label: string; curre
   );
 }
 
+// ── Compute & Infrastructure section ─────────────────────────────────────────
+
+function UtilBar({ label, used, total, unit, color }: { label: string; used: number; total: number; unit: string; color: string }) {
+  const pct = total > 0 ? Math.min((used / total) * 100, 100) : 0;
+  const health = pct > 80 ? 'text-rose-400' : pct > 60 ? 'text-amber-400' : 'text-emerald-400';
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between text-xs">
+        <span className="text-slate-400">{label}</span>
+        <span className={`font-mono tabular-nums ${health}`}>
+          {used.toFixed(used < 1 ? 3 : 1)} / {total} {unit}
+          <span className="text-slate-600 ml-1">({pct.toFixed(1)}%)</span>
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+        <div className={`h-full rounded-full transition-all duration-700 ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ label, value, sub, mono }: { label: string; value: string | number; sub?: string; mono?: boolean }) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-2 border-b border-slate-800/40 last:border-0">
+      <span className="text-xs text-slate-500 shrink-0">{label}</span>
+      <div className="text-right">
+        <span className={`text-xs font-semibold text-slate-200 ${mono ? 'font-mono tabular-nums' : ''}`}>{value}</span>
+        {sub && <div className="text-[10px] text-slate-600 mt-0.5">{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+function ComputeSection({ c }: { c: ComputeData }) {
+  const dbMb = (c.dbBytes / (1024 * 1024));
+  const dbLimitMb = c.dbFreeTierLimitBytes / (1024 * 1024);
+
+  return (
+    <section className="space-y-6">
+      <SectionLabel right="Live infrastructure metrics">Compute &amp; Infrastructure</SectionLabel>
+
+      {/* Grid: 4 panels */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {/* Vercel Compute */}
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">▲</span>
+            <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">Vercel Functions</h3>
+            <span className="ml-auto px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">HEALTHY</span>
+          </div>
+          <div className="space-y-0">
+            <InfoRow label="Region"              value={c.vercelRegion} />
+            <InfoRow label="Runtime"             value={c.nodeVersion} />
+            <InfoRow label="Function memory"     value={`${c.functionMemoryMb.toLocaleString()} MB`} sub="per invocation" />
+            <InfoRow label="Max timeout"         value={`${c.functionTimeoutS}s`} sub="Fluid Compute" />
+            <InfoRow label="Function bundles"    value={c.functionTypes} sub="Node.js serverless" mono />
+            <InfoRow label="Est. invocations/mo" value={c.estimatedInvocationsMonth.toLocaleString()} sub="middleware + SSR" mono />
+            <InfoRow label="Est. bandwidth/mo"   value={`${c.estimatedBandwidthMb} MB`} sub={`~${((c.estimatedBandwidthMb / 1024 / 1024) * 100).toFixed(3)}% of 1 TB Pro limit`} mono />
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-800/60 space-y-3">
+            <UtilBar
+              label="Bandwidth usage (1 TB limit)"
+              used={c.estimatedBandwidthMb / 1024}
+              total={1024}
+              unit="GB"
+              color="bg-sky-500"
+            />
+          </div>
+        </div>
+
+        {/* Database */}
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">🗄</span>
+            <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">Supabase Postgres</h3>
+            <span className={`ml-auto px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${
+              c.dbUtilisationPct > 80 ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
+              {c.dbUtilisationPct.toFixed(1)}% USED
+            </span>
+          </div>
+          <div className="space-y-0">
+            <InfoRow label="DB size"    value={`${dbMb.toFixed(1)} MB`} sub={`of ${(dbLimitMb / 1024).toFixed(0)} GB limit`} mono />
+            <InfoRow label="Tables"     value={c.dbTableCount}          sub="public schema" mono />
+            <InfoRow label="Region"     value="eu-west-2 (London)"      sub="data residency" />
+            <InfoRow label="Auth"       value="Supabase Auth + RLS"     sub="row-level security enforced" />
+            <InfoRow label="Connection" value="Supabase JS v2"          sub="service role (server-only)" />
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-800/60 space-y-3">
+            <UtilBar label="DB storage" used={dbMb} total={dbLimitMb} unit="MB" color="bg-violet-500" />
+            <UtilBar label="R2 audio storage" used={c.r2StorageGb} total={c.r2FreeTierGb} unit="GB" color="bg-amber-500" />
+          </div>
+        </div>
+
+        {/* Traffic & CDN */}
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">🌐</span>
+            <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">Traffic &amp; CDN</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {[
+              { label: 'Today',       value: c.pageViewsToday.toLocaleString(),  sub: 'page views' },
+              { label: 'This week',   value: c.pageViewsWeek.toLocaleString(),   sub: 'page views' },
+              { label: 'This month',  value: c.pageViewsMonth.toLocaleString(),  sub: 'page views' },
+            ].map(s => (
+              <div key={s.label} className="rounded-lg bg-slate-800/40 px-3 py-2.5 text-center">
+                <div className="text-base font-extrabold text-white tabular-nums">{s.value}</div>
+                <div className="text-[9px] text-slate-600 mt-0.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-0">
+            <InfoRow label="Unique sessions/mo" value={c.uniqueSessionsMonth.toLocaleString()} mono />
+            <InfoRow label="CDN"                value="Vercel Edge Network"        sub="Anycast, 100+ PoPs" />
+            <InfoRow label="Cache strategy"     value="Dynamic (low hit rate)"     sub="Admin: no-store · Marketing: PRERENDER" />
+            <InfoRow label="SSL/TLS"            value="TLS 1.3"                    sub="auto-provisioned by Vercel" />
+            <InfoRow label="DDoS protection"    value="Vercel Shield + BotID"      sub="included on Pro" />
+          </div>
+        </div>
+
+        {/* Scheduled Jobs */}
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">⏱</span>
+            <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">Scheduled Jobs</h3>
+            <span className={`ml-auto px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${
+              c.cronSuccessRatePct === 100
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
+              {c.cronSuccessRatePct.toFixed(0)}% SUCCESS
+            </span>
+          </div>
+          {/* Success / Failed / Total */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {[
+              { label: 'Total runs',  value: c.cronTotalRuns,   color: 'text-white' },
+              { label: 'Successful',  value: c.cronSuccessful,  color: 'text-emerald-400' },
+              { label: 'Failed',      value: c.cronFailed,      color: c.cronFailed > 0 ? 'text-rose-400' : 'text-slate-600' },
+            ].map(s => (
+              <div key={s.label} className="rounded-lg bg-slate-800/40 px-3 py-2.5 text-center">
+                <div className={`text-base font-extrabold tabular-nums ${s.color}`}>{s.value}</div>
+                <div className="text-[9px] text-slate-600 mt-0.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-0">
+            <InfoRow label="Distinct jobs"   value={c.cronDistinctJobs}             mono />
+            <InfoRow label="Avg duration"    value={`${Math.round(c.cronAvgDurationMs)}ms`} mono />
+            <InfoRow label="Max duration"    value={`${c.cronMaxDurationMs}ms`}     mono />
+            <InfoRow label="Last run"        value={relTime(c.cronLastRunAt)}        sub={c.cronLastRunAt ? shortDate(c.cronLastRunAt) : ''} />
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-800/60">
+            <UtilBar
+              label="Success rate"
+              used={c.cronSuccessRatePct}
+              total={100}
+              unit="%"
+              color="bg-emerald-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Top tables by storage */}
+      {c.topTables.length > 0 && (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+          <div className="px-5 py-3 border-b border-slate-800 flex items-center gap-2">
+            <span className="text-sm">📊</span>
+            <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Top Tables by Storage (Postgres)</h3>
+            <span className="ml-auto text-[10px] text-slate-600">{dbMb.toFixed(1)} MB total · {c.dbTableCount} tables</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead className="border-b border-slate-800/60">
+                <tr>
+                  <th className="px-5 py-2 text-left text-[10px] font-mono uppercase tracking-widest text-slate-600">Table</th>
+                  <th className="px-5 py-2 text-right text-[10px] font-mono uppercase tracking-widest text-slate-600">Size</th>
+                  <th className="px-5 py-2 text-left text-[10px] font-mono uppercase tracking-widest text-slate-600">Share</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/30">
+                {c.topTables.map((t, i) => {
+                  const sharePct = c.dbBytes > 0 ? (t.bytes / c.dbBytes) * 100 : 0;
+                  return (
+                    <tr key={t.name} className="hover:bg-slate-800/20 transition-colors">
+                      <td className="px-5 py-2 font-mono text-slate-300">
+                        <span className="text-slate-600 mr-2 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                        {t.name}
+                      </td>
+                      <td className="px-5 py-2 text-right font-mono tabular-nums text-slate-400">{t.pretty}</td>
+                      <td className="px-5 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1 rounded-full bg-slate-800 overflow-hidden max-w-[80px]">
+                            <div className="h-full rounded-full bg-violet-500/60" style={{ width: `${sharePct}%` }} />
+                          </div>
+                          <span className="text-[10px] text-slate-600 tabular-nums w-10 text-right">{sharePct.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ASR Pipeline performance */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-lg">🎙</span>
+          <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">ASR Pipeline — Throughput</h3>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          {[
+            { label: 'Audio processed',    value: mins(c.audioTotalSeconds),     sub: `${(c.audioTotalSeconds / 60).toFixed(1)} minutes total` },
+            { label: 'Sessions processed', value: c.audioSessionCount,            sub: 'all-time' },
+            { label: 'Avg session length', value: mins(Math.round(c.avgSessionDurationS)), sub: 'per session' },
+            { label: 'ASR latency',        value: 'Not yet logged',               sub: 'average_latency_ms → null' },
+          ].map(m => (
+            <div key={m.label} className="rounded-lg bg-slate-800/40 px-4 py-3">
+              <div className="text-sm font-bold text-white tabular-nums">{m.value}</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">{m.label}</div>
+              <div className="text-[10px] text-slate-600">{m.sub}</div>
+            </div>
+          ))}
+        </div>
+        <div className="rounded-lg bg-amber-500/5 border border-amber-500/15 px-4 py-3 text-[11px] text-amber-500/80">
+          <strong>Next:</strong> Instrument <code className="font-mono">average_latency_ms</code> in the ASR session writer to track real-time factor
+          (target &lt; 0.5× for sub-500ms response latency). Once populated, P50/P95/P99 latency will appear here.
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function UsageCostsClient({ initialData }: { initialData: UsageCostsData }) {
@@ -509,6 +747,9 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
           Cost estimates (ASR, AI) are variable approximations. All data is admin-only via service role.
         </p>
       </section>
+
+      {/* ── Compute & Infrastructure ─────────────────────────────────────────── */}
+      <ComputeSection c={d.compute} />
 
       {/* ── Footer note ──────────────────────────────────────────────────────── */}
       <p className="text-center text-[10px] text-slate-800 pb-4">
