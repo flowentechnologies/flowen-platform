@@ -4,7 +4,7 @@ import React, { useState, useTransition, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { submitContactForm, FormState } from './actions/submit-form';
 import { LegalPoliciesModal } from '@/components/LegalPoliciesModal';
-import { FlowenLogo } from '@/components/FlowenLogo';
+import MarketingNavbar from '@/components/MarketingNavbar';
 
 export default function LandingPage() {
   const [isPending, startTransition] = useTransition();
@@ -134,24 +134,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-black">
       
       {/* Navigation Header */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-[#06080F]/80 backdrop-blur-md border-b border-slate-800/80">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <FlowenLogo className="h-7" />
-
-          <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
-            <button onClick={() => scrollToSection('technology')} className="hover:text-emerald-400 transition-colors">Technology</button>
-            <button onClick={() => scrollToSection('pricing')} className="hover:text-emerald-400 transition-colors">Pricing</button>
-            <button onClick={() => scrollToSection('contact')} className="hover:text-emerald-400 transition-colors">Enterprise & Public Funds</button>
-          </div>
-
-          <a
-            href="/auth/login"
-            className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-sm transition-all transform hover:scale-105 shadow-md shadow-emerald-500/20"
-          >
-            Sign In
-          </a>
-        </div>
-      </nav>
+      <MarketingNavbar />
 
       {/* Hero Section — 200vh tall; inner viewport is sticky so video scrubs as user scrolls */}
       <section ref={heroRef} id="hero" className="relative" style={{ height: '200vh' }}>
