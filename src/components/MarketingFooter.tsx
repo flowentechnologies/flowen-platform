@@ -21,7 +21,7 @@ export default function MarketingFooter() {
               <span className="text-white font-bold text-lg group-hover:text-emerald-400 transition-colors">FLOWEN</span>
             </Link>
             <p className="text-slate-500 text-xs leading-relaxed">
-              Neural biofeedback speech coordination for individuals, clinicians, and public programs.
+              Real-time acoustic biofeedback for fluency practice — for individuals, clinicians, and funded programmes.
             </p>
           </div>
 
@@ -60,7 +60,7 @@ export default function MarketingFooter() {
 
         <div className="border-t border-slate-800/60 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-600 text-xs">
-            © 2026 Flowen Group HoldCo. All rights reserved. Registered under UK GDPR &amp; DCB0129 Clinical Safety Governance.
+            © 2026 Flowen Speech Technology Ltd. All rights reserved. Registered under UK GDPR &amp; DCB0129 Clinical Safety Governance.
           </p>
           <div className="flex items-center gap-3">
             <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-600">DCB0129</span>
