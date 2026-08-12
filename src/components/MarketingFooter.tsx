@@ -4,7 +4,7 @@ export default function MarketingFooter() {
   return (
     <footer className="border-t border-slate-800/80 bg-[#04050A]">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4 group w-fit">
               <svg viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-6 w-auto">
@@ -48,12 +48,23 @@ export default function MarketingFooter() {
           </div>
 
           <div>
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Research</h4>
+            <ul className="space-y-2.5">
+              <li><Link href="/whitepaper" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">White Paper</Link></li>
+              <li><Link href="/resources/biofeedback-evidence" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Clinical Evidence</Link></li>
+              <li><Link href="/nhs-framework" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">NHS Framework</Link></li>
+              <li><Link href="/how-it-works" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">How It Works</Link></li>
+            </ul>
+          </div>
+
+          <div>
             <h4 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Legal</h4>
             <ul className="space-y-2.5">
               <li><Link href="/legal" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Terms &amp; Privacy</Link></li>
               <li><Link href="/cookie-policy" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Cookie Policy</Link></li>
               <li><Link href="/accessibility" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Accessibility</Link></li>
               <li><Link href="/security#dcb0129" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">DCB0129</Link></li>
+              <li><Link href="/dpa" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Data Processing</Link></li>
             </ul>
           </div>
         </div>
