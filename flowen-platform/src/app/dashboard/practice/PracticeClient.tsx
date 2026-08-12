@@ -7,7 +7,8 @@ import { ZERO_BLENDS, extractFormants } from '@/lib/viseme';
 import type { VisemeBlends } from '@/lib/viseme';
 import { VisemeDriver } from '@/components/avatar/VisemeDriver';
 import type { FaceAvatarHandle } from '@/components/avatar/FaceAvatar';
-import { useFaceTracker } from '@/lib/hooks/useFaceTracker';
+import { useFaceTracker, ZERO_EXTRA, ZERO_HEAD_POSE } from '@/lib/hooks/useFaceTracker';
+import type { FaceFrame } from '@/lib/hooks/useFaceTracker';
 import { CameraFeed } from '@/components/avatar/CameraFeed';
 import { ExercisePanel } from './ExercisePanel';
 import posthog from 'posthog-js';
@@ -297,8 +298,8 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   const faceTrackingActiveRef = useRef(false);
 
   const handleFaceBlends = useCallback(
-    (blends: VisemeBlends, speaking: boolean) => {
-      avatarRef.current?.updateBlends(blends, speaking);
+    (frame: FaceFrame) => {
+      avatarRef.current?.updateFace(frame);
     },
     [],
   );
@@ -678,7 +679,14 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         visemeDriverRef.current.updateFormants(f1, f2, rms); // rms gates formant blending
         visemeDriverRef.current.tick(Date.now());
         if (!faceTrackingActiveRef.current) {
-          avatarRef.current?.updateBlends(visemeDriverRef.current.getBlends(), rms > 18);
+          avatarRef.current?.updateFace({
+            blends:      visemeDriverRef.current.getBlends(),
+            extraBlends: ZERO_EXTRA,
+            speaking:    rms > 18,
+            headPose:    ZERO_HEAD_POSE,
+            landmarks:   null,
+            calibrating: false,
+          });
         }
       }
 
