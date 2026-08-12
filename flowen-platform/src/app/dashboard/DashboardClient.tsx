@@ -68,6 +68,79 @@ function buildLast30Days(): string[] {
   return days;
 }
 
+// ─── Plan Banner ─────────────────────────────────────────────────────────────
+
+function PlanBanner({ tier }: { tier: string | null }) {
+  // Fully paid / funded tiers — no banner needed
+  if (tier === 'founding' || tier === 'public_funds') return null;
+
+  if (tier === 'standard') {
+    return (
+      <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+            <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd"/>
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-white leading-snug">
+              Standard Access <span className="text-emerald-400 text-xs font-mono ml-1">ACTIVE</span>
+            </p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Employed? Access to Work can reimburse your subscription — you pay nothing.{' '}
+              <Link href="/resources/access-to-work" className="text-emerald-400 hover:underline">Learn more →</Link>
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/dashboard/billing"
+          className="text-xs text-slate-500 hover:text-slate-300 transition-colors shrink-0 whitespace-nowrap"
+        >
+          Manage billing →
+        </Link>
+      </div>
+    );
+  }
+
+  // Free / vocali_freemium / null — upgrade prompt
+  return (
+    <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-emerald-500/5 px-5 py-4 space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
+            <svg className="w-4 h-4 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd"/>
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-white leading-snug">
+              Upgrade to Standard Access
+            </p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Unlimited sessions · Full analytics · 8-week fluency programme · SLT progress reports
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <Link
+            href="/pricing"
+            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-colors whitespace-nowrap"
+          >
+            Upgrade — £19.99/mo
+          </Link>
+          <Link
+            href="/resources/access-to-work"
+            className="text-xs text-slate-500 hover:text-slate-300 transition-colors whitespace-nowrap"
+          >
+            Get it funded →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function KpiCard({
   label,
   value,
@@ -328,7 +401,10 @@ export function DashboardClient({
         </Link>
       </div>
 
-      {/* B. KPI cards */}
+      {/* B. Plan banner */}
+      <PlanBanner tier={tier} />
+
+      {/* C. KPI cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <KpiCard
           label="Sessions"
