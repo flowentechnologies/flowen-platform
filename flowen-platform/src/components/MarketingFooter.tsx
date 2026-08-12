@@ -41,6 +41,7 @@ export default function MarketingFooter() {
             <ul className="space-y-2.5">
               <li><Link href="/about" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">About Us</Link></li>
               <li><Link href="/faq" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">FAQ</Link></li>
+              <li><Link href="/affiliates" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Affiliates</Link></li>
               <li><Link href="/media-kit" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Media Kit</Link></li>
               <li><Link href="/security" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Security</Link></li>
             </ul>
