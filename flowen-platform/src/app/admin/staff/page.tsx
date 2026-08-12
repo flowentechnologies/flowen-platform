@@ -66,9 +66,9 @@ export default async function StaffPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Staff</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Staff</h1>
           <p className="text-slate-400 text-sm mt-1">Team roster · roles · invites · shift handoff</p>
         </div>
         <span className="self-start sm:self-auto px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">
@@ -78,25 +78,25 @@ export default async function StaffPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Team Members</p>
-          <p className="text-4xl font-black text-white">{members.length}</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white">{members.length}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">{members.filter(m => m.status === 'active').length} active</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Active Roles</p>
-          <p className="text-4xl font-black text-white">{roles.length}</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white">{roles.length}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">{roles.join(', ')}</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Pending Invites</p>
-          <p className="text-4xl font-black text-white">{activeInvites}</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white">{activeInvites}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">{acceptedInvites} accepted</p>
         </div>
       </div>
 
       {/* Board */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <StaffClient
           initialMembers={members}
           initialInvites={invites}

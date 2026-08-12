@@ -39,10 +39,10 @@ const ASSET_TYPES: { id: IPAssetType; label: string; accent: string; badge: stri
   { id: 'ai_model',     label: 'AI Models',     accent: 'purple', badge: 'bg-purple-500/15 text-purple-300 border border-purple-500/30', bg: 'bg-purple-500/5',  border: 'border-purple-500/20' },
   { id: 'trademark',    label: 'Trademarks',    accent: 'amber',  badge: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',   bg: 'bg-amber-500/5',   border: 'border-amber-500/20' },
   { id: 'patent',       label: 'Patents',       accent: 'sky',    badge: 'bg-sky-500/15 text-sky-300 border border-sky-500/30',         bg: 'bg-sky-500/5',     border: 'border-sky-500/20' },
-  { id: 'trade_secret', label: 'Trade Secrets', accent: 'slate',  badge: 'bg-slate-600/30 text-slate-300 border border-slate-600/40',   bg: 'bg-slate-800/30',  border: 'border-slate-700/50' },
+  { id: 'trade_secret', label: 'Trade Secrets', accent: 'slate',  badge: 'bg-slate-600/30 text-slate-600 dark:text-slate-300 border border-slate-600/40',   bg: 'bg-slate-800/30',  border: 'border-slate-700/50' },
   { id: 'dataset',      label: 'Datasets',      accent: 'indigo', badge: 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30', bg: 'bg-indigo-500/5',  border: 'border-indigo-500/20' },
-  { id: 'copyright',    label: 'Copyright',     accent: 'slate',  badge: 'bg-slate-600/30 text-slate-300 border border-slate-600/40',   bg: 'bg-slate-800/30',  border: 'border-slate-700/50' },
-  { id: 'domain',       label: 'Domains',       accent: 'slate',  badge: 'bg-slate-600/30 text-slate-300 border border-slate-600/40',   bg: 'bg-slate-800/30',  border: 'border-slate-700/50' },
+  { id: 'copyright',    label: 'Copyright',     accent: 'slate',  badge: 'bg-slate-600/30 text-slate-600 dark:text-slate-300 border border-slate-600/40',   bg: 'bg-slate-800/30',  border: 'border-slate-700/50' },
+  { id: 'domain',       label: 'Domains',       accent: 'slate',  badge: 'bg-slate-600/30 text-slate-600 dark:text-slate-300 border border-slate-600/40',   bg: 'bg-slate-800/30',  border: 'border-slate-700/50' },
 ];
 
 const ASSET_TYPE_MAP = Object.fromEntries(ASSET_TYPES.map(t => [t.id, t]));
@@ -126,11 +126,11 @@ function AssetForm({
     setForm(f => ({ ...f, [k]: v }));
   }
 
-  const inputCls = 'w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
+  const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
   const labelCls = 'block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5';
 
   return (
-    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>Asset Type *</label>
@@ -267,14 +267,14 @@ function AssetForm({
           type="button"
           onClick={() => onSave(form)}
           disabled={saving || !form.name}
-          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40"
+          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
         >
           {saving ? 'Saving…' : 'Save Asset'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -302,12 +302,12 @@ function AssetCard({
   const renewalExpired = renewalDays !== null && renewalDays < 0;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 group transition-colors">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-700 rounded-xl p-4 group transition-colors">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           {/* Name row */}
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <p className="text-sm font-bold text-white">{asset.name}</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">{asset.name}</p>
             {asset.jurisdiction && (
               <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-700/60 text-slate-400">
                 {asset.jurisdiction}
@@ -360,7 +360,7 @@ function AssetCard({
           <button
             type="button"
             onClick={() => onEdit(asset)}
-            className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+            className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
           >
             Edit
           </button>
@@ -368,7 +368,7 @@ function AssetCard({
             type="button"
             onClick={() => onDelete(asset.id)}
             disabled={deleting}
-            className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
+            className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
           >
             ×
           </button>
@@ -492,7 +492,7 @@ function InvestorSummaryCard({ assets, versions }: { assets: IPAsset[]; versions
               INVESTOR SUMMARY
             </span>
           </div>
-          <h3 className="text-base font-bold text-white">IP Portfolio — Flowen Technologies Ltd</h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">IP Portfolio — Flowen Technologies Ltd</h3>
           <p className="text-xs text-slate-500 mt-0.5">Condensed view for investor conversations and diligence</p>
         </div>
         <button
@@ -501,7 +501,7 @@ function InvestorSummaryCard({ assets, versions }: { assets: IPAsset[]; versions
           className={`shrink-0 px-3.5 py-2 text-xs font-mono font-bold rounded-xl border transition-all ${
             copied
               ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-              : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'
+              : 'bg-slate-100 dark:bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500'
           }`}
         >
           {copied ? 'Copied ✓' : 'Copy for investor'}
@@ -509,28 +509,28 @@ function InvestorSummaryCard({ assets, versions }: { assets: IPAsset[]; versions
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-slate-950/60 rounded-xl p-3.5">
+        <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl p-3.5">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Trademarks</p>
           <p className="text-2xl font-black text-amber-400">{trademarks.length}</p>
           <p className="text-[10px] text-slate-600 mt-0.5 font-mono truncate">
             {trademarks.length > 0 ? trademarks.map(t => t.name).join(', ') : 'None registered'}
           </p>
         </div>
-        <div className="bg-slate-950/60 rounded-xl p-3.5">
+        <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl p-3.5">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">ASR Versions</p>
           <p className="text-2xl font-black text-purple-400">{versions.length}</p>
           <p className="text-[10px] text-slate-600 mt-0.5 font-mono">
             {totalClips ? `${(totalClips / 1000).toFixed(0)}k training clips` : 'No data'}
           </p>
         </div>
-        <div className="bg-slate-950/60 rounded-xl p-3.5">
+        <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl p-3.5">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Trade Secrets</p>
-          <p className="text-2xl font-black text-slate-300">{tradeSecrets.length}</p>
+          <p className="text-2xl font-black text-slate-600 dark:text-slate-300">{tradeSecrets.length}</p>
           <p className="text-[10px] text-slate-600 mt-0.5 font-mono">
             {tradeSecrets.length > 0 ? tradeSecrets.map(t => t.name).join(', ') : 'None catalogued'}
           </p>
         </div>
-        <div className="bg-slate-950/60 rounded-xl p-3.5">
+        <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl p-3.5">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Est. IP Value</p>
           <p className="text-2xl font-black text-emerald-400">
             {totalValuePence > 0 ? fmtGBP(totalValuePence) : '—'}
@@ -541,7 +541,7 @@ function InvestorSummaryCard({ assets, versions }: { assets: IPAsset[]; versions
 
       {/* Inline summary text */}
       {assets.length > 0 || versions.length > 0 ? (
-        <div className="mt-4 bg-slate-950/50 rounded-xl px-4 py-3 font-mono text-[11px] text-slate-400 leading-relaxed whitespace-pre-line border border-slate-800/50">
+        <div className="mt-4 bg-slate-100 dark:bg-slate-950/50 rounded-xl px-4 py-3 font-mono text-[11px] text-slate-400 leading-relaxed whitespace-pre-line border border-slate-800/50">
           {buildSummary()}
         </div>
       ) : null}
@@ -630,19 +630,19 @@ function IPRegisterTab({ assets: initial, versions }: { assets: IPAsset[]; versi
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Total Assets</p>
-          <p className="text-3xl font-black text-white">{assets.length}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{assets.length}</p>
         </div>
-        <div className="bg-slate-900 border border-amber-500/20 rounded-2xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-amber-500/20 rounded-2xl p-4">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Registered</p>
           <p className="text-3xl font-black text-amber-400">{registeredCount}</p>
         </div>
-        <div className="bg-slate-900 border border-sky-500/20 rounded-2xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-sky-500/20 rounded-2xl p-4">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Pending</p>
           <p className="text-3xl font-black text-sky-400">{pendingCount}</p>
         </div>
-        <div className="bg-slate-900 border border-emerald-500/20 rounded-2xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-emerald-500/20 rounded-2xl p-4">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Est. Value</p>
           <p className="text-2xl font-black text-emerald-400">
             {totalValuePence > 0 ? fmtGBP(totalValuePence) : '—'}
@@ -669,7 +669,7 @@ function IPRegisterTab({ assets: initial, versions }: { assets: IPAsset[]; versi
           <button
             type="button"
             onClick={() => setShowAddForm(true)}
-            className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+            className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors"
           >
             + Add Asset
           </button>
@@ -706,7 +706,7 @@ function IPRegisterTab({ assets: initial, versions }: { assets: IPAsset[]; versi
       {/* Asset sections grouped by type */}
       {assets.length === 0 ? (
         <div className="space-y-4">
-          <div className="py-8 text-center border border-dashed border-slate-800 rounded-2xl">
+          <div className="py-8 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
             <p className="text-sm text-slate-600 font-mono mb-1">No IP assets catalogued yet</p>
             <p className="text-xs text-slate-700 font-mono">Add your first asset using the button above</p>
           </div>
@@ -718,10 +718,10 @@ function IPRegisterTab({ assets: initial, versions }: { assets: IPAsset[]; versi
               {EMPTY_STATE_SUGGESTIONS.map((s, i) => (
                 <div
                   key={i}
-                  className="bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 flex items-start justify-between gap-3 opacity-60"
+                  className="bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 flex items-start justify-between gap-3 opacity-60"
                 >
                   <div>
-                    <p className="text-xs font-semibold text-slate-300">{s.name}</p>
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{s.name}</p>
                     {s.description && <p className="text-[10px] text-slate-600 mt-0.5">{s.description}</p>}
                     <div className="flex gap-2 mt-1.5">
                       <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${ASSET_TYPE_MAP[s.asset_type]?.badge ?? ''}`}>
@@ -804,11 +804,11 @@ function VersionForm({
     setForm(f => ({ ...f, [k]: v }));
   }
 
-  const inputCls = 'w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
+  const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
   const labelCls = 'block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5';
 
   return (
-    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>Model Name</label>
@@ -846,16 +846,16 @@ function VersionForm({
             type="checkbox"
             checked={form.deployed}
             onChange={e => field('deployed', e.target.checked)}
-            className="w-4 h-4 rounded border-slate-600 bg-slate-800 accent-emerald-500"
+            className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 accent-emerald-500"
           />
-          <span className="text-sm text-slate-300 font-mono">Set as production (deployed)</span>
+          <span className="text-sm text-slate-600 dark:text-slate-300 font-mono">Set as production (deployed)</span>
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={form.deprecated}
             onChange={e => field('deprecated', e.target.checked)}
-            className="w-4 h-4 rounded border-slate-600 bg-slate-800 accent-red-500"
+            className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 accent-red-500"
           />
           <span className="text-sm text-slate-400 font-mono">Deprecated</span>
         </label>
@@ -873,14 +873,14 @@ function VersionForm({
           type="button"
           onClick={() => onSave(form)}
           disabled={saving || !form.version}
-          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40"
+          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
         >
           {saving ? 'Saving…' : 'Save Version'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -989,8 +989,8 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-slate-800 pb-4">
-        <h2 className="text-lg font-bold text-white">Disfluent ASR Engine — Version Registry</h2>
+      <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Disfluent ASR Engine — Version Registry</h2>
         <p className="text-sm text-slate-500 mt-0.5">Proprietary fine-tuned speech model for disfluency detection and biofeedback</p>
       </div>
 
@@ -1001,7 +1001,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-4xl font-black text-white font-mono">v{prodVersion.version}</span>
+                <span className="text-4xl font-black text-slate-900 dark:text-white font-mono">v{prodVersion.version}</span>
                 <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse">
                   PRODUCTION
                 </span>
@@ -1017,7 +1017,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
               )}
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-slate-950/60 rounded-xl px-4 py-3 text-center">
+              <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl px-4 py-3 text-center">
                 <p className="text-[9px] font-mono text-slate-500 uppercase mb-1">Training Clips</p>
                 <p className="text-xl font-black text-amber-400">
                   {prodVersion.training_clips !== null
@@ -1027,13 +1027,13 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
                     : '—'}
                 </p>
               </div>
-              <div className="bg-slate-950/60 rounded-xl px-4 py-3 text-center">
+              <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl px-4 py-3 text-center">
                 <p className="text-[9px] font-mono text-slate-500 uppercase mb-1">Accuracy</p>
                 <p className="text-xl font-black text-emerald-400">
                   {prodVersion.accuracy_pct !== null ? `${prodVersion.accuracy_pct}%` : '—'}
                 </p>
               </div>
-              <div className="bg-slate-950/60 rounded-xl px-4 py-3 text-center">
+              <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl px-4 py-3 text-center">
                 <p className="text-[9px] font-mono text-slate-500 uppercase mb-1">Latency</p>
                 <p className="text-xl font-black text-sky-400">
                   {prodVersion.latency_ms !== null ? `${prodVersion.latency_ms}ms` : '—'}
@@ -1043,7 +1043,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
           </div>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-dashed border-slate-700 rounded-2xl p-6 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-dashed border-slate-700 rounded-2xl p-6 text-center">
           <p className="text-sm text-slate-600 font-mono">No production version deployed</p>
           <p className="text-xs text-slate-700 font-mono mt-1">Add a version and mark it as deployed to track production</p>
         </div>
@@ -1055,7 +1055,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
           <button
             type="button"
             onClick={() => setShowAddForm(true)}
-            className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+            className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors"
           >
             + Add Version
           </button>
@@ -1090,14 +1090,14 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
 
       {/* Versions table */}
       {versions.length === 0 ? (
-        <div className="py-10 text-center border border-dashed border-slate-800 rounded-2xl">
+        <div className="py-10 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
           <p className="text-sm text-slate-600 font-mono">No model versions recorded yet</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-800">
+              <tr className="border-b border-slate-200 dark:border-slate-800">
                 <th className="text-left py-3 px-3 text-[10px] font-mono text-slate-500 uppercase tracking-wide font-normal">Version</th>
                 <th className="text-left py-3 px-3 text-[10px] font-mono text-slate-500 uppercase tracking-wide font-normal">Training Clips</th>
                 <th className="text-left py-3 px-3 text-[10px] font-mono text-slate-500 uppercase tracking-wide font-normal">Accuracy</th>
@@ -1113,7 +1113,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
                 return (
                   <tr key={v.id} className="border-b border-slate-800/50 hover:bg-slate-800/20 group transition-colors">
                     <td className="py-3 px-3">
-                      <span className="text-white font-mono font-bold">v{v.version}</span>
+                      <span className="text-slate-900 dark:text-white font-mono font-bold">v{v.version}</span>
                       {v.description && (
                         <p className="text-[10px] text-slate-600 mt-0.5 max-w-[160px] truncate">{v.description}</p>
                       )}
@@ -1144,7 +1144,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
                         <button
                           type="button"
                           onClick={() => { setEditingVersion(v); setShowAddForm(false); }}
-                          className="px-2.5 py-1 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+                          className="px-2.5 py-1 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
                         >
                           Edit
                         </button>
@@ -1152,7 +1152,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
                           type="button"
                           onClick={() => handleDelete(v.id)}
                           disabled={deletingId === v.id}
-                          className="px-2 py-1 text-[11px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
+                          className="px-2 py-1 text-[11px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
                         >
                           ×
                         </button>
@@ -1187,9 +1187,9 @@ export default function IPClient({ initialAssets, initialVersions }: Props) {
   ];
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
       {/* Tab bar */}
-      <div className="flex gap-1 border-b border-slate-800 mb-6">
+      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800 mb-6">
         {tabs.map(t => (
           <button
             key={t.id}
@@ -1197,12 +1197,12 @@ export default function IPClient({ initialAssets, initialVersions }: Props) {
             onClick={() => setTab(t.id)}
             className={`px-4 py-2.5 text-sm font-mono rounded-t-lg transition-colors flex items-center gap-2 -mb-px border-b-2 ${
               tab === t.id
-                ? 'border-indigo-500 text-white bg-slate-800/50'
+                ? 'border-indigo-500 text-slate-900 dark:text-white bg-slate-800/50'
                 : 'border-transparent text-slate-500 hover:text-slate-300'
             }`}
           >
             {t.label}
-            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-500'}`}>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
               {t.count}
             </span>
           </button>

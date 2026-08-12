@@ -27,7 +27,7 @@ interface Props {
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const FOLDERS: { id: Folder; label: string; color: string }[] = [
-  { id: 'general',   label: 'General',   color: 'bg-slate-700 text-slate-300' },
+  { id: 'general',   label: 'General',   color: 'bg-slate-700 text-slate-600 dark:text-slate-300' },
   { id: 'images',    label: 'Images',    color: 'bg-blue-500/10 text-blue-400' },
   { id: 'audio',     label: 'Audio',     color: 'bg-purple-500/10 text-purple-400' },
   { id: 'video',     label: 'Video',     color: 'bg-pink-500/10 text-pink-400' },
@@ -132,17 +132,17 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors"
       >
         + Upload Asset
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">Upload Asset</h3>
-              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="text-slate-500 hover:text-white text-lg">×</button>
+          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Upload Asset</h3>
+              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
             </div>
 
             <div className="px-6 py-5 space-y-4">
@@ -160,7 +160,7 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
                 />
                 {file ? (
                   <div>
-                    <p className="text-sm font-medium text-white">{file.name}</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">{file.name}</p>
                     <p className="text-xs text-slate-500 mt-1">{fmtBytes(file.size)}</p>
                   </div>
                 ) : (
@@ -173,39 +173,39 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Name *</label>
-                <input value={form.name} onChange={e => field('name', e.target.value)} placeholder="Asset name" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.name} onChange={e => field('name', e.target.value)} placeholder="Asset name" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Folder</label>
-                <select value={form.folder} onChange={e => field('folder', e.target.value as Folder)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                <select value={form.folder} onChange={e => field('folder', e.target.value as Folder)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   {FOLDERS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
                 </select>
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Tags <span className="normal-case text-slate-600">(comma-separated)</span></label>
-                <input value={form.tags} onChange={e => field('tags', e.target.value)} placeholder="hero, onboarding, brand" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.tags} onChange={e => field('tags', e.target.value)} placeholder="hero, onboarding, brand" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Description</label>
-                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={2} placeholder="Optional description…" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={2} placeholder="Optional description…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
 
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-800 flex gap-3">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
               <button
                 type="button"
                 onClick={upload}
                 disabled={progress !== 'idle' || !file}
-                className={`px-5 py-2 text-sm font-mono font-bold rounded-xl transition-colors disabled:opacity-40 ${progress === 'done' ? 'bg-emerald-600 text-white' : 'bg-indigo-600 hover:bg-indigo-500 text-white'}`}
+                className={`px-5 py-2 text-sm font-mono font-bold rounded-xl transition-colors disabled:opacity-40 ${progress === 'done' ? 'bg-emerald-600 text-slate-900 dark:text-white' : 'bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white'}`}
               >
                 {progress === 'uploading' ? 'Uploading…' : progress === 'done' ? 'Done ✓' : 'Upload'}
               </button>
-              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -219,14 +219,14 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
 function AssetThumb({ asset }: { asset: AssetFile }) {
   if (isImage(asset.mime_type)) {
     return (
-      <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-800 shrink-0">
+      <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={asset.public_url} alt={asset.name} className="w-full h-full object-cover" />
       </div>
     );
   }
   return (
-    <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 text-base">
+    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 text-base">
       {mimeIcon(asset.mime_type)}
     </div>
   );
@@ -288,13 +288,13 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
           placeholder="Search by name or tag…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="flex-1 min-w-48 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
+          className="flex-1 min-w-48 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
         />
         <div className="flex flex-wrap gap-1">
           <button
             type="button"
             onClick={() => setFolderFilter('all')}
-            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${folderFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${folderFilter === 'all' ? 'bg-indigo-600 text-slate-900 dark:text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
           >
             All ({assets.length})
           </button>
@@ -303,7 +303,7 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
               key={f.id}
               type="button"
               onClick={() => setFolderFilter(f.id)}
-              className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${folderFilter === f.id ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+              className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${folderFilter === f.id ? 'bg-indigo-600 text-slate-900 dark:text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
             >
               {f.label} ({folderCounts[f.id]})
             </button>
@@ -322,13 +322,13 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
           {filtered.map(asset => {
             const folderCfg = FOLDER_MAP[asset.folder];
             return (
-              <div key={asset.id} className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl px-4 py-3.5 flex items-center gap-4 group transition-colors">
+              <div key={asset.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-700 rounded-xl px-4 py-3.5 flex items-center gap-4 group transition-colors">
                 <AssetThumb asset={asset} />
 
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-semibold text-white truncate">{asset.name}</p>
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 ${folderCfg?.color ?? 'bg-slate-800 text-slate-400'}`}>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{asset.name}</p>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 ${folderCfg?.color ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                       {folderCfg?.label ?? asset.folder}
                     </span>
                     {isAudio(asset.mime_type) && (
@@ -346,7 +346,7 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
                     {asset.tags.length > 0 && (
                       <div className="flex gap-1">
                         {asset.tags.slice(0, 4).map(tag => (
-                          <span key={tag} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-500">
+                          <span key={tag} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
                             {tag}
                           </span>
                         ))}
@@ -359,7 +359,7 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
                   <button
                     type="button"
                     onClick={() => copyUrl(asset)}
-                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
                   >
                     {copied === asset.id ? 'Copied ✓' : 'Copy URL'}
                   </button>
@@ -367,7 +367,7 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
                     href={asset.public_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
+                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
                   >
                     Open ↗
                   </a>
@@ -375,7 +375,7 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
                     type="button"
                     onClick={() => handleDelete(asset.id)}
                     disabled={deleting === asset.id || isPending}
-                    className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
+                    className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
                   >
                     ×
                   </button>

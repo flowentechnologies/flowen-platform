@@ -51,18 +51,18 @@ function TrendArrow({ current, prior }: { current: number; prior: number | null 
 function QualitySkeleton() {
   return (
     <div className="animate-pulse space-y-6">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-        <div className="h-4 w-64 bg-slate-800 rounded mb-6" />
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <div className="h-4 w-64 bg-slate-100 dark:bg-slate-800 rounded mb-6" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 bg-slate-800 rounded-xl" />
+            <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800 rounded-xl" />
           ))}
         </div>
         <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex gap-2">
               {Array.from({ length: 8 }).map((_, j) => (
-                <div key={j} className="h-8 flex-1 bg-slate-800 rounded" />
+                <div key={j} className="h-8 flex-1 bg-slate-100 dark:bg-slate-800 rounded" />
               ))}
             </div>
           ))}
@@ -78,7 +78,7 @@ function QualityStat({
   label,
   value,
   sub,
-  valueColor = 'text-white',
+  valueColor = 'text-slate-900 dark:text-white',
 }: {
   label: string;
   value: string;
@@ -103,7 +103,7 @@ function WeeklyTable({ weekly }: { weekly: WeeklyQualityPoint[] }) {
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse text-[11px]">
         <thead>
-          <tr className="border-b border-slate-800">
+          <tr className="border-b border-slate-200 dark:border-slate-800">
             {['Week', 'Sessions', 'Users', 'Avg Duration', 'Blocks/Min', 'Reps/Min', 'Prolongations/Min', 'Total Dysfl/Min'].map(
               (col) => (
                 <th
@@ -121,13 +121,13 @@ function WeeklyTable({ weekly }: { weekly: WeeklyQualityPoint[] }) {
             const prior = idx > 0 ? weekly[idx - 1] : null;
             return (
               <tr key={row.week} className="hover:bg-slate-800/30 transition-colors">
-                <td className="py-2 pr-4 font-mono text-slate-300 whitespace-nowrap">
+                <td className="py-2 pr-4 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">
                   {row.week}
                   <span className="ml-1 text-slate-600 text-[10px]">{row.date.slice(5)}</span>
                 </td>
                 <td className="py-2 pr-4 font-mono text-slate-400">{row.sessions}</td>
                 <td className="py-2 pr-4 font-mono text-slate-400">{row.unique_users}</td>
-                <td className="py-2 pr-4 font-mono text-slate-300">{fmtDuration(row.avg_duration_seconds)}</td>
+                <td className="py-2 pr-4 font-mono text-slate-600 dark:text-slate-300">{fmtDuration(row.avg_duration_seconds)}</td>
                 <td className="py-2 pr-4 font-mono whitespace-nowrap">
                   <span className={blocksCellClass(row.avg_blocks_per_min)}>
                     {fmtNum(row.avg_blocks_per_min)}
@@ -141,7 +141,7 @@ function WeeklyTable({ weekly }: { weekly: WeeklyQualityPoint[] }) {
                 </td>
                 <td className="py-2 pr-4 font-mono text-slate-400">{fmtNum(row.avg_repetitions_per_min)}</td>
                 <td className="py-2 pr-4 font-mono text-slate-400">{fmtNum(row.avg_prolongations_per_min)}</td>
-                <td className="py-2 pr-4 font-mono text-slate-300">{fmtNum(row.avg_total_disfluencies_per_min)}</td>
+                <td className="py-2 pr-4 font-mono text-slate-600 dark:text-slate-300">{fmtNum(row.avg_total_disfluencies_per_min)}</td>
               </tr>
             );
           })}
@@ -222,7 +222,7 @@ function TrajectoryBar({ data }: { data: QualityData }) {
             <div className={`w-2.5 h-2.5 rounded-sm ${s.bg}`} />
             <span className={`text-[10px] font-mono ${s.text}`}>
               {s.label}:&nbsp;
-              <span className="text-white font-bold">{s.count}</span>
+              <span className="text-slate-900 dark:text-white font-bold">{s.count}</span>
               {s.pctOfData !== null && withData > 0 && (
                 <span className="text-slate-500"> ({s.pctOfData}%)</span>
               )}
@@ -258,7 +258,7 @@ export function QualityPanel() {
 
   if (error) {
     return (
-      <div className="bg-slate-900 border border-red-800/40 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-red-800/40 rounded-2xl p-6">
         <p className="text-sm text-red-400 font-mono">Quality data unavailable: {error}</p>
       </div>
     );
@@ -269,7 +269,7 @@ export function QualityPanel() {
   // Empty state
   if (data.total_sessions_analysed === 0) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center">
         <p className="text-sm text-slate-500">
           No session data yet — quality metrics will appear once users complete practice sessions.
         </p>
@@ -286,9 +286,9 @@ export function QualityPanel() {
   return (
     <div className="space-y-6">
       {/* Panel header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
-          <h2 className="text-sm font-bold text-white">Session Quality &amp; Clinical Outcomes</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Session Quality &amp; Clinical Outcomes</h2>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
             NHS Evidence Pack
           </span>

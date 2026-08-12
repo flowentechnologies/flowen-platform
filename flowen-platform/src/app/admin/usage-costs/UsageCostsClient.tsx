@@ -63,13 +63,13 @@ function SectionLabel({ children, right }: { children: React.ReactNode; right?: 
 // ── KPI card ──────────────────────────────────────────────────────────────────
 
 function KpiCard({
-  label, value, sub, color = 'text-white', icon, alert,
+  label, value, sub, color = 'text-slate-900 dark:text-white', icon, alert,
 }: {
   label: string; value: string | number; sub?: string; color?: string; icon: string; alert?: 'warn' | 'good' | 'neutral';
 }) {
   const alertCls = alert === 'warn' ? 'border-rose-500/30 bg-rose-500/5'
     : alert === 'good' ? 'border-emerald-500/20 bg-emerald-500/5'
-    : 'border-slate-800 bg-slate-900/40';
+    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40';
   return (
     <div className={`rounded-xl border p-5 ${alertCls}`}>
       <div className="text-xl mb-3">{icon}</div>
@@ -87,7 +87,7 @@ function ServiceCard({ s }: { s: ServiceRow }) {
   const isVar  = s.billing === 'variable';
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-lg leading-none w-6 text-center">{s.icon}</span>
@@ -107,7 +107,7 @@ function ServiceCard({ s }: { s: ServiceRow }) {
             <span className="text-sm font-bold text-emerald-400">£0.00</span>
           ) : (
             <div>
-              <span className="text-sm font-bold text-white tabular-nums">{gbp(s.totalGbp)}</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">{gbp(s.totalGbp)}</span>
               <span className="text-[10px] text-slate-600 ml-1">/mo</span>
             </div>
           )}
@@ -122,7 +122,7 @@ function ServiceCard({ s }: { s: ServiceRow }) {
         )}
       </div>
 
-      <p className="text-[10px] text-slate-600 leading-relaxed border-t border-slate-800/60 pt-2">{s.note}</p>
+      <p className="text-[10px] text-slate-600 leading-relaxed border-t border-slate-200 dark:border-slate-800/60 pt-2">{s.note}</p>
     </div>
   );
 }
@@ -134,10 +134,10 @@ function TierTable({ tiers }: { tiers: TierRow[] }) {
     founding: '⭐ Founding', standard: '🔵 Standard', public_funds: '🏥 Funded', vocali_freemium: '⚪ Freemium',
   };
   return (
-    <div className="rounded-xl border border-slate-800 overflow-hidden">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead className="border-b border-slate-800 bg-slate-900/40">
+          <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
             <tr>
               {['Tier', 'Users', 'Sessions / mo', 'Audio / mo', 'Revenue / mo', 'Variable Cost', 'Fixed Share', 'Net P&L'].map(h => (
                 <th key={h} className="px-4 py-2.5 text-left font-mono font-bold uppercase tracking-widest text-slate-500 whitespace-nowrap text-[10px]">{h}</th>
@@ -150,9 +150,9 @@ function TierTable({ tiers }: { tiers: TierRow[] }) {
                 <td className="px-4 py-2.5">
                   <span className="font-semibold text-slate-200">{TIER_NAMES[t.tier] ?? t.tier}</span>
                 </td>
-                <td className="px-4 py-2.5 tabular-nums text-slate-300">{t.users}</td>
-                <td className="px-4 py-2.5 tabular-nums text-slate-300">{t.sessionsMonth}</td>
-                <td className="px-4 py-2.5 tabular-nums text-slate-300">{mins(t.secondsMonth)}</td>
+                <td className="px-4 py-2.5 tabular-nums text-slate-600 dark:text-slate-300">{t.users}</td>
+                <td className="px-4 py-2.5 tabular-nums text-slate-600 dark:text-slate-300">{t.sessionsMonth}</td>
+                <td className="px-4 py-2.5 tabular-nums text-slate-600 dark:text-slate-300">{mins(t.secondsMonth)}</td>
                 <td className="px-4 py-2.5 tabular-nums font-medium text-emerald-400">{gbp(t.revenueMonthPence / 100)}</td>
                 <td className="px-4 py-2.5 tabular-nums text-amber-400/80">{gbp(t.variableCostGbp, 4)}</td>
                 <td className="px-4 py-2.5 tabular-nums text-slate-400">{gbp(t.fixedShareGbp)}</td>
@@ -201,18 +201,18 @@ function UserPnLTable({ users }: { users: UserPnL[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-800 overflow-hidden">
-      <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/30">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/30">
         <input
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Search user…"
-          className="w-full sm:max-w-xs bg-slate-800/60 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500/60"
+          className="w-full sm:max-w-xs bg-slate-100/80 dark:bg-slate-800/60 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500/60"
         />
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="border-b border-slate-800 bg-slate-900/40">
+          <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
             <tr>
               <th className="px-4 py-2.5 text-left text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 whitespace-nowrap">User</th>
               <th className="px-4 py-2.5 text-left text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 whitespace-nowrap">Tier</th>
@@ -271,7 +271,7 @@ function UserPnLTable({ users }: { users: UserPnL[] }) {
         </table>
       </div>
       {filtered.length > 0 && (
-        <div className="px-4 py-2.5 border-t border-slate-800/60 bg-slate-900/30 text-xs text-slate-600">
+        <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800/60 bg-slate-50/80 dark:bg-slate-900/30 text-xs text-slate-600">
           {filtered.length} user{filtered.length !== 1 ? 's' : ''}
         </div>
       )}
@@ -287,9 +287,9 @@ function RunRateBar({ label, current, projected, color }: { label: string; curre
     <div className="space-y-1.5">
       <div className="flex justify-between text-xs">
         <span className="text-slate-400">{label}</span>
-        <span className="text-slate-300 font-mono tabular-nums">{current} <span className="text-slate-600">→ {projected} projected</span></span>
+        <span className="text-slate-600 dark:text-slate-300 font-mono tabular-nums">{current} <span className="text-slate-600">→ {projected} projected</span></span>
       </div>
-      <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden relative">
+      <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden relative">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -310,7 +310,7 @@ function UtilBar({ label, used, total, unit, color }: { label: string; used: num
           <span className="text-slate-600 ml-1">({pct.toFixed(1)}%)</span>
         </span>
       </div>
-      <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+      <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-700 ${color}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -319,7 +319,7 @@ function UtilBar({ label, used, total, unit, color }: { label: string; used: num
 
 function InfoRow({ label, value, sub, mono }: { label: string; value: string | number; sub?: string; mono?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-4 py-2 border-b border-slate-800/40 last:border-0">
+    <div className="flex items-start justify-between gap-4 py-2 border-b border-slate-200/60 dark:border-slate-800/40 last:border-0">
       <span className="text-xs text-slate-500 shrink-0">{label}</span>
       <div className="text-right">
         <span className={`text-xs font-semibold text-slate-200 ${mono ? 'font-mono tabular-nums' : ''}`}>{value}</span>
@@ -341,7 +341,7 @@ function ComputeSection({ c }: { c: ComputeData }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* Vercel Compute */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-5">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-lg">▲</span>
             <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">Vercel Functions</h3>
@@ -356,7 +356,7 @@ function ComputeSection({ c }: { c: ComputeData }) {
             <InfoRow label="Est. invocations/mo" value={c.estimatedInvocationsMonth.toLocaleString()} sub="middleware + SSR" mono />
             <InfoRow label="Est. bandwidth/mo"   value={`${c.estimatedBandwidthMb} MB`} sub={`~${((c.estimatedBandwidthMb / 1024 / 1024) * 100).toFixed(3)}% of 1 TB Pro limit`} mono />
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800/60 space-y-3">
+          <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60 space-y-3">
             <UtilBar
               label="Bandwidth usage (1 TB limit)"
               used={c.estimatedBandwidthMb / 1024}
@@ -368,7 +368,7 @@ function ComputeSection({ c }: { c: ComputeData }) {
         </div>
 
         {/* Database */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-5">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-lg">🗄</span>
             <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">Supabase Postgres</h3>
@@ -385,14 +385,14 @@ function ComputeSection({ c }: { c: ComputeData }) {
             <InfoRow label="Auth"       value="Supabase Auth + RLS"     sub="row-level security enforced" />
             <InfoRow label="Connection" value="Supabase JS v2"          sub="service role (server-only)" />
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800/60 space-y-3">
+          <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60 space-y-3">
             <UtilBar label="DB storage" used={dbMb} total={dbLimitMb} unit="MB" color="bg-violet-500" />
             <UtilBar label="R2 audio storage" used={c.r2StorageGb} total={c.r2FreeTierGb} unit="GB" color="bg-amber-500" />
           </div>
         </div>
 
         {/* Traffic & CDN */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-5">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-lg">🌐</span>
             <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">Traffic &amp; CDN</h3>
@@ -403,8 +403,8 @@ function ComputeSection({ c }: { c: ComputeData }) {
               { label: 'This week',   value: c.pageViewsWeek.toLocaleString(),   sub: 'page views' },
               { label: 'This month',  value: c.pageViewsMonth.toLocaleString(),  sub: 'page views' },
             ].map(s => (
-              <div key={s.label} className="rounded-lg bg-slate-800/40 px-3 py-2.5 text-center">
-                <div className="text-base font-extrabold text-white tabular-nums">{s.value}</div>
+              <div key={s.label} className="rounded-lg bg-slate-100/60 dark:bg-slate-800/40 px-3 py-2.5 text-center">
+                <div className="text-base font-extrabold text-slate-900 dark:text-white tabular-nums">{s.value}</div>
                 <div className="text-[9px] text-slate-600 mt-0.5">{s.label}</div>
               </div>
             ))}
@@ -419,7 +419,7 @@ function ComputeSection({ c }: { c: ComputeData }) {
         </div>
 
         {/* Scheduled Jobs */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-5">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-lg">⏱</span>
             <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">Scheduled Jobs</h3>
@@ -433,11 +433,11 @@ function ComputeSection({ c }: { c: ComputeData }) {
           {/* Success / Failed / Total */}
           <div className="grid grid-cols-3 gap-3 mb-4">
             {[
-              { label: 'Total runs',  value: c.cronTotalRuns,   color: 'text-white' },
+              { label: 'Total runs',  value: c.cronTotalRuns,   color: 'text-slate-900 dark:text-white' },
               { label: 'Successful',  value: c.cronSuccessful,  color: 'text-emerald-400' },
               { label: 'Failed',      value: c.cronFailed,      color: c.cronFailed > 0 ? 'text-rose-400' : 'text-slate-600' },
             ].map(s => (
-              <div key={s.label} className="rounded-lg bg-slate-800/40 px-3 py-2.5 text-center">
+              <div key={s.label} className="rounded-lg bg-slate-100/60 dark:bg-slate-800/40 px-3 py-2.5 text-center">
                 <div className={`text-base font-extrabold tabular-nums ${s.color}`}>{s.value}</div>
                 <div className="text-[9px] text-slate-600 mt-0.5">{s.label}</div>
               </div>
@@ -449,7 +449,7 @@ function ComputeSection({ c }: { c: ComputeData }) {
             <InfoRow label="Max duration"    value={`${c.cronMaxDurationMs}ms`}     mono />
             <InfoRow label="Last run"        value={relTime(c.cronLastRunAt)}        sub={c.cronLastRunAt ? shortDate(c.cronLastRunAt) : ''} />
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800/60">
+          <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60">
             <UtilBar
               label="Success rate"
               used={c.cronSuccessRatePct}
@@ -463,15 +463,15 @@ function ComputeSection({ c }: { c: ComputeData }) {
 
       {/* Top tables by storage */}
       {c.topTables.length > 0 && (
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
-          <div className="px-5 py-3 border-b border-slate-800 flex items-center gap-2">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 overflow-hidden">
+          <div className="px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
             <span className="text-sm">📊</span>
             <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Top Tables by Storage (Postgres)</h3>
             <span className="ml-auto text-[10px] text-slate-600">{dbMb.toFixed(1)} MB total · {c.dbTableCount} tables</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead className="border-b border-slate-800/60">
+              <thead className="border-b border-slate-200 dark:border-slate-800/60">
                 <tr>
                   <th className="px-5 py-2 text-left text-[10px] font-mono uppercase tracking-widest text-slate-600">Table</th>
                   <th className="px-5 py-2 text-right text-[10px] font-mono uppercase tracking-widest text-slate-600">Size</th>
@@ -483,14 +483,14 @@ function ComputeSection({ c }: { c: ComputeData }) {
                   const sharePct = c.dbBytes > 0 ? (t.bytes / c.dbBytes) * 100 : 0;
                   return (
                     <tr key={t.name} className="hover:bg-slate-800/20 transition-colors">
-                      <td className="px-5 py-2 font-mono text-slate-300">
+                      <td className="px-5 py-2 font-mono text-slate-600 dark:text-slate-300">
                         <span className="text-slate-600 mr-2 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
                         {t.name}
                       </td>
                       <td className="px-5 py-2 text-right font-mono tabular-nums text-slate-400">{t.pretty}</td>
                       <td className="px-5 py-2">
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1 rounded-full bg-slate-800 overflow-hidden max-w-[80px]">
+                          <div className="flex-1 h-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden max-w-[80px]">
                             <div className="h-full rounded-full bg-violet-500/60" style={{ width: `${sharePct}%` }} />
                           </div>
                           <span className="text-[10px] text-slate-600 tabular-nums w-10 text-right">{sharePct.toFixed(1)}%</span>
@@ -506,7 +506,7 @@ function ComputeSection({ c }: { c: ComputeData }) {
       )}
 
       {/* ASR Pipeline performance */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-5">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-lg">🎙</span>
           <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">ASR Pipeline — Throughput</h3>
@@ -518,8 +518,8 @@ function ComputeSection({ c }: { c: ComputeData }) {
             { label: 'Avg session length', value: mins(Math.round(c.avgSessionDurationS)), sub: 'per session' },
             { label: 'ASR latency',        value: 'Not yet logged',               sub: 'average_latency_ms → null' },
           ].map(m => (
-            <div key={m.label} className="rounded-lg bg-slate-800/40 px-4 py-3">
-              <div className="text-sm font-bold text-white tabular-nums">{m.value}</div>
+            <div key={m.label} className="rounded-lg bg-slate-100/60 dark:bg-slate-800/40 px-4 py-3">
+              <div className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">{m.value}</div>
               <div className="text-[10px] text-slate-500 mt-0.5">{m.label}</div>
               <div className="text-[10px] text-slate-600">{m.sub}</div>
             </div>
@@ -569,18 +569,18 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Usage &amp; Costs</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Usage &amp; Costs</h1>
           <p className="text-slate-400 text-sm mt-1">
             Real-time financial intelligence — revenue, operating costs, unit economics and per-user P&amp;L.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100/80 dark:bg-slate-800/60 border border-slate-700/60">
             <span className={`w-1.5 h-1.5 rounded-full ${loading ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 animate-pulse'}`} />
             <span className="text-xs font-mono text-slate-400">{loading ? 'Refreshing…' : `Updated ${relTime(lastFetch.toISOString())}`}</span>
           </div>
           <button onClick={refresh} disabled={loading}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 transition-colors disabled:opacity-40">
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-700 hover:border-slate-500 transition-colors disabled:opacity-40">
             ↻ Refresh
           </button>
         </div>
@@ -605,7 +605,7 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
           <KpiCard icon="📈" label="Gross Margin" value={pct(ec.grossMarginPct)} color={ec.grossMarginPct > 50 ? 'text-emerald-400' : ec.grossMarginPct > 20 ? 'text-amber-400' : 'text-rose-400'}
             sub={`Var. costs ${gbp(d.totalVariableGbp)} vs MRR ${gbp(ec.mrr)}`}
             alert={ec.grossMarginPct > 50 ? 'good' : ec.grossMarginPct > 0 ? 'neutral' : 'warn'} />
-          <KpiCard icon="⚖️" label="Break-even" value={`${ec.breakEvenUsers === 999 ? '∞' : ec.breakEvenUsers} users`} color="text-white"
+          <KpiCard icon="⚖️" label="Break-even" value={`${ec.breakEvenUsers === 999 ? '∞' : ec.breakEvenUsers} users`} color="text-slate-900 dark:text-white"
             sub={`ARPU ${gbp(ec.arpu)} · Fixed costs ${gbp(d.totalFixedGbp)}/mo`} />
         </div>
       </section>
@@ -615,14 +615,14 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
         <SectionLabel right={`${d.dau} DAU · ${d.wau} WAU · ${d.mau} MAU`}>Usage Snapshot</SectionLabel>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { icon: '⚡', label: 'Sessions today',  value: d.sessionsToday,      color: 'text-white' },
-            { icon: '📅', label: 'Sessions / month', value: d.sessionsMonth,     color: 'text-white' },
+            { icon: '⚡', label: 'Sessions today',  value: d.sessionsToday,      color: 'text-slate-900 dark:text-white' },
+            { icon: '📅', label: 'Sessions / month', value: d.sessionsMonth,     color: 'text-slate-900 dark:text-white' },
             { icon: '🎙', label: 'Audio today',      value: mins(d.secondsToday), color: 'text-sky-400' },
             { icon: '🎙', label: 'Audio this month', value: mins(d.secondsMonth), color: 'text-sky-400' },
-            { icon: '👥', label: 'Total users',      value: d.totalUsers,         color: 'text-white' },
-            { icon: '📧', label: 'Emails sent / mo', value: d.emailsSentMonth,    color: 'text-slate-300' },
+            { icon: '👥', label: 'Total users',      value: d.totalUsers,         color: 'text-slate-900 dark:text-white' },
+            { icon: '📧', label: 'Emails sent / mo', value: d.emailsSentMonth,    color: 'text-slate-600 dark:text-slate-300' },
           ].map(c => (
-            <div key={c.label} className="rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-4">
+            <div key={c.label} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 px-4 py-4">
               <div className="text-lg mb-2">{c.icon}</div>
               <div className={`text-xl font-extrabold tabular-nums ${c.color}`}>{c.value}</div>
               <div className="text-[10px] text-slate-600 mt-0.5">{c.label}</div>
@@ -634,7 +634,7 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
       {/* ── Run-rate projections ─────────────────────────────────────────────── */}
       <section>
         <SectionLabel>End-of-Month Projections (Run Rate)</SectionLabel>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 space-y-5">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-6 space-y-5">
           <RunRateBar label="Sessions" current={d.sessionsMonth} projected={d.projectedSessions} color="bg-sky-500" />
           <RunRateBar label="Audio minutes" current={Math.round(d.secondsMonth / 60)} projected={Math.round(d.projectedSeconds / 60)} color="bg-emerald-500" />
           <RunRateBar
@@ -643,7 +643,7 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
             projected={parseFloat(gbp((d.projectedSeconds / 60) * 0.003 + d.projectedSessions * 0.002 + d.totalVariableGbp - (d.secondsMonth / 60) * 0.003 - d.sessionsMonth * 0.002, 4).replace(/[£,]/g, ''))}
             color="bg-amber-500"
           />
-          <p className="text-[10px] text-slate-600 pt-2 border-t border-slate-800/60">
+          <p className="text-[10px] text-slate-600 pt-2 border-t border-slate-200 dark:border-slate-800/60">
             Based on current month run rate. Fixed costs ({gbp(d.totalFixedGbp)}/mo) excluded from projection — they are constant.
           </p>
         </div>
@@ -659,7 +659,7 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
         </div>
 
         {/* Cost allocation bar */}
-        <div className="mt-5 rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <div className="mt-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-5">
           <h3 className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 mb-4">Cost Allocation — This Month</h3>
           <div className="space-y-3">
             {d.services
@@ -671,18 +671,18 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
                   <div key={s.id} className="space-y-1">
                     <div className="flex justify-between text-xs">
                       <span className="text-slate-400">{s.icon} {s.name}</span>
-                      <span className="font-mono text-slate-300 tabular-nums">{gbp(s.totalGbp)} <span className="text-slate-600">({pct.toFixed(1)}%)</span></span>
+                      <span className="font-mono text-slate-600 dark:text-slate-300 tabular-nums">{gbp(s.totalGbp)} <span className="text-slate-600">({pct.toFixed(1)}%)</span></span>
                     </div>
-                    <div className="h-1 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="h-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                       <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-sky-500 transition-all duration-700" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );
               })}
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-800 flex justify-between text-sm">
+          <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-between text-sm">
             <span className="text-slate-500">Monthly total</span>
-            <span className="font-extrabold text-white tabular-nums">{gbp(totalServices)}</span>
+            <span className="font-extrabold text-slate-900 dark:text-white tabular-nums">{gbp(totalServices)}</span>
           </div>
         </div>
       </section>
@@ -697,7 +697,7 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
             { label: 'Cost / User / Mo', value: gbp(ec.avgVariableCostPerUser, 4), sub: 'Variable costs / MAU', color: 'text-amber-400' },
             { label: 'Cost / Session', value: gbp(ec.costPerSession, 4), sub: 'Variable only (ASR + AI)', color: 'text-amber-400' },
           ].map(m => (
-            <div key={m.label} className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+            <div key={m.label} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-5">
               <div className={`text-xl font-extrabold tabular-nums ${m.color}`}>{m.value}</div>
               <div className="text-xs text-slate-400 mt-1">{m.label}</div>
               <div className="text-[10px] text-slate-600 mt-0.5">{m.sub}</div>
@@ -707,7 +707,7 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
 
         {/* Cost vs revenue per session */}
         {ec.revenuePerSession > 0 && (
-          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/40 p-5 flex items-center gap-6">
+          <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-5 flex items-center gap-6">
             <div className="flex-1">
               <div className="text-xs text-slate-500 mb-1">Revenue per session</div>
               <div className="text-lg font-bold text-emerald-400 tabular-nums">{gbp(ec.revenuePerSession, 4)}</div>

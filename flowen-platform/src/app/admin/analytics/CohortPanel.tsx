@@ -21,8 +21,8 @@ function fmtPct(n: number): string {
 // ── Cell colour ───────────────────────────────────────────────────────────────
 
 function retentionCellClass(value: number): string {
-  if (value < 0)  return 'bg-slate-900 text-slate-700';  // future / no data
-  if (value === 0) return 'bg-slate-900 text-slate-600';
+  if (value < 0)  return 'bg-white dark:bg-slate-900 text-slate-700';  // future / no data
+  if (value === 0) return 'bg-white dark:bg-slate-900 text-slate-600';
   if (value >= 80) return 'bg-emerald-700/70 text-emerald-100';
   if (value >= 60) return 'bg-teal-700/70 text-teal-100';
   if (value >= 40) return 'bg-amber-700/60 text-amber-100';
@@ -36,26 +36,26 @@ function CohortSkeleton() {
   return (
     <div className="animate-pulse space-y-6">
       {/* Table skeleton */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-        <div className="h-4 w-48 bg-slate-800 rounded mb-6" />
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <div className="h-4 w-48 bg-slate-100 dark:bg-slate-800 rounded mb-6" />
         <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex gap-2">
-              <div className="h-8 w-24 bg-slate-800 rounded" />
+              <div className="h-8 w-24 bg-slate-100 dark:bg-slate-800 rounded" />
               {Array.from({ length: 8 }).map((_, j) => (
-                <div key={j} className="h-8 flex-1 bg-slate-800 rounded" />
+                <div key={j} className="h-8 flex-1 bg-slate-100 dark:bg-slate-800 rounded" />
               ))}
             </div>
           ))}
         </div>
       </div>
       {/* ARR card skeleton */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-        <div className="h-4 w-32 bg-slate-800 rounded mb-4" />
-        <div className="h-10 w-40 bg-slate-800 rounded mb-6" />
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <div className="h-4 w-32 bg-slate-100 dark:bg-slate-800 rounded mb-4" />
+        <div className="h-10 w-40 bg-slate-100 dark:bg-slate-800 rounded mb-6" />
         <div className="flex gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex-1 h-24 bg-slate-800 rounded-xl" />
+            <div key={i} className="flex-1 h-24 bg-slate-100 dark:bg-slate-800 rounded-xl" />
           ))}
         </div>
       </div>
@@ -98,7 +98,7 @@ function CohortTable({ cohorts }: { cohorts: CohortRow[] }) {
         <tbody className="divide-y divide-slate-800/60">
           {cohorts.map((row) => (
             <tr key={row.week}>
-              <td className="pr-4 py-1.5 text-[11px] font-mono text-slate-300 whitespace-nowrap">
+              <td className="pr-4 py-1.5 text-[11px] font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">
                 {row.label}
               </td>
               <td className="pr-4 py-1.5 text-[10px] font-mono text-slate-500 whitespace-nowrap">
@@ -161,7 +161,7 @@ function ArrCard({ projection }: { projection: ArrProjection }) {
             className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4"
           >
             <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-2">{label}</p>
-            <p className={`font-black text-white ${size}`}>{fmtCurrency(value)}</p>
+            <p className={`font-black text-slate-900 dark:text-white ${size}`}>{fmtCurrency(value)}</p>
           </div>
         ))}
       </div>
@@ -191,7 +191,7 @@ export function CohortPanel() {
 
   if (error) {
     return (
-      <div className="bg-slate-900 border border-red-800/40 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-red-800/40 rounded-2xl p-6">
         <p className="text-sm text-red-400 font-mono">Cohort data unavailable: {error}</p>
       </div>
     );
@@ -202,9 +202,9 @@ export function CohortPanel() {
   return (
     <div className="space-y-6">
       {/* Cohort Retention Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-5">
-          <h2 className="text-sm font-bold text-white">Cohort Retention</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Cohort Retention</h2>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-500/10 text-teal-400 border border-teal-500/30">
             8-WEEK WINDOW
           </span>
@@ -232,9 +232,9 @@ export function CohortPanel() {
       </div>
 
       {/* ARR Trajectory */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-5">
-          <h2 className="text-sm font-bold text-white">ARR Trajectory</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">ARR Trajectory</h2>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
             PROJECTION
           </span>

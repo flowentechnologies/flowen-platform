@@ -43,7 +43,7 @@ export default async function RoadmapPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-white tracking-tight">Product Roadmap</h1>
+        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Product Roadmap</h1>
         <p className="text-sm text-slate-500 font-mono mt-1">
           Phase progress tracker — Launch · NHS Pilot · Scale
         </p>

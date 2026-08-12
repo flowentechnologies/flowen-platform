@@ -118,9 +118,9 @@ function CheckResultsPanel({
   onDismiss: () => void;
 }) {
   return (
-    <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 space-y-3">
+    <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-xl p-5 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-white">Check Results</h3>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">Check Results</h3>
         <button
           type="button"
           onClick={onDismiss}
@@ -136,7 +136,7 @@ function CheckResultsPanel({
             className={`flex gap-3 items-start rounded-lg px-3 py-2 text-xs ${
               r.triggered
                 ? 'bg-amber-500/10 border border-amber-500/20'
-                : 'bg-slate-800/60'
+                : 'bg-slate-100/80 dark:bg-slate-800/60'
             }`}
           >
             <span className="shrink-0 mt-0.5">
@@ -147,7 +147,7 @@ function CheckResultsPanel({
               )}
             </span>
             <div>
-              <span className="font-semibold text-white">{r.rule_name}</span>
+              <span className="font-semibold text-slate-900 dark:text-white">{r.rule_name}</span>
               <span className="text-slate-400"> — {r.message}</span>
             </div>
           </div>
@@ -212,8 +212,8 @@ function AddRuleForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-700 rounded-xl p-5 space-y-4">
-      <h3 className="text-sm font-bold text-white">Add Alert Rule</h3>
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-700 rounded-xl p-5 space-y-4">
+      <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Alert Rule</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -225,7 +225,7 @@ function AddRuleForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Grant Deadline Warning"
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
 
@@ -237,7 +237,7 @@ function AddRuleForm({
             type="email"
             value={recipientEmail}
             onChange={(e) => setRecipientEmail(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
       </div>
@@ -249,7 +249,7 @@ function AddRuleForm({
         <select
           value={ruleType}
           onChange={(e) => setRuleType(e.target.value as RuleType)}
-          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+          className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
         >
           {RULE_TYPES.map((t) => (
             <option key={t} value={t}>
@@ -271,7 +271,7 @@ function AddRuleForm({
             max="365"
             value={thresholdDays}
             onChange={(e) => setThresholdDays(e.target.value)}
-            className="w-32 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+            className="w-32 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
         </div>
       )}
@@ -286,7 +286,7 @@ function AddRuleForm({
             min="1"
             value={thresholdCount}
             onChange={(e) => setThresholdCount(e.target.value)}
-            className="w-32 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+            className="w-32 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
         </div>
       )}
@@ -297,14 +297,14 @@ function AddRuleForm({
         <button
           type="submit"
           disabled={saving}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
+          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
         >
           {saving ? 'Saving…' : 'Save Rule'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg transition-colors"
+          className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg transition-colors"
         >
           Cancel
         </button>
@@ -356,14 +356,14 @@ function RuleCard({
   }
 
   return (
-    <div className={`bg-slate-900 border rounded-xl p-4 space-y-3 transition-opacity ${!rule.enabled ? 'opacity-60' : ''} ${rule.enabled ? 'border-slate-800' : 'border-slate-800/50'}`}>
+    <div className={`bg-white dark:bg-slate-900 border rounded-xl p-4 space-y-3 transition-opacity ${!rule.enabled ? 'opacity-60' : ''} ${rule.enabled ? 'border-slate-200 dark:border-slate-800' : 'border-slate-800/50'}`}>
       <div className="flex items-start gap-3">
         <div className="pt-0.5">
           <Toggle enabled={rule.enabled} onChange={toggling ? () => {} : handleToggle} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="font-bold text-sm text-white">{rule.name}</span>
+            <span className="font-bold text-sm text-slate-900 dark:text-white">{rule.name}</span>
             <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border ${meta.color}`}>
               {meta.label}
             </span>
@@ -393,7 +393,7 @@ function RuleCard({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] border-t border-slate-800 pt-2.5">
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] border-t border-slate-200 dark:border-slate-800 pt-2.5">
         <div>
           <span className="text-slate-600 font-semibold">Last triggered:</span>{' '}
           {rule.last_triggered_at ? (
@@ -416,11 +416,11 @@ function RuleCard({
 function CronNote() {
   const [open, setOpen] = useState(false);
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-slate-300 hover:text-white transition-colors"
+        className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
       >
         <span>Cron / Scheduled checks setup</span>
         <svg
@@ -432,12 +432,12 @@ function CronNote() {
         </svg>
       </button>
       {open && (
-        <div className="px-5 pb-5 space-y-3 border-t border-slate-800 pt-4">
+        <div className="px-5 pb-5 space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4">
           <p className="text-xs text-slate-400">
             To run checks automatically every day at 08:00 UTC, add this to your{' '}
-            <code className="text-emerald-400 bg-slate-800 px-1 py-0.5 rounded">vercel.json</code>:
+            <code className="text-emerald-400 bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">vercel.json</code>:
           </p>
-          <pre className="bg-slate-800 rounded-lg p-3 text-xs text-emerald-300 overflow-x-auto whitespace-pre-wrap">
+          <pre className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 text-xs text-emerald-300 overflow-x-auto whitespace-pre-wrap">
 {`{
   "crons": [
     {
@@ -449,9 +449,9 @@ function CronNote() {
           </pre>
           <p className="text-xs text-slate-400">
             Also set the{' '}
-            <code className="text-amber-400 bg-slate-800 px-1 py-0.5 rounded">CRON_SECRET</code>{' '}
+            <code className="text-amber-400 bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">CRON_SECRET</code>{' '}
             environment variable — the cron endpoint validates the{' '}
-            <code className="text-amber-400 bg-slate-800 px-1 py-0.5 rounded">x-cron-secret</code>{' '}
+            <code className="text-amber-400 bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">x-cron-secret</code>{' '}
             header against this value to prevent unauthorised triggering.
           </p>
         </div>
@@ -578,7 +578,7 @@ export function NotificationsClient({ initialRules, initialHistory }: Props) {
           {latestChecked ? (
             <p className="text-sm text-slate-400">
               Last checked:{' '}
-              <span className="text-white font-semibold">{timeAgo(latestChecked.last_checked_at)}</span>
+              <span className="text-slate-900 dark:text-white font-semibold">{timeAgo(latestChecked.last_checked_at)}</span>
               {' · '}
               <span className={triggeredCount > 0 ? 'text-amber-400 font-semibold' : 'text-slate-500'}>
                 {triggeredCount} rule{triggeredCount !== 1 ? 's' : ''} triggered
@@ -595,7 +595,7 @@ export function NotificationsClient({ initialRules, initialHistory }: Props) {
           type="button"
           onClick={handleRunChecks}
           disabled={checking}
-          className="shrink-0 flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-60"
+          className="shrink-0 flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-60"
         >
           {checking ? (
             <>
@@ -622,13 +622,13 @@ export function NotificationsClient({ initialRules, initialHistory }: Props) {
       {/* Rules list */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-widest font-mono">
+          <h2 className="text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest font-mono">
             Rules ({rules.length})
           </h2>
           <button
             type="button"
             onClick={() => setShowAddForm((o) => !o)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg transition-colors border border-slate-700"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg transition-colors border border-slate-700"
           >
             <span className="text-lg leading-none">+</span> Add Rule
           </button>
@@ -639,7 +639,7 @@ export function NotificationsClient({ initialRules, initialHistory }: Props) {
         )}
 
         {rules.length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center">
             <p className="text-slate-500 text-sm">No alert rules configured yet.</p>
             <button
               type="button"
@@ -665,20 +665,20 @@ export function NotificationsClient({ initialRules, initialHistory }: Props) {
 
       {/* Alert history */}
       <div className="space-y-3">
-        <h2 className="text-sm font-bold text-slate-300 uppercase tracking-widest font-mono">
+        <h2 className="text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest font-mono">
           Alert History
         </h2>
 
         {history.length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center">
             <p className="text-slate-500 text-sm">No alert history yet — run checks to populate.</p>
           </div>
         ) : (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-slate-800">
+                  <tr className="border-b border-slate-200 dark:border-slate-800">
                     <th className="text-left px-4 py-3 text-slate-500 font-semibold">Date</th>
                     <th className="text-left px-4 py-3 text-slate-500 font-semibold">Rule</th>
                     <th className="text-left px-4 py-3 text-slate-500 font-semibold">Message</th>
@@ -689,11 +689,11 @@ export function NotificationsClient({ initialRules, initialHistory }: Props) {
                   {history.slice(0, 20).map((h) => {
                     const rule = rules.find((r) => r.id === h.rule_id);
                     return (
-                      <tr key={h.id} className="border-b border-slate-800/60 hover:bg-slate-800/30 transition-colors">
+                      <tr key={h.id} className="border-b border-slate-200 dark:border-slate-800/60 hover:bg-slate-800/30 transition-colors">
                         <td className="px-4 py-2.5 text-slate-400 whitespace-nowrap font-mono">
                           {formatDate(h.triggered_at)}
                         </td>
-                        <td className="px-4 py-2.5 text-white font-semibold whitespace-nowrap">
+                        <td className="px-4 py-2.5 text-slate-900 dark:text-white font-semibold whitespace-nowrap">
                           {rule?.name ?? <span className="text-slate-500 italic">Deleted rule</span>}
                         </td>
                         <td className="px-4 py-2.5 text-slate-400 max-w-md">

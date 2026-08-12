@@ -40,7 +40,7 @@ function ErrorRow({ entry, onUpdate }: { entry: ErrorEntry; onUpdate: (id: strin
   }
 
   return (
-    <div className={`border-b border-slate-800 last:border-0 ${entry.resolved ? 'opacity-50' : ''}`}>
+    <div className={`border-b border-slate-200 dark:border-slate-800 last:border-0 ${entry.resolved ? 'opacity-50' : ''}`}>
       <div className="px-5 py-4 flex items-start gap-4">
         {/* Dot */}
         <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${entry.resolved ? 'bg-slate-600' : 'bg-red-400 animate-pulse'}`} />
@@ -50,7 +50,7 @@ function ErrorRow({ entry, onUpdate }: { entry: ErrorEntry; onUpdate: (id: strin
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="text-[10px] font-mono text-slate-500">{entry.source}</span>
             {entry.error_code && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-800 text-slate-400">
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">
                 {entry.error_code}
               </span>
             )}
@@ -59,7 +59,7 @@ function ErrorRow({ entry, onUpdate }: { entry: ErrorEntry; onUpdate: (id: strin
             </span>
             <span className="text-[10px] text-slate-600 font-mono ml-auto">{fmtDate(entry.timestamp)}</span>
           </div>
-          <p className="text-xs text-white font-medium leading-relaxed">{entry.message}</p>
+          <p className="text-xs text-slate-900 dark:text-white font-medium leading-relaxed">{entry.message}</p>
 
           {/* Stack trace toggle */}
           {entry.stack_trace && (
@@ -72,7 +72,7 @@ function ErrorRow({ entry, onUpdate }: { entry: ErrorEntry; onUpdate: (id: strin
             </button>
           )}
           {expanded && entry.stack_trace && (
-            <pre className="mt-2 text-[10px] text-slate-400 font-mono bg-slate-950 rounded-lg p-3 overflow-x-auto leading-relaxed whitespace-pre-wrap break-all">
+            <pre className="mt-2 text-[10px] text-slate-400 font-mono bg-slate-50 dark:bg-slate-950 rounded-lg p-3 overflow-x-auto leading-relaxed whitespace-pre-wrap break-all">
               {entry.stack_trace.slice(0, 3000)}
             </pre>
           )}
@@ -144,7 +144,7 @@ export function ErrorLogList({ initialErrors }: { initialErrors: ErrorEntry[] })
       )}
       {resolved.length > 0 && (
         <details>
-          <summary className="px-5 py-3 text-[10px] font-mono text-slate-600 cursor-pointer hover:text-slate-400 transition-colors border-t border-slate-800">
+          <summary className="px-5 py-3 text-[10px] font-mono text-slate-600 cursor-pointer hover:text-slate-400 transition-colors border-t border-slate-200 dark:border-slate-800">
             {resolved.length} resolved error{resolved.length !== 1 ? 's' : ''} (click to show)
           </summary>
           {resolved.map(e => <ErrorRow key={e.id} entry={e} onUpdate={handleUpdate} />)}

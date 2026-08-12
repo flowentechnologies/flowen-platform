@@ -31,12 +31,12 @@ function pct(part: number, total: number) {
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function KpiCard({
-  label, value, sub, color = 'text-white', href, alert,
+  label, value, sub, color = 'text-slate-900 dark:text-white', href, alert,
 }: {
   label: string; value: string; sub?: string; color?: string; href?: string; alert?: boolean;
 }) {
   const inner = (
-    <div className={`bg-slate-900 border rounded-2xl p-5 h-full ${alert ? 'border-red-500/40 bg-red-500/5' : 'border-slate-800'}`}>
+    <div className={`bg-white dark:bg-slate-900 border rounded-2xl p-5 h-full ${alert ? 'border-red-500/40 bg-red-500/5' : 'border-slate-200 dark:border-slate-800'}`}>
       <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">{label}</p>
       <p className={`text-3xl font-black ${color} leading-none`}>{value}</p>
       {sub && <p className="text-[10px] text-slate-600 font-mono mt-2">{sub}</p>}
@@ -62,10 +62,10 @@ function OkrBar({ label, current, goal, color }: { label: string; current: numbe
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-slate-300">{label}</span>
+        <span className="text-xs text-slate-600 dark:text-slate-300">{label}</span>
         <span className="text-[10px] font-mono text-slate-500">{current.toLocaleString()} / {goal.toLocaleString()}</span>
       </div>
-      <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${p}%` }} />
       </div>
     </div>
@@ -132,11 +132,11 @@ function ActivityFeed({ data }: { data: CCData }) {
         <div key={item.id} className="flex items-start gap-3 py-2.5 px-1">
           {item.kind === 'audit' && (
             <>
-              <div className="mt-0.5 w-6 h-6 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
+              <div className="mt-0.5 w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
                 <span className="text-[10px]">📋</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-slate-300 truncate">{item.action}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-300 truncate">{item.action}</p>
                 <p className={`text-[10px] font-mono mt-0.5 ${SEVERITY_COLOR[item.severity] ?? 'text-slate-600'}`}>
                   {item.severity} · {item.actor_email ?? 'system'} · {timeAgo(item.ts)}
                 </p>
@@ -217,9 +217,9 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
     <div className="space-y-6">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Command Centre</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Command Centre</h1>
           <p className="text-slate-500 text-xs font-mono mt-1">
             Updated {secsSinceRefresh < 5 ? 'just now' : `${secsSinceRefresh}s ago`} · auto-refreshes every 30s
           </p>
@@ -227,7 +227,7 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
         <div className="flex items-center gap-3">
           <button
             onClick={refresh} disabled={loading}
-            className="px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
+            className="px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
           >
             {loading ? '↻ Refreshing…' : '↻ Refresh'}
           </button>
@@ -270,7 +270,7 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
       )}
 
       {/* System health */}
-      <div className="flex flex-wrap gap-6 px-5 py-3.5 bg-slate-900/60 border border-slate-800 rounded-xl">
+      <div className="flex flex-wrap gap-6 px-5 py-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl">
         <HealthPill label="Supabase" ok={supabaseOk} />
         <HealthPill label="Stripe" ok={stripeOk} />
         <HealthPill label="Email" ok={emailConfigured} />
@@ -283,7 +283,7 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
         <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-3">Revenue</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCard label="MRR" value={mrrPence > 0 ? gbp(mrrPence) : '—'} sub={`${gbp(arrPence)}/yr ARR`} color={mrrPence > 0 ? 'text-emerald-400' : 'text-slate-500'} />
-          <KpiCard label="Active Subscriptions" value={activeSubs.toString()} sub={trialingSubs > 0 ? `+${trialingSubs} trialing` : 'no trials'} color="text-white" href="/admin/billing" />
+          <KpiCard label="Active Subscriptions" value={activeSubs.toString()} sub={trialingSubs > 0 ? `+${trialingSubs} trialing` : 'no trials'} color="text-slate-900 dark:text-white" href="/admin/billing" />
           <KpiCard label="Waitlist" value={waitlistTotal.toLocaleString()} sub="total signups" color="text-sky-400" href="/admin/users" />
           <KpiCard label="Founding Members" value={foundingCount.toLocaleString()} sub={`${foundingGoal - foundingCount} slots left`} color="text-amber-400" href="/admin/users" />
         </div>
@@ -293,7 +293,7 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
       <div>
         <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-3">Users</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard label="Total Users" value={totalUsers.toLocaleString()} sub={`+${newUsersWeek} this week`} color="text-white" href="/admin/users" />
+          <KpiCard label="Total Users" value={totalUsers.toLocaleString()} sub={`+${newUsersWeek} this week`} color="text-slate-900 dark:text-white" href="/admin/users" />
           <KpiCard label="Daily Active (DAU)" value={dau.toString()} sub={`${sessionsToday} sessions today`} color="text-indigo-400" />
           <KpiCard label="Onboarded" value={`${onboardedPct}%`} sub={`${onboarded.toLocaleString()} users`} color={onboardedPct >= 60 ? 'text-emerald-400' : 'text-amber-400'} />
           <KpiCard label="Founding Progress" value={`${foundingPct}%`} sub={`${foundingCount} of ${foundingGoal}`} color="text-amber-400" />
@@ -304,10 +304,10 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
       <div>
         <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-3">Operations</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard label="Open Tickets" value={(openTickets + inProgressTickets).toString()} sub={`${openTickets} open · ${inProgressTickets} in progress`} color={openTickets > 0 ? 'text-amber-400' : 'text-white'} href="/admin/tickets" alert={slaBreaches > 0} />
-          <KpiCard label="SLA Breaches" value={slaBreaches.toString()} sub="tickets past due" color={slaBreaches > 0 ? 'text-red-400' : 'text-white'} href="/admin/tickets" alert={slaBreaches > 0} />
-          <KpiCard label="GDPR Queue" value={pendingGdpr.toString()} sub={overdueGdpr > 0 ? `${overdueGdpr} overdue` : 'all on time'} color={overdueGdpr > 0 ? 'text-red-400' : 'text-white'} href="/admin/tickets/gdpr-requests" alert={overdueGdpr > 0} />
-          <KpiCard label="Workflow Failures" value={failedRunsWeek.toString()} sub="last 7 days" color={failedRunsWeek > 0 ? 'text-red-400' : 'text-white'} href="/admin/workflows" alert={failedRunsWeek > 0} />
+          <KpiCard label="Open Tickets" value={(openTickets + inProgressTickets).toString()} sub={`${openTickets} open · ${inProgressTickets} in progress`} color={openTickets > 0 ? 'text-amber-400' : 'text-slate-900 dark:text-white'} href="/admin/tickets" alert={slaBreaches > 0} />
+          <KpiCard label="SLA Breaches" value={slaBreaches.toString()} sub="tickets past due" color={slaBreaches > 0 ? 'text-red-400' : 'text-slate-900 dark:text-white'} href="/admin/tickets" alert={slaBreaches > 0} />
+          <KpiCard label="GDPR Queue" value={pendingGdpr.toString()} sub={overdueGdpr > 0 ? `${overdueGdpr} overdue` : 'all on time'} color={overdueGdpr > 0 ? 'text-red-400' : 'text-slate-900 dark:text-white'} href="/admin/tickets/gdpr-requests" alert={overdueGdpr > 0} />
+          <KpiCard label="Workflow Failures" value={failedRunsWeek.toString()} sub="last 7 days" color={failedRunsWeek > 0 ? 'text-red-400' : 'text-slate-900 dark:text-white'} href="/admin/workflows" alert={failedRunsWeek > 0} />
         </div>
       </div>
 
@@ -316,7 +316,7 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
         <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-3">Fundraising</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCard label="Grants Pipeline" value={gbp(grantsPipelineValuePence)} sub={`${grantsSubmitted} submitted`} color="text-emerald-400" href="/admin/grants" />
-          <KpiCard label="Deadline Soon" value={grantsDeadlineSoon.toString()} sub="within 30 days" color={grantsDeadlineSoon > 0 ? 'text-amber-400' : 'text-white'} href="/admin/grants" alert={grantsDeadlineSoon > 0} />
+          <KpiCard label="Deadline Soon" value={grantsDeadlineSoon.toString()} sub="within 30 days" color={grantsDeadlineSoon > 0 ? 'text-amber-400' : 'text-slate-900 dark:text-white'} href="/admin/grants" alert={grantsDeadlineSoon > 0} />
           <KpiCard label="Runway" value={runwayMonths !== null ? `${runwayMonths}mo` : '—'} sub={runwayZeroDate ? `zero ${runwayZeroDate}` : 'not configured'} color={runwayMonths !== null && runwayMonths < 6 ? 'text-red-400' : runwayMonths !== null && runwayMonths < 12 ? 'text-amber-400' : 'text-emerald-400'} href="/admin/venture" alert={runwayMonths !== null && runwayMonths < 6} />
           <KpiCard label="ICB Pipeline" value={icbPipelineCount.toString()} sub="engaged → contract" color="text-sky-400" href="/admin/nhs" />
         </div>
@@ -337,9 +337,9 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Signup trend */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-bold text-white">New Signups — last 7 days</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">New Signups — last 7 days</p>
             <span className="text-xs font-mono text-slate-500">{newUsersWeek} total</span>
           </div>
           <Sparkline byDay={signupsByDay} />
@@ -352,9 +352,9 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
         </div>
 
         {/* OKR milestones */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <p className="text-sm font-bold text-white">OKR Milestones</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">OKR Milestones</p>
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">TARGETS</span>
           </div>
           <div className="space-y-4">
@@ -367,19 +367,19 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
       </div>
 
       {/* Tier distribution */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-        <p className="text-sm font-bold text-white mb-4">Tier Distribution</p>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+        <p className="text-sm font-bold text-slate-900 dark:text-white mb-4">Tier Distribution</p>
         <div className="flex flex-wrap gap-3">
           {Object.entries(tierCounts).sort((a, b) => b[1] - a[1]).map(([tier, count]) => {
             const tierP = pct(count, totalUsers);
             const colors: Record<string, string> = {
               founding: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-              standard: 'bg-slate-700 text-slate-300 border-slate-600',
+              standard: 'bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-600',
               public_funds: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
-              vocali_freemium: 'bg-slate-800 text-slate-500 border-slate-700',
+              vocali_freemium: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-700',
             };
             return (
-              <div key={tier} className={`px-4 py-2.5 rounded-xl border ${colors[tier] ?? 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+              <div key={tier} className={`px-4 py-2.5 rounded-xl border ${colors[tier] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-700'}`}>
                 <p className="text-[10px] font-mono uppercase tracking-wide">{tier.replace(/_/g, ' ')}</p>
                 <p className="text-xl font-black mt-0.5">{count}</p>
                 <p className="text-[9px] font-mono opacity-60">{tierP}%</p>
@@ -396,9 +396,9 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Activity feed */}
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-            <p className="text-sm font-bold text-white">Activity Feed</p>
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <p className="text-sm font-bold text-slate-900 dark:text-white">Activity Feed</p>
             <Link href="/admin/audit" className="text-[11px] font-mono text-slate-500 hover:text-slate-300 transition-colors">View audit log →</Link>
           </div>
           <div className="px-5 py-2 max-h-[500px] overflow-y-auto">
@@ -410,8 +410,8 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
         <div className="space-y-5">
 
           {/* Quick actions */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-            <p className="text-sm font-bold text-white mb-3">Quick Links</p>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+            <p className="text-sm font-bold text-slate-900 dark:text-white mb-3">Quick Links</p>
             <div className="space-y-1.5">
               {[
                 { label: 'Support Queue',      href: '/admin/tickets',                badge: openTickets > 0 ? `${openTickets} open` : null,    badgeColor: 'bg-amber-500/10 text-amber-400' },
@@ -427,7 +427,7 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
               ].map(item => (
                 <Link key={item.href} href={item.href}
                   className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-800/60 transition-colors group">
-                  <span className="text-xs text-slate-400 group-hover:text-white transition-colors">{item.label}</span>
+                  <span className="text-xs text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{item.label}</span>
                   {item.badge && (
                     <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}>{item.badge}</span>
                   )}
@@ -437,17 +437,17 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
           </div>
 
           {/* Recent waitlist signups */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-800">
-              <p className="text-sm font-bold text-white">Recent Signups</p>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800">
+              <p className="text-sm font-bold text-slate-900 dark:text-white">Recent Signups</p>
             </div>
             {data.recentWaitlist.length === 0 ? (
               <p className="px-5 py-6 text-xs text-slate-600 font-mono text-center">No signups yet</p>
             ) : (
-              <ul className="divide-y divide-slate-800">
+              <ul className="divide-y divide-slate-200 dark:divide-slate-800">
                 {data.recentWaitlist.map(w => (
                   <li key={w.id} className="px-5 py-2.5">
-                    <p className="text-xs text-white truncate">{w.email}</p>
+                    <p className="text-xs text-slate-900 dark:text-white truncate">{w.email}</p>
                     <p className="text-[10px] font-mono text-slate-600 mt-0.5">{w.source ?? 'direct'} · {shortDate(w.created_at)}</p>
                   </li>
                 ))}

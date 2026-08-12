@@ -142,25 +142,25 @@ function EditMemberModal({ member, onSave }: { member: Member; onSave: (patch: P
   return (
     <>
       <button type="button" onClick={() => setOpen(true)}
-        className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors">
+        className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
         Edit
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <div>
-                <h3 className="text-sm font-bold text-white">{member.display_name ?? member.email}</h3>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{member.display_name ?? member.email}</h3>
                 <p className="text-[11px] text-slate-500 font-mono">{member.email}</p>
               </div>
-              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-white text-lg">×</button>
+              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Role</label>
                 <select value={form.role} onChange={e => field('role', e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   {(Object.entries(ROLE_CONFIG) as [StaffRole, { label: string; perms: string }][]).map(([v, c]) => (
                     <option key={v} value={v}>{c.label} — {c.perms}</option>
                   ))}
@@ -170,28 +170,28 @@ function EditMemberModal({ member, onSave }: { member: Member; onSave: (patch: P
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Department</label>
                   <input value={form.department} onChange={e => field('department', e.target.value)} placeholder="Engineering, Clinical…"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Title</label>
                   <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="CTO, Lead Dev…"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Bio / Notes</label>
                 <textarea value={form.bio} onChange={e => field('bio', e.target.value)} rows={2}
                   placeholder="Short bio or internal notes…"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-slate-800 flex gap-3">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
               <button type="button" onClick={save} disabled={isPending}
-                className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40">
+                className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                 {isPending ? 'Saving…' : 'Save'}
               </button>
               <button type="button" onClick={() => setOpen(false)}
-                className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">Cancel</button>
+                className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -229,16 +229,16 @@ function TeamTab({ members: initial, currentUserId }: { members: Member[]; curre
         const isSelf    = m.id === currentUserId;
 
         return (
-          <div key={m.id} className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl px-5 py-4 flex items-center gap-4 transition-colors group">
+          <div key={m.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-700 rounded-xl px-5 py-4 flex items-center gap-4 transition-colors group">
             {/* Avatar */}
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-sm font-bold text-slate-900 dark:text-white shrink-0">
               {initials(m)}
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">
                   {m.display_name ?? m.email}
                   {isSelf && <span className="ml-1.5 text-[10px] font-mono text-slate-600">(you)</span>}
                 </p>
@@ -275,7 +275,7 @@ function TeamTab({ members: initial, currentUserId }: { members: Member[]; curre
               )}
               {revoking === m.id && (
                 <button type="button" onClick={() => setRevoking(null)}
-                  className="px-2 py-1.5 text-[11px] font-mono text-slate-500 hover:text-white transition-colors">
+                  className="px-2 py-1.5 text-[11px] font-mono text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
                   Cancel
                 </button>
               )}
@@ -314,28 +314,28 @@ function InviteModal({ adminEmail, onCreated }: { adminEmail: string; onCreated:
   return (
     <>
       <button type="button" onClick={() => setOpen(true)}
-        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors">
+        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors">
         + Invite Staff
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">{result ? 'Invite Created' : 'Invite Team Member'}</h3>
-              <button type="button" onClick={close} className="text-slate-500 hover:text-white text-lg">×</button>
+          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">{result ? 'Invite Created' : 'Invite Team Member'}</h3>
+              <button type="button" onClick={close} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
             </div>
 
             {result ? (
               <div className="px-6 py-5 space-y-4">
                 <p className="text-sm text-emerald-400 font-mono">
-                  Invite created for <strong className="text-white">{result.invite.email}</strong>
+                  Invite created for <strong className="text-slate-900 dark:text-white">{result.invite.email}</strong>
                 </p>
-                <div className="bg-slate-950 rounded-xl p-4 space-y-2">
+                <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 space-y-2">
                   <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Invite Link (expires 7 days)</p>
-                  <p className="text-xs font-mono text-white break-all">{result.url}</p>
+                  <p className="text-xs font-mono text-slate-900 dark:text-white break-all">{result.url}</p>
                   <button type="button" onClick={() => navigator.clipboard.writeText(result.url)}
-                    className="mt-1 px-3 py-1.5 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors">
+                    className="mt-1 px-3 py-1.5 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                     Copy link
                   </button>
                 </div>
@@ -346,7 +346,7 @@ function InviteModal({ adminEmail, onCreated }: { adminEmail: string; onCreated:
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Email *</label>
                   <input type="email" value={form.email} onChange={e => field('email', e.target.value)} placeholder="colleague@example.com"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Role</label>
@@ -365,24 +365,24 @@ function InviteModal({ adminEmail, onCreated }: { adminEmail: string; onCreated:
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Department</label>
                   <input value={form.department} onChange={e => field('department', e.target.value)} placeholder="Engineering, Clinical…"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
               </div>
             )}
 
-            <div className="px-6 py-4 border-t border-slate-800 flex gap-3">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
               {result ? (
                 <button type="button" onClick={close}
-                  className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-slate-700 hover:bg-slate-600 text-white transition-colors">Done</button>
+                  className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white transition-colors">Done</button>
               ) : (
                 <>
                   <button type="button" onClick={submit} disabled={isPending}
-                    className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40">
+                    className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                     {isPending ? 'Creating…' : 'Send Invite'}
                   </button>
                   <button type="button" onClick={close}
-                    className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">Cancel</button>
+                    className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
                 </>
               )}
             </div>
@@ -444,10 +444,10 @@ function InvitesTab({ invites: initial, adminEmail }: { invites: Invite[]; admin
             const roleCfg  = ROLE_CONFIG[inv.role];
 
             return (
-              <div key={inv.id} className={`bg-slate-900 border rounded-xl px-5 py-4 flex items-center gap-4 group transition-opacity ${inactive_ ? 'border-slate-800/50 opacity-50' : 'border-slate-800 hover:border-slate-700'}`}>
+              <div key={inv.id} className={`bg-white dark:bg-slate-900 border rounded-xl px-5 py-4 flex items-center gap-4 group transition-opacity ${inactive_ ? 'border-slate-800/50 opacity-50' : 'border-slate-200 dark:border-slate-800 hover:border-slate-700'}`}>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                    <p className="text-sm font-medium text-white">{inv.email}</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">{inv.email}</p>
                     <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${roleCfg.color}`}>{roleCfg.label}</span>
                     {accepted && <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400">Accepted</span>}
                     {inv.revoked && <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-red-500/10 text-red-400">Revoked</span>}
@@ -461,7 +461,7 @@ function InvitesTab({ invites: initial, adminEmail }: { invites: Invite[]; admin
                 <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                   {!inactive_ && (
                     <button type="button" onClick={() => copyLink(inv.token)}
-                      className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors">
+                      className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                       {copying === inv.token ? 'Copied ✓' : 'Copy link'}
                     </button>
                   )}
@@ -528,14 +528,14 @@ function HandoffTab({ handoffs: initial, adminEmail, adminName }: { handoffs: Ha
       <div className="flex items-center justify-between">
         <p className="text-xs font-mono text-slate-500">Last {handoffs.length} handoffs</p>
         <button type="button" onClick={() => setComposing(v => !v)}
-          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors">
+          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors">
           {composing ? 'Cancel' : '+ Log Handoff'}
         </button>
       </div>
 
       {/* Compose */}
       {composing && (
-        <div className="bg-slate-900 border border-indigo-500/30 rounded-2xl p-5 space-y-4">
+        <div className="bg-white dark:bg-slate-900 border border-indigo-500/30 rounded-2xl p-5 space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {(Object.entries(SHIFT_CONFIG) as [ShiftPeriod, { label: string; hours: string; color: string }][]).map(([s, c]) => (
               <button key={s} type="button" onClick={() => field('shift', s)}
@@ -550,14 +550,14 @@ function HandoffTab({ handoffs: initial, adminEmail, adminName }: { handoffs: Ha
             <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Summary *</label>
             <textarea value={form.summary} onChange={e => field('summary', e.target.value)} rows={4}
               placeholder="What happened this shift? Key events, user contacts, incidents, metrics…"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none leading-relaxed" />
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none leading-relaxed" />
           </div>
 
           <div>
             <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Action Items for Next Shift</label>
             <textarea value={form.action_items} onChange={e => field('action_items', e.target.value)} rows={2}
               placeholder="• Follow up on ticket #123&#10;• Check Stripe payment for user@example.com"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none font-mono leading-relaxed" />
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none font-mono leading-relaxed" />
           </div>
 
           <div>
@@ -566,7 +566,7 @@ function HandoffTab({ handoffs: initial, adminEmail, adminName }: { handoffs: Ha
               {ALL_FLAGS.map(flag => (
                 <button key={flag} type="button" onClick={() => toggleFlag(flag)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold transition-colors ${
-                    form.flags.includes(flag) ? FLAG_COLORS[flag] + ' border border-current/30' : 'bg-slate-800 text-slate-500 hover:text-slate-300'
+                    form.flags.includes(flag) ? FLAG_COLORS[flag] + ' border border-current/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-300'
                   }`}>
                   {flag}
                 </button>
@@ -575,7 +575,7 @@ function HandoffTab({ handoffs: initial, adminEmail, adminName }: { handoffs: Ha
           </div>
 
           <button type="button" onClick={submit} disabled={!form.summary.trim() || isPending}
-            className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40">
+            className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
             {isPending ? 'Logging…' : 'Log Handoff'}
           </button>
         </div>
@@ -589,12 +589,12 @@ function HandoffTab({ handoffs: initial, adminEmail, adminName }: { handoffs: Ha
           {handoffs.map(h => {
             const shiftCfg = SHIFT_CONFIG[h.shift];
             return (
-              <div key={h.id} className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-4 group">
+              <div key={h.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-4 group">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold ${shiftCfg.color}`}>{shiftCfg.label}</span>
                     {(h.flags ?? []).map(flag => (
-                      <span key={flag} className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${FLAG_COLORS[flag] ?? 'bg-slate-800 text-slate-400'}`}>
+                      <span key={flag} className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${FLAG_COLORS[flag] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                         {flag}
                       </span>
                     ))}
@@ -605,9 +605,9 @@ function HandoffTab({ handoffs: initial, adminEmail, adminName }: { handoffs: Ha
                   <button type="button" onClick={() => remove(h.id)}
                     className="text-slate-800 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0">×</button>
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{h.summary}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{h.summary}</p>
                 {h.action_items && (
-                  <div className="mt-3 pt-3 border-t border-slate-800">
+                  <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800">
                     <p className="text-[10px] font-mono text-amber-400 uppercase tracking-wide mb-1.5">Action Items</p>
                     <p className="text-xs text-slate-400 font-mono leading-relaxed whitespace-pre-wrap">{h.action_items}</p>
                   </div>
@@ -639,15 +639,15 @@ export function StaffClient({ initialMembers, initialInvites, initialHandoffs, a
 
   return (
     <div>
-      <div className="flex gap-1 border-b border-slate-800 mb-6">
+      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800 mb-6">
         {tabs.map(t => (
           <button key={t.id} type="button" onClick={() => setTab(t.id)}
             className={`px-4 py-2.5 text-sm font-mono rounded-t-lg transition-colors flex items-center gap-2 -mb-px border-b-2 ${
-              tab === t.id ? 'border-indigo-500 text-white bg-slate-800/50' : 'border-transparent text-slate-500 hover:text-slate-300'
+              tab === t.id ? 'border-indigo-500 text-slate-900 dark:text-white bg-slate-800/50' : 'border-transparent text-slate-500 hover:text-slate-300'
             }`}>
             {t.label}
             {t.count > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-500'}`}>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
                 {t.count}
               </span>
             )}

@@ -61,7 +61,7 @@ export default async function IpDocPage({ params }: Props) {
         </nav>
 
         {/* Header */}
-        <div className="mb-8 pb-8 border-b border-slate-800">
+        <div className="mb-8 pb-8 border-b border-slate-200 dark:border-slate-800">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -73,7 +73,7 @@ export default async function IpDocPage({ params }: Props) {
                 <span className="text-slate-700">·</span>
                 <span className="text-xs text-slate-500">{doc.date}</span>
               </div>
-              <h1 className="text-2xl font-extrabold text-white tracking-tight mb-3">{doc.title}</h1>
+              <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">{doc.title}</h1>
               <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold border ${STATUS_BADGE[doc.status]}`}>
                 {STATUS_LABEL[doc.status]}
               </span>
@@ -90,7 +90,7 @@ export default async function IpDocPage({ params }: Props) {
         </div>
 
         {/* Footer nav */}
-        <div className="mt-16 pt-8 border-t border-slate-800 flex items-center justify-between">
+        <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <Link href="/admin/ip-docs" className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-2">
             ← All Documents
           </Link>

@@ -57,9 +57,9 @@ function Badge({ label, colour }: { label: string; colour: string }) {
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
       <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1">{label}</p>
-      <p className="text-2xl font-extrabold text-white tabular-nums">{value}</p>
+      <p className="text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums">{value}</p>
       {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
     </div>
   );
@@ -86,11 +86,11 @@ export default function AdminUserProfilePage() {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-6 w-48 bg-slate-800 rounded" />
-        <div className="h-32 bg-slate-900 border border-slate-800 rounded-2xl" />
+        <div className="h-6 w-48 bg-slate-100 dark:bg-slate-800 rounded" />
+        <div className="h-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-20 bg-slate-900 border border-slate-800 rounded-xl" />
+            <div key={i} className="h-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl" />
           ))}
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function AdminUserProfilePage() {
       <div className="space-y-4">
         <Link
           href="/admin/users"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
@@ -130,19 +130,19 @@ export default function AdminUserProfilePage() {
     <div className="space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/admin/users" className="hover:text-white transition-colors">Users</Link>
+        <Link href="/admin/users" className="hover:text-slate-900 dark:hover:text-white transition-colors">Users</Link>
         <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd"/>
         </svg>
-        <span className="text-slate-300 truncate max-w-xs">{user.email}</span>
+        <span className="text-slate-600 dark:text-slate-300 truncate max-w-xs">{user.email}</span>
       </div>
 
       {/* Identity card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-start gap-5">
           <Initials name={user.display_name} email={user.email} />
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-extrabold text-white tracking-tight truncate">
+            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
               {user.display_name ?? <span className="text-slate-500 italic font-normal text-base">No display name</span>}
             </h1>
             <p className="text-sm text-slate-400 font-mono mt-0.5 truncate">{user.email}</p>
@@ -193,7 +193,7 @@ export default function AdminUserProfilePage() {
       </div>
 
       {/* Account details */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400 mb-5">Account details</h2>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
           {[
@@ -218,7 +218,7 @@ export default function AdminUserProfilePage() {
       </div>
 
       {/* KYC & Identity */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">KYC & Identity</h2>
           {user.id_verified
@@ -311,7 +311,7 @@ export default function AdminUserProfilePage() {
 
         {/* Address sub-section */}
         {user.address_line1 && (
-          <div className="mt-6 pt-5 border-t border-slate-800">
+          <div className="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between mb-4">
               <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Home address</p>
               {user.address_verified_at ? (
@@ -341,8 +341,8 @@ export default function AdminUserProfilePage() {
       </div>
 
       {/* Recent sessions */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
           <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">
             Recent practice sessions
             <span className="ml-2 text-slate-600 normal-case tracking-normal">(last {user.recent_sessions.length})</span>
@@ -353,7 +353,7 @@ export default function AdminUserProfilePage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 border-b border-slate-800">
+              <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   <th className="px-4 py-3 font-mono text-slate-500 uppercase tracking-wide">Date</th>
                   <th className="px-4 py-3 font-mono text-slate-500 uppercase tracking-wide">Duration</th>
@@ -363,25 +363,25 @@ export default function AdminUserProfilePage() {
                   <th className="px-4 py-3 font-mono text-slate-500 uppercase tracking-wide">Prolongs</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {user.recent_sessions.map((s) => (
                   <tr key={s.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="px-4 py-3 font-mono text-slate-300 whitespace-nowrap">
+                    <td className="px-4 py-3 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">
                       {fmt(s.created_at)}
                     </td>
-                    <td className="px-4 py-3 font-mono text-slate-300">
+                    <td className="px-4 py-3 font-mono text-slate-600 dark:text-slate-300">
                       {fmtDuration(s.duration_seconds)}
                     </td>
                     <td className="px-4 py-3 text-slate-400">
                       {s.stage_id != null ? `Stage ${s.stage_id}` : '—'}
                     </td>
-                    <td className="px-4 py-3 font-mono tabular-nums text-slate-300">
+                    <td className="px-4 py-3 font-mono tabular-nums text-slate-600 dark:text-slate-300">
                       {s.total_blocks_detected ?? 0}
                     </td>
-                    <td className="px-4 py-3 font-mono tabular-nums text-slate-300">
+                    <td className="px-4 py-3 font-mono tabular-nums text-slate-600 dark:text-slate-300">
                       {s.total_repetitions_detected ?? 0}
                     </td>
-                    <td className="px-4 py-3 font-mono tabular-nums text-slate-300">
+                    <td className="px-4 py-3 font-mono tabular-nums text-slate-600 dark:text-slate-300">
                       {s.total_prolongations_detected ?? 0}
                     </td>
                   </tr>
@@ -396,7 +396,7 @@ export default function AdminUserProfilePage() {
       <div className="flex gap-3">
         <Link
           href="/admin/users"
-          className="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 text-sm font-medium transition-colors"
+          className="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 text-sm font-medium transition-colors"
         >
           ← Back to Users
         </Link>

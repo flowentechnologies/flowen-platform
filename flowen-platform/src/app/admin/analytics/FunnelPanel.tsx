@@ -23,7 +23,7 @@ function conversionColour(pct: number): string {
 
 function Shimmer({ className }: { className?: string }) {
   return (
-    <div className={`animate-pulse rounded-lg bg-slate-800/60 ${className ?? ''}`} />
+    <div className={`animate-pulse rounded-lg bg-slate-100/80 dark:bg-slate-800/60 ${className ?? ''}`} />
   );
 }
 
@@ -71,12 +71,12 @@ function StageBar({ stage, isFirst }: { stage: FunnelStage; isFirst: boolean }) 
         {/* Left: stage label */}
         <div className="flex items-center gap-2 min-w-0">
           <span className={`w-2 h-2 rounded-full shrink-0 ${styles.dot}`} />
-          <span className="text-sm font-bold text-white truncate">{stage.label}</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{stage.label}</span>
         </div>
 
         {/* Right: count + pct of top */}
         <div className="flex items-baseline gap-2 shrink-0">
-          <span className="text-xl font-black text-white font-mono">
+          <span className="text-xl font-black text-slate-900 dark:text-white font-mono">
             {stage.count.toLocaleString()}
           </span>
           <span className="text-[10px] text-slate-400 font-mono">
@@ -92,9 +92,9 @@ function StageBar({ stage, isFirst }: { stage: FunnelStage; isFirst: boolean }) 
 
 function MiniStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
+    <div className="bg-slate-100/80 dark:bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
       <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1">{label}</p>
-      <p className="text-2xl font-black text-white font-mono">{value}</p>
+      <p className="text-2xl font-black text-slate-900 dark:text-white font-mono">{value}</p>
       {sub && <p className="text-[10px] text-slate-500 mt-1">{sub}</p>}
     </div>
   );
@@ -141,11 +141,11 @@ export function FunnelPanel() {
   const hasAnyData    = waitlistCount > 0 || (data?.stages[1]?.count ?? 0) > 0;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h2 className="text-sm font-bold text-white">Acquisition Funnel</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Acquisition Funnel</h2>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-sky-500/10 text-sky-400 border border-sky-500/30">
             WAITLIST → PAYING
           </span>
@@ -215,9 +215,9 @@ export function FunnelPanel() {
                 {data.waitlist_sources.map(({ source, count }) => (
                   <span
                     key={source}
-                    className="px-3 py-1 rounded-full text-xs bg-slate-800 border border-slate-700 text-slate-300 font-mono"
+                    className="px-3 py-1 rounded-full text-xs bg-slate-100 dark:bg-slate-800 border border-slate-700 text-slate-600 dark:text-slate-300 font-mono"
                   >
-                    {source}: <span className="font-bold text-white">{count.toLocaleString()}</span>
+                    {source}: <span className="font-bold text-slate-900 dark:text-white">{count.toLocaleString()}</span>
                   </span>
                 ))}
               </div>

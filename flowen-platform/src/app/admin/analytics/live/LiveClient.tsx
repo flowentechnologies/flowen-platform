@@ -17,9 +17,9 @@ interface AnalyticsData {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-5">
+    <div className="bg-[#0A0D14] border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
       <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">{label}</p>
-      <p className="text-3xl font-bold text-white">{value}</p>
+      <p className="text-3xl font-bold text-slate-900 dark:text-white">{value}</p>
       {sub && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
     </div>
   );
@@ -29,8 +29,8 @@ function BarRow({ label, count, max, color = 'bg-emerald-500' }: { label: string
   const pct = max > 0 ? Math.round((count / max) * 100) : 0;
   return (
     <div className="flex items-center gap-3 py-1.5">
-      <span className="text-sm text-slate-300 w-40 truncate shrink-0">{label}</span>
-      <div className="flex-1 bg-slate-800 rounded-full h-2">
+      <span className="text-sm text-slate-600 dark:text-slate-300 w-40 truncate shrink-0">{label}</span>
+      <div className="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-2">
         <div className={`${color} h-2 rounded-full`} style={{ width: `${pct}%` }} />
       </div>
       <span className="text-sm text-slate-400 w-10 text-right shrink-0">{count}</span>
@@ -71,7 +71,7 @@ export default function LiveClient() {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-5 h-24" />
+          <div key={i} className="bg-[#0A0D14] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 h-24" />
         ))}
       </div>
     );
@@ -111,7 +111,7 @@ export default function LiveClient() {
 
       {/* 30-day sparkline */}
       {data.daily_series.length > 0 && (
-        <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-6">
+        <div className="bg-[#0A0D14] border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">Daily visitors — last 30 days</p>
           <div className="flex items-end gap-0.5 h-24">
             {data.daily_series.map(({ date, visitors }) => (
@@ -121,7 +121,7 @@ export default function LiveClient() {
                   style={{ height: `${Math.max(2, Math.round((visitors / maxDay) * 96))}px` }}
                 />
                 <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center pointer-events-none">
-                  <div className="bg-slate-700 text-white text-[10px] rounded px-1.5 py-0.5 whitespace-nowrap">
+                  <div className="bg-slate-700 text-slate-900 dark:text-white text-[10px] rounded px-1.5 py-0.5 whitespace-nowrap">
                     {date}: {visitors}
                   </div>
                 </div>
@@ -133,7 +133,7 @@ export default function LiveClient() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Channels */}
-        <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-6">
+        <div className="bg-[#0A0D14] border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">Traffic channels · 30 days</p>
           {data.top_channels.length === 0
             ? <p className="text-slate-600 text-sm">No data yet</p>
@@ -144,7 +144,7 @@ export default function LiveClient() {
         </div>
 
         {/* Countries */}
-        <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-6">
+        <div className="bg-[#0A0D14] border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">Top countries · 30 days</p>
           {data.top_countries.length === 0
             ? <p className="text-slate-600 text-sm">No data yet</p>
@@ -161,7 +161,7 @@ export default function LiveClient() {
         </div>
 
         {/* Top pages today */}
-        <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-6">
+        <div className="bg-[#0A0D14] border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">Top pages today</p>
           {data.top_pages.length === 0
             ? <p className="text-slate-600 text-sm">No data yet</p>

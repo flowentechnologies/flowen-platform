@@ -30,7 +30,7 @@ function KpiCard({
   label,
   value,
   sub,
-  color = 'text-white',
+  color = 'text-slate-900 dark:text-white',
 }: {
   label: string;
   value: string;
@@ -38,7 +38,7 @@ function KpiCard({
   color?: string;
 }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
       <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-2">
         {label}
       </p>
@@ -174,10 +174,10 @@ function FunnelRow({
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs text-slate-400 w-36 shrink-0">{label}</span>
-      <span className="text-xs font-mono text-white w-8 text-right shrink-0">
+      <span className="text-xs font-mono text-slate-900 dark:text-white w-8 text-right shrink-0">
         {count}
       </span>
-      <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${barColor}`}
           style={{ width: `${barW}%` }}
@@ -296,12 +296,12 @@ function SessionSparkline({ byDay }: { byDay: Record<string, number> }) {
 function TierBadge({ tier }: { tier: string | null }) {
   const map: Record<string, string> = {
     founding:        'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    standard:        'bg-slate-700 text-slate-300 border-slate-600',
+    standard:        'bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-600',
     public_funds:    'bg-sky-500/10 text-sky-400 border-sky-500/30',
-    vocali_freemium: 'bg-slate-800 text-slate-500 border-slate-700',
+    vocali_freemium: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-700',
   };
   const label = tier ?? 'standard';
-  const cls = map[label] ?? 'bg-slate-800 text-slate-500 border-slate-700';
+  const cls = map[label] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-700';
   return (
     <span
       className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${cls} uppercase`}
@@ -373,7 +373,7 @@ function UserTable({ users }: { users: UserProgress[] }) {
           placeholder="Search by email or name..."
           value={query}
           onChange={e => setQuery(e.target.value)}
-          className="w-full sm:w-72 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-slate-500 font-mono"
+          className="w-full sm:w-72 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-700 text-xs text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500 font-mono"
         />
       </div>
 
@@ -381,7 +381,7 @@ function UserTable({ users }: { users: UserProgress[] }) {
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-slate-800">
+            <tr className="border-b border-slate-200 dark:border-slate-800">
               <th className="text-left py-2 pr-4 text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest">
                 User
               </th>
@@ -440,7 +440,7 @@ function UserTable({ users }: { users: UserProgress[] }) {
                 <tr key={u.user_id} className="hover:bg-slate-800/30 transition-colors">
                   {/* User */}
                   <td className="py-2.5 pr-4">
-                    <p className="text-white font-mono text-[11px] truncate max-w-[180px]">
+                    <p className="text-slate-900 dark:text-white font-mono text-[11px] truncate max-w-[180px]">
                       {u.email}
                     </p>
                     {u.display_name && (
@@ -454,7 +454,7 @@ function UserTable({ users }: { users: UserProgress[] }) {
                     <TierBadge tier={u.tier} />
                   </td>
                   {/* Sessions */}
-                  <td className="py-2.5 pr-4 text-right font-mono text-white">
+                  <td className="py-2.5 pr-4 text-right font-mono text-slate-900 dark:text-white">
                     {u.session_count}
                   </td>
                   {/* Avg Blk/Min */}
@@ -532,9 +532,9 @@ export function SessionQualityClient({
     <div className="space-y-8">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Session Quality
           </h1>
           <p className="text-slate-500 text-xs font-mono mt-1">
@@ -544,7 +544,7 @@ export function SessionQualityClient({
         <button
           onClick={refresh}
           disabled={loading}
-          className="px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40 self-start sm:self-auto"
+          className="px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40 self-start sm:self-auto"
         >
           {loading ? '↻ Refreshing...' : '↻ Refresh'}
         </button>
@@ -576,17 +576,17 @@ export function SessionQualityClient({
           <KpiCard
             label="Avg Sessions/User"
             value={data.avgSessionsPerUser.toFixed(1)}
-            color="text-white"
+            color="text-slate-900 dark:text-white"
           />
           <KpiCard
             label="Avg Duration"
             value={formatDuration(data.avgDurationSeconds)}
-            color="text-white"
+            color="text-slate-900 dark:text-white"
           />
           <KpiCard
             label="Sessions This Month"
             value={data.totalSessionsMonth.toString()}
-            color="text-white"
+            color="text-slate-900 dark:text-white"
           />
         </div>
       </div>
@@ -595,7 +595,7 @@ export function SessionQualityClient({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* B. Trend split bar */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-4">
             Progress Trend Split
           </p>
@@ -608,7 +608,7 @@ export function SessionQualityClient({
         </div>
 
         {/* C. Engagement funnel */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-4">
             Engagement Funnel
           </p>
@@ -617,9 +617,9 @@ export function SessionQualityClient({
       </div>
 
       {/* D. Session volume sparkline */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-bold text-white">Session Volume — last 30 days</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-white">Session Volume — last 30 days</p>
           <span className="text-xs font-mono text-slate-500">
             {data.totalSessionsMonth} total
           </span>
@@ -643,7 +643,7 @@ export function SessionQualityClient({
       </div>
 
       {/* E. User progress table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
         <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-4">
           User Progress
         </p>

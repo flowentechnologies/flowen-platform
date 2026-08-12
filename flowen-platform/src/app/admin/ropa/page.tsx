@@ -234,9 +234,9 @@ export default async function ROPAPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Article 30 ROPA</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Article 30 ROPA</h1>
           <p className="text-slate-400 text-sm mt-1">
             Records of Processing Activities — {COMPANY} — Effective {EFFECTIVE_DATE}
           </p>
@@ -252,7 +252,7 @@ export default async function ROPAPage() {
       </div>
 
       {/* Controller details */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-400 mb-4">
           Controller Details
         </h2>
@@ -278,12 +278,12 @@ export default async function ROPAPage() {
       {/* Summary counts */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Processing Activities', value: ACTIVITIES.length, color: 'text-white' },
+          { label: 'Processing Activities', value: ACTIVITIES.length, color: 'text-slate-900 dark:text-white' },
           { label: 'Special Category', value: ACTIVITIES.filter(a => a.specialCategoryBasis).length, color: 'text-purple-400' },
           { label: 'International Transfers', value: ACTIVITIES.filter(a => a.transfers.includes('US') || a.transfers.includes('international')).length, color: 'text-amber-400' },
           { label: 'Legitimate Interests', value: ACTIVITIES.filter(a => a.lawfulBasis.some(b => b.includes('6(1)(f)'))).length, color: 'text-sky-400' },
         ].map(s => (
-          <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-4">
+          <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-4">
             <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
             <p className="text-xs font-mono text-slate-500 mt-0.5">{s.label}</p>
           </div>
@@ -292,19 +292,19 @@ export default async function ROPAPage() {
 
       {/* Activities */}
       <div className="space-y-4">
-        <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400 pb-3 border-b border-slate-800">
+        <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400 pb-3 border-b border-slate-200 dark:border-slate-800">
           Processing Activities Register
         </h2>
         {ACTIVITIES.map(activity => (
-          <details key={activity.id} className="group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+          <details key={activity.id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
             <summary className="flex items-start gap-4 p-5 cursor-pointer list-none hover:bg-slate-800/40 transition-colors">
               <div className="flex-shrink-0 mt-0.5">
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-700">
                   {activity.id}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-white">{activity.name}</h3>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{activity.name}</h3>
                 <p className="text-slate-500 text-xs mt-1 leading-relaxed line-clamp-2 group-open:line-clamp-none">
                   {activity.purpose}
                 </p>
@@ -326,7 +326,7 @@ export default async function ROPAPage() {
               </svg>
             </summary>
 
-            <div className="px-5 pb-5 border-t border-slate-800">
+            <div className="px-5 pb-5 border-t border-slate-200 dark:border-slate-800">
               <dl className="mt-4 space-y-4">
                 {[
                   { term: 'Purpose', def: activity.purpose },
@@ -343,7 +343,7 @@ export default async function ROPAPage() {
                     <dt className="text-xs font-semibold text-slate-500 uppercase tracking-wider sm:col-span-1">
                       {row.term}
                     </dt>
-                    <dd className="text-slate-300 text-xs leading-relaxed sm:col-span-2">
+                    <dd className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed sm:col-span-2">
                       {row.def}
                     </dd>
                   </div>
@@ -355,15 +355,15 @@ export default async function ROPAPage() {
       </div>
 
       {/* Footer */}
-      <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 text-xs text-slate-500 space-y-2">
+      <div className="bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-xs text-slate-500 space-y-2">
         <p>
-          <strong className="text-slate-300">Document owner:</strong> {DPO_EMAIL} · Review annually or upon material change to processing activities.
+          <strong className="text-slate-600 dark:text-slate-300">Document owner:</strong> {DPO_EMAIL} · Review annually or upon material change to processing activities.
         </p>
         <p>
           This register covers {COMPANY} as Data Controller. Sub-processor DPAs are maintained separately. Third parties operating as independent controllers (e.g. Stripe) are not included in this register.
         </p>
         <p>
-          <strong className="text-slate-300">ICO registration:</strong> Required before handling any NHS patient data. Register at ico.org.uk/registration under Schedule 1, Part 2 (health data processing). Fee: £40–£2,900/year based on size.
+          <strong className="text-slate-600 dark:text-slate-300">ICO registration:</strong> Required before handling any NHS patient data. Register at ico.org.uk/registration under Schedule 1, Part 2 (health data processing). Fee: £40–£2,900/year based on size.
         </p>
       </div>
     </div>

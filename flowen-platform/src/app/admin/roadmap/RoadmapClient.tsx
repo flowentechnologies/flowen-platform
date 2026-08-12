@@ -32,7 +32,7 @@ const PHASE_CONFIG: Record<Phase, { label: string; shortLabel: string; accent: s
     shortLabel: 'Scale',
     accent:     'slate',
     bar:        'bg-slate-500',
-    pill:       'bg-slate-700/60 text-slate-300 border border-slate-600/40',
+    pill:       'bg-slate-700/60 text-slate-600 dark:text-slate-300 border border-slate-600/40',
   },
 };
 
@@ -41,11 +41,11 @@ const CATEGORY_CONFIG: Record<Category, { label: string; badge: string }> = {
   compliance:  { label: 'Compliance',  badge: 'bg-purple-500/15 text-purple-400 border border-purple-500/30' },
   commercial:  { label: 'Commercial',  badge: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' },
   fundraising: { label: 'Fundraising', badge: 'bg-amber-500/15 text-amber-400 border border-amber-500/30' },
-  team:        { label: 'Team',        badge: 'bg-slate-600/40 text-slate-300 border border-slate-600/40' },
+  team:        { label: 'Team',        badge: 'bg-slate-600/40 text-slate-600 dark:text-slate-300 border border-slate-600/40' },
 };
 
 const STATUS_CONFIG: Record<Status, { label: string; badge: string }> = {
-  planned:     { label: 'Planned',     badge: 'bg-slate-700 text-slate-300' },
+  planned:     { label: 'Planned',     badge: 'bg-slate-700 text-slate-600 dark:text-slate-300' },
   in_progress: { label: 'In Progress', badge: 'bg-amber-500/20 text-amber-400 border border-amber-500/40' },
   complete:    { label: 'Complete',    badge: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' },
   blocked:     { label: 'Blocked',     badge: 'bg-red-500/20 text-red-400 border border-red-500/40' },
@@ -209,7 +209,7 @@ function Input({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
     />
   );
 }
@@ -223,7 +223,7 @@ function Textarea({ value, onChange, placeholder, rows = 3 }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 resize-none"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 resize-none"
     />
   );
 }
@@ -235,7 +235,7 @@ function SelectInput<T extends string>({ value, onChange, options }: {
     <select
       value={value}
       onChange={e => onChange(e.target.value as T)}
-      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500/50"
     >
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
@@ -248,10 +248,10 @@ function SlidePanel({ title, onClose, children }: {
   return (
     <>
       <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm" onClick={onClose} />
-      <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg bg-slate-900 border-l border-slate-800 flex flex-col shadow-2xl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 flex-shrink-0">
-          <h2 className="text-sm font-bold text-white">{title}</h2>
-          <button type="button" onClick={onClose} className="text-slate-500 hover:text-white transition-colors" aria-label="Close">
+      <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h2>
+          <button type="button" onClick={onClose} className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors" aria-label="Close">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <line x1="4" y1="4" x2="14" y2="14" /><line x1="14" y1="4" x2="4" y2="14" />
             </svg>
@@ -283,7 +283,7 @@ function PhaseProgressBlock({
   const isActive = phase === 'launch';
 
   return (
-    <div className={`flex-1 bg-slate-900 border rounded-2xl p-5 ${isActive ? 'border-emerald-500/30' : 'border-slate-800'}`}>
+    <div className={`flex-1 bg-white dark:bg-slate-900 border rounded-2xl p-5 ${isActive ? 'border-emerald-500/30' : 'border-slate-200 dark:border-slate-800'}`}>
       <div className="flex items-start justify-between gap-2 mb-3">
         <div>
           <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${cfg.pill}`}>
@@ -301,7 +301,7 @@ function PhaseProgressBlock({
       </div>
 
       {/* Progress bar */}
-      <div className="w-full bg-slate-800 rounded-full h-1.5 mb-3">
+      <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 mb-3">
         <div
           className={`h-1.5 rounded-full transition-all duration-500 ${cfg.bar}`}
           style={{ width: `${pct}%` }}
@@ -337,7 +337,7 @@ function MilestoneCard({ milestone, onEdit }: {
   const isInProg  = milestone.status === 'in_progress';
 
   return (
-    <div className="group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 transition-colors">
+    <div className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-700 rounded-xl p-4 transition-colors">
       <div className="flex items-start gap-3">
         {/* Priority dot */}
         <div className="mt-1.5 shrink-0">
@@ -367,7 +367,7 @@ function MilestoneCard({ milestone, onEdit }: {
               </div>
 
               {/* Title */}
-              <p className="text-sm font-bold text-white leading-snug">{milestone.title}</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">{milestone.title}</p>
 
               {/* Description */}
               {milestone.description && (
@@ -411,7 +411,7 @@ function MilestoneCard({ milestone, onEdit }: {
               <button
                 type="button"
                 onClick={() => onEdit(milestone)}
-                className="opacity-0 group-hover:opacity-100 px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-all"
+                className="opacity-0 group-hover:opacity-100 px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-all"
               >
                 Edit
               </button>
@@ -526,14 +526,14 @@ function MilestoneFormContent({ initial, onSave, onCancel, isPending, isEdit }: 
           type="button"
           onClick={() => onSave(form)}
           disabled={isPending || !form.title}
-          className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-40"
+          className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
         >
           {isPending ? 'Saving...' : isEdit ? 'Update Milestone' : 'Add Milestone'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -711,14 +711,14 @@ export function RoadmapClient({ initialMilestones }: { initialMilestones: Roadma
             type="button"
             onClick={handleCopy}
             disabled={isEmpty}
-            className="px-4 py-2 text-xs font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors disabled:opacity-40"
+            className="px-4 py-2 text-xs font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors disabled:opacity-40"
           >
             {copied ? 'Copied!' : 'Copy Roadmap Summary'}
           </button>
           <button
             type="button"
             onClick={() => setPanel({ mode: 'add' })}
-            className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+            className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors"
           >
             + Add Milestone
           </button>
@@ -744,8 +744,8 @@ export function RoadmapClient({ initialMilestones }: { initialMilestones: Roadma
                 onClick={() => setCatFilter(opt.value)}
                 className={`px-3 py-1 text-[11px] font-mono rounded-full transition-colors ${
                   catFilter === opt.value
-                    ? 'bg-slate-700 text-white font-bold'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-slate-700 text-slate-900 dark:text-white font-bold'
+                    : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {opt.label}
@@ -754,7 +754,7 @@ export function RoadmapClient({ initialMilestones }: { initialMilestones: Roadma
           </div>
 
           {/* Divider */}
-          <div className="w-px bg-slate-800 self-stretch hidden sm:block" />
+          <div className="w-px bg-slate-100 dark:bg-slate-800 self-stretch hidden sm:block" />
 
           {/* Status filter */}
           <div className="flex flex-wrap gap-1">
@@ -765,8 +765,8 @@ export function RoadmapClient({ initialMilestones }: { initialMilestones: Roadma
                 onClick={() => setStatFilter(opt.value)}
                 className={`px-3 py-1 text-[11px] font-mono rounded-full transition-colors ${
                   statFilter === opt.value
-                    ? 'bg-slate-700 text-white font-bold'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-slate-700 text-slate-900 dark:text-white font-bold'
+                    : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {opt.label}
@@ -778,8 +778,8 @@ export function RoadmapClient({ initialMilestones }: { initialMilestones: Roadma
 
       {/* Empty state */}
       {isEmpty && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10 text-center">
-          <p className="text-sm font-bold text-white mb-2">No roadmap milestones yet</p>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-10 text-center">
+          <p className="text-sm font-bold text-slate-900 dark:text-white mb-2">No roadmap milestones yet</p>
           <p className="text-xs text-slate-500 font-mono mb-2 max-w-md mx-auto">
             Track progress across three phases: Phase 1 Launch (clinical safety, App Store, first users),
             Phase 2 NHS Pilot (ICB contracts, DSPT, 500 users), Phase 3 Scale (10 ICBs, Series A).
@@ -792,14 +792,14 @@ export function RoadmapClient({ initialMilestones }: { initialMilestones: Roadma
               type="button"
               onClick={handleSeed}
               disabled={isPending}
-              className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-40"
+              className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
             >
               {isPending ? 'Seeding...' : 'Seed Example Roadmap'}
             </button>
             <button
               type="button"
               onClick={() => setPanel({ mode: 'add' })}
-              className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+              className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               Add Manually
             </button>
@@ -823,7 +823,7 @@ export function RoadmapClient({ initialMilestones }: { initialMilestones: Roadma
                 {/* Phase header */}
                 <div className="flex items-center gap-3 mb-4">
                   <h2 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">{cfg.label}</h2>
-                  <div className="flex-1 h-px bg-slate-800" />
+                  <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
                   <span className="text-[10px] font-mono text-slate-600">{done}/{total}</span>
                 </div>
 
@@ -871,7 +871,7 @@ export function RoadmapClient({ initialMilestones }: { initialMilestones: Roadma
             isPending={isPending}
             isEdit={true}
           />
-          <div className="mt-8 pt-5 border-t border-slate-800">
+          <div className="mt-8 pt-5 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={() => handleDelete(panel.milestone.id)}

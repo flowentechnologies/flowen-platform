@@ -54,9 +54,9 @@ export default async function WorkflowsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Workflows</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Workflows</h1>
           <p className="text-slate-400 text-sm mt-1">Automated trigger-action playbooks · enable, pause, and manually trigger</p>
         </div>
         <span className="self-start sm:self-auto px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -66,25 +66,25 @@ export default async function WorkflowsPage() {
 
       {/* KPI strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Active Workflows</p>
-          <p className="text-3xl font-black text-white">{activeCount}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{activeCount}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">{definitions.length} total defined</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Runs Today</p>
-          <p className="text-3xl font-black text-white">{runsToday}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{runsToday}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">{allRuns.length} all-time</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Failed (7d)</p>
-          <p className={`text-3xl font-black ${failedLast7d > 0 ? 'text-red-400' : 'text-white'}`}>{failedLast7d}</p>
+          <p className={`text-3xl font-black ${failedLast7d > 0 ? 'text-red-400' : 'text-slate-900 dark:text-white'}`}>{failedLast7d}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">last 7 days</p>
         </div>
       </div>
 
       {/* Main panel */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <WorkflowsClient initialWorkflows={workflows} />
       </div>
     </div>

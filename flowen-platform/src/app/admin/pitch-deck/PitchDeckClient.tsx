@@ -77,15 +77,15 @@ function CreateInvitePanel({ siteUrl, onCreated }: { siteUrl: string; onCreated:
       </button>
 
       {open && (
-        <div className="mt-4 bg-slate-900 border border-slate-700 rounded-2xl p-5 max-w-lg">
+        <div className="mt-4 bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-5 max-w-lg">
           {newLink ? (
             <div className="space-y-3">
               <p className="text-xs font-bold text-emerald-400">Link created successfully</p>
-              <div className="bg-slate-800 rounded-xl p-3 font-mono text-xs text-slate-300 break-all">{newLink}</div>
+              <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-3 font-mono text-xs text-slate-600 dark:text-slate-300 break-all">{newLink}</div>
               <div className="flex gap-2">
                 <CopyButton text={newLink} />
                 <button onClick={() => { setNewLink(null); setOpen(false); }}
-                  className="text-[10px] font-mono px-3 py-1 rounded border border-slate-700 text-slate-400 hover:text-white transition-colors">
+                  className="text-[10px] font-mono px-3 py-1 rounded border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                   Done
                 </button>
               </div>
@@ -93,28 +93,28 @@ function CreateInvitePanel({ siteUrl, onCreated }: { siteUrl: string; onCreated:
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-3">
-              <p className="text-xs font-bold text-white mb-3">Create investor access link</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white mb-3">Create investor access link</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] font-mono text-slate-500 block mb-1">Investor Name *</label>
                   <input required value={form.investor_name} onChange={e => setForm(f => ({ ...f, investor_name: e.target.value }))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:border-amber-500 outline-none" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
                 </div>
                 <div>
                   <label className="text-[10px] font-mono text-slate-500 block mb-1">Firm / Fund</label>
                   <input value={form.firm} onChange={e => setForm(f => ({ ...f, firm: e.target.value }))}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:border-amber-500 outline-none" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
                 </div>
               </div>
               <div>
                 <label className="text-[10px] font-mono text-slate-500 block mb-1">Email (optional)</label>
                 <input type="email" value={form.investor_email} onChange={e => setForm(f => ({ ...f, investor_email: e.target.value }))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:border-amber-500 outline-none" />
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
               </div>
               <div>
                 <label className="text-[10px] font-mono text-slate-500 block mb-1">Expires in (days, leave 0 = never)</label>
                 <input type="number" min="0" value={form.expires_days} onChange={e => setForm(f => ({ ...f, expires_days: e.target.value }))}
-                  className="w-32 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:border-amber-500 outline-none" />
+                  className="w-32 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
               </div>
               <div className="flex gap-2 pt-1">
                 <button type="submit" disabled={isPending}
@@ -122,7 +122,7 @@ function CreateInvitePanel({ siteUrl, onCreated }: { siteUrl: string; onCreated:
                   {isPending ? 'Creating…' : 'Generate Link'}
                 </button>
                 <button type="button" onClick={() => setOpen(false)}
-                  className="px-3 py-2 rounded-lg border border-slate-700 text-slate-400 text-xs hover:text-white transition-colors">
+                  className="px-3 py-2 rounded-lg border border-slate-700 text-slate-400 text-xs hover:text-slate-900 dark:hover:text-white transition-colors">
                   Cancel
                 </button>
               </div>
@@ -172,9 +172,9 @@ export function PitchDeckClient({ initialInvites, recentViews, siteUrl }: Props)
     <div className="space-y-8">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Pitch Deck</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Pitch Deck</h1>
           <p className="text-slate-500 text-xs font-mono mt-1">Investor-tracked access links for the interactive pitch canvas</p>
         </div>
         <CreateInvitePanel siteUrl={siteUrl} onCreated={inv => setInvites(prev => [inv, ...prev])} />
@@ -183,11 +183,11 @@ export function PitchDeckClient({ initialInvites, recentViews, siteUrl }: Props)
       {/* Stats strip */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total Views', value: totalViews.toString(), color: 'text-white' },
+          { label: 'Total Views', value: totalViews.toString(), color: 'text-slate-900 dark:text-white' },
           { label: 'Active Links', value: activeLinks.toString(), color: 'text-emerald-400' },
           { label: 'Unique Viewers', value: uniqueViewers.toString(), color: 'text-amber-400' },
         ].map(s => (
-          <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
             <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">{s.label}</p>
             <p className={`text-3xl font-black ${s.color}`}>{s.value}</p>
           </div>
@@ -195,17 +195,17 @@ export function PitchDeckClient({ initialInvites, recentViews, siteUrl }: Props)
       </div>
 
       {/* How it works */}
-      <div className="bg-slate-900/60 border border-amber-500/20 rounded-2xl px-5 py-4">
+      <div className="bg-slate-50 dark:bg-slate-900/60 border border-amber-500/20 rounded-2xl px-5 py-4">
         <p className="text-xs font-bold text-amber-400 mb-1">How investor links work</p>
         <p className="text-[11px] text-slate-400 leading-relaxed">
-          Each link is unique to one investor — share it by email or message. When they open it, their view is logged with a timestamp. Links can be set to expire or revoked at any time. The deck is served from <code className="text-slate-300 bg-slate-800 px-1 rounded">/api/pitch/[token]</code> — the HTML is never publicly indexed.
+          Each link is unique to one investor — share it by email or message. When they open it, their view is logged with a timestamp. Links can be set to expire or revoked at any time. The deck is served from <code className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1 rounded">/api/pitch/[token]</code> — the HTML is never publicly indexed.
         </p>
       </div>
 
       {/* Links table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-          <p className="text-sm font-bold text-white">Investor Links ({invites.length})</p>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <p className="text-sm font-bold text-slate-900 dark:text-white">Investor Links ({invites.length})</p>
           {isPending && <span className="text-[10px] font-mono text-slate-600 animate-pulse">Updating…</span>}
         </div>
 
@@ -215,7 +215,7 @@ export function PitchDeckClient({ initialInvites, recentViews, siteUrl }: Props)
             <p className="text-slate-700 text-xs font-mono mt-1">Create your first investor link above</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-800">
+          <div className="divide-y divide-slate-200 dark:divide-slate-800">
             {invites.map(invite => {
               const linkUrl = `${siteUrl}/api/pitch/${invite.token}`;
               const views = viewsByInvite[invite.id] ?? [];
@@ -226,7 +226,7 @@ export function PitchDeckClient({ initialInvites, recentViews, siteUrl }: Props)
                   {/* Investor info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-bold text-white">{invite.investor_name}</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">{invite.investor_name}</span>
                       {invite.firm && <span className="text-[10px] font-mono text-slate-500">{invite.firm}</span>}
                       <StatusBadge invite={invite} />
                     </div>
@@ -289,8 +289,8 @@ export function PitchDeckClient({ initialInvites, recentViews, siteUrl }: Props)
       </div>
 
       {/* Deck status */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-        <p className="text-sm font-bold text-white mb-3">Deck Asset</p>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+        <p className="text-sm font-bold text-slate-900 dark:text-white mb-3">Deck Asset</p>
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-xs text-slate-400 font-mono">deck.html</span>

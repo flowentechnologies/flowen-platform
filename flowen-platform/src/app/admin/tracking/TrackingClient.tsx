@@ -105,22 +105,22 @@ function ConfigModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+      <div className="w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-800 shrink-0">
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-200 dark:border-slate-800 shrink-0">
           <span className="text-3xl">{provider.icon}</span>
           <div className="flex-1 min-w-0">
-            <h2 className="text-white font-bold text-lg leading-tight">{provider.label}</h2>
+            <h2 className="text-slate-900 dark:text-white font-bold text-lg leading-tight">{provider.label}</h2>
             <p className="text-slate-400 text-xs mt-0.5">Configuration</p>
           </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800">
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
             <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>
           </button>
         </div>
 
         {/* Tabs */}
         {!isCustom && (
-          <div className="flex border-b border-slate-800 px-6 shrink-0">
+          <div className="flex border-b border-slate-200 dark:border-slate-800 px-6 shrink-0">
             {(['quick', 'custom'] as const).map(t => (
               <button
                 key={t}
@@ -146,7 +146,7 @@ function ConfigModal({
                   value={pixelId}
                   onChange={e => setPixelId(e.target.value)}
                   placeholder={providerIdPlaceholder(provider.provider_key as ProviderKey)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-mono text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white font-mono text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
                 {provider.pixel_id && (
                   <p className="text-slate-500 text-xs mt-2 font-mono">Current: {provider.pixel_id}</p>
@@ -163,7 +163,7 @@ function ConfigModal({
                     value={capiToken}
                     onChange={e => setCapiToken(e.target.value)}
                     placeholder="EAAxxxxxxxxxxxxxxxx..."
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-mono text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white font-mono text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                   />
                   <p className="text-slate-600 text-xs mt-1.5">Stored server-side only. Enables Meta Conversions API for higher-signal event matching.</p>
                 </div>
@@ -190,7 +190,7 @@ function ConfigModal({
                   value={headHtml}
                   onChange={e => setHeadHtml(e.target.value)}
                   placeholder={'<script>/* your head script */</script>'}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono text-xs placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-y"
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white font-mono text-xs placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-y"
                 />
               </div>
               <div>
@@ -202,7 +202,7 @@ function ConfigModal({
                   value={bodyHtml}
                   onChange={e => setBodyHtml(e.target.value)}
                   placeholder={'<noscript>...</noscript>'}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono text-xs placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-y"
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white font-mono text-xs placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-y"
                 />
               </div>
               <button
@@ -221,7 +221,7 @@ function ConfigModal({
 
           {/* Script preview */}
           {provider.head_html && (
-            <div className="border-t border-slate-800 pt-4">
+            <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
               <button
                 onClick={() => setShowPreview(p => !p)}
                 className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-300 transition-colors"
@@ -230,7 +230,7 @@ function ConfigModal({
                 Script preview
               </button>
               {showPreview && (
-                <pre className="mt-3 bg-slate-950 rounded-xl px-4 py-3 text-[10px] text-emerald-400 font-mono overflow-x-auto whitespace-pre-wrap break-all leading-relaxed border border-slate-800">
+                <pre className="mt-3 bg-slate-50 dark:bg-slate-950 rounded-xl px-4 py-3 text-[10px] text-emerald-400 font-mono overflow-x-auto whitespace-pre-wrap break-all leading-relaxed border border-slate-200 dark:border-slate-800">
                   {provider.head_html.slice(0, 600)}{provider.head_html.length > 600 ? '…' : ''}
                 </pre>
               )}
@@ -257,19 +257,19 @@ function ProviderCard({
 }) {
   const { text, cls } = statusLabel(provider);
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-4">
       <div className="flex items-start gap-3">
         <span className="text-3xl leading-none shrink-0">{provider.icon}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-white font-semibold text-sm leading-tight">{provider.label}</span>
+            <span className="text-slate-900 dark:text-white font-semibold text-sm leading-tight">{provider.label}</span>
             <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border ${cls}`}>{text}</span>
           </div>
           <p className="text-slate-500 text-xs mt-1 leading-snug">{provider.description}</p>
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-800">
+      <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <Toggle
             on={provider.enabled}
@@ -280,7 +280,7 @@ function ProviderCard({
         </div>
         <button
           onClick={onConfigure}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+          className="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-700 transition-colors"
         >
           Configure
         </button>
@@ -325,12 +325,12 @@ export function TrackingClient({ initialProviders }: { initialProviders: Trackin
 
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Tracking & Pixels</h1>
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Tracking & Pixels</h1>
             <p className="text-slate-400 text-sm mt-1">Manage marketing pixels, analytics, and session recording</p>
           </div>
-          <span className="self-start sm:self-auto px-3 py-1.5 rounded-full text-xs font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700">
+          <span className="self-start sm:self-auto px-3 py-1.5 rounded-full text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-700">
             {activeCount} active
           </span>
         </div>
@@ -348,7 +348,7 @@ export function TrackingClient({ initialProviders }: { initialProviders: Trackin
         <div className="flex gap-3 bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3.5">
           <span className="text-lg shrink-0">🍪</span>
           <div>
-            <p className="text-slate-300 text-sm font-medium">Cookie consent gated</p>
+            <p className="text-slate-600 dark:text-slate-300 text-sm font-medium">Cookie consent gated</p>
             <p className="text-slate-500 text-xs mt-0.5">All pixels below fire only after a user accepts cookies. Compliant with PECR 2003 and GDPR by default.</p>
           </div>
         </div>
@@ -367,11 +367,11 @@ export function TrackingClient({ initialProviders }: { initialProviders: Trackin
         </div>
 
         {/* Server-side section */}
-        <div className="border-t border-slate-800 pt-8">
-          <h2 className="text-lg font-bold text-white mb-1">Server-Side Tracking</h2>
+        <div className="border-t border-slate-200 dark:border-slate-800 pt-8">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Server-Side Tracking</h2>
           <p className="text-slate-400 text-sm mb-5">
             API-based event forwarding that bypasses ad blockers and works with consent mode.
-            Configure provider API tokens via the <strong className="text-slate-300">Configure</strong> button on each pixel above.
+            Configure provider API tokens via the <strong className="text-slate-600 dark:text-slate-300">Configure</strong> button on each pixel above.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
@@ -382,12 +382,12 @@ export function TrackingClient({ initialProviders }: { initialProviders: Trackin
                 status: providers.find(p => p.provider_key === 'meta')?.server_config?.capi_token ? 'configured' : 'not_set',
               },
             ].map(item => (
-              <div key={item.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+              <div key={item.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl shrink-0">{item.icon}</span>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-white font-semibold text-sm">{item.label}</span>
+                      <span className="text-slate-900 dark:text-white font-semibold text-sm">{item.label}</span>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border ${item.status === 'configured' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-700'}`}>
                         {item.status === 'configured' ? 'Configured' : 'Not set'}
                       </span>

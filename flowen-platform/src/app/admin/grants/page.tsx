@@ -31,7 +31,7 @@ export default async function GrantsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-white tracking-tight">Grants &amp; Funding</h1>
+        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Grants &amp; Funding</h1>
         <p className="text-sm text-slate-500 font-mono mt-1">Non-dilutive pipeline — Innovate UK, SBRI, NIHR &amp; more</p>
       </div>
       <GrantsClient initialGrants={grants} />

@@ -63,9 +63,9 @@ export default async function CronPage() {
     <div className="space-y-8">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Cron</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Cron</h1>
           <p className="text-slate-400 text-sm mt-1">Scheduled jobs · Manual triggers · Run history</p>
         </div>
         <span className="text-[10px] text-slate-500 font-mono hidden sm:block">{generatedAt} (London)</span>
@@ -73,13 +73,13 @@ export default async function CronPage() {
 
       {/* KPI strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Total Jobs</p>
-          <p className="text-4xl font-black text-white">5</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white">5</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Last Run</p>
-          <p className={`text-2xl font-black ${lastRun ? 'text-white' : 'text-slate-600'}`}>
+          <p className={`text-2xl font-black ${lastRun ? 'text-slate-900 dark:text-white' : 'text-slate-600'}`}>
             {lastRun
               ? new Date(lastRun.started_at).toLocaleString('en-GB', {
                   day: '2-digit', month: 'short',
@@ -91,7 +91,7 @@ export default async function CronPage() {
             <p className="text-[10px] font-mono text-slate-500 mt-1">{lastRun.job_id}</p>
           )}
         </div>
-        <div className={`bg-slate-900 border rounded-2xl p-6 ${failed7d > 0 ? 'border-red-500/30' : 'border-slate-800'}`}>
+        <div className={`bg-white dark:bg-slate-900 border rounded-2xl p-6 ${failed7d > 0 ? 'border-red-500/30' : 'border-slate-200 dark:border-slate-800'}`}>
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Failed (7d)</p>
           <p className={`text-4xl font-black ${failed7d > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{failed7d}</p>
         </div>

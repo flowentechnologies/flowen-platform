@@ -34,7 +34,7 @@ async function api(payload: Record<string, unknown>) {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const TIER_CONFIG: Record<AffiliateTier, { label: string; badge: string; commission: number; months: number }> = {
-  standard: { label: 'Standard',  badge: 'bg-slate-700 text-slate-300 border-slate-600',            commission: 7.5, months: 3  },
+  standard: { label: 'Standard',  badge: 'bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-600',            commission: 7.5, months: 3  },
   premium:  { label: 'Premium',   badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',       commission: 10,  months: 6  },
   partner:  { label: 'Partner',   badge: 'bg-purple-500/15 text-purple-400 border-purple-500/30',    commission: 15,  months: 12 },
 };
@@ -84,7 +84,7 @@ function SummaryHero({ summary }: { summary: Summary }) {
         { label: 'Total Earned',       value: fmtGBP(summary.total_earned_pence, true), sub: `${fmtGBP(summary.total_paid_pence, true)} paid out`, accent: 'text-amber-400' },
         { label: 'Pending Payout',     value: fmtGBP(summary.pending_payout_pence, true), sub: 'approved, awaiting payment',                   accent: 'text-purple-400' },
       ].map(s => (
-        <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 mb-1.5">{s.label}</p>
           <p className={`text-3xl font-black tabular-nums ${s.accent}`}>{s.value}</p>
           <p className="text-[11px] text-slate-600 font-mono mt-1">{s.sub}</p>
@@ -114,7 +114,7 @@ function affiliateToForm(a: AffiliateWithStats): AffForm {
   };
 }
 
-const inputCls = 'w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition-colors';
+const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition-colors';
 const labelCls = 'block text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 mb-1.5';
 
 function AffiliateModal({
@@ -156,10 +156,10 @@ function AffiliateModal({
   return (
     <>
       <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm" onClick={onClose} />
-      <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg bg-slate-900 border-l border-slate-800 flex flex-col shadow-2xl overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 sticky top-0 bg-slate-900/95 backdrop-blur-md">
-          <h2 className="text-sm font-bold text-white">{initial ? 'Edit Affiliate' : 'Add Affiliate'}</h2>
-          <button type="button" onClick={onClose} className="text-slate-500 hover:text-white transition-colors">✕</button>
+      <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shadow-2xl overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-slate-900/95 backdrop-blur-md">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">{initial ? 'Edit Affiliate' : 'Add Affiliate'}</h2>
+          <button type="button" onClick={onClose} className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">✕</button>
         </div>
         <form onSubmit={handleSubmit} className="flex-1 px-6 py-5 space-y-4">
           {/* Tier quick-select */}
@@ -169,7 +169,7 @@ function AffiliateModal({
               {(['standard','premium','partner'] as AffiliateTier[]).map(t => (
                 <button key={t} type="button" onClick={() => applyTier(t)}
                   className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
-                    form.tier === t ? TIER_CONFIG[t].badge : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-white'
+                    form.tier === t ? TIER_CONFIG[t].badge : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-900 dark:hover:text-white'
                   }`}>
                   {TIER_CONFIG[t].label}
                 </button>
@@ -220,11 +220,11 @@ function AffiliateModal({
 
           <div className="flex gap-3 pt-2">
             <button type="submit" disabled={saving}
-              className="flex-1 py-2.5 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-50">
+              className="flex-1 py-2.5 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors disabled:opacity-50">
               {saving ? 'Saving…' : initial ? 'Save Changes' : 'Add Affiliate'}
             </button>
             <button type="button" onClick={onClose}
-              className="px-4 py-2.5 text-sm font-bold rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">
+              className="px-4 py-2.5 text-sm font-bold rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               Cancel
             </button>
           </div>
@@ -248,11 +248,11 @@ function ReferralLinkCard({ affiliate }: { affiliate: AffiliateWithStats }) {
   }
 
   return (
-    <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 rounded-xl px-3 py-2 text-xs font-mono">
+    <div className="flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800/60 border border-slate-700/60 rounded-xl px-3 py-2 text-xs font-mono">
       <span className="text-slate-500 truncate flex-1">{link}</span>
       <button type="button" onClick={copyLink}
         className={`shrink-0 px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all ${
-          copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'border-slate-700 text-slate-400 hover:text-white'
+          copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white'
         }`}>
         {copied ? '✓' : 'Copy'}
       </button>
@@ -279,12 +279,12 @@ function AffiliateRow({
 
   return (
     <>
-      <tr className="border-t border-slate-800/60 hover:bg-slate-800/20 transition-colors group">
+      <tr className="border-t border-slate-200 dark:border-slate-800/60 hover:bg-slate-800/20 transition-colors group">
         <td className="px-4 py-3.5">
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full shrink-0 ${sc.dot}`} />
             <div>
-              <p className="text-sm font-semibold text-white leading-tight">{affiliate.name}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">{affiliate.name}</p>
               <p className="text-[10px] font-mono text-slate-500">{affiliate.email}</p>
             </div>
           </div>
@@ -293,13 +293,13 @@ function AffiliateRow({
           <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border ${tc.badge}`}>{tc.label}</span>
         </td>
         <td className="px-4 py-3.5">
-          <span className="font-mono text-xs text-slate-300 tracking-wide">{affiliate.code}</span>
+          <span className="font-mono text-xs text-slate-600 dark:text-slate-300 tracking-wide">{affiliate.code}</span>
         </td>
         <td className="px-4 py-3.5">
           <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border ${sc.badge}`}>{sc.label}</span>
         </td>
         <td className="px-4 py-3.5 text-right tabular-nums text-slate-400 text-xs">{affiliate.click_count}</td>
-        <td className="px-4 py-3.5 text-right tabular-nums text-slate-300 text-xs font-bold">{affiliate.conversion_count}</td>
+        <td className="px-4 py-3.5 text-right tabular-nums text-slate-600 dark:text-slate-300 text-xs font-bold">{affiliate.conversion_count}</td>
         <td className="px-4 py-3.5 text-right tabular-nums text-amber-400 text-xs font-bold">{fmtGBP(affiliate.total_earned_pence, true)}</td>
         <td className="px-4 py-3.5 text-right tabular-nums text-xs">
           {hasPending
@@ -309,15 +309,15 @@ function AffiliateRow({
         <td className="px-4 py-3.5">
           <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button type="button" onClick={() => setExpanded(v => !v)}
-              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors">
+              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               {expanded ? 'Hide' : 'View'}
             </button>
             <button type="button" onClick={onEdit}
-              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors">
+              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               Edit
             </button>
             <button type="button" onClick={onDelete}
-              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 transition-colors">
+              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 transition-colors">
               ✕
             </button>
           </div>
@@ -325,7 +325,7 @@ function AffiliateRow({
       </tr>
       {expanded && (
         <tr>
-          <td colSpan={9} className="bg-slate-950/60 border-t border-slate-800/40 px-4 py-4">
+          <td colSpan={9} className="bg-slate-100 dark:bg-slate-950/60 border-t border-slate-200/60 dark:border-slate-800/40 px-4 py-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-3">
                 <ReferralLinkCard affiliate={affiliate} />
@@ -335,9 +335,9 @@ function AffiliateRow({
                     { l: 'Recurring',  v: `${affiliate.recurring_months} mo` },
                     { l: 'Channel',    v: affiliate.channel ?? '—' },
                   ].map(x => (
-                    <div key={x.l} className="bg-slate-900 rounded-xl p-2.5">
+                    <div key={x.l} className="bg-white dark:bg-slate-900 rounded-xl p-2.5">
                       <p className="text-[9px] font-mono text-slate-600 uppercase tracking-widest mb-0.5">{x.l}</p>
-                      <p className="text-xs font-bold text-white">{x.v}</p>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">{x.v}</p>
                     </div>
                   ))}
                 </div>
@@ -350,7 +350,7 @@ function AffiliateRow({
                 <div className="flex flex-wrap gap-2">
                   {affiliate.status === 'pending' && (
                     <button type="button" onClick={() => onStatusChange('active')}
-                      className="px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors">
+                      className="px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors">
                       ✓ Approve
                     </button>
                   )}
@@ -362,7 +362,7 @@ function AffiliateRow({
                   )}
                   {affiliate.status === 'suspended' && (
                     <button type="button" onClick={() => onStatusChange('active')}
-                      className="px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors">
+                      className="px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors">
                       Reactivate
                     </button>
                   )}
@@ -423,9 +423,9 @@ function ConversionModal({
   return (
     <>
       <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-          <h3 className="text-sm font-bold text-white mb-1">Record Conversion</h3>
-          <p className="text-xs text-slate-500 mb-5">Affiliate: <span className="text-white">{affiliate.name}</span></p>
+        <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Record Conversion</h3>
+          <p className="text-xs text-slate-500 mb-5">Affiliate: <span className="text-slate-900 dark:text-white">{affiliate.name}</span></p>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className={labelCls}>Event Type</label>
@@ -451,11 +451,11 @@ function ConversionModal({
             </div>
             <div className="flex gap-3 pt-1">
               <button type="submit" disabled={saving}
-                className="flex-1 py-2.5 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-50">
+                className="flex-1 py-2.5 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors disabled:opacity-50">
                 {saving ? 'Saving…' : 'Record'}
               </button>
               <button type="button" onClick={onClose}
-                className="px-4 py-2.5 text-sm font-bold rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">
+                className="px-4 py-2.5 text-sm font-bold rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                 Cancel
               </button>
             </div>
@@ -488,7 +488,7 @@ function PayoutsTab({
 
   if (payouts.length === 0) {
     return (
-      <div className="py-16 text-center border border-dashed border-slate-800 rounded-2xl">
+      <div className="py-16 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
         <p className="text-sm text-slate-600 font-mono">No payouts yet</p>
         <p className="text-xs text-slate-700 font-mono mt-1">Create payouts from affiliate rows when commissions are approved</p>
       </div>
@@ -496,10 +496,10 @@ function PayoutsTab({
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-800">
+          <tr className="border-b border-slate-200 dark:border-slate-800">
             {['Date','Affiliate','Amount','Commissions','Method','Ref','Status',''].map(h => (
               <th key={h} className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">{h}</th>
             ))}
@@ -510,7 +510,7 @@ function PayoutsTab({
             <React.Fragment key={p.id}>
               <tr className="hover:bg-slate-800/30 transition-colors group">
                 <td className="px-4 py-3 text-xs font-mono text-slate-500 whitespace-nowrap">{fmtDate(p.created_at)}</td>
-                <td className="px-4 py-3 text-sm text-white font-medium">{byId[p.affiliate_id] ?? '—'}</td>
+                <td className="px-4 py-3 text-sm text-slate-900 dark:text-white font-medium">{byId[p.affiliate_id] ?? '—'}</td>
                 <td className="px-4 py-3 text-sm font-black text-amber-400">{fmtGBP(p.amount_pence)}</td>
                 <td className="px-4 py-3 text-xs text-slate-400">{p.commission_count}</td>
                 <td className="px-4 py-3 text-xs text-slate-400 capitalize">{p.payment_method ?? '—'}</td>
@@ -534,17 +534,17 @@ function PayoutsTab({
               </tr>
               {markingId === p.id && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-3 bg-slate-950/60 border-t border-slate-800">
+                  <td colSpan={8} className="px-4 py-3 bg-slate-100 dark:bg-slate-950/60 border-t border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3 flex-wrap">
                       <input value={payRef} onChange={e => setPayRef(e.target.value)}
                         placeholder="Payment reference (optional)"
-                        className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/60" />
+                        className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/60" />
                       <button type="button" onClick={() => { onMarkPaid(p.id, payRef); setMarkingId(null); }}
-                        className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors">
+                        className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors">
                         Confirm paid
                       </button>
                       <button type="button" onClick={() => setMarkingId(null)}
-                        className="px-3 py-1.5 text-xs font-mono text-slate-500 hover:text-white transition-colors">
+                        className="px-3 py-1.5 text-xs font-mono text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
                         Cancel
                       </button>
                     </div>
@@ -571,7 +571,7 @@ function PerformanceTab({ affiliates }: { affiliates: AffiliateWithStats[] }) {
   const maxEarned = ranked[0]?.total_earned_pence ?? 1;
 
   if (ranked.length === 0) return (
-    <div className="py-16 text-center border border-dashed border-slate-800 rounded-2xl">
+    <div className="py-16 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
       <p className="text-sm text-slate-600 font-mono">No active affiliates yet</p>
     </div>
   );
@@ -584,14 +584,14 @@ function PerformanceTab({ affiliates }: { affiliates: AffiliateWithStats[] }) {
           ? ((a.conversion_count / a.click_count) * 100).toFixed(1) + '%'
           : '—';
         return (
-          <div key={a.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+          <div key={a.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
             <div className="flex items-start justify-between gap-4 mb-3 flex-wrap">
               <div className="flex items-center gap-3">
-                <span className="w-7 h-7 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-black text-slate-400">
+                <span className="w-7 h-7 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-black text-slate-400">
                   {i + 1}
                 </span>
                 <div>
-                  <p className="text-sm font-bold text-white">{a.name}</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{a.name}</p>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${TIER_CONFIG[a.tier].badge}`}>{TIER_CONFIG[a.tier].label}</span>
                     {a.channel && <span className="text-[10px] font-mono text-slate-600">{a.channel}</span>}
@@ -612,7 +612,7 @@ function PerformanceTab({ affiliates }: { affiliates: AffiliateWithStats[] }) {
                 ))}
               </div>
             </div>
-            <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
               <div className="h-full bg-amber-500/60 rounded-full transition-all" style={{ width: `${barW}%` }} />
             </div>
           </div>
@@ -739,7 +739,7 @@ export default function AffiliateClient({ initialAffiliates, initialPayouts, ini
       )}
 
       {/* Tab bar */}
-      <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 w-fit">
         {([
           { id: 'affiliates',  label: 'Affiliates' },
           { id: 'performance', label: 'Performance' },
@@ -747,11 +747,11 @@ export default function AffiliateClient({ initialAffiliates, initialPayouts, ini
         ] as const).map(t => (
           <button key={t.id} type="button" onClick={() => setTab(t.id)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              tab === t.id ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300'
+              tab === t.id ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-300'
             }`}>
             {t.label}
             {t.id === 'payouts' && payouts.filter(p => p.status === 'pending').length > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-mono bg-purple-500 text-white">
+              <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-mono bg-purple-500 text-slate-900 dark:text-white">
                 {payouts.filter(p => p.status === 'pending').length}
               </span>
             )}
@@ -766,50 +766,50 @@ export default function AffiliateClient({ initialAffiliates, initialPayouts, ini
           <div className="flex items-center gap-3 flex-wrap">
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search name, email, code…"
-              className="flex-1 min-w-[200px] bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-slate-600" />
+              className="flex-1 min-w-[200px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-600" />
             <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as AffiliateStatus | 'all')}
-              className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none">
               <option value="all">All statuses</option>
               {(['pending','active','suspended','rejected'] as AffiliateStatus[]).map(s => (
                 <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
               ))}
             </select>
             <select value={filterTier} onChange={e => setFilterTier(e.target.value as AffiliateTier | 'all')}
-              className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none">
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none">
               <option value="all">All tiers</option>
               {(['standard','premium','partner'] as AffiliateTier[]).map(t => (
                 <option key={t} value={t}>{TIER_CONFIG[t].label}</option>
               ))}
             </select>
             <button type="button" onClick={() => { setEditTarget(undefined); setShowModal(true); }}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition-colors">
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-sm font-bold transition-colors">
               + Add affiliate
             </button>
           </div>
 
           {/* Table */}
           {filtered.length === 0 ? (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-14 text-center space-y-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-14 text-center space-y-3">
               <p className="text-slate-500 text-sm">{affiliates.length === 0 ? 'No affiliates yet' : 'No results'}</p>
               {affiliates.length === 0 && (
                 <div className="flex items-center justify-center gap-3 flex-wrap">
                   <button type="button" onClick={() => { setEditTarget(undefined); setShowModal(true); }}
-                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition-colors">
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-sm font-bold transition-colors">
                     Add first affiliate
                   </button>
                   <button type="button" onClick={handleSeed} disabled={seeding}
-                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold transition-colors disabled:opacity-50">
+                    className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-bold transition-colors disabled:opacity-50">
                     {seeding ? 'Seeding…' : '⚡ Seed examples'}
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-slate-800">
+                    <tr className="border-b border-slate-200 dark:border-slate-800">
                       {['Affiliate','Tier','Code','Status','Clicks','Conversions','Earned','Pending',''].map(h => (
                         <th key={h} className={`px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 ${
                           ['Clicks','Conversions','Earned','Pending'].includes(h) ? 'text-right' : 'text-left'

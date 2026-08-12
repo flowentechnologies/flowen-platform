@@ -36,14 +36,14 @@ async function apiPost(payload: Record<string, unknown>) {
 type Stage = 'researched' | 'contacted' | 'warm' | 'in_diligence' | 'term_sheet' | 'committed' | 'passed' | 'on_hold';
 
 const STAGE_CONFIG: Record<Stage, { label: string; badge: string }> = {
-  researched:   { label: 'Researched',   badge: 'bg-slate-700 text-slate-300' },
+  researched:   { label: 'Researched',   badge: 'bg-slate-700 text-slate-600 dark:text-slate-300' },
   contacted:    { label: 'Contacted',    badge: 'bg-blue-500/15 text-blue-400 border border-blue-500/30' },
   warm:         { label: 'Warm',         badge: 'bg-sky-500/15 text-sky-400 border border-sky-500/30' },
   in_diligence: { label: 'In Diligence', badge: 'bg-amber-500/15 text-amber-400 border border-amber-500/30' },
   term_sheet:   { label: 'Term Sheet',   badge: 'bg-purple-500/15 text-purple-400 border border-purple-500/30' },
   committed:    { label: 'Committed',    badge: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' },
   passed:       { label: 'Passed',       badge: 'bg-red-900/30 text-red-500/70' },
-  on_hold:      { label: 'On Hold',      badge: 'bg-slate-800 text-slate-500' },
+  on_hold:      { label: 'On Hold',      badge: 'bg-slate-100 dark:bg-slate-800 text-slate-500' },
 };
 
 const ALL_STAGES = Object.keys(STAGE_CONFIG) as Stage[];
@@ -84,7 +84,7 @@ function Input({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
     />
   );
 }
@@ -101,7 +101,7 @@ function Textarea({ value, onChange, placeholder, rows = 2 }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 resize-none"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 resize-none"
     />
   );
 }
@@ -115,7 +115,7 @@ function Select({ value, onChange, options }: {
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500/50"
     >
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
@@ -135,7 +135,7 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
     { id: 'runway',    label: 'Runway' },
   ];
   return (
-    <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 w-fit">
+    <div className="flex gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 w-fit">
       {tabs.map(t => (
         <button
           key={t.id}
@@ -143,8 +143,8 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
           onClick={() => onChange(t.id)}
           className={`px-4 py-1.5 text-sm font-mono rounded-lg transition-colors ${
             active === t.id
-              ? 'bg-slate-700 text-white font-bold'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-slate-700 text-slate-900 dark:text-white font-bold'
+              : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           {t.label}
@@ -267,14 +267,14 @@ function RoundTab({
   return (
     <div className="space-y-6">
       {/* Hero card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
           <div className="flex items-center gap-3">
             <span className="px-3 py-1 rounded-full text-xs font-mono font-black bg-amber-500/15 text-amber-400 border border-amber-500/30 tracking-widest">
               {roundTypeBadge(config?.round_type ?? null)}
             </span>
             {config?.instrument && (
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-700">
                 {INSTRUMENTS.find(i => i.value === config.instrument)?.label ?? config.instrument}
               </span>
             )}
@@ -282,7 +282,7 @@ function RoundTab({
           <button
             type="button"
             onClick={startEdit}
-            className="px-4 py-2 text-xs font-mono font-bold rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 transition-colors"
+            className="px-4 py-2 text-xs font-mono font-bold rounded-xl border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
           >
             Edit Round
           </button>
@@ -300,11 +300,11 @@ function RoundTab({
           </div>
           <div>
             <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Valuation Cap</p>
-            <p className="text-3xl font-black text-white">{pence(config?.valuation_cap_pence, '—')}</p>
+            <p className="text-3xl font-black text-slate-900 dark:text-white">{pence(config?.valuation_cap_pence, '—')}</p>
           </div>
           <div>
             <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Round Type</p>
-            <p className="text-xl font-black text-white">{roundTypeLabel(config?.round_type ?? null)}</p>
+            <p className="text-xl font-black text-slate-900 dark:text-white">{roundTypeLabel(config?.round_type ?? null)}</p>
           </div>
         </div>
 
@@ -315,7 +315,7 @@ function RoundTab({
               <p className="text-[10px] font-mono text-slate-500">Funding Progress</p>
               <p className="text-[10px] font-mono text-amber-400 font-bold">{pctCommitted}%</p>
             </div>
-            <div className="h-2.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-500"
                 style={{ width: `${pctCommitted}%` }}
@@ -333,7 +333,7 @@ function RoundTab({
           <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${
             config?.seis_advance_assurance
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-              : 'bg-slate-800/60 border-slate-700 text-slate-500'
+              : 'bg-slate-100/80 dark:bg-slate-800/60 border-slate-700 text-slate-500'
           }`}>
             <span className="text-sm">{config?.seis_advance_assurance ? '✓' : '◌'}</span>
             <div>
@@ -346,7 +346,7 @@ function RoundTab({
           <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${
             config?.eis_eligible
               ? 'bg-sky-500/10 border-sky-500/30 text-sky-400'
-              : 'bg-slate-800/60 border-slate-700 text-slate-500'
+              : 'bg-slate-100/80 dark:bg-slate-800/60 border-slate-700 text-slate-500'
           }`}>
             <span className="text-sm">{config?.eis_eligible ? '✓' : '◌'}</span>
             <div>
@@ -367,7 +367,7 @@ function RoundTab({
         </div>
 
         {config?.notes && (
-          <div className="mt-4 pt-4 border-t border-slate-800">
+          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
             <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1.5">Notes</p>
             <p className="text-sm text-slate-400 leading-relaxed">{config.notes}</p>
           </div>
@@ -376,8 +376,8 @@ function RoundTab({
 
       {/* Edit form */}
       {editing && (
-        <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-6">
-          <h3 className="text-sm font-bold text-white mb-5">Edit Round Configuration</h3>
+        <div className="bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl p-6">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-5">Edit Round Configuration</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             <div>
               <Label>Round Type</Label>
@@ -410,18 +410,18 @@ function RoundTab({
                 type="checkbox"
                 checked={form.seis_advance_assurance}
                 onChange={e => field('seis_advance_assurance', e.target.checked)}
-                className="w-4 h-4 rounded border border-slate-600 bg-slate-800 accent-amber-500"
+                className="w-4 h-4 rounded border border-slate-600 bg-slate-100 dark:bg-slate-800 accent-amber-500"
               />
-              <span className="text-sm text-slate-300 font-mono">SEIS Advance Assurance</span>
+              <span className="text-sm text-slate-600 dark:text-slate-300 font-mono">SEIS Advance Assurance</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={form.eis_eligible}
                 onChange={e => field('eis_eligible', e.target.checked)}
-                className="w-4 h-4 rounded border border-slate-600 bg-slate-800 accent-sky-500"
+                className="w-4 h-4 rounded border border-slate-600 bg-slate-100 dark:bg-slate-800 accent-sky-500"
               />
-              <span className="text-sm text-slate-300 font-mono">EIS Eligible</span>
+              <span className="text-sm text-slate-600 dark:text-slate-300 font-mono">EIS Eligible</span>
             </label>
           </div>
           <div className="mb-5">
@@ -440,7 +440,7 @@ function RoundTab({
             <button
               type="button"
               onClick={cancel}
-              className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+              className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               Cancel
             </button>
@@ -452,9 +452,9 @@ function RoundTab({
       <div>
         <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest font-mono mb-4">Grant &amp; Debt</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-bold text-white">Innovate UK</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white">Innovate UK</p>
               <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-sky-500/15 text-sky-400 border border-sky-500/30">EXPLORING</span>
             </div>
             <p className="text-[11px] text-slate-500 leading-relaxed">
@@ -462,9 +462,9 @@ function RoundTab({
             </p>
             <p className="text-[10px] font-mono text-slate-600 mt-3">Typical award: £50k – £500k</p>
           </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-bold text-white">SEIS / EIS Relief</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white">SEIS / EIS Relief</p>
               <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">IN PROGRESS</span>
             </div>
             <p className="text-[11px] text-slate-500 leading-relaxed">
@@ -472,9 +472,9 @@ function RoundTab({
             </p>
             <p className="text-[10px] font-mono text-amber-500/60 mt-3">Advance assurance application pending</p>
           </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-bold text-white">Debt / Revenue Loans</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white">Debt / Revenue Loans</p>
               <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-slate-700 text-slate-400">NOT STARTED</span>
             </div>
             <p className="text-[11px] text-slate-500 leading-relaxed">
@@ -548,7 +548,7 @@ function InvestorFormPanel({
   }
 
   return (
-    <div className="bg-slate-900 border border-sky-500/20 rounded-2xl p-5 mb-4">
+    <div className="bg-white dark:bg-slate-900 border border-sky-500/20 rounded-2xl p-5 mb-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div>
           <Label>Name *</Label>
@@ -594,14 +594,14 @@ function InvestorFormPanel({
           type="button"
           onClick={() => onSave(form)}
           disabled={isPending || !form.name}
-          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition-colors disabled:opacity-40"
+          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-sky-600 hover:bg-sky-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
         >
           {isPending ? 'Saving…' : 'Save Investor'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -613,7 +613,7 @@ function InvestorFormPanel({
 // ── Stage badge ───────────────────────────────────────────────────────────────
 
 function StageBadge({ stage }: { stage: string }) {
-  const cfg = STAGE_CONFIG[stage as Stage] ?? { label: stage, badge: 'bg-slate-700 text-slate-300' };
+  const cfg = STAGE_CONFIG[stage as Stage] ?? { label: stage, badge: 'bg-slate-700 text-slate-600 dark:text-slate-300' };
   return (
     <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${cfg.badge}`}>
       {cfg.label}
@@ -698,8 +698,8 @@ function InvestorsTab({
               onClick={() => setFilter(f.id)}
               className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${
                 filter === f.id
-                  ? 'bg-sky-600 text-white font-bold'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
+                  ? 'bg-sky-600 text-slate-900 dark:text-white font-bold'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {f.label}
@@ -722,7 +722,7 @@ function InvestorsTab({
           <button
             type="button"
             onClick={() => { setShowAddForm(v => !v); setEditingId(null); }}
-            className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition-colors"
+            className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-sky-600 hover:bg-sky-500 text-slate-900 dark:text-white transition-colors"
           >
             {showAddForm ? 'Cancel' : '+ Add Investor'}
           </button>
@@ -741,17 +741,17 @@ function InvestorsTab({
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl py-16 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-16 text-center">
           <p className="text-slate-600 font-mono text-sm">
             {investors.length === 0 ? 'No investors yet — add your first one above' : 'No investors in this stage'}
           </p>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="text-left px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Name / Firm</th>
                   <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500 hidden sm:table-cell">Cheque</th>
                   <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Stage</th>
@@ -760,12 +760,12 @@ function InvestorsTab({
                   <th className="text-right px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {filtered.map(inv => (
                   <React.Fragment key={inv.id}>
                     <tr className="hover:bg-slate-800/40 transition-colors group">
                       <td className="px-5 py-3.5">
-                        <p className="text-sm font-semibold text-white">{inv.name}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{inv.name}</p>
                         {inv.firm && <p className="text-[11px] font-mono text-slate-500">{inv.firm}</p>}
                         {inv.email && <p className="text-[10px] text-slate-600">{inv.email}</p>}
                       </td>
@@ -788,7 +788,7 @@ function InvestorsTab({
                           <button
                             type="button"
                             onClick={() => setEditingId(id => id === inv.id ? null : inv.id)}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                           >
                             Edit
                           </button>
@@ -796,7 +796,7 @@ function InvestorsTab({
                             type="button"
                             onClick={() => handleDelete(inv.id)}
                             disabled={isPending}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
                           >
                             Delete
                           </button>
@@ -805,7 +805,7 @@ function InvestorsTab({
                     </tr>
                     {editingId === inv.id && (
                       <tr>
-                        <td colSpan={6} className="px-5 py-4 bg-slate-900/80 border-b border-slate-800">
+                        <td colSpan={6} className="px-5 py-4 bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
                           <InvestorFormPanel
                             initial={investorToForm(inv)}
                             onSave={form => handleUpdate(inv.id, form)}
@@ -847,10 +847,10 @@ function KpiCard({ label, value, sub, accent = 'white' }: KpiCardProps) {
     amber:   'text-amber-400',
     emerald: 'text-emerald-400',
     sky:     'text-sky-400',
-    white:   'text-white',
+    white:   'text-slate-900 dark:text-white',
   };
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
       <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-2">{label}</p>
       <p className={`text-3xl font-black ${colorMap[accent]}`}>{value}</p>
       {sub && <p className="text-[11px] font-mono text-slate-600 mt-1">{sub}</p>}
@@ -867,11 +867,11 @@ const MILESTONES = [
 
 function MilestoneTimeline() {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
       <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono mb-6">Milestone Timeline</h3>
       <div className="relative">
         {/* Connector line */}
-        <div className="absolute left-4 top-5 bottom-5 w-px bg-slate-800" />
+        <div className="absolute left-4 top-5 bottom-5 w-px bg-slate-100 dark:bg-slate-800" />
         <div className="space-y-5">
           {MILESTONES.map((m, i) => (
             <div key={i} className="flex items-start gap-4">
@@ -880,7 +880,7 @@ function MilestoneTimeline() {
                   ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
                   : m.status === 'active'
                   ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse'
-                  : 'bg-slate-800 border-slate-700 text-slate-600'
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-700 text-slate-600'
               }`}>
                 {m.status === 'done' ? (
                   <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 8 6 11 13 5" /></svg>
@@ -894,7 +894,7 @@ function MilestoneTimeline() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[10px] font-mono text-slate-600">{m.date}</span>
                   <span className={`text-sm font-bold ${
-                    m.status === 'done' ? 'text-white' : m.status === 'active' ? 'text-amber-300' : 'text-slate-500'
+                    m.status === 'done' ? 'text-slate-900 dark:text-white' : m.status === 'active' ? 'text-amber-300' : 'text-slate-500'
                   }`}>{m.label}</span>
                   {m.status === 'done' && (
                     <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-400">DONE</span>
@@ -981,7 +981,7 @@ function KpiBoard({
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-black text-white">Investor-Facing Metrics</h2>
+          <h2 className="text-lg font-black text-slate-900 dark:text-white">Investor-Facing Metrics</h2>
           <p className="text-[11px] font-mono text-slate-500 mt-0.5">Last updated: {fmtDateTime(now.toISOString())}</p>
         </div>
         <button
@@ -990,7 +990,7 @@ function KpiBoard({
           className={`px-4 py-2 text-xs font-mono font-bold rounded-xl border transition-colors ${
             copied
               ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'
-              : 'border-slate-700 text-slate-300 hover:text-white hover:border-slate-600'
+              : 'border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600'
           }`}
         >
           {copied ? '✓ Copied!' : 'Copy Investor Summary'}
@@ -1051,7 +1051,7 @@ function KpiBoard({
 
       {/* Round snapshot */}
       {config && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono mb-4">Current Round</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
@@ -1060,7 +1060,7 @@ function KpiBoard({
             </div>
             <div>
               <p className="text-[10px] font-mono text-slate-500 mb-1">Target</p>
-              <p className="text-sm font-bold text-white">{pence(config.target_raise_pence, '—')}</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">{pence(config.target_raise_pence, '—')}</p>
             </div>
             <div>
               <p className="text-[10px] font-mono text-slate-500 mb-1">Committed</p>
@@ -1068,7 +1068,7 @@ function KpiBoard({
             </div>
             <div>
               <p className="text-[10px] font-mono text-slate-500 mb-1">Instrument</p>
-              <p className="text-sm font-bold text-white">{INSTRUMENTS.find(i => i.value === config.instrument)?.label ?? config.instrument ?? '—'}</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">{INSTRUMENTS.find(i => i.value === config.instrument)?.label ?? config.instrument ?? '—'}</p>
             </div>
           </div>
         </div>
@@ -1195,7 +1195,7 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3 flex-wrap">
-        <h2 className="text-lg font-black text-white">Investor Updates</h2>
+        <h2 className="text-lg font-black text-slate-900 dark:text-white">Investor Updates</h2>
         <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-violet-500/15 text-violet-400 border border-violet-500/30 tracking-widest">
           AI-DRAFTED
         </span>
@@ -1206,26 +1206,26 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {generating ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-slate-900 border border-slate-800 rounded-xl p-4 animate-pulse">
-                <div className="h-2.5 bg-slate-800 rounded w-20 mb-3" />
-                <div className="h-6 bg-slate-800 rounded w-12" />
+              <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 animate-pulse">
+                <div className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded w-20 mb-3" />
+                <div className="h-6 bg-slate-100 dark:bg-slate-800 rounded w-12" />
               </div>
             ))
           ) : kpis ? (
             <>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
                 <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1.5">Total Users</p>
-                <p className="text-2xl font-black text-white">{kpis.users.toLocaleString()}</p>
+                <p className="text-2xl font-black text-slate-900 dark:text-white">{kpis.users.toLocaleString()}</p>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
                 <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1.5">Sessions (30d)</p>
                 <p className="text-2xl font-black text-sky-400">{kpis.sessions30d.toLocaleString()}</p>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
                 <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1.5">NHS Pipeline</p>
                 <p className="text-sm font-bold text-emerald-400 leading-tight">{kpis.nhs_stage}</p>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
                 <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1.5">Grants Submitted</p>
                 <p className="text-2xl font-black text-amber-400">{kpis.grants_submitted}</p>
               </div>
@@ -1235,10 +1235,10 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
       )}
 
       {/* Draft panel */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-5">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h3 className="text-sm font-bold text-white mb-0.5">Draft Update</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">Draft Update</h3>
             <p className="text-[11px] font-mono text-slate-500">Pull live data and generate a draft with Claude</p>
           </div>
           <button
@@ -1267,7 +1267,7 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
         {generating && !draft && (
           <div className="space-y-2 animate-pulse">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-3.5 bg-slate-800 rounded" style={{ width: `${75 + (i % 3) * 8}%` }} />
+              <div key={i} className="h-3.5 bg-slate-100 dark:bg-slate-800 rounded" style={{ width: `${75 + (i % 3) * 8}%` }} />
             ))}
           </div>
         )}
@@ -1280,7 +1280,7 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 rows={20}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 font-mono leading-relaxed whitespace-pre-wrap focus:outline-none focus:border-amber-500/50 resize-y"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 font-mono leading-relaxed whitespace-pre-wrap focus:outline-none focus:border-amber-500/50 resize-y"
               />
             </div>
             <div>
@@ -1293,9 +1293,9 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
 
       {/* Send panel — shown after draft is ready */}
       {draft && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
           <div>
-            <h3 className="text-sm font-bold text-white mb-0.5">Send Update</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">Send Update</h3>
             <p className="text-[11px] font-mono text-slate-500">
               Pre-filled with investors in Committed, In Diligence, and Warm stages who have an email address
             </p>
@@ -1308,7 +1308,7 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
               onChange={e => setRecipientInput(e.target.value)}
               rows={3}
               placeholder="investor1@example.com, investor2@example.com"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 font-mono focus:outline-none focus:border-amber-500/50 resize-none"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 font-mono focus:outline-none focus:border-amber-500/50 resize-none"
             />
             <p className="text-[10px] font-mono text-slate-600 mt-1.5">
               Sent as BCC — each investor receives it individually. Their addresses are not visible to each other.
@@ -1320,7 +1320,7 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
               type="button"
               onClick={handleSend}
               disabled={sending}
-              className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-50 disabled:cursor-wait flex items-center gap-2"
+              className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors disabled:opacity-50 disabled:cursor-wait flex items-center gap-2"
             >
               {sending ? (
                 <>
@@ -1347,9 +1347,9 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
       )}
 
       {/* Update history */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800">
-          <h3 className="text-sm font-bold text-white">Update History</h3>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Update History</h3>
         </div>
 
         {!historyLoaded ? (
@@ -1365,27 +1365,27 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="text-left px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Date</th>
                   <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Subject</th>
                   <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500 hidden sm:table-cell">Recipients</th>
                   <th className="text-right px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">View</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {history.map(update => (
                   <React.Fragment key={update.id}>
                     <tr className="hover:bg-slate-800/40 transition-colors">
                       <td className="px-5 py-3.5 text-[11px] font-mono text-slate-400 whitespace-nowrap">
                         {new Date(update.sent_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </td>
-                      <td className="px-4 py-3.5 text-sm text-white max-w-[280px] truncate">{update.subject}</td>
+                      <td className="px-4 py-3.5 text-sm text-slate-900 dark:text-white max-w-[280px] truncate">{update.subject}</td>
                       <td className="px-4 py-3.5 text-[11px] font-mono text-slate-500 hidden sm:table-cell">{update.recipient_count}</td>
                       <td className="px-5 py-3.5 text-right">
                         <button
                           type="button"
                           onClick={() => setExpandedId(id => id === update.id ? null : update.id)}
-                          className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors"
+                          className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                         >
                           {expandedId === update.id ? 'Collapse' : 'View'}
                         </button>
@@ -1393,7 +1393,7 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
                     </tr>
                     {expandedId === update.id && (
                       <tr>
-                        <td colSpan={4} className="px-5 py-4 bg-slate-950/60">
+                        <td colSpan={4} className="px-5 py-4 bg-slate-100 dark:bg-slate-950/60">
                           <pre className="text-xs font-mono text-slate-400 whitespace-pre-wrap leading-relaxed max-h-80 overflow-y-auto">
                             {update.body}
                           </pre>
@@ -1592,8 +1592,8 @@ function RunwayTab({
     return (
       <div className="space-y-6">
         {/* Inputs card (always shown) */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h3 className="text-sm font-bold text-white mb-1">Runway Inputs</h3>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Runway Inputs</h3>
           <p className="text-[11px] font-mono text-slate-500 mb-5">
             Update these when your bank balance or burn rate changes. All projections recalculate instantly.
           </p>
@@ -1607,7 +1607,7 @@ function RunwayTab({
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
                 placeholder="e.g. 15000"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
               />
             </div>
             <div>
@@ -1619,14 +1619,14 @@ function RunwayTab({
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
                 placeholder="e.g. 180000"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
               />
             </div>
           </div>
         </div>
 
         {/* Empty state prompt */}
-        <div className="bg-slate-900 border border-dashed border-slate-700 rounded-2xl py-20 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-dashed border-slate-700 rounded-2xl py-20 text-center">
           <p className="text-slate-500 font-mono text-sm mb-2">Enter your monthly burn and current cash balance to see runway projections</p>
           <p className="text-slate-700 font-mono text-xs">Projections recalculate instantly as you type</p>
         </div>
@@ -1642,8 +1642,8 @@ function RunwayTab({
   return (
     <div className="space-y-6">
       {/* Inputs panel */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-        <h3 className="text-sm font-bold text-white mb-1">Runway Inputs</h3>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Runway Inputs</h3>
         <p className="text-[11px] font-mono text-slate-500 mb-5">
           Update these when your bank balance or burn rate changes. All projections recalculate instantly.
         </p>
@@ -1657,7 +1657,7 @@ function RunwayTab({
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               placeholder="e.g. 15000"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
             />
           </div>
           <div>
@@ -1669,7 +1669,7 @@ function RunwayTab({
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               placeholder="e.g. 180000"
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
             />
           </div>
         </div>
@@ -1683,19 +1683,19 @@ function RunwayTab({
         <p className={`text-7xl font-black ${runwayColourClass} ${isPulsing ? 'animate-pulse' : ''} mb-2`}>
           {runwayMonths.toFixed(1)}
         </p>
-        <p className="text-lg font-bold text-white mb-1">months runway</p>
+        <p className="text-lg font-bold text-slate-900 dark:text-white mb-1">months runway</p>
         <p className="text-[11px] font-mono text-slate-400">
           at current burn rate &middot; until {fmtMonthYear(zeroDate)}
         </p>
       </div>
 
       {/* Round close deadline */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono mb-3">Round Close Deadline</h3>
         {hasTarget ? (
           <div className={`flex items-start gap-4 p-4 rounded-xl ${runwayBgClass} ${runwayBorderClass} border`}>
             <div>
-              <p className="text-sm font-bold text-white mb-1">
+              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">
                 To avoid a gap, the round must close by{' '}
                 <span className={`${runwayColourClass} font-black`}>{fmtMonthYear(closeDeadlineDate)}</span>
               </p>
@@ -1744,18 +1744,18 @@ function RunwayTab({
       {/* 12-month cash flow table */}
       <div>
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono mb-4">12-Month Cash Flow</h3>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="text-left px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Month</th>
                   <th className="text-right px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Opening Balance</th>
                   <th className="text-right px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Burn</th>
                   <th className="text-right px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Closing Balance</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {tableRows.map((row, idx) => {
                   const exhausted = idx > 0 && tableRows[idx - 1].goesNegative;
                   const isNegative = row.goesNegative;
@@ -1770,7 +1770,7 @@ function RunwayTab({
                           : 'hover:bg-slate-800/40'
                       } transition-colors`}
                     >
-                      <td className={`px-5 py-3 text-sm font-mono ${exhausted ? 'text-slate-700' : 'text-slate-300'}`}>
+                      <td className={`px-5 py-3 text-sm font-mono ${exhausted ? 'text-slate-700' : 'text-slate-600 dark:text-slate-300'}`}>
                         {row.label}
                       </td>
                       <td className={`px-4 py-3 text-right text-sm font-mono ${exhausted ? 'text-slate-700' : 'text-slate-400'}`}>
@@ -1780,7 +1780,7 @@ function RunwayTab({
                         {exhausted ? '—' : `−${pence(row.burn)}`}
                       </td>
                       <td className={`px-5 py-3 text-right text-sm font-mono font-bold ${
-                        isNegative ? 'text-red-400' : exhausted ? 'text-slate-700' : 'text-white'
+                        isNegative ? 'text-red-400' : exhausted ? 'text-slate-700' : 'text-slate-900 dark:text-white'
                       }`}>
                         {isNegative ? 'ZERO' : exhausted ? '—' : pence(row.closing)}
                       </td>
@@ -1795,11 +1795,11 @@ function RunwayTab({
 
       {/* MRR offset — shown only if showMrr flag is set */}
       {showMrr && (
-        <div className="bg-slate-900 border border-emerald-500/20 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-emerald-500/20 rounded-2xl p-5">
           <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-400 mb-1">MRR Offset</p>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
             MRR offsets burn by <span className="text-emerald-400 font-bold">{pence(mrrPence)}/month</span>
-            {' '}&rarr; effective burn = <span className="text-white font-bold">{pence(Math.max(0, burnPence - mrrPence))}/month</span>
+            {' '}&rarr; effective burn = <span className="text-slate-900 dark:text-white font-bold">{pence(Math.max(0, burnPence - mrrPence))}/month</span>
           </p>
         </div>
       )}

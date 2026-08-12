@@ -169,9 +169,9 @@ export default async function SystemPage() {
     <div className="space-y-8">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">System</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">System</h1>
           <p className="text-slate-400 text-sm mt-1">Infrastructure health · Errors · Env · Webhooks</p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -225,12 +225,12 @@ export default async function SystemPage() {
             ok:     Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN),
           },
         ].map(svc => (
-          <div key={svc.label} className={`bg-slate-900 border rounded-2xl p-5 ${svc.ok ? 'border-slate-800' : 'border-amber-500/30'}`}>
+          <div key={svc.label} className={`bg-white dark:bg-slate-900 border rounded-2xl p-5 ${svc.ok ? 'border-slate-200 dark:border-slate-800' : 'border-amber-500/30'}`}>
             <div className="flex items-center gap-2 mb-3">
               <div className={`w-2 h-2 rounded-full ${svc.ok ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
               <p className="text-xs font-mono text-slate-400 uppercase tracking-wide">{svc.label}</p>
             </div>
-            <p className={`text-sm font-bold ${svc.ok ? 'text-white' : 'text-amber-400'}`}>{svc.status}</p>
+            <p className={`text-sm font-bold ${svc.ok ? 'text-slate-900 dark:text-white' : 'text-amber-400'}`}>{svc.status}</p>
             <p className="text-[10px] text-slate-500 mt-1">{svc.detail}</p>
           </div>
         ))}
@@ -239,12 +239,12 @@ export default async function SystemPage() {
       {/* Error summary row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Errors',    value: totalErrors,   color: 'text-white'    },
+          { label: 'Total Errors',    value: totalErrors,   color: 'text-slate-900 dark:text-white'    },
           { label: 'Unresolved',      value: unresolved,    color: unresolved > 0 ? 'text-red-400' : 'text-emerald-400'  },
-          { label: 'Last 24h',        value: errors24h,     color: errors24h > 0  ? 'text-amber-400' : 'text-white'       },
-          { label: 'Last 7 days',     value: errors7d,      color: 'text-white'    },
+          { label: 'Last 24h',        value: errors24h,     color: errors24h > 0  ? 'text-amber-400' : 'text-slate-900 dark:text-white'       },
+          { label: 'Last 7 days',     value: errors7d,      color: 'text-slate-900 dark:text-white'    },
         ].map(s => (
-          <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
             <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">{s.label}</p>
             <p className={`text-3xl font-black ${s.color}`}>{s.value}</p>
           </div>
@@ -252,9 +252,9 @@ export default async function SystemPage() {
       </div>
 
       {/* Error log */}
-      <div className={`bg-slate-900 rounded-2xl overflow-hidden border ${unresolved > 0 ? 'border-red-500/30' : 'border-slate-800'}`}>
-        <div className={`px-5 py-4 border-b ${unresolved > 0 ? 'border-red-500/20 bg-red-500/5' : 'border-slate-800'} flex items-center justify-between`}>
-          <h2 className="text-sm font-bold text-white">Error Log</h2>
+      <div className={`bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border ${unresolved > 0 ? 'border-red-500/30' : 'border-slate-200 dark:border-slate-800'}`}>
+        <div className={`px-5 py-4 border-b ${unresolved > 0 ? 'border-red-500/20 bg-red-500/5' : 'border-slate-200 dark:border-slate-800'} flex items-center justify-between`}>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Error Log</h2>
           <span className="text-[10px] font-mono text-slate-500">{totalErrors} total · showing {recentErrors.length}</span>
         </div>
         <ErrorLogList initialErrors={recentErrors} />
@@ -264,30 +264,30 @@ export default async function SystemPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Webhook events */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-white">Processed Webhook Events</h2>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Processed Webhook Events</h2>
             <span className="text-[10px] font-mono text-slate-500">{totalWebhooks} total</span>
           </div>
 
           {/* Type breakdown */}
           {Object.keys(webhookTypes).length > 0 && (
-            <div className="px-5 py-3 border-b border-slate-800 flex flex-wrap gap-2">
+            <div className="px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex flex-wrap gap-2">
               {Object.entries(webhookTypes).map(([type, count]) => (
-                <span key={type} className="px-2 py-0.5 rounded text-[9px] font-mono bg-slate-800 text-slate-400">
+                <span key={type} className="px-2 py-0.5 rounded text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400">
                   {type.replace('customer.', '').replace('invoice.', 'inv.')} ×{count}
                 </span>
               ))}
             </div>
           )}
 
-          <div className="divide-y divide-slate-800 max-h-72 overflow-y-auto">
+          <div className="divide-y divide-slate-200 dark:divide-slate-800 max-h-72 overflow-y-auto">
             {webhooks.length === 0 ? (
               <p className="px-5 py-8 text-xs text-slate-500 text-center">No webhook events</p>
             ) : webhooks.map(w => (
               <div key={w.event_id} className="px-5 py-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs text-white font-mono truncate">{w.event_type}</p>
+                  <p className="text-xs text-slate-900 dark:text-white font-mono truncate">{w.event_type}</p>
                   <p className="text-[10px] text-slate-600 font-mono mt-0.5 truncate">{w.event_id}</p>
                 </div>
                 <span className="text-[10px] text-slate-500 font-mono whitespace-nowrap shrink-0">
@@ -299,9 +299,9 @@ export default async function SystemPage() {
         </div>
 
         {/* Audit summary (7d) */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-white">Audit Events (7d)</h2>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Audit Events (7d)</h2>
             <span className="text-[10px] font-mono text-slate-500">{auditRows.length} total</span>
           </div>
 
@@ -323,7 +323,7 @@ export default async function SystemPage() {
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border ${s.cls} w-28 text-center`}>
                         {s.key}
                       </span>
-                      <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-slate-500 rounded-full"
                           style={{ width: `${(auditBySeverity[s.key] / auditRows.length) * 100}%` }}
@@ -342,9 +342,9 @@ export default async function SystemPage() {
                 <p className="text-[10px] font-mono uppercase tracking-wide text-slate-500 mb-3">By category</p>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(auditByCategory).sort(([,a],[,b]) => b - a).map(([cat, count]) => (
-                    <div key={cat} className="bg-slate-800 rounded-lg px-3 py-1.5 flex items-center gap-2">
+                    <div key={cat} className="bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-1.5 flex items-center gap-2">
                       <span className="text-[10px] text-slate-400 font-mono">{cat.replace('_', ' ')}</span>
-                      <span className="text-xs font-bold text-white">{count}</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">{count}</span>
                     </div>
                   ))}
                 </div>
@@ -355,9 +355,9 @@ export default async function SystemPage() {
       </div>
 
       {/* Environment variables */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white">Environment Variables</h2>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Environment Variables</h2>
           <div className="flex items-center gap-3">
             <span className="text-[10px] font-mono text-emerald-400">{envChecks.filter(v => v.set).length} set</span>
             {missingRequired.length > 0 && (
@@ -373,7 +373,7 @@ export default async function SystemPage() {
                 {envChecks.filter(v => v.category === cat).map(v => (
                   <div key={v.name} className="flex items-center gap-2">
                     <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${v.set ? 'bg-emerald-400' : v.required ? 'bg-red-400 animate-pulse' : 'bg-slate-600'}`} />
-                    <span className={`text-[10px] font-mono ${v.set ? 'text-slate-300' : v.required ? 'text-red-400' : 'text-slate-600'}`}>
+                    <span className={`text-[10px] font-mono ${v.set ? 'text-slate-600 dark:text-slate-300' : v.required ? 'text-red-400' : 'text-slate-600'}`}>
                       {v.label}
                     </span>
                     {!v.set && (
@@ -388,8 +388,8 @@ export default async function SystemPage() {
       </div>
 
       {/* Process / deployment info */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-        <h2 className="text-sm font-bold text-white mb-4">Process & Deployment</h2>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+        <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Process & Deployment</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
             { label: 'Node.js',      value: processInfo.nodeVersion },
@@ -401,7 +401,7 @@ export default async function SystemPage() {
           ].map(item => (
             <div key={item.label}>
               <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">{item.label}</p>
-              <p className="text-xs font-mono text-white">{item.value}</p>
+              <p className="text-xs font-mono text-slate-900 dark:text-white">{item.value}</p>
             </div>
           ))}
         </div>

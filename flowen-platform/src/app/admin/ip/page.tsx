@@ -27,9 +27,9 @@ export default async function IPPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">IP Register</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">IP Register</h1>
           <p className="text-slate-400 text-sm mt-1">
             Intellectual Property Portfolio · SEIS/EIS compliance · NHS procurement · Investor due diligence
           </p>

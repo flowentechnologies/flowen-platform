@@ -381,18 +381,18 @@ function ConsensusHero({ consensus, methods, kpis, onSnapshot }: {
             <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-slate-700 text-slate-400">{consensus.count}/{methods.length} METHODS ACTIVE</span>
             <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 animate-pulse">LIVE</span>
           </div>
-          <h2 className="text-lg font-black text-white">Consensus Pre-Money Valuation</h2>
+          <h2 className="text-lg font-black text-slate-900 dark:text-white">Consensus Pre-Money Valuation</h2>
           <p className="text-xs text-slate-500 mt-0.5">Arithmetic mean of {consensus.count} active method outputs · {unlockedCount} methods unlocked</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <button type="button" onClick={copyForInvestor}
             className={`px-3.5 py-2 text-xs font-mono font-bold rounded-xl border transition-all ${
-              copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'
+              copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-slate-100 dark:bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500'
             }`}>
             {copied ? 'Copied ✓' : 'Copy for investor'}
           </button>
           <button type="button" onClick={onSnapshot}
-            className="px-3.5 py-2 text-xs font-mono font-bold rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-all">
+            className="px-3.5 py-2 text-xs font-mono font-bold rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-all">
             📸 Save snapshot
           </button>
         </div>
@@ -400,19 +400,19 @@ function ConsensusHero({ consensus, methods, kpis, onSnapshot }: {
 
       {/* 3-column valuation range */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-slate-950/60 rounded-xl p-4 border border-slate-800/60">
+        <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl p-4 border border-slate-200 dark:border-slate-800/60">
           <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1.5">Conservative</p>
-          <p className="text-2xl sm:text-3xl font-black text-slate-300">{fmtGBP(consensus.low, true)}</p>
+          <p className="text-2xl sm:text-3xl font-black text-slate-600 dark:text-slate-300">{fmtGBP(consensus.low, true)}</p>
           <p className="text-[9px] font-mono text-slate-600 mt-1">Average low-end</p>
         </div>
-        <div className="bg-slate-950/60 rounded-xl p-4 border border-amber-500/20">
+        <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl p-4 border border-amber-500/20">
           <p className="text-[9px] font-mono text-amber-500/80 uppercase tracking-widest mb-1.5">Mid-Point</p>
           <p className="text-3xl sm:text-4xl font-black text-amber-400">{fmtGBP(consensus.mid, true)}</p>
           <p className="text-[9px] font-mono text-slate-600 mt-1">Recommended to share</p>
         </div>
-        <div className="bg-slate-950/60 rounded-xl p-4 border border-slate-800/60">
+        <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl p-4 border border-slate-200 dark:border-slate-800/60">
           <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1.5">Optimistic</p>
-          <p className="text-2xl sm:text-3xl font-black text-slate-300">{fmtGBP(consensus.high, true)}</p>
+          <p className="text-2xl sm:text-3xl font-black text-slate-600 dark:text-slate-300">{fmtGBP(consensus.high, true)}</p>
           <p className="text-[9px] font-mono text-slate-600 mt-1">Average high-end</p>
         </div>
       </div>
@@ -427,7 +427,7 @@ function ConsensusHero({ consensus, methods, kpis, onSnapshot }: {
               <div key={m.id} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-mono ${
                 active
                   ? 'bg-amber-500/10 border border-amber-500/20 text-amber-300'
-                  : 'bg-slate-800/50 border border-slate-800 text-slate-600'
+                  : 'bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-slate-600'
               }`}>
                 {active ? '●' : '○'} {m.shortName}
                 {active && m.pence ? <span className="font-bold">{fmtGBP(m.pence, true)}</span> : <span className="text-slate-700">locked</span>}
@@ -438,7 +438,7 @@ function ConsensusHero({ consensus, methods, kpis, onSnapshot }: {
       </div>
 
       {/* Live metrics row */}
-      <div className="mt-4 pt-4 border-t border-slate-800/60 flex flex-wrap gap-x-6 gap-y-1">
+      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800/60 flex flex-wrap gap-x-6 gap-y-1">
         {[
           { label: 'MRR', value: fmtGBP(kpis.mrrPence) },
           { label: 'Users', value: kpis.totalUsers.toLocaleString() },
@@ -448,7 +448,7 @@ function ConsensusHero({ consensus, methods, kpis, onSnapshot }: {
         ].map(m => (
           <div key={m.label} className="text-[10px] font-mono">
             <span className="text-slate-600">{m.label}: </span>
-            <span className="text-slate-300 font-bold">{m.value}</span>
+            <span className="text-slate-600 dark:text-slate-300 font-bold">{m.value}</span>
           </div>
         ))}
       </div>
@@ -461,7 +461,7 @@ function ConsensusHero({ consensus, methods, kpis, onSnapshot }: {
 const GATE_COLOURS = {
   unlocked:    { dot: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-500/10' },
   in_progress: { dot: 'bg-amber-500',   text: 'text-amber-400',   border: 'border-amber-500/30',   bg: 'bg-amber-500/10' },
-  locked:      { dot: 'bg-slate-700',   text: 'text-slate-500',   border: 'border-slate-800',      bg: 'bg-slate-900' },
+  locked:      { dot: 'bg-slate-700',   text: 'text-slate-500',   border: 'border-slate-200 dark:border-slate-800',      bg: 'bg-white dark:bg-slate-900' },
 };
 
 const CATEGORY_BADGE: Record<MethodResult['category'], string> = {
@@ -478,15 +478,15 @@ function MilestoneUnlockTrack({ methods, milestones }: { methods: MethodResult[]
   const inProg   = methods.filter(m => m.gateStatus === 'in_progress').length;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div>
-          <h3 className="text-sm font-bold text-white">Milestone Unlock Track</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Milestone Unlock Track</h3>
           <p className="text-[11px] font-mono text-slate-500 mt-0.5">Complete roadmap milestones to unlock richer valuation methods</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[10px] font-mono text-slate-500">{unlocked}/{total} unlocked</span>
-          <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
             <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${(unlocked / total) * 100}%` }} />
           </div>
         </div>
@@ -500,7 +500,7 @@ function MilestoneUnlockTrack({ methods, milestones }: { methods: MethodResult[]
               <div className="flex items-start gap-2 mb-2">
                 <span className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${g.dot}`} />
                 <div className="flex-1 min-w-0">
-                  <p className={`text-xs font-bold leading-tight ${m.locked ? 'text-slate-500' : 'text-white'}`}>{m.shortName}</p>
+                  <p className={`text-xs font-bold leading-tight ${m.locked ? 'text-slate-500' : 'text-slate-900 dark:text-white'}`}>{m.shortName}</p>
                   <span className={`inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${CATEGORY_BADGE[m.category]}`}>
                     {m.category}
                   </span>
@@ -522,7 +522,7 @@ function MilestoneUnlockTrack({ methods, milestones }: { methods: MethodResult[]
 
       {/* Relevant milestone status */}
       {milestones.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-slate-800">
+        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
           <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-2">Live roadmap gates</p>
           <div className="flex flex-wrap gap-2">
             {milestones
@@ -532,7 +532,7 @@ function MilestoneUnlockTrack({ methods, milestones }: { methods: MethodResult[]
                 <div key={m.id} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-mono border ${
                   m.status === 'complete'    ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' :
                   m.status === 'in_progress' ? 'bg-amber-500/10 border-amber-500/25 text-amber-400' :
-                  'bg-slate-800/50 border-slate-800 text-slate-600'
+                  'bg-slate-800/50 border-slate-200 dark:border-slate-800 text-slate-600'
                 }`}>
                   <span>{m.status === 'complete' ? '✓' : m.status === 'in_progress' ? '→' : '○'}</span>
                   <span className="truncate max-w-[160px]">{m.title}</span>
@@ -558,8 +558,8 @@ function MethodCard({ method, onEdit }: { method: MethodResult; onEdit: () => vo
   return (
     <div className={`rounded-2xl border overflow-hidden transition-all ${
       method.locked
-        ? 'border-slate-800 bg-slate-900/40 opacity-60'
-        : 'border-slate-800 bg-slate-900 hover:border-slate-700'
+        ? 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 opacity-60'
+        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-700'
     }`}>
       <div className="p-5">
         {/* Header */}
@@ -571,7 +571,7 @@ function MethodCard({ method, onEdit }: { method: MethodResult; onEdit: () => vo
               </span>
               <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${
                 method.locked
-                  ? 'bg-slate-800 text-slate-600 border border-slate-800'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-800'
                   : method.gateStatus === 'in_progress'
                   ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
                   : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
@@ -579,11 +579,11 @@ function MethodCard({ method, onEdit }: { method: MethodResult; onEdit: () => vo
                 {method.locked ? 'LOCKED' : method.gateStatus === 'in_progress' ? 'IN PROGRESS' : 'UNLOCKED'}
               </span>
             </div>
-            <p className={`text-sm font-bold ${method.locked ? 'text-slate-500' : 'text-white'}`}>{method.name}</p>
+            <p className={`text-sm font-bold ${method.locked ? 'text-slate-500' : 'text-slate-900 dark:text-white'}`}>{method.name}</p>
           </div>
           {!method.locked && (
             <button type="button" onClick={onEdit}
-              className="shrink-0 px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors">
+              className="shrink-0 px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors">
               Edit inputs
             </button>
           )}
@@ -591,7 +591,7 @@ function MethodCard({ method, onEdit }: { method: MethodResult; onEdit: () => vo
 
         {/* Valuation output */}
         {method.locked ? (
-          <div className="bg-slate-800/40 rounded-xl px-4 py-3 mb-3">
+          <div className="bg-slate-100/60 dark:bg-slate-800/40 rounded-xl px-4 py-3 mb-3">
             <p className="text-xs font-mono text-slate-600">{method.lockReason}</p>
             <p className={`text-[10px] font-mono mt-1 ${g.text}`}>{method.gateLabel}</p>
           </div>
@@ -607,7 +607,7 @@ function MethodCard({ method, onEdit }: { method: MethodResult; onEdit: () => vo
             </div>
             {/* Range bar */}
             {method.low !== null && method.high !== null && method.pence !== null && (
-              <div className="relative h-1.5 bg-slate-800 rounded-full">
+              <div className="relative h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full">
                 <div
                   className="absolute top-0 bottom-0 bg-amber-500/30 rounded-full"
                   style={{ left: '0%', right: '0%' }}
@@ -624,7 +624,7 @@ function MethodCard({ method, onEdit }: { method: MethodResult; onEdit: () => vo
         {/* Key inputs chips */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {method.keyInputs.map((inp, i) => (
-            <span key={i} className="px-2 py-0.5 rounded text-[9px] font-mono bg-slate-800 text-slate-500 border border-slate-800">
+            <span key={i} className="px-2 py-0.5 rounded text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-800">
               {inp}
             </span>
           ))}
@@ -654,10 +654,10 @@ function SlidePanel({ title, onClose, children }: { title: string; onClose: () =
   return (
     <>
       <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm" onClick={onClose} />
-      <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg bg-slate-900 border-l border-slate-800 flex flex-col shadow-2xl overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 sticky top-0 bg-slate-900/95 backdrop-blur-md">
-          <h2 className="text-sm font-bold text-white">{title}</h2>
-          <button type="button" onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+      <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-lg bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shadow-2xl overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-slate-900/95 backdrop-blur-md">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h2>
+          <button type="button" onClick={onClose} className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <line x1="4" y1="4" x2="14" y2="14"/><line x1="14" y1="4" x2="4" y2="14"/>
             </svg>
@@ -669,7 +669,7 @@ function SlidePanel({ title, onClose, children }: { title: string; onClose: () =
   );
 }
 
-const inputCls  = 'w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50';
+const inputCls  = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50';
 const labelCls  = 'block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5';
 
 function ScoreSlider({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
@@ -744,7 +744,7 @@ function EditPanel({ method, cfg, onChange, onSave, saving }: {
       <BerkusSlider label="3. Quality Management Team"      value={cfg.berkus_management_team}    onChange={v => field('berkus_management_team',    v)} />
       <BerkusSlider label="4. Strategic Relationships"      value={cfg.berkus_strategic_rel}      onChange={v => field('berkus_strategic_rel',      v)} />
       <BerkusSlider label="5. Product Rollout / Sales"      value={cfg.berkus_product_rollout}    onChange={v => field('berkus_product_rollout',    v)} />
-      <div className="pt-2 border-t border-slate-800">
+      <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
         <p className="text-xs font-mono text-slate-400">Total: <span className="font-black text-amber-400">{fmtGBP(computeBerkus(cfg))}</span></p>
       </div>
     </div>
@@ -757,7 +757,7 @@ function EditPanel({ method, cfg, onChange, onSave, saving }: {
         <input type="number" className={inputCls} value={poundsStr(cfg.scorecard_median_pence)} onChange={e => poundsField('scorecard_median_pence', e.target.value)} />
         <p className="text-[10px] font-mono text-slate-600 mt-1">UK typical: £1.0m–£2.0m. Current: {fmtGBP(cfg.scorecard_median_pence)}</p>
       </div>
-      <div className="space-y-4 pt-2 border-t border-slate-800">
+      <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800">
         <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Weighted factor scores (0–2×)</p>
         <ScoreSlider label="Team Strength (30%)"               value={cfg.scorecard_team}             onChange={v => field('scorecard_team',             v)} />
         <ScoreSlider label="Market Size (25%)"                 value={cfg.scorecard_market_size}      onChange={v => field('scorecard_market_size',      v)} />
@@ -767,7 +767,7 @@ function EditPanel({ method, cfg, onChange, onSave, saving }: {
         <ScoreSlider label="Need for Investment (5%)"          value={cfg.scorecard_investment_need}  onChange={v => field('scorecard_investment_need',  v)} />
         <ScoreSlider label="Other Factors (5%)"                value={cfg.scorecard_other}            onChange={v => field('scorecard_other',            v)} />
       </div>
-      <div className="pt-2 border-t border-slate-800">
+      <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
         <p className="text-xs font-mono text-slate-400">Result: <span className="font-black text-amber-400">{fmtGBP(computeScorecard(cfg))}</span></p>
       </div>
     </div>
@@ -781,7 +781,7 @@ function EditPanel({ method, cfg, onChange, onSave, saving }: {
         <input type="number" min="1" max="30" step="0.5" className={inputCls} value={cfg.arr_multiple} onChange={e => field('arr_multiple', parseFloat(e.target.value) || 7)} />
       </div>
       <div className="bg-slate-800/50 rounded-xl px-4 py-3 text-xs font-mono text-slate-400 space-y-1">
-        <div className="flex justify-between"><span>Current MRR</span><span className="text-white">{fmtGBP(cfg.arr_multiple * 0)}</span></div>
+        <div className="flex justify-between"><span>Current MRR</span><span className="text-slate-900 dark:text-white">{fmtGBP(cfg.arr_multiple * 0)}</span></div>
         <p className="text-[10px] text-slate-600">ARR Multiple method unlocks automatically when MRR {'>'} £0</p>
       </div>
     </div>
@@ -840,7 +840,7 @@ function EditPanel({ method, cfg, onChange, onSave, saving }: {
         <input type="number" min="0" max="200" className={inputCls} value={cfg.comp_traction_premium_pct} onChange={e => field('comp_traction_premium_pct', parseFloat(e.target.value) || 0)} />
         <p className="text-[10px] font-mono text-slate-600 mt-1">Additional % premium for user traction, IP, waitlist</p>
       </div>
-      <div className="bg-slate-800/40 rounded-xl px-4 py-3 text-[10px] font-mono text-slate-500 space-y-1">
+      <div className="bg-slate-100/60 dark:bg-slate-800/40 rounded-xl px-4 py-3 text-[10px] font-mono text-slate-500 space-y-1">
         <p className="font-bold text-slate-400 mb-1">Reference comps</p>
         {[
           { name: 'Livi/Kry (digital health)',   val: '~£500m Ser.C' },
@@ -940,17 +940,17 @@ function SnapshotHistory({ snapshots, onDelete }: {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   if (snapshots.length === 0) return (
-    <div className="py-10 text-center border border-dashed border-slate-800 rounded-2xl">
+    <div className="py-10 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
       <p className="text-sm text-slate-600 font-mono">No snapshots saved yet</p>
       <p className="text-xs text-slate-700 font-mono mt-1">Save a snapshot above to track valuation over time</p>
     </div>
   );
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-800">
+          <tr className="border-b border-slate-200 dark:border-slate-800">
             <th className="text-left px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Date</th>
             <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Label</th>
             <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500 hidden sm:table-cell">Low</th>
@@ -959,25 +959,25 @@ function SnapshotHistory({ snapshots, onDelete }: {
             <th className="text-right px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500"></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800">
+        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
           {snapshots.map(s => (
             <React.Fragment key={s.id}>
               <tr className="hover:bg-slate-800/40 transition-colors group">
                 <td className="px-5 py-3.5 text-[11px] font-mono text-slate-500 whitespace-nowrap">
                   {new Date(s.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </td>
-                <td className="px-4 py-3.5 text-sm font-semibold text-white">{s.label}</td>
+                <td className="px-4 py-3.5 text-sm font-semibold text-slate-900 dark:text-white">{s.label}</td>
                 <td className="px-4 py-3.5 text-xs font-mono text-slate-500 hidden sm:table-cell">{fmtGBP(s.low_pence, true)}</td>
                 <td className="px-4 py-3.5 text-sm font-black text-amber-400">{fmtGBP(s.mid_pence, true)}</td>
                 <td className="px-4 py-3.5 text-xs font-mono text-slate-500 hidden md:table-cell">{fmtGBP(s.high_pence, true)}</td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button type="button" onClick={() => setExpanded(id => id === s.id ? null : s.id)}
-                      className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors">
+                      className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                       {expanded === s.id ? 'Hide' : 'View'}
                     </button>
                     <button type="button" onClick={() => onDelete(s.id)}
-                      className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors">
+                      className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors">
                       ×
                     </button>
                   </div>
@@ -985,10 +985,10 @@ function SnapshotHistory({ snapshots, onDelete }: {
               </tr>
               {expanded === s.id && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-4 bg-slate-950/60">
+                  <td colSpan={6} className="px-5 py-4 bg-slate-100 dark:bg-slate-950/60">
                     <div className="flex flex-wrap gap-3 mb-2">
                       {Object.entries(s.method_outputs).map(([k, v]) => (
-                        <div key={k} className="text-[10px] font-mono bg-slate-800 px-2.5 py-1.5 rounded-lg">
+                        <div key={k} className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-lg">
                           <span className="text-slate-500">{k}: </span>
                           <span className="text-amber-400 font-bold">{fmtGBP(v, true)}</span>
                         </div>
@@ -1021,13 +1021,13 @@ function SnapshotModal({ consensus, methods, kpis, onSave, onClose }: {
   return (
     <>
       <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-          <h3 className="text-sm font-bold text-white mb-1">Save Valuation Snapshot</h3>
+        <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Save Valuation Snapshot</h3>
           <p className="text-xs text-slate-500 mb-5">Records current method outputs and consensus range for tracking over time.</p>
 
           <div className="grid grid-cols-3 gap-3 mb-5">
             {[{ l: 'Conservative', v: consensus.low }, { l: 'Mid-Point', v: consensus.mid }, { l: 'Optimistic', v: consensus.high }].map(x => (
-              <div key={x.l} className="bg-slate-800 rounded-xl p-3 text-center">
+              <div key={x.l} className="bg-slate-100 dark:bg-slate-800 rounded-xl p-3 text-center">
                 <p className="text-[9px] font-mono text-slate-500 mb-1">{x.l}</p>
                 <p className="text-lg font-black text-amber-400">{fmtGBP(x.v, true)}</p>
               </div>
@@ -1051,7 +1051,7 @@ function SnapshotModal({ consensus, methods, kpis, onSave, onClose }: {
               Save Snapshot
             </button>
             <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">
+              className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               Cancel
             </button>
           </div>
@@ -1150,7 +1150,7 @@ export default function ValuationClient({ initialConfig, initialSnapshots, initi
       {/* Method grid */}
       <div>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <h3 className="text-sm font-bold text-white">Valuation Methods</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Valuation Methods</h3>
           <button type="button" onClick={saveConfig} disabled={saving}
             className="px-4 py-2 text-xs font-mono font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors disabled:opacity-50 flex items-center gap-2">
             {saving && <span className="inline-block w-3 h-3 border-2 border-slate-950/40 border-t-slate-950 rounded-full animate-spin" />}
@@ -1166,7 +1166,7 @@ export default function ValuationClient({ initialConfig, initialSnapshots, initi
 
       {/* Snapshot history */}
       <div>
-        <h3 className="text-sm font-bold text-white mb-4">Valuation History</h3>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Valuation History</h3>
         <SnapshotHistory snapshots={snapshots} onDelete={deleteSnapshot} />
       </div>
 
@@ -1183,7 +1183,7 @@ export default function ValuationClient({ initialConfig, initialSnapshots, initi
             onSave={saveConfig}
             saving={saving}
           />
-          <div className="mt-6 pt-5 border-t border-slate-800">
+          <div className="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800">
             <button type="button" onClick={saveConfig} disabled={saving}
               className="w-full py-2.5 text-sm font-mono font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors disabled:opacity-50">
               {saving ? 'Saving…' : 'Save inputs'}

@@ -71,7 +71,7 @@ export default function FeedbackClient({ initialFeedback }: Props) {
           { label: 'Ideas',       value: String(counts.idea)       },
           { label: 'Avg rating',  value: avgRating ? `${avgRating}/5` : '—' },
         ] as {label:string;value:string}[]).map(s => (
-          <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
             <p className="text-xs text-slate-500 mb-1">{s.label}</p>
             <p className="text-2xl font-bold text-slate-100">{s.value}</p>
           </div>
@@ -87,7 +87,7 @@ export default function FeedbackClient({ initialFeedback }: Props) {
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
               filter === t
                 ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
-                : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300'
+                : 'bg-slate-100 dark:bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300'
             }`}
           >
             {t === 'all' ? 'All' : TYPE_CONFIG[t].label} ({counts[t]})
@@ -96,11 +96,11 @@ export default function FeedbackClient({ initialFeedback }: Props) {
       </div>
 
       {/* List */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
         {visible.length === 0 ? (
           <p className="px-5 py-8 text-sm text-slate-600 text-center">No feedback yet.</p>
         ) : (
-          <div className="divide-y divide-slate-800">
+          <div className="divide-y divide-slate-200 dark:divide-slate-800">
             {visible.map(f => {
               const tc = TYPE_CONFIG[f.type] ?? TYPE_CONFIG.general;
               return (
@@ -113,7 +113,7 @@ export default function FeedbackClient({ initialFeedback }: Props) {
                       <div className="mb-1"><Stars n={f.rating} /></div>
                     )}
                     {f.comment ? (
-                      <p className="text-sm text-slate-300 leading-snug">&ldquo;{f.comment}&rdquo;</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300 leading-snug">&ldquo;{f.comment}&rdquo;</p>
                     ) : (
                       <p className="text-sm text-slate-600 italic">No comment</p>
                     )}
