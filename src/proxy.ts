@@ -123,7 +123,18 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     },
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // getUser() refreshes the session cookie internally. When the stored refresh
+  // token has been revoked or expired Supabase throws AuthApiError. We catch
+  // that here so a stale cookie never crashes the proxy for the whole request;
+  // the user is simply treated as unauthenticated and redirected to login if
+  // they try to access a protected route.
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (!error) user = data.user;
+  } catch {
+    // Invalid/expired refresh token — fall through with user = null.
+  }
 
   // 3. Route classification
   const isAuthRoute       = pathname.startsWith('/auth');

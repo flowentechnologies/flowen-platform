@@ -221,9 +221,17 @@ async function handleCheckoutSessionCompleted(
 
   const userId = await resolveUserId(admin, stripeCustomerId, session.customer_email);
   if (!userId) {
-    throw new Error(
-      `Cannot resolve user for customer ${stripeCustomerId} / email ${session.customer_email}`,
+    // The checkout email doesn't match any Flowen account. This happens when
+    // someone goes through Stripe with an email that was never used to sign up
+    // (e.g. test sessions, wrong email at checkout). We log for visibility but
+    // return gracefully so the idempotency record stays in the DB — removing it
+    // would cause Stripe to re-deliver the event endlessly without any chance
+    // of success, filling the error log.
+    console.warn(
+      `[stripe-webhook] checkout.session.completed: no Flowen account found for ` +
+      `customer ${stripeCustomerId} / email ${session.customer_email} — skipping activation`,
     );
+    return;
   }
 
   await ensureCustomerRecord(admin, userId, stripeCustomerId);
