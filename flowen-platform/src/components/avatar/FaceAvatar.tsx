@@ -89,15 +89,28 @@ const CAL_PAIRS: [number,number][] = [
 // ── Animation state ────────────────────────────────────────────────────────────
 
 interface AvatarState {
-  // Mouth / speech (from VisemeBlends + ExtraBlends)
+  // Mouth / speech (from VisemeBlends)
   jawOpen:   number;
   smileL:    number; smileR:  number;
   frownL:    number; frownR:  number;
   puckerFunnel: number;
-  // Eyes
+  mouthRollLower: number; mouthRollUpper: number;
+  mouthShrugLower: number; mouthShrugUpper: number;
+  mouthUpperUpL: number; mouthUpperUpR: number;
+  mouthLowerDownL: number; mouthLowerDownR: number;
+  dimpleL: number; dimpleR: number;
+  // Tongue (all 10 ARKit shapes)
+  tongueOut: number; tongueUp: number; tongueDown: number;
+  tongueLeft: number; tongueRight: number; tongueRoll: number;
+  tongueCurlUp: number; tongueBendDown: number;
+  tongueFlat: number; tongueSquish: number;
+  // Facial structure (from VisemeBlends)
+  cheekPuff: number;
+  noseSneerL: number; noseSneerR: number;
+  // Eyes (from ExtraBlends)
   blinkL:    number; blinkR:  number;
   squintL:   number; squintR: number;
-  // Brows
+  // Brows (from ExtraBlends)
   browDownL: number; browDownR: number;
   browInner: number;
   browOuterL: number; browOuterR: number;
@@ -122,6 +135,12 @@ export const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(
     const rafRef  = useRef<number>(0);
     const stateRef = useRef<AvatarState>({
       jawOpen: 0, smileL: 0, smileR: 0, frownL: 0, frownR: 0, puckerFunnel: 0,
+      mouthRollLower: 0, mouthRollUpper: 0, mouthShrugLower: 0, mouthShrugUpper: 0,
+      mouthUpperUpL: 0, mouthUpperUpR: 0, mouthLowerDownL: 0, mouthLowerDownR: 0,
+      dimpleL: 0, dimpleR: 0,
+      tongueOut: 0, tongueUp: 0, tongueDown: 0, tongueLeft: 0, tongueRight: 0,
+      tongueRoll: 0, tongueCurlUp: 0, tongueBendDown: 0, tongueFlat: 0, tongueSquish: 0,
+      cheekPuff: 0, noseSneerL: 0, noseSneerR: 0,
       blinkL: 0, blinkR: 0, squintL: 0, squintR: 0,
       browDownL: 0, browDownR: 0, browInner: 0, browOuterL: 0, browOuterR: 0,
       lookX: 0, lookY: 0,
@@ -189,24 +208,53 @@ export const FaceAvatar = forwardRef<FaceAvatarHandle, Props>(
           : 0;
 
         // Lerp all animation state
-        s.jawOpen     = lp(s.jawOpen,     cl(Math.max(b.jawOpen    ?? 0, breath)));
-        s.smileL      = lp(s.smileL,      cl(b.mouthSmileLeft      ?? 0));
-        s.smileR      = lp(s.smileR,      cl(b.mouthSmileRight     ?? 0));
-        s.frownL      = lp(s.frownL,      cl(b.mouthFrownLeft      ?? 0));
-        s.frownR      = lp(s.frownR,      cl(b.mouthFrownRight     ?? 0));
-        s.puckerFunnel = lp(s.puckerFunnel, cl((b.mouthPucker ?? 0) * 0.5 + (b.mouthFunnel ?? 0) * 0.5));
-        s.blinkL      = lp(s.blinkL,      cl(ex.eyeBlinkLeft       || autoBlink));
-        s.blinkR      = lp(s.blinkR,      cl(ex.eyeBlinkRight      || autoBlink));
-        s.squintL     = lp(s.squintL,     cl(ex.eyeSquintLeft      ?? 0));
-        s.squintR     = lp(s.squintR,     cl(ex.eyeSquintRight     ?? 0));
-        s.browDownL   = lp(s.browDownL,   cl(ex.browDownLeft       ?? 0));
-        s.browDownR   = lp(s.browDownR,   cl(ex.browDownRight      ?? 0));
-        s.browInner   = lp(s.browInner,   cl(ex.browInnerUp        ?? 0));
-        s.browOuterL  = lp(s.browOuterL,  cl(ex.browOuterUpLeft    ?? 0));
-        s.browOuterR  = lp(s.browOuterR,  cl(ex.browOuterUpRight   ?? 0));
+        s.jawOpen        = lp(s.jawOpen,        cl(Math.max(b.jawOpen        ?? 0, breath)));
+        s.smileL         = lp(s.smileL,         cl(b.mouthSmileLeft          ?? 0));
+        s.smileR         = lp(s.smileR,         cl(b.mouthSmileRight         ?? 0));
+        s.frownL         = lp(s.frownL,         cl(b.mouthFrownLeft          ?? 0));
+        s.frownR         = lp(s.frownR,         cl(b.mouthFrownRight         ?? 0));
+        s.puckerFunnel   = lp(s.puckerFunnel,   cl((b.mouthPucker ?? 0) * 0.5 + (b.mouthFunnel ?? 0) * 0.5));
+        s.mouthRollLower = lp(s.mouthRollLower, cl(b.mouthRollLower          ?? 0));
+        s.mouthRollUpper = lp(s.mouthRollUpper, cl(b.mouthRollUpper          ?? 0));
+        s.mouthShrugLower = lp(s.mouthShrugLower, cl(b.mouthShrugLower       ?? 0));
+        s.mouthShrugUpper = lp(s.mouthShrugUpper, cl(b.mouthShrugUpper       ?? 0));
+        s.mouthUpperUpL  = lp(s.mouthUpperUpL,  cl(b.mouthUpperUpLeft        ?? 0));
+        s.mouthUpperUpR  = lp(s.mouthUpperUpR,  cl(b.mouthUpperUpRight       ?? 0));
+        s.mouthLowerDownL = lp(s.mouthLowerDownL, cl(b.mouthLowerDownLeft    ?? 0));
+        s.mouthLowerDownR = lp(s.mouthLowerDownR, cl(b.mouthLowerDownRight   ?? 0));
+        s.dimpleL        = lp(s.dimpleL,        cl(b.mouthDimpleLeft         ?? 0));
+        s.dimpleR        = lp(s.dimpleR,        cl(b.mouthDimpleRight        ?? 0));
+        // Tongue — fast lerp for snappy response to speech
+        const TLP = 0.28;
+        const tlp = (a: number, tgt: number) => a + (tgt - a) * TLP;
+        s.tongueOut      = tlp(s.tongueOut,      cl(b.tongueOut     ?? 0));
+        s.tongueUp       = tlp(s.tongueUp,       cl(b.tongueUp      ?? 0));
+        s.tongueDown     = tlp(s.tongueDown,      cl(b.tongueDown    ?? 0));
+        s.tongueLeft     = tlp(s.tongueLeft,     cl(b.tongueLeft    ?? 0));
+        s.tongueRight    = tlp(s.tongueRight,    cl(b.tongueRight   ?? 0));
+        s.tongueRoll     = tlp(s.tongueRoll,     cl(b.tongueRoll    ?? 0));
+        s.tongueCurlUp   = tlp(s.tongueCurlUp,  cl(b.tongueCurlUp  ?? 0));
+        s.tongueBendDown = tlp(s.tongueBendDown, cl(b.tongueBendDown ?? 0));
+        s.tongueFlat     = tlp(s.tongueFlat,     cl(b.tongueFlat    ?? 0));
+        s.tongueSquish   = tlp(s.tongueSquish,   cl(b.tongueSquish  ?? 0));
+        // Facial structure
+        s.cheekPuff  = lp(s.cheekPuff,  cl(b.cheekPuff       ?? 0));
+        s.noseSneerL = lp(s.noseSneerL, cl(b.noseSneerLeft   ?? 0));
+        s.noseSneerR = lp(s.noseSneerR, cl(b.noseSneerRight  ?? 0));
+        // Eyes
+        s.blinkL  = lp(s.blinkL,  cl(ex.eyeBlinkLeft    || autoBlink));
+        s.blinkR  = lp(s.blinkR,  cl(ex.eyeBlinkRight   || autoBlink));
+        s.squintL = lp(s.squintL, cl(ex.eyeSquintLeft   ?? 0));
+        s.squintR = lp(s.squintR, cl(ex.eyeSquintRight  ?? 0));
+        // Brows
+        s.browDownL  = lp(s.browDownL,  cl(ex.browDownLeft    ?? 0));
+        s.browDownR  = lp(s.browDownR,  cl(ex.browDownRight   ?? 0));
+        s.browInner  = lp(s.browInner,  cl(ex.browInnerUp     ?? 0));
+        s.browOuterL = lp(s.browOuterL, cl(ex.browOuterUpLeft ?? 0));
+        s.browOuterR = lp(s.browOuterR, cl(ex.browOuterUpRight ?? 0));
         // Iris look direction from eye look blends (average L+R)
-        s.lookX = lp(s.lookX, cl(0.5 + (ex.eyeLookOutLeft - ex.eyeLookInLeft) * 0.5));
-        s.lookY = lp(s.lookY, cl(0.5 + (ex.eyeLookDownLeft - ex.eyeLookUpLeft) * 0.5));
+        s.lookX = lp(s.lookX, cl(0.5 + (ex.eyeLookOutLeft  - ex.eyeLookInLeft)  * 0.5));
+        s.lookY = lp(s.lookY, cl(0.5 + (ex.eyeLookDownLeft - ex.eyeLookUpLeft)  * 0.5));
         // Head pose
         s.pitch = lp(s.pitch, hp.pitch);
         s.yaw   = lp(s.yaw,   hp.yaw);
@@ -398,14 +446,93 @@ function drawLandmarkFace(
   ctx.fillStyle = '#1A0E06';
   ctx.fill();
 
-  // ── Subtle cheek blush ───────────────────────────────────────────────────
+  // ── Structural depth overlays (on top of face fill, before features) ────────
+
+  // Jawline drop shadow under chin
+  const chin = lm(152);
+  const chinG = ctx.createRadialGradient(px(chin), py(chin) + scale * 2, 0, px(chin), py(chin) + scale * 4, scale * 45);
+  chinG.addColorStop(0, 'rgba(40,18,6,0.42)');
+  chinG.addColorStop(1, 'rgba(40,18,6,0)');
   ctx.beginPath();
-  ctx.ellipse(px(lm(50)), py(lm(50)), scale*22, scale*14, -0.15, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(210,90,70,0.11)';
+  ctx.ellipse(px(chin), py(chin) + scale * 3, scale * 44, scale * 10, 0, 0, Math.PI * 2);
+  ctx.fillStyle = chinG;
+  ctx.fill();
+
+  // Temple hollows (sides of forehead)
+  for (const [ti, sign] of [[234, -1], [454, 1]] as [number, number][]) {
+    const t = lm(ti);
+    const tg = ctx.createRadialGradient(px(t) + sign * scale * 4, py(t) - scale * 8, 0, px(t), py(t) - scale * 6, scale * 26);
+    tg.addColorStop(0, 'rgba(50,24,8,0.28)');
+    tg.addColorStop(1, 'rgba(50,24,8,0)');
+    ctx.beginPath();
+    ctx.ellipse(px(t) + sign * scale * 3, py(t) - scale * 8, scale * 20, scale * 32, 0, 0, Math.PI * 2);
+    ctx.fillStyle = tg;
+    ctx.fill();
+  }
+
+  // Under-eye shadows (subtle orbital depth)
+  for (const [outerIdx, innerIdx] of [[33, 133], [263, 362]] as [number, number][]) {
+    const eo = lm(outerIdx), ei = lm(innerIdx);
+    const emx = (px(eo) + px(ei)) / 2, emy = (py(eo) + py(ei)) / 2 + scale * 5;
+    ctx.beginPath();
+    ctx.ellipse(emx, emy, scale * 20, scale * 5.5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(70,35,12,0.22)';
+    ctx.fill();
+  }
+
+  // Cheek puff: inflate cheek areas when blowing air (b-p-m sounds)
+  if (s.cheekPuff > 0.04) {
+    for (const [ci, angle] of [[50, -0.15], [280, 0.15]] as [number, number][]) {
+      const c = lm(ci);
+      const puffR = scale * 22 * (1 + s.cheekPuff * 0.55);
+      const puffG = ctx.createRadialGradient(px(c), py(c), 0, px(c), py(c), puffR);
+      puffG.addColorStop(0, `rgba(220,140,90,${s.cheekPuff * 0.25})`);
+      puffG.addColorStop(1, 'rgba(220,140,90,0)');
+      ctx.beginPath();
+      ctx.ellipse(px(c), py(c), puffR, puffR * 0.7, angle, 0, Math.PI * 2);
+      ctx.fillStyle = puffG;
+      ctx.fill();
+    }
+  }
+
+  // Nasolabial fold shadows (nose-to-mouth crease; deepens with smiling)
+  const smile = (s.smileL + s.smileR) / 2;
+  const foldAlpha = 0.12 + smile * 0.35;
+  for (const [nlBase, corner, sign] of [[129, 61, -1], [358, 291, 1]] as [number, number, number][]) {
+    const base = lm(nlBase), mc = lm(corner);
+    ctx.beginPath();
+    ctx.moveTo(px(base) + sign * scale * 2, py(base) + scale * 2);
+    ctx.bezierCurveTo(
+      px(base) + sign * scale * 5, py(base) + scale * 10,
+      px(mc)   + sign * scale * 4, py(mc)   - scale * 5,
+      px(mc),                       py(mc),
+    );
+    ctx.strokeStyle = `rgba(120,55,20,${foldAlpha})`;
+    ctx.lineWidth = scale * 2.2;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+
+  // Philtrum (vertical groove above upper lip)
+  const ph = lm(164);  // philtrum base point between nose and lip
+  const phG = ctx.createLinearGradient(px(ph) - scale * 6, 0, px(ph) + scale * 6, 0);
+  phG.addColorStop(0, 'rgba(90,40,12,0)');
+  phG.addColorStop(0.5, 'rgba(90,40,12,0.20)');
+  phG.addColorStop(1, 'rgba(90,40,12,0)');
+  ctx.beginPath();
+  ctx.ellipse(px(ph), py(ph), scale * 5.5, scale * 7, 0, 0, Math.PI * 2);
+  ctx.fillStyle = phG;
+  ctx.fill();
+
+  // Cheek blush (warmer when cheek squint / cheekPuff active)
+  const blushAlpha = 0.09 + (s.cheekPuff + s.squintL + s.squintR) * 0.05;
+  ctx.beginPath();
+  ctx.ellipse(px(lm(50)), py(lm(50)), scale * 24, scale * 14, -0.15, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(210,90,70,${blushAlpha})`;
   ctx.fill();
   ctx.beginPath();
-  ctx.ellipse(px(lm(280)), py(lm(280)), scale*22, scale*14, 0.15, 0, Math.PI*2);
-  ctx.fillStyle = 'rgba(210,90,70,0.11)';
+  ctx.ellipse(px(lm(280)), py(lm(280)), scale * 24, scale * 14, 0.15, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(210,90,70,${blushAlpha})`;
   ctx.fill();
 
   // ── Eyebrows ─────────────────────────────────────────────────────────────
@@ -417,7 +544,7 @@ function drawLandmarkFace(
   drawLandmarkEye(ctx, R_EYE_UPPER, R_EYE_LOWER, R_IRIS, landmarks, px, py, scale, s.blinkR, s.squintR, s.lookX, s.lookY, true);
 
   // ── Nose ─────────────────────────────────────────────────────────────────
-  drawLandmarkNose(ctx, landmarks, px, py, scale);
+  drawLandmarkNose(ctx, landmarks, px, py, scale, s);
 
   // ── Mouth ────────────────────────────────────────────────────────────────
   drawLandmarkMouth(ctx, landmarks, px, py, scale, s);
@@ -620,119 +747,432 @@ function drawLandmarkEye(
 }
 
 function drawLandmarkNose(
-  ctx: CanvasRenderingContext2D,
+  ctx:       CanvasRenderingContext2D,
   landmarks: FaceLandmark[],
   px: (lm: FaceLandmark) => number,
   py: (lm: FaceLandmark) => number,
-  scale: number,
+  scale:  number,
+  s:      AvatarState,
 ) {
-  // Nose shadow beneath bridge
-  if (!landmarks[4]) return;
-  const tip = landmarks[4];
+  const lm = (i: number) => landmarks[i] ?? { x: 0.5, y: 0.5, z: 0 };
+
+  // ── Bridge highlight ────────────────────────────────────────────────────
+  // Nose bridge: landmarks 168 → 6 → 197 → 195 → 5 → 4 (top→tip)
+  const bridgePts = [168, 6, 197, 195, 5].map(i => lm(i));
   ctx.beginPath();
-  ctx.ellipse(px(tip), py(tip) + scale * 4, scale * 9, scale * 6, 0, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(140,70,30,0.28)';
+  ctx.moveTo(px(bridgePts[0]) - scale * 1.5, py(bridgePts[0]));
+  bridgePts.slice(1).forEach(l => ctx.lineTo(px(l) - scale * 1.5, py(l)));
+  ctx.strokeStyle = 'rgba(240,190,130,0.32)';
+  ctx.lineWidth = scale * 4.5;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Bridge shadow (opposite side)
+  ctx.beginPath();
+  ctx.moveTo(px(bridgePts[0]) + scale * 3.5, py(bridgePts[0]));
+  bridgePts.slice(1).forEach(l => ctx.lineTo(px(l) + scale * 3.5, py(l)));
+  ctx.strokeStyle = 'rgba(80,35,10,0.22)';
+  ctx.lineWidth = scale * 3;
+  ctx.stroke();
+
+  // ── Nose tip shadow ─────────────────────────────────────────────────────
+  const tip = lm(4);
+  ctx.beginPath();
+  ctx.ellipse(px(tip), py(tip) + scale * 4, scale * 10, scale * 7, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(120,55,20,0.32)';
   ctx.fill();
 
-  // Nostril shadows
-  for (const i of [102, 331]) {
-    const nl = landmarks[i];
-    if (!nl) continue;
+  // Tip highlight dot
+  ctx.beginPath();
+  ctx.arc(px(tip) - scale * 2.5, py(tip) - scale * 1, scale * 3, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(240,185,120,0.30)';
+  ctx.fill();
+
+  // ── Ala (nostril wing) shadows — widen with noseSneer ────────────────────
+  const alaData: [number, number, number][] = [
+    [102, -0.28, s.noseSneerL],
+    [331,  0.28, s.noseSneerR],
+  ];
+  for (const [i, angle, sneer] of alaData) {
+    const nl = lm(i);
+    const sw = 1 + sneer * 0.4;
     ctx.beginPath();
-    ctx.ellipse(px(nl), py(nl), scale * 5, scale * 3.5, i < 200 ? -0.2 : 0.2, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(90,40,15,0.45)';
+    ctx.ellipse(px(nl), py(nl), scale * 6 * sw, scale * 4.5, angle, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(80,35,12,${0.48 + sneer * 0.22})`;
     ctx.fill();
+
+    // Ala surface highlight
+    ctx.beginPath();
+    ctx.ellipse(px(nl) - scale * 1.5, py(nl) - scale * 1.5, scale * 3.5 * sw, scale * 2.5, angle, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(220,150,80,0.18)';
+    ctx.fill();
+  }
+
+  // ── Philtrum ridge highlights (columns running nose-to-lip) ─────────────
+  // Landmarks 2 (subnasale) to 164 (between columns)
+  const sub = lm(2), phl = lm(164);
+  for (const offX of [-scale * 3.5, scale * 3.5]) {
+    const grad = ctx.createLinearGradient(0, py(sub), 0, py(phl));
+    grad.addColorStop(0, 'rgba(220,150,80,0.22)');
+    grad.addColorStop(1, 'rgba(220,150,80,0)');
+    ctx.beginPath();
+    ctx.moveTo(px(sub) + offX * 0.6, py(sub));
+    ctx.lineTo(px(phl) + offX, py(phl));
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = scale * 1.8;
+    ctx.stroke();
   }
 }
 
 function drawLandmarkMouth(
-  ctx: CanvasRenderingContext2D,
+  ctx:       CanvasRenderingContext2D,
   landmarks: FaceLandmark[],
   px: (lm: FaceLandmark) => number,
   py: (lm: FaceLandmark) => number,
-  scale: number,
-  s: AvatarState,
+  scale:  number,
+  s:      AvatarState,
 ) {
-  const jawOpen = s.jawOpen;
+  const lm = (i: number) => landmarks[i] ?? { x: 0.5, y: 0.5, z: 0 };
 
-  // Upper and lower lip outer landmarks
-  const outerPts = LIPS_OUTER.map(i => landmarks[i]).filter(Boolean) as FaceLandmark[];
-  const innerPts = LIPS_INNER.map(i => landmarks[i]).filter(Boolean) as FaceLandmark[];
-  if (!outerPts.length) return;
+  // ── Key landmarks ──────────────────────────────────────────────────────────
+  const cornerL  = lm(61),   cornerR  = lm(291);  // mouth corners
+  const ui13     = lm(13),   li14     = lm(14);   // upper/lower inner centre
+  const ui78     = lm(78),   ui308    = lm(308);  // upper inner L/R
+  const li95     = lm(95),   li324    = lm(324);  // lower inner L/R
+  const topLip   = lm(0);                          // Cupid's bow top
+  const botLip   = lm(17);                         // lower lip bottom
 
-  // Detect if mouth is open: compare upper-inner to lower-inner centre Y
-  const ul78  = landmarks[78],  ul308 = landmarks[308];
-  const ll95  = landmarks[95],  ll324 = landmarks[324];
-  const innerOpenY = (ul78 && ul308 && ll95 && ll324)
-    ? ((py(ll95) + py(ll324)) / 2) - ((py(ul78) + py(ul308)) / 2)
-    : jawOpen * scale * 32;
+  const clX = px(cornerL), clY = py(cornerL);
+  const crX = px(cornerR), crY = py(cornerR);
 
-  const isOpen = innerOpenY > scale * 3;
+  // Opening in canvas pixels (landmark-based; fall back to jawOpen blend)
+  const upperInnerY = (py(ui13) + py(ui78) + py(ui308)) / 3;
+  const lowerInnerY = (py(li14) + py(li95) + py(li324)) / 3;
+  const openingY    = Math.max(0, lowerInnerY - upperInnerY);
+  const isOpen      = openingY > scale * 2;
 
-  // Mouth interior (dark) when open
-  if (isOpen && innerPts.length > 4) {
+  // ── Mouth cavity ───────────────────────────────────────────────────────────
+  if (isOpen) {
     drawContour(ctx, LIPS_INNER, landmarks, px, py, true);
-    ctx.fillStyle = '#3A0E0E';
+    const mCx = (clX + crX) / 2;
+    const mCy = (upperInnerY + lowerInnerY) / 2;
+    const mR  = Math.max(crX - clX, openingY) * 0.65;
+    const cavG = ctx.createRadialGradient(mCx, mCy - openingY * 0.1, 0, mCx, mCy, mR);
+    cavG.addColorStop(0,   '#280606');
+    cavG.addColorStop(0.45, '#3A0C0C');
+    cavG.addColorStop(1,   '#4A1616');
+    ctx.fillStyle = cavG;
     ctx.fill();
 
-    // Upper teeth
-    const teethH = Math.max(0, innerOpenY - scale * 4) * 0.45;
-    if (teethH > 1 && ul78 && ul308) {
-      const midX = (px(ul78) + px(ul308)) / 2;
-      const midY = (py(ul78) + py(ul308)) / 2;
-      const tW   = Math.abs(px(ul308) - px(ul78)) * 0.9;
-      ctx.fillStyle = '#EDE8DC';
+    // ── Tongue ──────────────────────────────────────────────────────────────
+    const showTongue = s.tongueOut > 0.04 || s.tongueUp > 0.22 || s.tongueFlat > 0.2;
+    if (showTongue) {
+      drawTongue(ctx, scale, s, openingY, mCx, upperInnerY, lowerInnerY);
+    }
+
+    // ── Upper teeth ──────────────────────────────────────────────────────────
+    const upperTeethW = Math.abs(px(ui308) - px(ui78)) * 0.94;
+    const upperTeethH = Math.max(0, openingY * 0.38 - scale * 1.5);
+    if (upperTeethH > 0.5 && upperTeethW > 4) {
+      const uLeft = Math.min(px(ui78), px(ui308));
+      const uTop  = upperInnerY - scale * 0.5;
+      // Clip to inner contour so teeth don't bleed outside lips
+      ctx.save();
+      drawContour(ctx, LIPS_INNER, landmarks, px, py, true);
+      ctx.clip();
+      drawTeeth(ctx, uLeft, uTop, upperTeethW, upperTeethH, scale, true, mCx);
+      ctx.restore();
+    }
+
+    // ── Lower teeth (visible when mouth very open) ───────────────────────────
+    if (openingY > scale * 14) {
+      const lTeethW = Math.abs(px(li324) - px(li95)) * 0.82;
+      const lTeethH = Math.max(0, openingY * 0.26 - scale * 2);
+      if (lTeethH > 0.5 && lTeethW > 4) {
+        const lLeft = Math.min(px(li95), px(li324));
+        const lBot  = lowerInnerY + scale * 0.5;
+        ctx.save();
+        drawContour(ctx, LIPS_INNER, landmarks, px, py, true);
+        ctx.clip();
+        drawTeeth(ctx, lLeft, lBot - lTeethH, lTeethW, lTeethH, scale, false, mCx);
+        ctx.restore();
+      }
+    }
+  }
+
+  // ── Lower lip fill ─────────────────────────────────────────────────────────
+  const lowerOuter = LIPS_OUTER.slice(LIPS_OUTER.indexOf(291));
+  drawContour(ctx, lowerOuter, landmarks, px, py, false);
+  ctx.lineTo(crX, crY);
+  ctx.lineTo(clX, clY);
+  ctx.closePath();
+  const llG = ctx.createLinearGradient(0, crY, 0, py(botLip));
+  llG.addColorStop(0,   '#7A3420');
+  llG.addColorStop(0.4, '#B05538');
+  llG.addColorStop(1,   '#903828');
+  ctx.fillStyle = llG;
+  ctx.fill();
+
+  // ── Upper lip fill ─────────────────────────────────────────────────────────
+  const upperOuter = LIPS_OUTER.slice(0, LIPS_OUTER.indexOf(291) + 1);
+  drawContour(ctx, upperOuter, landmarks, px, py, false);
+  ctx.lineTo(crX, crY);
+  ctx.lineTo(clX, clY);
+  ctx.closePath();
+  const ulG = ctx.createLinearGradient(0, py(topLip), 0, clY);
+  ulG.addColorStop(0,   '#8A3018');
+  ulG.addColorStop(0.5, '#A84028');
+  ulG.addColorStop(1,   '#7A3020');
+  ctx.fillStyle = ulG;
+  ctx.fill();
+
+  // ── Lip edge strokes ───────────────────────────────────────────────────────
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+  // Upper lip edge
+  drawContour(ctx, upperOuter, landmarks, px, py, false);
+  ctx.strokeStyle = '#5A1E0E';
+  ctx.lineWidth   = scale * 1.8;
+  ctx.stroke();
+
+  // Lower lip edge
+  drawContour(ctx, lowerOuter, landmarks, px, py, false);
+  ctx.strokeStyle = '#6A2818';
+  ctx.lineWidth   = scale * 1.8;
+  ctx.stroke();
+
+  // ── Cupid's bow highlight ──────────────────────────────────────────────────
+  const bowX = px(topLip), bowY = py(topLip);
+  const bowG = ctx.createRadialGradient(bowX, bowY, 0, bowX, bowY, scale * 10);
+  bowG.addColorStop(0, 'rgba(220,135,95,0.55)');
+  bowG.addColorStop(1, 'rgba(220,135,95,0)');
+  ctx.beginPath();
+  ctx.arc(bowX, bowY, scale * 10, 0, Math.PI * 2);
+  ctx.fillStyle = bowG;
+  ctx.fill();
+
+  // ── Lower lip centre sheen ─────────────────────────────────────────────────
+  const llCenter = lm(17);
+  const sheenG = ctx.createRadialGradient(px(llCenter) - scale, py(llCenter) - scale, 0, px(llCenter), py(llCenter), scale * 16);
+  sheenG.addColorStop(0, 'rgba(200,110,70,0.40)');
+  sheenG.addColorStop(1, 'rgba(200,110,70,0)');
+  ctx.beginPath();
+  ctx.ellipse(px(llCenter), py(llCenter) - scale, scale * 18, scale * 7, 0, 0, Math.PI * 2);
+  ctx.fillStyle = sheenG;
+  ctx.fill();
+
+  // ── Mouth corners + dimples ────────────────────────────────────────────────
+  for (const ci of [61, 291]) {
+    const c = landmarks[ci];
+    if (!c) continue;
+    ctx.beginPath();
+    ctx.arc(px(c), py(c), scale * 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(90,35,16,0.75)';
+    ctx.fill();
+  }
+
+  const smile = (s.smileL + s.smileR) / 2;
+  const dimple = (s.dimpleL + s.dimpleR) / 2;
+  if (smile > 0.12 || dimple > 0.05) {
+    for (const di of [207, 427]) {
+      const d = landmarks[di];
+      if (!d) continue;
       ctx.beginPath();
-      ctx.roundRect(midX - tW/2, midY - scale*2, tW, teethH + scale*3, scale * 2);
+      ctx.arc(px(d), py(d), scale * 2.8, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(110,48,20,${Math.min(0.5, (smile + dimple) * 0.35)})`;
       ctx.fill();
-      // Tooth gaps
-      ctx.strokeStyle = 'rgba(180,160,140,0.3)';
-      ctx.lineWidth = scale * 0.8;
-      for (let t = -2; t <= 2; t++) {
+    }
+  }
+
+  // ── Upper lip roll shadow (mouthRollUpper — lips fold inward) ─────────────
+  if (s.mouthRollUpper > 0.1) {
+    drawContour(ctx, upperOuter, landmarks, px, py, false);
+    ctx.strokeStyle = `rgba(60,20,8,${s.mouthRollUpper * 0.45})`;
+    ctx.lineWidth   = scale * 3.5;
+    ctx.stroke();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tongue — shape driven by all 10 ARKit tongue blend shapes
+// ─────────────────────────────────────────────────────────────────────────────
+
+function drawTongue(
+  ctx: CanvasRenderingContext2D,
+  scale: number,
+  s:     AvatarState,
+  openingY: number, midX: number,
+  upperInnerY: number, lowerInnerY: number,
+) {
+  // Direction offsets
+  const offX = (s.tongueLeft - s.tongueRight) * scale * 14;
+
+  // Y position: neutral = lower half of opening; tongueUp = near upper gum
+  const neutralY  = upperInnerY + openingY * 0.62;
+  const uppedY    = upperInnerY + scale * 2.5;
+  const tCy = neutralY + (uppedY - neutralY) * s.tongueUp
+             + (lowerInnerY - neutralY) * s.tongueDown * 0.4
+             - s.tongueOut * openingY * 0.28;
+  const tCx = midX + offX;
+
+  // Size
+  const rawW = Math.min(openingY * 0.68, scale * 32);
+  const tipW = rawW * (
+    s.tongueFlat > 0.4 ? 1.15 :
+    s.tongueRoll > 0.35 ? 0.38 :
+    s.tongueSquish > 0.3 ? 1.05 :
+    0.75
+  );
+  const tipH = Math.min(openingY * 0.52, scale * 26) * (
+    s.tongueFlat > 0.4 ? 0.42 :
+    s.tongueCurlUp > 0.4 ? 0.75 :
+    s.tongueBendDown > 0.4 ? 1.2 :
+    0.85
+  );
+
+  // Clip tongue to mouth inner contour (don't draw outside lips)
+  ctx.save();
+
+  // Gradient: moist pink-red, bright highlight at tip
+  const tg = ctx.createRadialGradient(
+    tCx - tipW * 0.22, tCy - tipH * 0.35, 0,
+    tCx, tCy, Math.max(tipW, tipH),
+  );
+  tg.addColorStop(0,    '#F47882');
+  tg.addColorStop(0.3,  '#E05568');
+  tg.addColorStop(0.65, '#C03855');
+  tg.addColorStop(1,    '#9C2840');
+
+  ctx.beginPath();
+  ctx.ellipse(tCx, tCy, tipW, tipH, 0, 0, Math.PI * 2);
+  ctx.fillStyle = tg;
+  ctx.fill();
+
+  // Median raphe (central groove running front-to-back)
+  ctx.beginPath();
+  ctx.moveTo(tCx, tCy - tipH * 0.95);
+  ctx.bezierCurveTo(
+    tCx, tCy - tipH * 0.4,
+    tCx, tCy + tipH * 0.2,
+    tCx, tCy + tipH * 0.7,
+  );
+  ctx.strokeStyle = 'rgba(130,25,38,0.50)';
+  ctx.lineWidth = scale * 1.4;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Rolled tongue: lateral fold shadows (RR, ER)
+  if (s.tongueRoll > 0.12) {
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.ellipse(tCx + side * tipW * 0.52, tCy, tipW * 0.24, tipH * 0.55, side * -0.38, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(130,25,38,${s.tongueRoll * 0.55})`;
+      ctx.fill();
+    }
+  }
+
+  // Tip highlight
+  const hlG = ctx.createRadialGradient(tCx - tipW * 0.18, tCy - tipH * 0.52, 0, tCx - tipW * 0.18, tCy - tipH * 0.52, tipW * 0.5);
+  hlG.addColorStop(0, 'rgba(255,170,175,0.50)');
+  hlG.addColorStop(1, 'rgba(255,170,175,0)');
+  ctx.beginPath();
+  ctx.ellipse(tCx - tipW * 0.15, tCy - tipH * 0.48, tipW * 0.46, tipH * 0.34, 0, 0, Math.PI * 2);
+  ctx.fillStyle = hlG;
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Teeth — upper or lower row with gum line, individual tooth detail
+// ─────────────────────────────────────────────────────────────────────────────
+
+function drawTeeth(
+  ctx:    CanvasRenderingContext2D,
+  left:   number, top: number,
+  width:  number, height: number,
+  scale:  number, upper: boolean, midX: number,
+) {
+  if (width < 2 || height < 0.5) return;
+
+  const numTeeth = Math.max(4, Math.min(8, Math.round(width / (scale * 5.5))));
+  const toothW   = width / numTeeth;
+
+  // Gum (visible above upper teeth / below lower teeth)
+  ctx.beginPath();
+  if (upper) {
+    ctx.roundRect(left - scale * 0.5, top - scale * 3, width + scale, scale * 3.5, scale * 0.5);
+    ctx.fillStyle = '#C0505E';
+  } else {
+    ctx.roundRect(left - scale * 0.5, top + height - scale * 0.5, width + scale, scale * 3.5, scale * 0.5);
+    ctx.fillStyle = '#B04858';
+  }
+  ctx.fill();
+
+  // Tooth row background (ivory)
+  ctx.beginPath();
+  const radii: [number, number, number, number] = upper
+    ? [scale * 1.5, scale * 1.5, 0, 0]
+    : [0, 0, scale * 1.5, scale * 1.5];
+  ctx.roundRect(left, top, width, height, radii);
+  ctx.fillStyle = '#E6E2D6';
+  ctx.fill();
+
+  // Individual tooth shading + gaps
+  for (let i = 0; i < numTeeth; i++) {
+    const tx = left + i * toothW;
+    const centerDist = Math.abs((tx + toothW * 0.5) - midX) / (width * 0.5);
+    const bevelAlpha = 0.04 + centerDist * 0.07;
+
+    // Left-edge bevel dark
+    const bevelG = ctx.createLinearGradient(tx, 0, tx + toothW, 0);
+    bevelG.addColorStop(0,   `rgba(0,0,0,${bevelAlpha + 0.03})`);
+    bevelG.addColorStop(0.2, 'rgba(0,0,0,0)');
+    bevelG.addColorStop(0.8, 'rgba(0,0,0,0)');
+    bevelG.addColorStop(1,   `rgba(0,0,0,${bevelAlpha})`);
+    ctx.beginPath();
+    ctx.roundRect(tx + scale * 0.3, top, toothW - scale * 0.6, height, 1);
+    ctx.fillStyle = bevelG;
+    ctx.fill();
+
+    // Tooth gap line
+    if (i > 0) {
+      ctx.beginPath();
+      ctx.moveTo(tx, upper ? top + scale * 1.5 : top);
+      ctx.lineTo(tx, upper ? top + height : top + height - scale * 1.5);
+      ctx.strokeStyle = 'rgba(140,120,100,0.30)';
+      ctx.lineWidth = scale * 0.65;
+      ctx.stroke();
+    }
+
+    // Mamelons (tiny ridges on incisor edges — upper teeth front row)
+    if (upper && i >= 1 && i <= numTeeth - 2 && height > scale * 5) {
+      const edgeY = top;
+      for (const rx of [tx + toothW * 0.3, tx + toothW * 0.7]) {
         ctx.beginPath();
-        ctx.moveTo(midX + t * tW/5, midY);
-        ctx.lineTo(midX + t * tW/5, midY + teethH + scale*2);
+        ctx.moveTo(rx, edgeY);
+        ctx.lineTo(rx, edgeY + scale * 2.5);
+        ctx.strokeStyle = 'rgba(170,155,135,0.28)';
+        ctx.lineWidth = scale * 0.9;
         ctx.stroke();
       }
     }
   }
 
-  // Lower lip
-  drawContour(ctx, LIPS_OUTER.slice(LIPS_OUTER.indexOf(291)), landmarks, px, py, false);
-  ctx.strokeStyle = '#7A3820';
-  ctx.lineWidth   = scale * 4.5;
-  ctx.lineCap     = 'round';
-  ctx.lineJoin    = 'round';
-  ctx.stroke();
-
-  // Upper lip (draw twice for fill + stroke)
-  const upperOuter = LIPS_OUTER.slice(0, LIPS_OUTER.indexOf(291) + 1);
-  drawContour(ctx, upperOuter, landmarks, px, py, false);
-  ctx.strokeStyle = '#6A2C16';
-  ctx.lineWidth   = scale * 3.5;
-  ctx.stroke();
-
-  // Fill upper lip area
-  drawContour(ctx, upperOuter, landmarks, px, py, false);
-  const ulCornerL = landmarks[61];
-  const ulCornerR = landmarks[291];
-  if (ulCornerL && ulCornerR) {
-    ctx.lineTo(px(ulCornerR), py(ulCornerR));
-    ctx.lineTo(px(ulCornerL), py(ulCornerL));
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(160,72,48,0.50)';
-    ctx.fill();
+  // Root shadow gradient (teeth recede into gum)
+  const shadowG = ctx.createLinearGradient(0, upper ? top : top + height,
+                                            0, upper ? top + height * 0.55 : top + height * 0.45);
+  if (upper) {
+    shadowG.addColorStop(0, 'rgba(70,35,18,0.32)');
+    shadowG.addColorStop(1, 'rgba(70,35,18,0)');
+  } else {
+    shadowG.addColorStop(0, 'rgba(70,35,18,0)');
+    shadowG.addColorStop(1, 'rgba(70,35,18,0.28)');
   }
-
-  // Mouth corner sheen (dimple dots)
-  for (const ci of [61, 291]) {
-    const cl2 = landmarks[ci];
-    if (!cl2) continue;
-    ctx.beginPath();
-    ctx.arc(px(cl2), py(cl2), scale * 1.8, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(120,50,25,0.60)';
-    ctx.fill();
-  }
+  ctx.beginPath();
+  ctx.roundRect(left, top, width, height, radii);
+  ctx.fillStyle = shadowG;
+  ctx.fill();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
