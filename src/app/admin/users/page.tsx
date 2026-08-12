@@ -353,7 +353,7 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                     <a
-                      href="/admin/users"
+                      href={`/admin/users/${user.id}`}
                       className="shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-mono font-medium border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors"
                     >
                       View profile
