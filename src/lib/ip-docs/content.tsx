@@ -302,7 +302,7 @@ export const CONTENT: Record<string, ReactNode> = {
         <LI>Document the creation date of the codebase using earliest Git commit timestamps</LI>
       </UL>
       <H>Step 2: Create a Copyright Notice</H>
-      <P>Add to all source files: <code className="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">// Copyright © 2024-2026 Flowen Technologies Ltd. All rights reserved.</code></P>
+      <P>Add to all source files: <code className="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">// Copyright © 2026 Flowen Technologies Ltd. All rights reserved.</code></P>
       <H>Step 3: Evidence of Authorship (UK)</H>
       <P>Unlike the US Copyright Office, the UK IPO does not have a software copyright registration system. The recommended approach for evidencing authorship is:</P>
       <UL>
