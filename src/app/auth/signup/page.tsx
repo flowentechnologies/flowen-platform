@@ -3,7 +3,7 @@
 import React, { useState, useTransition, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { FlowenLogo } from '@/components/FlowenLogo';
+import MarketingNavbar from '@/components/MarketingNavbar';
 import { signup } from '../actions';
 
 function SignupForm() {
@@ -118,11 +118,10 @@ function SignupForm() {
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen bg-[#06080F] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#06080F] flex flex-col">
+      <MarketingNavbar />
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
-          <FlowenLogo />
-        </div>
         <Suspense fallback={
           <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-8 shadow-2xl animate-pulse">
             <div className="h-6 bg-slate-800 rounded w-40 mx-auto mb-2" />
@@ -135,6 +134,7 @@ export default function SignupPage() {
         }>
           <SignupForm />
         </Suspense>
+      </div>
       </div>
     </div>
   );

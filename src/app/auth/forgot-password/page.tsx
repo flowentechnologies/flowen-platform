@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FlowenLogo } from '@/components/FlowenLogo';
+import MarketingNavbar from '@/components/MarketingNavbar';
 import { createClient } from '@/lib/supabase/client';
 
 export default function ForgotPasswordPage() {
@@ -29,11 +29,10 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#06080F] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#06080F] flex flex-col">
+      <MarketingNavbar />
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
-          <FlowenLogo />
-        </div>
 
         <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-8 shadow-2xl">
           <h1 className="text-xl font-bold text-white mb-1 text-center">Reset password</h1>
@@ -89,6 +88,7 @@ export default function ForgotPasswordPage() {
             </form>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
