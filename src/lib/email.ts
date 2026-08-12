@@ -1231,6 +1231,88 @@ export async function sendNpsSurvey(opts: {
   });
 }
 
+// ── 28. Affiliate — application received (to applicant) ───────────────────────
+
+export async function sendAffiliateApplicationConfirmation(opts: {
+  email:            string;
+  displayName:      string;
+  tier:             string;
+  commissionPct:    number;
+  recurringMonths:  number;
+}) {
+  await sendEmail({
+    from:    FROM.affiliates,
+    to:      opts.email,
+    subject: 'Flowen Affiliate Programme — application received',
+    replyTo: 'affiliates@flowen.digital',
+    tags:    [{ name: 'type', value: 'affiliate_application_received' }],
+    text:    `Hi ${opts.displayName},\n\nWe've received your Flowen Affiliate Programme application (${opts.tier} tier — ${opts.commissionPct}% for ${opts.recurringMonths} months).\n\nWe review every application personally and will reply within 2 business days.\n\nFlowen Affiliates\naffiliates@flowen.digital`,
+    html: wrap({
+      dept:      'affiliates',
+      category:  'Affiliate Programme',
+      preheader: `Application received. We'll be in touch within 2 business days.`,
+      body: `
+        ${h1(`Application received, ${opts.displayName}.`)}
+        ${p('Thanks for applying to the Flowen Affiliate Programme. We review every application personally and typically respond within 2 business days.')}
+        ${dataTable([
+          ['Tier applied for',  opts.tier],
+          ['Commission rate',   `${opts.commissionPct}%`],
+          ['Recurring window',  `${opts.recurringMonths} months per referral`],
+          ['Payout method',     'Monthly bank transfer'],
+        ])}
+        ${note(`Questions in the meantime? Reply here or write to <a href="mailto:affiliates@flowen.digital" style="color:#f97316;text-decoration:none;">affiliates@flowen.digital</a>.`)}
+      `,
+    }),
+  });
+}
+
+// ── 29. Admin — affiliate application alert ───────────────────────────────────
+
+export async function sendAdminAffiliateApplicationAlert(opts: {
+  name:             string;
+  email:            string;
+  tier:             string;
+  commissionPct:    number;
+  promotionMethod:  string;
+  website:          string | null;
+  affiliateId:      string;
+}) {
+  const preview = opts.promotionMethod.slice(0, 120).replace(/\n/g, ' ');
+  await sendEmail({
+    from:    FROM.alerts,
+    to:      ADMIN_INBOX,
+    subject: `New affiliate application: ${opts.name} (${opts.tier})`,
+    replyTo: opts.email,
+    tags:    [{ name: 'type', value: 'admin_affiliate_application' }],
+    text:    `New affiliate application.\n\nName: ${opts.name}\nEmail: ${opts.email}\nTier: ${opts.tier}\nCommission: ${opts.commissionPct}%\nPromotion: ${opts.promotionMethod}\nWebsite: ${opts.website ?? 'N/A'}\nTime: ${gbpTime()}`,
+    html: wrap({
+      dept:      'internal',
+      category:  'Affiliates',
+      preheader: `${opts.name} · ${opts.tier} · ${preview}`,
+      body: `
+        ${h1('New affiliate application')}
+        ${dataTable([
+          ['Name',      opts.name],
+          ['Email',     opts.email],
+          ['Tier',      opts.tier],
+          ['Rate',      `${opts.commissionPct}%`],
+          ['Website',   opts.website ?? '—'],
+          ['Time',      gbpTime()],
+        ])}
+        ${h2('Promotion method')}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;">
+          <tr>
+            <td bgcolor="#070a0f" style="background:#070a0f;border-radius:6px;border:1px solid #141c28;padding:16px 20px;">
+              <p style="margin:0;font-size:14px;color:#94a3b5;line-height:1.7;font-family:${FONT};">${opts.promotionMethod}</p>
+            </td>
+          </tr>
+        </table>
+        ${btn('Review in admin', `${SITE}/admin/affiliate`, '#f97316')}
+      `,
+    }),
+  });
+}
+
 // ── Deprecated alias ──────────────────────────────────────────────────────────
 
 /** @deprecated use sendAdminWaitlistAlert */
