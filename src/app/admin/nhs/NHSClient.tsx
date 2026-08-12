@@ -76,7 +76,7 @@ function Input({ value, onChange, placeholder, type = 'text', disabled }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
-      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 disabled:opacity-50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 disabled:opacity-50"
     />
   );
 }
@@ -93,7 +93,7 @@ function Textarea({ value, onChange, placeholder, rows = 2 }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 resize-none"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 resize-none"
     />
   );
 }
@@ -107,7 +107,7 @@ function Select({ value, onChange, options }: {
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500/50"
     >
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
@@ -125,7 +125,7 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
     { id: 'pledges', label: 'Block Pledges' },
   ];
   return (
-    <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 w-fit">
+    <div className="flex gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 w-fit">
       {tabs.map(t => (
         <button
           key={t.id}
@@ -133,8 +133,8 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
           onClick={() => onChange(t.id)}
           className={`px-4 py-1.5 text-sm font-mono rounded-lg transition-colors ${
             active === t.id
-              ? 'bg-slate-700 text-white font-bold'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-slate-700 text-slate-900 dark:text-white font-bold'
+              : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           {t.label}
@@ -161,7 +161,7 @@ function PageHeader({
   const pledgedPence = signedLivePledges.reduce((s, p) => s + (p.contract_value_pence ?? 0), 0);
 
   return (
-    <div className="bg-slate-900 border border-blue-600/20 rounded-2xl p-5">
+    <div className="bg-white dark:bg-slate-900 border border-blue-600/20 rounded-2xl p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         {/* Milestone countdown */}
         <div className="flex items-center gap-3">
@@ -178,15 +178,15 @@ function PageHeader({
         {/* Quick stats */}
         <div className="flex flex-wrap gap-4 text-right">
           <div>
-            <p className="text-2xl font-black text-white">{icbContacts.length}</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">{icbContacts.length}</p>
             <p className="text-[10px] font-mono text-slate-500">ICBs tracked</p>
           </div>
-          <div className="w-px bg-slate-800 self-stretch" />
+          <div className="w-px bg-slate-100 dark:bg-slate-800 self-stretch" />
           <div>
-            <p className="text-2xl font-black text-white">{slpSignups.length}</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">{slpSignups.length}</p>
             <p className="text-[10px] font-mono text-slate-500">SLPs registered</p>
           </div>
-          <div className="w-px bg-slate-800 self-stretch" />
+          <div className="w-px bg-slate-100 dark:bg-slate-800 self-stretch" />
           <div>
             <p className="text-2xl font-black text-blue-400">{pence(pledgedPence, '£0')}</p>
             <p className="text-[10px] font-mono text-slate-500">pledged (signed+live)</p>
@@ -206,7 +206,7 @@ type ICBStage = 'prospecting' | 'engaged' | 'proposal' | 'pilot' | 'contract' | 
 const ICB_STAGES: ICBStage[] = ['prospecting', 'engaged', 'proposal', 'pilot', 'contract', 'declined'];
 
 const ICB_STAGE_CONFIG: Record<ICBStage, { label: string; badge: string; funnel: string }> = {
-  prospecting: { label: 'Prospecting', badge: 'bg-slate-700 text-slate-300',                                             funnel: 'bg-slate-600' },
+  prospecting: { label: 'Prospecting', badge: 'bg-slate-700 text-slate-600 dark:text-slate-300',                                             funnel: 'bg-slate-600' },
   engaged:     { label: 'Engaged',     badge: 'bg-sky-500/15 text-sky-400 border border-sky-500/30',                     funnel: 'bg-sky-500' },
   proposal:    { label: 'Proposal',    badge: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',               funnel: 'bg-amber-500' },
   pilot:       { label: 'Pilot',       badge: 'bg-purple-500/15 text-purple-400 border border-purple-500/30',            funnel: 'bg-purple-500' },
@@ -215,7 +215,7 @@ const ICB_STAGE_CONFIG: Record<ICBStage, { label: string; badge: string; funnel:
 };
 
 function ICBStageBadge({ stage }: { stage: string }) {
-  const cfg = ICB_STAGE_CONFIG[stage as ICBStage] ?? { label: stage, badge: 'bg-slate-700 text-slate-300' };
+  const cfg = ICB_STAGE_CONFIG[stage as ICBStage] ?? { label: stage, badge: 'bg-slate-700 text-slate-600 dark:text-slate-300' };
   return (
     <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${cfg.badge}`}>
       {cfg.label}
@@ -291,7 +291,7 @@ function ICBFormPanel({
   }
 
   return (
-    <div className="bg-slate-900 border border-blue-500/20 rounded-2xl p-5 mb-4">
+    <div className="bg-white dark:bg-slate-900 border border-blue-500/20 rounded-2xl p-5 mb-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div>
           <Label>ICB Name *</Label>
@@ -343,14 +343,14 @@ function ICBFormPanel({
           type="button"
           onClick={() => onSave(form)}
           disabled={isPending || !form.icb_name}
-          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-40"
+          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
         >
           {isPending ? 'Saving…' : 'Save ICB'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -371,7 +371,7 @@ function ICBFunnel({ contacts }: { contacts: ICBContact[] }) {
   });
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
       <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-4">Pipeline Funnel</p>
       <div className="space-y-2">
         {activeFunnel.map(stage => {
@@ -381,13 +381,13 @@ function ICBFunnel({ contacts }: { contacts: ICBContact[] }) {
           return (
             <div key={stage} className="flex items-center gap-3">
               <span className="text-[10px] font-mono text-slate-500 w-24 shrink-0">{cfg.label}</span>
-              <div className="flex-1 h-5 bg-slate-800 rounded-md overflow-hidden">
+              <div className="flex-1 h-5 bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden">
                 <div
                   className={`h-full ${cfg.funnel} rounded-md transition-all duration-500 flex items-center px-2`}
                   style={{ width: count === 0 ? '2px' : `${Math.max(4, pct)}%` }}
                 />
               </div>
-              <span className="text-xs font-mono font-bold text-white w-6 text-right shrink-0">{count}</span>
+              <span className="text-xs font-mono font-bold text-slate-900 dark:text-white w-6 text-right shrink-0">{count}</span>
             </div>
           );
         })}
@@ -455,12 +455,12 @@ function ICBTab({
       {/* Stats strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'ICBs Tracked',   value: contacts.length,  accent: 'text-white' },
+          { label: 'ICBs Tracked',   value: contacts.length,  accent: 'text-slate-900 dark:text-white' },
           { label: 'Engaged+',       value: engagedCount,     accent: 'text-sky-400' },
           { label: 'In Pilot',       value: pilotCount,       accent: 'text-purple-400' },
           { label: 'Contracted',     value: contractCount,    accent: 'text-emerald-400' },
         ].map(s => (
-          <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
             <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">{s.label}</p>
             <p className={`text-3xl font-black ${s.accent}`}>{s.value}</p>
           </div>
@@ -476,7 +476,7 @@ function ICBTab({
         <button
           type="button"
           onClick={() => { setShowAddForm(v => !v); setEditingId(null); }}
-          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white transition-colors"
         >
           {showAddForm ? 'Cancel' : '+ Add ICB'}
         </button>
@@ -494,15 +494,15 @@ function ICBTab({
 
       {/* Table */}
       {contacts.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl py-16 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-16 text-center">
           <p className="text-slate-600 font-mono text-sm">Add your first ICB contact to track the NHS pipeline</p>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="text-left px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">ICB</th>
                   <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500 hidden md:table-cell">Region</th>
                   <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Stage</th>
@@ -513,12 +513,12 @@ function ICBTab({
                   <th className="text-right px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {contacts.map(c => (
                   <React.Fragment key={c.id}>
                     <tr className="hover:bg-slate-800/40 transition-colors group">
                       <td className="px-5 py-3.5">
-                        <p className="text-sm font-semibold text-white leading-tight">{c.icb_name}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">{c.icb_name}</p>
                       </td>
                       <td className="px-4 py-3.5 hidden md:table-cell">
                         <p className="text-[11px] font-mono text-slate-400">{c.region ?? '—'}</p>
@@ -529,7 +529,7 @@ function ICBTab({
                       <td className="px-4 py-3.5 hidden lg:table-cell">
                         {c.contact_name ? (
                           <div>
-                            <p className="text-[11px] text-slate-300">{c.contact_name}</p>
+                            <p className="text-[11px] text-slate-600 dark:text-slate-300">{c.contact_name}</p>
                             {c.contact_role && <p className="text-[10px] font-mono text-slate-600">{c.contact_role}</p>}
                           </div>
                         ) : (
@@ -554,7 +554,7 @@ function ICBTab({
                           <button
                             type="button"
                             onClick={() => setEditingId(id => id === c.id ? null : c.id)}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                           >
                             Edit
                           </button>
@@ -562,7 +562,7 @@ function ICBTab({
                             type="button"
                             onClick={() => handleDelete(c.id)}
                             disabled={isPending}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
                           >
                             Delete
                           </button>
@@ -571,7 +571,7 @@ function ICBTab({
                     </tr>
                     {editingId === c.id && (
                       <tr>
-                        <td colSpan={8} className="px-5 py-4 bg-slate-900/80 border-b border-slate-800">
+                        <td colSpan={8} className="px-5 py-4 bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
                           <ICBFormPanel
                             initial={icbToForm(c)}
                             onSave={form => handleUpdate(c.id, form)}
@@ -668,7 +668,7 @@ function SLPFormPanel({
   }
 
   return (
-    <div className="bg-slate-900 border border-blue-500/20 rounded-2xl p-5 mb-4">
+    <div className="bg-white dark:bg-slate-900 border border-blue-500/20 rounded-2xl p-5 mb-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div>
           <Label>Full Name *</Label>
@@ -705,9 +705,9 @@ function SLPFormPanel({
             type="checkbox"
             checked={form.activated}
             onChange={e => field('activated', e.target.checked)}
-            className="w-4 h-4 rounded border border-slate-600 bg-slate-800 accent-emerald-500"
+            className="w-4 h-4 rounded border border-slate-600 bg-slate-100 dark:bg-slate-800 accent-emerald-500"
           />
-          <span className="text-sm text-slate-300 font-mono">Activated</span>
+          <span className="text-sm text-slate-600 dark:text-slate-300 font-mono">Activated</span>
         </label>
       </div>
       <div className="mb-4">
@@ -719,14 +719,14 @@ function SLPFormPanel({
           type="button"
           onClick={() => onSave(form)}
           disabled={isPending || !form.name || !form.email}
-          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-40"
+          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
         >
           {isPending ? 'Saving…' : 'Save SLP'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -790,16 +790,16 @@ function SLPTab({
     <div className="space-y-5">
       {/* Stats strip */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">SLPs Registered</p>
-          <p className="text-3xl font-black text-white">{signups.length}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{signups.length}</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Activated</p>
           <p className="text-3xl font-black text-emerald-400">{activatedPct}%</p>
           <p className="text-[10px] font-mono text-slate-600 mt-1">{activatedCount} of {signups.length}</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Patient Referrals</p>
           <p className="text-3xl font-black text-blue-400">{totalReferrals.toLocaleString()}</p>
         </div>
@@ -814,7 +814,7 @@ function SLPTab({
           Free SLP access drives the D2C referral flywheel — each clinician reaches approximately{' '}
           <span className="text-blue-400 font-bold">40 patients</span>.
           {signups.length > 0 && (
-            <> Estimated reach: <span className="text-white font-bold">{(signups.length * 40).toLocaleString()} patients</span>.</>
+            <> Estimated reach: <span className="text-slate-900 dark:text-white font-bold">{(signups.length * 40).toLocaleString()} patients</span>.</>
           )}
         </p>
       </div>
@@ -825,7 +825,7 @@ function SLPTab({
         <button
           type="button"
           onClick={() => { setShowAddForm(v => !v); setEditingId(null); }}
-          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white transition-colors"
         >
           {showAddForm ? 'Cancel' : '+ Add SLP'}
         </button>
@@ -843,15 +843,15 @@ function SLPTab({
 
       {/* Table */}
       {signups.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl py-16 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-16 text-center">
           <p className="text-slate-600 font-mono text-sm">No SLPs registered yet — add the first to start tracking the referral flywheel</p>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="text-left px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Name</th>
                   <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500 hidden md:table-cell">Organisation</th>
                   <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500 hidden lg:table-cell">Region</th>
@@ -862,12 +862,12 @@ function SLPTab({
                   <th className="text-right px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {signups.map(s => (
                   <React.Fragment key={s.id}>
                     <tr className="hover:bg-slate-800/40 transition-colors group">
                       <td className="px-5 py-3.5">
-                        <p className="text-sm font-semibold text-white leading-tight">{s.name}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">{s.name}</p>
                         <p className="text-[10px] text-slate-600">{s.email}</p>
                       </td>
                       <td className="px-4 py-3.5 hidden md:table-cell">
@@ -886,7 +886,7 @@ function SLPTab({
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${
                           s.activated
                             ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-slate-800 text-slate-500'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
                         }`}>
                           {s.activated ? 'Active' : 'Pending'}
                         </span>
@@ -903,7 +903,7 @@ function SLPTab({
                           <button
                             type="button"
                             onClick={() => setEditingId(id => id === s.id ? null : s.id)}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                           >
                             Edit
                           </button>
@@ -911,7 +911,7 @@ function SLPTab({
                             type="button"
                             onClick={() => handleDelete(s.id)}
                             disabled={isPending}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
                           >
                             Delete
                           </button>
@@ -920,7 +920,7 @@ function SLPTab({
                     </tr>
                     {editingId === s.id && (
                       <tr>
-                        <td colSpan={8} className="px-5 py-4 bg-slate-900/80 border-b border-slate-800">
+                        <td colSpan={8} className="px-5 py-4 bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
                           <SLPFormPanel
                             initial={slpToForm(s)}
                             onSave={form => handleUpdate(s.id, form)}
@@ -957,14 +957,14 @@ type PledgeStatus = 'verbal' | 'written' | 'signed' | 'live';
 const PLEDGE_STATUSES: PledgeStatus[] = ['verbal', 'written', 'signed', 'live'];
 
 const PLEDGE_STATUS_CONFIG: Record<PledgeStatus, { label: string; badge: string }> = {
-  verbal:  { label: 'Verbal',  badge: 'bg-slate-700 text-slate-300' },
+  verbal:  { label: 'Verbal',  badge: 'bg-slate-700 text-slate-600 dark:text-slate-300' },
   written: { label: 'Written', badge: 'bg-amber-500/15 text-amber-400 border border-amber-500/30' },
   signed:  { label: 'Signed',  badge: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' },
   live:    { label: 'Live',    badge: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 animate-pulse' },
 };
 
 function PledgeStatusBadge({ status }: { status: string }) {
-  const cfg = PLEDGE_STATUS_CONFIG[status as PledgeStatus] ?? { label: status, badge: 'bg-slate-700 text-slate-300' };
+  const cfg = PLEDGE_STATUS_CONFIG[status as PledgeStatus] ?? { label: status, badge: 'bg-slate-700 text-slate-600 dark:text-slate-300' };
   return (
     <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${cfg.badge}`}>
       {cfg.label}
@@ -1034,7 +1034,7 @@ function PledgeFormPanel({
   }
 
   return (
-    <div className="bg-slate-900 border border-blue-500/20 rounded-2xl p-5 mb-4">
+    <div className="bg-white dark:bg-slate-900 border border-blue-500/20 rounded-2xl p-5 mb-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div>
           <Label>ICB Name *</Label>
@@ -1078,14 +1078,14 @@ function PledgeFormPanel({
           type="button"
           onClick={() => onSave(form)}
           disabled={isPending || !form.icb_name}
-          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-40"
+          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
         >
           {isPending ? 'Saving…' : 'Save Pledge'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -1151,30 +1151,30 @@ function PledgesTab({
     <div className="space-y-5">
       {/* Hero metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Signed + Live Value</p>
           <p className="text-3xl font-black text-emerald-400">{pence(signedLivePence, '£0')}</p>
           <p className="text-[10px] font-mono text-slate-600 mt-1">of £500k target</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Total Pipeline Value</p>
           <p className="text-3xl font-black text-blue-400">{pence(totalPledgedPence, '£0')}</p>
           <p className="text-[10px] font-mono text-slate-600 mt-1">all statuses</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 col-span-2 sm:col-span-1">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 col-span-2 sm:col-span-1">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Patients Covered</p>
-          <p className="text-3xl font-black text-white">{totalPatients.toLocaleString()}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{totalPatients.toLocaleString()}</p>
           <p className="text-[10px] font-mono text-slate-600 mt-1">across all pledges</p>
         </div>
       </div>
 
       {/* Progress bar toward £500k target */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
         <div className="flex justify-between items-center mb-3">
           <p className="text-xs font-mono text-slate-400 font-bold uppercase tracking-wider">Progress to £500k Target</p>
           <p className="text-sm font-mono font-black text-emerald-400">{progressPct}%</p>
         </div>
-        <div className="h-3 bg-slate-800 rounded-full overflow-hidden mb-2">
+        <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-2">
           <div
             className="h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full transition-all duration-700"
             style={{ width: `${Math.max(progressPct, 0)}%` }}
@@ -1192,7 +1192,7 @@ function PledgesTab({
         <button
           type="button"
           onClick={() => { setShowAddForm(v => !v); setEditingId(null); }}
-          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white transition-colors"
         >
           {showAddForm ? 'Cancel' : '+ Add Pledge'}
         </button>
@@ -1210,15 +1210,15 @@ function PledgesTab({
 
       {/* Table */}
       {pledges.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl py-16 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-16 text-center">
           <p className="text-slate-600 font-mono text-sm">No block pledges yet — add the first verbal commitment to start the pipeline</p>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="text-left px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">ICB</th>
                   <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500 hidden md:table-cell">Contact</th>
                   <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500 hidden lg:table-cell">Patients</th>
@@ -1228,12 +1228,12 @@ function PledgesTab({
                   <th className="text-right px-5 py-3 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {pledges.map(p => (
                   <React.Fragment key={p.id}>
                     <tr className="hover:bg-slate-800/40 transition-colors group">
                       <td className="px-5 py-3.5">
-                        <p className="text-sm font-semibold text-white leading-tight">{p.icb_name}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">{p.icb_name}</p>
                       </td>
                       <td className="px-4 py-3.5 hidden md:table-cell">
                         <p className="text-[11px] text-slate-400">{p.contact_name ?? '—'}</p>
@@ -1261,7 +1261,7 @@ function PledgesTab({
                           <button
                             type="button"
                             onClick={() => setEditingId(id => id === p.id ? null : p.id)}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                           >
                             Edit
                           </button>
@@ -1269,7 +1269,7 @@ function PledgesTab({
                             type="button"
                             onClick={() => handleDelete(p.id)}
                             disabled={isPending}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
                           >
                             Delete
                           </button>
@@ -1278,7 +1278,7 @@ function PledgesTab({
                     </tr>
                     {editingId === p.id && (
                       <tr>
-                        <td colSpan={7} className="px-5 py-4 bg-slate-900/80 border-b border-slate-800">
+                        <td colSpan={7} className="px-5 py-4 bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
                           <PledgeFormPanel
                             initial={pledgeToForm(p)}
                             onSave={form => handleUpdate(p.id, form)}

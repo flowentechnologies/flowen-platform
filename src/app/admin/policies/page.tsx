@@ -1385,7 +1385,7 @@ export default async function PoliciesPage() {
   const TAG_COLORS: Record<string, string> = {
     'DATA PROTECTION': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
     'GOVERNANCE':      'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    'OPERATIONS':      'bg-slate-700/60 text-slate-300 border-slate-600/30',
+    'OPERATIONS':      'bg-slate-700/60 text-slate-600 dark:text-slate-300 border-slate-600/30',
     'INVESTOR':        'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     'CLINICAL SAFETY': 'bg-rose-500/10 text-rose-400 border-rose-500/20',
   };
@@ -1393,9 +1393,9 @@ export default async function PoliciesPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Internal Policies</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Internal Policies</h1>
           <p className="text-slate-400 text-sm mt-1">
             Operational policies, governance documents, and investor materials — {EFFECTIVE}
           </p>
@@ -1416,15 +1416,15 @@ export default async function PoliciesPage() {
           <a
             key={doc.id}
             href={`#${doc.id}`}
-            className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all group"
+            className="bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-4 hover:border-slate-700 transition-all group"
           >
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] font-mono font-bold text-slate-500">{doc.id}</span>
-              <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${TAG_COLORS[doc.tag] ?? 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+              <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${TAG_COLORS[doc.tag] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-700'}`}>
                 {doc.tag}
               </span>
             </div>
-            <p className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors leading-snug">
+            <p className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-emerald-400 transition-colors leading-snug">
               {doc.title}
             </p>
             <p className="text-[11px] text-slate-500 mt-1">{doc.version}</p>
@@ -1435,17 +1435,17 @@ export default async function PoliciesPage() {
       {/* Documents */}
       <div className="space-y-4">
         {POLICIES.map(doc => (
-          <details key={doc.id} id={doc.id} className="group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+          <details key={doc.id} id={doc.id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
             <summary className="flex items-start gap-4 p-5 cursor-pointer list-none hover:bg-slate-800/40 transition-colors">
               <div className="flex-shrink-0 mt-0.5">
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-700">
                   {doc.id}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <h2 className="text-sm font-bold text-white">{doc.title}</h2>
-                  <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${TAG_COLORS[doc.tag] ?? 'bg-slate-800 text-slate-400 border-slate-700'}`}>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">{doc.title}</h2>
+                  <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${TAG_COLORS[doc.tag] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-700'}`}>
                     {doc.tag}
                   </span>
                   <span className="text-[10px] font-mono text-slate-600 flex-shrink-0">{doc.version}</span>
@@ -1456,11 +1456,11 @@ export default async function PoliciesPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
               </svg>
             </summary>
-            <div className="px-5 pb-5 border-t border-slate-800">
+            <div className="px-5 pb-5 border-t border-slate-200 dark:border-slate-800">
               <pre className="mt-4 text-xs text-slate-400 leading-relaxed whitespace-pre-wrap font-sans">
                 {doc.content}
               </pre>
-              <div className="mt-4 pt-4 border-t border-slate-800 flex items-center gap-3">
+              <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center gap-3">
                 <span className="text-[10px] font-mono text-slate-600">
                   {doc.id} · {doc.version} · Effective {EFFECTIVE}
                 </span>
@@ -1473,15 +1473,15 @@ export default async function PoliciesPage() {
       </div>
 
       {/* Footer note */}
-      <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 text-xs text-slate-500 space-y-1">
+      <div className="bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-xs text-slate-500 space-y-1">
         <p>
-          <strong className="text-slate-300">Review schedule:</strong> All policies reviewed annually (next review: 1 August 2027) or upon material change to business operations, data processing activities, or applicable legislation.
+          <strong className="text-slate-600 dark:text-slate-300">Review schedule:</strong> All policies reviewed annually (next review: 1 August 2027) or upon material change to business operations, data processing activities, or applicable legislation.
         </p>
         <p>
-          <strong className="text-slate-300">Policy owner:</strong> {EMAIL} — questions or amendments should be directed to the Data Protection contact.
+          <strong className="text-slate-600 dark:text-slate-300">Policy owner:</strong> {EMAIL} — questions or amendments should be directed to the Data Protection contact.
         </p>
         <p>
-          <strong className="text-slate-300">Version control:</strong> All versions archived. Current version is authoritative.
+          <strong className="text-slate-600 dark:text-slate-300">Version control:</strong> All versions archived. Current version is authoritative.
         </p>
       </div>
     </div>

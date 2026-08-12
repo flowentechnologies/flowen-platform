@@ -96,7 +96,7 @@ export default function NpsClient({ initialResponses, initialStats }: Props) {
           { label: 'Promoters',   value: String(stats.promoters),  sub: 'Score 9–10' },
           { label: 'Detractors',  value: String(stats.detractors), sub: 'Score 0–6' },
         ].map(s => (
-          <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
             <p className="text-xs text-slate-500 mb-1">{s.label}</p>
             <p className="text-2xl font-bold text-slate-100">{s.value}</p>
             <p className="text-xs text-slate-600 mt-0.5">{s.sub}</p>
@@ -105,7 +105,7 @@ export default function NpsClient({ initialResponses, initialStats }: Props) {
       </div>
 
       {/* ── Score distribution ── */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
         <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Score distribution</p>
         <div className="flex items-end gap-1.5 h-20">
           {stats.dist.map(d => {
@@ -126,7 +126,7 @@ export default function NpsClient({ initialResponses, initialStats }: Props) {
       </div>
 
       {/* ── Send survey ── */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
         <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Send NPS survey</p>
         <form onSubmit={handleSend} className="flex flex-wrap gap-3">
           <input
@@ -135,7 +135,7 @@ export default function NpsClient({ initialResponses, initialStats }: Props) {
             placeholder="Email address"
             value={sendEmail}
             onChange={e => setSendEmail(e.target.value)}
-            className="flex-1 min-w-48 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="flex-1 min-w-48 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
           />
           <input
             type="text"
@@ -143,7 +143,7 @@ export default function NpsClient({ initialResponses, initialStats }: Props) {
             placeholder="Display name"
             value={sendName}
             onChange={e => setSendName(e.target.value)}
-            className="flex-1 min-w-40 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="flex-1 min-w-40 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
           />
           <button
             type="submit"
@@ -158,8 +158,8 @@ export default function NpsClient({ initialResponses, initialStats }: Props) {
       </div>
 
       {/* ── Responses list ── */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-800">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
           <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
             Responses ({responses.filter(r => r.score !== null).length})
           </p>
@@ -167,7 +167,7 @@ export default function NpsClient({ initialResponses, initialStats }: Props) {
         {responses.length === 0 ? (
           <p className="px-5 py-8 text-sm text-slate-600 text-center">No surveys sent yet.</p>
         ) : (
-          <div className="divide-y divide-slate-800">
+          <div className="divide-y divide-slate-200 dark:divide-slate-800">
             {responses.map(r => (
               <div key={r.id} className="px-5 py-4 flex items-start gap-4">
                 {/* Score badge */}
@@ -185,12 +185,12 @@ export default function NpsClient({ initialResponses, initialStats }: Props) {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-slate-300 truncate">{r.email}</span>
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300 truncate">{r.email}</span>
                     {r.score !== null && (
                       <span className="text-xs text-slate-600">{scoreLabel(r.score)}</span>
                     )}
                     {r.score === null && (
-                      <span className="text-xs text-slate-600 bg-slate-800 rounded px-1.5 py-0.5">Pending</span>
+                      <span className="text-xs text-slate-600 bg-slate-100 dark:bg-slate-800 rounded px-1.5 py-0.5">Pending</span>
                     )}
                   </div>
                   {r.comment && (

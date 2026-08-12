@@ -45,7 +45,7 @@ const CATEGORIES: { id: Category; label: string; color: string }[] = [
   { id: 'legal',      label: 'Legal',      color: 'bg-blue-500/10 text-blue-400' },
   { id: 'clinical',   label: 'Clinical',   color: 'bg-purple-500/10 text-purple-400' },
   { id: 'technical',  label: 'Technical',  color: 'bg-orange-500/10 text-orange-400' },
-  { id: 'corporate',  label: 'Corporate',  color: 'bg-slate-600/40 text-slate-300' },
+  { id: 'corporate',  label: 'Corporate',  color: 'bg-slate-600/40 text-slate-600 dark:text-slate-300' },
   { id: 'regulatory', label: 'Regulatory', color: 'bg-amber-500/10 text-amber-400' },
 ];
 
@@ -145,17 +145,17 @@ function UploadModal({ onUploaded }: { onUploaded: (doc: Document) => void }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors"
       >
         + Upload Document
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">Upload Document</h3>
-              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="text-slate-500 hover:text-white text-lg">×</button>
+          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Upload Document</h3>
+              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
             </div>
 
             <div className="px-6 py-5 space-y-4">
@@ -168,7 +168,7 @@ function UploadModal({ onUploaded }: { onUploaded: (doc: Document) => void }) {
                   accept=".pdf,.xlsx,.xls,.docx,.doc,.png,.jpg,.jpeg,.csv,.txt" />
                 {file ? (
                   <div>
-                    <p className="text-sm font-medium text-white">{file.name}</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">{file.name}</p>
                     <p className="text-xs text-slate-500 mt-1">{fmtBytes(file.size)}</p>
                   </div>
                 ) : (
@@ -181,40 +181,40 @@ function UploadModal({ onUploaded }: { onUploaded: (doc: Document) => void }) {
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Title *</label>
-                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Document title" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Document title" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Category *</label>
-                  <select value={form.category} onChange={e => field('category', e.target.value as Category)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                  <select value={form.category} onChange={e => field('category', e.target.value as Category)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                     {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Version</label>
-                  <input value={form.version} onChange={e => field('version', e.target.value)} placeholder="v1" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input value={form.version} onChange={e => field('version', e.target.value)} placeholder="v1" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Description</label>
-                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={2} placeholder="Brief description for the index…" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={2} placeholder="Brief description for the index…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
 
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-800 flex gap-3">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
               <button
                 type="button"
                 onClick={upload}
                 disabled={progress !== 'idle' || !file}
-                className={`px-5 py-2 text-sm font-mono font-bold rounded-xl transition-colors disabled:opacity-40 ${progress === 'done' ? 'bg-emerald-600 text-white' : 'bg-indigo-600 hover:bg-indigo-500 text-white'}`}
+                className={`px-5 py-2 text-sm font-mono font-bold rounded-xl transition-colors disabled:opacity-40 ${progress === 'done' ? 'bg-emerald-600 text-slate-900 dark:text-white' : 'bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white'}`}
               >
                 {progress === 'uploading' ? 'Uploading…' : progress === 'done' ? 'Done ✓' : 'Upload'}
               </button>
-              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -251,28 +251,28 @@ function CreateInviteModal({ onCreated, siteUrl }: { onCreated: (inv: Invite) =>
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors">
+      <button type="button" onClick={() => setOpen(true)} className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors">
         + Create Invite
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">{created ? 'Invite Created' : 'Create Investor Invite'}</h3>
-              <button type="button" onClick={close} className="text-slate-500 hover:text-white text-lg">×</button>
+          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">{created ? 'Invite Created' : 'Create Investor Invite'}</h3>
+              <button type="button" onClick={close} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
             </div>
 
             {created ? (
               <div className="px-6 py-5 space-y-4">
-                <p className="text-sm text-emerald-400 font-mono">Invite generated for <strong className="text-white">{created.investor_name}</strong></p>
-                <div className="bg-slate-950 rounded-xl p-4 space-y-2">
+                <p className="text-sm text-emerald-400 font-mono">Invite generated for <strong className="text-slate-900 dark:text-white">{created.investor_name}</strong></p>
+                <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 space-y-2">
                   <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Access Link</p>
-                  <p className="text-xs font-mono text-white break-all">{siteUrl}/data-room/{created.token}</p>
+                  <p className="text-xs font-mono text-slate-900 dark:text-white break-all">{siteUrl}/data-room/{created.token}</p>
                   <button
                     type="button"
                     onClick={() => navigator.clipboard.writeText(`${siteUrl}/data-room/${created.token}`)}
-                    className="mt-2 px-3 py-1.5 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors"
+                    className="mt-2 px-3 py-1.5 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     Copy link
                   </button>
@@ -283,23 +283,23 @@ function CreateInviteModal({ onCreated, siteUrl }: { onCreated: (inv: Invite) =>
               <div className="px-6 py-5 space-y-4">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Investor Name *</label>
-                  <input value={form.investor_name} onChange={e => field('investor_name', e.target.value)} placeholder="Full name or firm" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input value={form.investor_name} onChange={e => field('investor_name', e.target.value)} placeholder="Full name or firm" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Email *</label>
-                  <input type="email" value={form.investor_email} onChange={e => field('investor_email', e.target.value)} placeholder="investor@fund.com" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input type="email" value={form.investor_email} onChange={e => field('investor_email', e.target.value)} placeholder="investor@fund.com" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Access Level</label>
-                    <select value={form.access_level} onChange={e => field('access_level', e.target.value as 'standard' | 'full')} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                    <select value={form.access_level} onChange={e => field('access_level', e.target.value as 'standard' | 'full')} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                       <option value="standard">Standard</option>
                       <option value="full">Full</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Expires</label>
-                    <input type="date" value={form.expires_at} onChange={e => field('expires_at', e.target.value)} defaultValue={defaultExpiry} min={new Date().toISOString().slice(0, 10)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60" />
+                    <input type="date" value={form.expires_at} onChange={e => field('expires_at', e.target.value)} defaultValue={defaultExpiry} min={new Date().toISOString().slice(0, 10)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60" />
                   </div>
                 </div>
                 <p className="text-[11px] text-slate-600 font-mono">Defaults to 30-day expiry if not set.</p>
@@ -307,15 +307,15 @@ function CreateInviteModal({ onCreated, siteUrl }: { onCreated: (inv: Invite) =>
               </div>
             )}
 
-            <div className="px-6 py-4 border-t border-slate-800 flex gap-3">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
               {created ? (
-                <button type="button" onClick={close} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-slate-700 hover:bg-slate-600 text-white transition-colors">Done</button>
+                <button type="button" onClick={close} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white transition-colors">Done</button>
               ) : (
                 <>
-                  <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40">
+                  <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                     {isPending ? 'Creating…' : 'Create Invite'}
                   </button>
-                  <button type="button" onClick={close} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">Cancel</button>
+                  <button type="button" onClick={close} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
                 </>
               )}
             </div>
@@ -366,7 +366,7 @@ function DocumentsTab({ docs: initial }: { docs: Document[] }) {
           <button
             type="button"
             onClick={() => setCatFilter('all')}
-            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${catFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${catFilter === 'all' ? 'bg-indigo-600 text-slate-900 dark:text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
           >
             All ({docs.length})
           </button>
@@ -375,7 +375,7 @@ function DocumentsTab({ docs: initial }: { docs: Document[] }) {
               key={c.id}
               type="button"
               onClick={() => setCatFilter(c.id)}
-              className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${catFilter === c.id ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+              className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${catFilter === c.id ? 'bg-indigo-600 text-slate-900 dark:text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
             >
               {c.label} ({catCounts[c.id]})
             </button>
@@ -395,14 +395,14 @@ function DocumentsTab({ docs: initial }: { docs: Document[] }) {
           {filtered.map(doc => {
             const catCfg = CATEGORY_MAP[doc.category];
             return (
-              <div key={doc.id} className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl px-4 py-3.5 flex items-center gap-4 group transition-colors">
-                <div className="shrink-0 w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center">
+              <div key={doc.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-700 rounded-xl px-4 py-3.5 flex items-center gap-4 group transition-colors">
+                <div className="shrink-0 w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                   <FileIcon mime={doc.mime_type} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-semibold text-white truncate">{doc.title}</p>
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 ${catCfg?.color ?? 'bg-slate-800 text-slate-400'}`}>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{doc.title}</p>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 ${catCfg?.color ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                       {catCfg?.label ?? doc.category}
                     </span>
                     <span className="text-[10px] font-mono text-slate-600 shrink-0">{doc.version}</span>
@@ -415,7 +415,7 @@ function DocumentsTab({ docs: initial }: { docs: Document[] }) {
                     type="button"
                     onClick={() => download(doc)}
                     disabled={downloading === doc.id}
-                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
+                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
                   >
                     {downloading === doc.id ? '…' : '↓ Download'}
                   </button>
@@ -423,7 +423,7 @@ function DocumentsTab({ docs: initial }: { docs: Document[] }) {
                     type="button"
                     onClick={() => handleDelete(doc.id)}
                     disabled={deleting === doc.id || isPending}
-                    className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
+                    className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
                   >
                     ×
                   </button>
@@ -474,7 +474,7 @@ function InvitesTab({ invites: initial, siteUrl }: { invites: Invite[]; siteUrl:
       <div className="flex items-center justify-between">
         <div className="flex gap-4 text-xs font-mono text-slate-400">
           {invites.length > 0 && <>
-            <span>Active: <span className="text-white font-bold">{active.length}</span></span>
+            <span>Active: <span className="text-slate-900 dark:text-white font-bold">{active.length}</span></span>
             {expired.length > 0 && <span className="text-slate-600">Expired/Revoked: <span className="font-bold">{expired.length}</span></span>}
           </>}
         </div>
@@ -489,11 +489,11 @@ function InvitesTab({ invites: initial, siteUrl }: { invites: Invite[]; siteUrl:
             const expired_ = isExpired(inv.expires_at);
             const inactive = inv.revoked || expired_;
             return (
-              <div key={inv.id} className={`bg-slate-900 border rounded-xl px-5 py-4 flex items-start gap-4 group ${inactive ? 'border-slate-800/50 opacity-50' : 'border-slate-800 hover:border-slate-700'} transition-colors`}>
+              <div key={inv.id} className={`bg-white dark:bg-slate-900 border rounded-xl px-5 py-4 flex items-start gap-4 group ${inactive ? 'border-slate-800/50 opacity-50' : 'border-slate-200 dark:border-slate-800 hover:border-slate-700'} transition-colors`}>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <p className="text-sm font-semibold text-white">{inv.investor_name}</p>
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${inv.access_level === 'full' ? 'bg-purple-500/10 text-purple-400' : 'bg-slate-800 text-slate-400'}`}>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{inv.investor_name}</p>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${inv.access_level === 'full' ? 'bg-purple-500/10 text-purple-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                       {inv.access_level}
                     </span>
                     {inv.revoked && <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-red-500/10 text-red-400">REVOKED</span>}
@@ -511,7 +511,7 @@ function InvitesTab({ invites: initial, siteUrl }: { invites: Invite[]; siteUrl:
                     <button
                       type="button"
                       onClick={() => copyLink(inv.token)}
-                      className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors"
+                      className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
                       {copying === inv.token ? 'Copied ✓' : 'Copy link'}
                     </button>
@@ -530,7 +530,7 @@ function InvitesTab({ invites: initial, siteUrl }: { invites: Invite[]; siteUrl:
                     type="button"
                     onClick={() => remove(inv.id)}
                     disabled={isPending}
-                    className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
+                    className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
                   >
                     ×
                   </button>
@@ -558,7 +558,7 @@ export function DataRoomClient({ initialDocuments, initialInvites, siteUrl }: Pr
 
   return (
     <div>
-      <div className="flex gap-1 border-b border-slate-800 mb-6">
+      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800 mb-6">
         {tabs.map(t => (
           <button
             key={t.id}
@@ -566,12 +566,12 @@ export function DataRoomClient({ initialDocuments, initialInvites, siteUrl }: Pr
             onClick={() => setTab(t.id)}
             className={`px-4 py-2.5 text-sm font-mono rounded-t-lg transition-colors flex items-center gap-2 -mb-px border-b-2 ${
               tab === t.id
-                ? 'border-indigo-500 text-white bg-slate-800/50'
+                ? 'border-indigo-500 text-slate-900 dark:text-white bg-slate-800/50'
                 : 'border-transparent text-slate-500 hover:text-slate-300'
             }`}
           >
             {t.label}
-            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-500'}`}>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
               {t.count}
             </span>
           </button>

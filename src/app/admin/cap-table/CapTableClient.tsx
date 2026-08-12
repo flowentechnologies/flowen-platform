@@ -199,9 +199,9 @@ function formToPayload(f: FormValues): Record<string, unknown> {
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
       <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 mb-1">{label}</p>
-      <p className="text-2xl font-extrabold text-white tabular-nums">{value}</p>
+      <p className="text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums">{value}</p>
       {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
     </div>
   );
@@ -233,7 +233,7 @@ function OwnershipStrip({ segments }: { segments: OwnerSegment[] }) {
         {segments.map((seg, i) => (
           <div key={i} className="flex items-center gap-1.5">
             <div className={`w-2.5 h-2.5 rounded-sm ${seg.color} shrink-0`} />
-            <span className="text-xs text-slate-300">{seg.label}</span>
+            <span className="text-xs text-slate-600 dark:text-slate-300">{seg.label}</span>
             <span className={`text-xs font-bold tabular-nums ${seg.textColor}`}>{seg.pct.toFixed(1)}%</span>
           </div>
         ))}
@@ -257,7 +257,7 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+      className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
     />
   );
 }
@@ -270,7 +270,7 @@ function Select({ value, onChange, options }: {
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
+      className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors"
     >
       {options.map(o => (
         <option key={o.id} value={o.id}>{o.label}</option>
@@ -288,7 +288,7 @@ function CheckboxField({ label, checked, onChange }: { label: string; checked: b
         onChange={e => onChange(e.target.checked)}
         className="w-4 h-4 rounded accent-emerald-500"
       />
-      <span className="text-sm text-slate-300">{label}</span>
+      <span className="text-sm text-slate-600 dark:text-slate-300">{label}</span>
     </label>
   );
 }
@@ -330,8 +330,8 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-700 rounded-2xl p-6 space-y-5">
-      <h3 className="text-sm font-bold text-white">{initial ? 'Edit Entry' : 'Add Entry'}</h3>
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-6 space-y-5">
+      <h3 className="text-sm font-bold text-slate-900 dark:text-white">{initial ? 'Edit Entry' : 'Add Entry'}</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -428,7 +428,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
           onChange={e => set('notes')(e.target.value)}
           rows={3}
           placeholder="Any relevant notes..."
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
         />
       </div>
 
@@ -438,14 +438,14 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
         <button
           type="submit"
           disabled={saving}
-          className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+          className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-sm font-semibold transition-colors disabled:opacity-50"
         >
           {saving ? 'Saving…' : initial ? 'Save Changes' : 'Add Entry'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors"
+          className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-semibold transition-colors"
         >
           Cancel
         </button>
@@ -474,10 +474,10 @@ function HoldingsTable({ entries, totalIssued, fullyDiluted, onEdit, onDelete }:
   ];
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-800">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-slate-900/80 border-b border-slate-800">
+          <tr className="bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
             <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Holder</th>
             <th className="text-left px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Instrument</th>
             <th className="text-right px-4 py-3 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Shares</th>
@@ -498,7 +498,7 @@ function HoldingsTable({ entries, totalIssued, fullyDiluted, onEdit, onDelete }:
             if (rows.length === 0) return null;
             return (
               <React.Fragment key={type}>
-                <tr className="bg-slate-950">
+                <tr className="bg-slate-50 dark:bg-slate-950">
                   <td colSpan={12} className={`px-4 py-2 text-[10px] font-mono font-bold uppercase tracking-widest ${HOLDER_TEXT[type]}`}>
                     {label}
                   </td>
@@ -517,17 +517,17 @@ function HoldingsTable({ entries, totalIssued, fullyDiluted, onEdit, onDelete }:
                       key={entry.id}
                       className="border-t border-slate-800/50 hover:bg-slate-800/20 transition-colors"
                     >
-                      <td className="px-4 py-3 text-white font-medium">{entry.holder_name}</td>
+                      <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">{entry.holder_name}</td>
                       <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border bg-slate-800 text-slate-300 border-slate-700">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-700">
                           {INSTRUMENT_LABEL[entry.instrument]}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-slate-300">
+                      <td className="px-4 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300">
                         {isConv ? '—' : fmtShares(entry.shares)}
                       </td>
                       <td className="px-4 py-3 text-slate-400">{entry.share_class ?? '—'}</td>
-                      <td className="px-4 py-3 text-right tabular-nums text-slate-300">
+                      <td className="px-4 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300">
                         {isConv ? <span className="text-amber-400 text-[10px]">converts</span> : fmtPct(pctIssued)}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums text-slate-400">
@@ -536,7 +536,7 @@ function HoldingsTable({ entries, totalIssued, fullyDiluted, onEdit, onDelete }:
                       <td className="px-4 py-3 text-right tabular-nums text-slate-400">
                         {fmtPence(entry.price_per_share_pence)}
                       </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-slate-300">
+                      <td className="px-4 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300">
                         {isConv
                           ? <span>{fmtGBP(entry.amount_pence)} <span className="text-slate-600">/</span> <span className="text-amber-400/80">{fmtGBP(entry.valuation_cap_pence)} cap</span></span>
                           : fmtGBP(entry.amount_pence)
@@ -561,7 +561,7 @@ function HoldingsTable({ entries, totalIssued, fullyDiluted, onEdit, onDelete }:
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => onEdit(entry)}
-                            className="px-2 py-1 rounded text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                            className="px-2 py-1 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
                           >
                             Edit
                           </button>
@@ -611,16 +611,16 @@ function ConvertibleCard({ entry }: { entry: CapTableEntry }) {
     : null;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-white">{entry.holder_name}</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">{entry.holder_name}</p>
           <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
             {INSTRUMENT_LABEL[entry.instrument]}
           </span>
         </div>
         <div className="text-right">
-          <p className="text-lg font-bold text-white tabular-nums">{fmtGBP(entry.amount_pence)}</p>
+          <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">{fmtGBP(entry.amount_pence)}</p>
           <p className="text-[10px] text-slate-500">invested</p>
         </div>
       </div>
@@ -631,11 +631,11 @@ function ConvertibleCard({ entry }: { entry: CapTableEntry }) {
         </div>
         <div>
           <p className="text-[10px] text-slate-600 font-mono uppercase tracking-widest mb-0.5">Discount</p>
-          <p className="text-sm font-semibold text-white">{entry.discount_pct != null ? `${entry.discount_pct}%` : '—'}</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">{entry.discount_pct != null ? `${entry.discount_pct}%` : '—'}</p>
         </div>
         <div>
           <p className="text-[10px] text-slate-600 font-mono uppercase tracking-widest mb-0.5">Interest</p>
-          <p className="text-sm font-semibold text-white">{entry.interest_rate_pct != null ? `${entry.interest_rate_pct}%` : '—'}</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">{entry.interest_rate_pct != null ? `${entry.interest_rate_pct}%` : '—'}</p>
         </div>
         <div>
           <p className="text-[10px] text-slate-600 font-mono uppercase tracking-widest mb-0.5">Est. shares at cap</p>
@@ -643,7 +643,7 @@ function ConvertibleCard({ entry }: { entry: CapTableEntry }) {
         </div>
       </div>
       {entry.notes && (
-        <p className="text-xs text-slate-500 border-t border-slate-800 pt-3">{entry.notes}</p>
+        <p className="text-xs text-slate-500 border-t border-slate-200 dark:border-slate-800 pt-3">{entry.notes}</p>
       )}
     </div>
   );
@@ -652,10 +652,10 @@ function ConvertibleCard({ entry }: { entry: CapTableEntry }) {
 function OptionCard({ entry }: { entry: CapTableEntry }) {
   const vested = vestedPct(entry);
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-white">{entry.holder_name}</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">{entry.holder_name}</p>
           <div className="flex items-center gap-2 mt-1">
             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">
               {INSTRUMENT_LABEL[entry.instrument]}
@@ -668,23 +668,23 @@ function OptionCard({ entry }: { entry: CapTableEntry }) {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-lg font-bold text-white tabular-nums">{fmtShares(entry.shares)}</p>
+          <p className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">{fmtShares(entry.shares)}</p>
           <p className="text-[10px] text-slate-500">options</p>
         </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div>
           <p className="text-[10px] text-slate-600 font-mono uppercase tracking-widest mb-0.5">Vesting</p>
-          <p className="text-sm text-white">{vestingDescription(entry)}</p>
+          <p className="text-sm text-slate-900 dark:text-white">{vestingDescription(entry)}</p>
         </div>
         <div>
           <p className="text-[10px] text-slate-600 font-mono uppercase tracking-widest mb-0.5">Exercise Price</p>
-          <p className="text-sm font-semibold text-white">{fmtPence(entry.price_per_share_pence)}</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">{fmtPence(entry.price_per_share_pence)}</p>
         </div>
         <div>
           <p className="text-[10px] text-slate-600 font-mono uppercase tracking-widest mb-0.5">Vested</p>
           <div className="flex items-center gap-2">
-            <div className="flex-1 h-1.5 rounded-full bg-slate-800">
+            <div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800">
               <div
                 className="h-1.5 rounded-full bg-purple-500 transition-all"
                 style={{ width: `${vested}%` }}
@@ -695,7 +695,7 @@ function OptionCard({ entry }: { entry: CapTableEntry }) {
         </div>
       </div>
       {entry.notes && (
-        <p className="text-xs text-slate-500 border-t border-slate-800 pt-3">{entry.notes}</p>
+        <p className="text-xs text-slate-500 border-t border-slate-200 dark:border-slate-800 pt-3">{entry.notes}</p>
       )}
     </div>
   );
@@ -708,9 +708,9 @@ function SEISTracker({ entries }: { entries: CapTableEntry[] }) {
   const eisTotal = eisEntries.reduce((s, e) => s + (e.amount_pence ?? 0), 0);
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-5">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-white">SEIS / EIS Tracker</h3>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">SEIS / EIS Tracker</h3>
         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
           HMRC COMPLIANCE
         </span>
@@ -730,14 +730,14 @@ function SEISTracker({ entries }: { entries: CapTableEntry[] }) {
       <div className="space-y-2">
         {entries.map(entry => (
           (entry.seis_eligible || entry.eis_eligible) && (
-            <div key={entry.id} className="flex items-center justify-between py-2 border-t border-slate-800 first:border-t-0">
+            <div key={entry.id} className="flex items-center justify-between py-2 border-t border-slate-200 dark:border-slate-800 first:border-t-0">
               <div>
-                <p className="text-sm text-white">{entry.holder_name}</p>
+                <p className="text-sm text-slate-900 dark:text-white">{entry.holder_name}</p>
                 <p className="text-xs text-slate-500">{INSTRUMENT_LABEL[entry.instrument]}</p>
               </div>
               <div className="flex items-center gap-2">
                 {fmtGBP(entry.amount_pence) !== '—' && (
-                  <span className="text-sm font-semibold text-slate-300">{fmtGBP(entry.amount_pence)}</span>
+                  <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{fmtGBP(entry.amount_pence)}</span>
                 )}
                 {entry.seis_eligible && (
                   <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">SEIS</span>
@@ -832,7 +832,7 @@ function DilutionModeller({
     setRaiseAmount(String(s.raiseAmount));
   }
 
-  const inputCls = 'w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors';
+  const inputCls = 'w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 transition-colors';
   const labelCls = 'block text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 mb-1.5';
 
   return (
@@ -845,17 +845,17 @@ function DilutionModeller({
       )}
 
       {/* Input panel */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-5">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <h3 className="text-sm font-bold text-white">New Round Parameters</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">New Round Parameters</h3>
             <p className="text-xs text-slate-500 mt-0.5">Model dilution impact of a new investment round on existing holders</p>
           </div>
           <button
             type="button"
             onClick={saveScenario}
             disabled={!result}
-            className="px-3.5 py-1.5 text-xs font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
+            className="px-3.5 py-1.5 text-xs font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
           >
             Save scenario
           </button>
@@ -895,7 +895,7 @@ function DilutionModeller({
               className={`px-2.5 py-1 text-[10px] font-mono rounded-lg border transition-colors ${
                 pm === s.preMoney && ra === s.raiseAmount
                   ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
-                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {s.label}
@@ -911,11 +911,11 @@ function DilutionModeller({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: 'Post-Money',    value: fmtGBP(result.postMoney),                   color: 'text-amber-400'  },
-              { label: 'Price/Share',   value: fmtPence(Math.round(result.pricePerShare)),  color: 'text-white'      },
+              { label: 'Price/Share',   value: fmtPence(Math.round(result.pricePerShare)),  color: 'text-slate-900 dark:text-white'      },
               { label: 'New Shares',    value: fmtShares(result.newShares),                 color: 'text-sky-400'    },
               { label: 'Investor %',    value: fmtPct(result.investorPct),                  color: 'text-purple-400' },
             ].map(s => (
-              <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 text-center">
+              <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 text-center">
                 <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">{s.label}</p>
                 <p className={`text-xl font-extrabold tabular-nums ${s.color}`}>{s.value}</p>
               </div>
@@ -923,14 +923,14 @@ function DilutionModeller({
           </div>
 
           {/* Before / After ownership table */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-            <div className="px-5 py-3 border-b border-slate-800">
-              <h4 className="text-xs font-bold text-white">Ownership — Before vs After</h4>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-200 dark:border-slate-800">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white">Ownership — Before vs After</h4>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-slate-800">
+                  <tr className="border-b border-slate-200 dark:border-slate-800">
                     <th className="text-left px-5 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Holder</th>
                     <th className="text-right px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Shares</th>
                     <th className="text-right px-4 py-2.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">Before %</th>
@@ -944,11 +944,11 @@ function DilutionModeller({
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full shrink-0 ${HOLDER_COLORS[g.type]}`} />
-                          <span className="text-white font-medium">{g.label}</span>
+                          <span className="text-slate-900 dark:text-white font-medium">{g.label}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums text-slate-400">{fmtShares(g.shares)}</td>
-                      <td className="px-4 py-3 text-right tabular-nums text-slate-300 font-bold">{fmtPct(g.beforePct)}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300 font-bold">{fmtPct(g.beforePct)}</td>
                       <td className="px-4 py-3 text-right tabular-nums text-amber-400 font-bold">{fmtPct(g.afterPct)}</td>
                       <td className="px-4 py-3 text-right tabular-nums text-red-400 font-mono text-[11px]">
                         {fmtPct(g.afterPct - g.beforePct)}
@@ -969,9 +969,9 @@ function DilutionModeller({
                     <td className="px-4 py-3 text-right tabular-nums text-emerald-400 font-mono text-[11px]">new</td>
                   </tr>
                   {/* Total row */}
-                  <tr className="border-t-2 border-slate-700 bg-slate-950">
-                    <td className="px-5 py-3 font-bold text-white">Total (FD post-round)</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-white font-bold">{fmtShares(result.newTotal)}</td>
+                  <tr className="border-t-2 border-slate-700 bg-slate-50 dark:bg-slate-950">
+                    <td className="px-5 py-3 font-bold text-slate-900 dark:text-white">Total (FD post-round)</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-slate-900 dark:text-white font-bold">{fmtShares(result.newTotal)}</td>
                     <td className="px-4 py-3 text-right tabular-nums text-slate-400">100.00%</td>
                     <td className="px-4 py-3 text-right tabular-nums text-slate-400">100.00%</td>
                     <td className="px-4 py-3 text-right" />
@@ -982,8 +982,8 @@ function DilutionModeller({
           </div>
 
           {/* Visual bar before/after */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-            <h4 className="text-xs font-bold text-white">Ownership Strip — After Round</h4>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white">Ownership Strip — After Round</h4>
             <div className="flex h-7 rounded-lg overflow-hidden w-full">
               {result.groups.map(g => (
                 <div
@@ -1003,13 +1003,13 @@ function DilutionModeller({
               {result.groups.map(g => (
                 <div key={g.type} className="flex items-center gap-1.5">
                   <div className={`w-2.5 h-2.5 rounded-sm ${HOLDER_COLORS[g.type]} shrink-0`} />
-                  <span className="text-xs text-slate-300">{g.label}</span>
+                  <span className="text-xs text-slate-600 dark:text-slate-300">{g.label}</span>
                   <span className={`text-xs font-bold tabular-nums ${HOLDER_TEXT[g.type]}`}>{g.afterPct.toFixed(1)}%</span>
                 </div>
               ))}
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-sm bg-purple-500 shrink-0" />
-                <span className="text-xs text-slate-300">New Investors</span>
+                <span className="text-xs text-slate-600 dark:text-slate-300">New Investors</span>
                 <span className="text-xs font-bold tabular-nums text-purple-400">{result.investorPct.toFixed(1)}%</span>
               </div>
             </div>
@@ -1019,21 +1019,21 @@ function DilutionModeller({
 
       {/* Saved scenarios */}
       {scenarios.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
-          <h4 className="text-xs font-bold text-white">Saved Scenarios</h4>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
+          <h4 className="text-xs font-bold text-slate-900 dark:text-white">Saved Scenarios</h4>
           <div className="space-y-2">
             {scenarios.map((s, i) => {
               const r = calcDilution(entries, fullyDiluted, s.preMoney, s.raiseAmount);
               return (
-                <div key={i} className="flex items-center justify-between gap-4 py-2 border-b border-slate-800 last:border-b-0">
+                <div key={i} className="flex items-center justify-between gap-4 py-2 border-b border-slate-200 dark:border-slate-800 last:border-b-0">
                   <div>
-                    <p className="text-sm text-white">{s.label}</p>
+                    <p className="text-sm text-slate-900 dark:text-white">{s.label}</p>
                     {r && <p className="text-xs text-slate-500 font-mono">Post-money: {fmtGBP(r.postMoney)} · Investor: {fmtPct(r.investorPct)}</p>}
                   </div>
                   <button
                     type="button"
                     onClick={() => applyScenario(s)}
-                    className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white shrink-0 transition-colors"
+                    className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white shrink-0 transition-colors"
                   >
                     Load
                   </button>
@@ -1197,7 +1197,7 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 w-fit">
         {([
           { id: 'cap-table',   label: 'Cap Table' },
           { id: 'instruments', label: 'Instruments' },
@@ -1208,7 +1208,7 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               activeTab === tab.id
-                ? 'bg-slate-800 text-white'
+                ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white'
                 : 'text-slate-500 hover:text-slate-300'
             }`}
           >
@@ -1230,7 +1230,7 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
             <div className="flex items-center gap-2">
               <button
                 onClick={copyForInvestor}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors"
               >
                 <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
@@ -1240,7 +1240,7 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
               </button>
               <button
                 onClick={handleAddNew}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-sm font-semibold transition-colors"
               >
                 <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -1261,8 +1261,8 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
 
           {/* Ownership strip */}
           {ownershipSegments.length > 0 && (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
-              <h3 className="text-sm font-bold text-white">Ownership Overview</h3>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Ownership Overview</h3>
               <OwnershipStrip segments={ownershipSegments} />
               <p className="text-xs text-slate-600 italic">
                 Percentages are pre-money, pre-conversion. Convertible instruments (SAFEs, loans) will dilute on conversion.
@@ -1304,19 +1304,19 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
               onDelete={handleDelete}
             />
           ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center space-y-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center space-y-3">
               <p className="text-slate-500 text-sm">No cap table entries yet.</p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <button
                   onClick={handleAddNew}
-                  className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors"
+                  className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-sm font-semibold transition-colors"
                 >
                   Add First Entry
                 </button>
                 <button
                   onClick={handleSeed}
                   disabled={seeding}
-                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-semibold transition-colors disabled:opacity-50"
                 >
                   {seeding ? 'Seeding…' : '⚡ Seed example data'}
                 </button>
@@ -1344,7 +1344,7 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
           {convertibleEntries.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <h3 className="text-base font-bold text-white">Convertible Instruments</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Convertible Instruments</h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
                   {convertibleEntries.length} instrument{convertibleEntries.length !== 1 ? 's' : ''}
                 </span>
@@ -1361,7 +1361,7 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
           {optionEntries.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <h3 className="text-base font-bold text-white">Options &amp; Warrants</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Options &amp; Warrants</h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">
                   {optionEntries.length} grant{optionEntries.length !== 1 ? 's' : ''}
                 </span>
@@ -1384,7 +1384,7 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
                       </div>
                       <div>
                         <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-purple-600 mb-1">Granted</p>
-                        <p className="text-lg font-extrabold text-white">{fmtShares(grantedShares)}</p>
+                        <p className="text-lg font-extrabold text-slate-900 dark:text-white">{fmtShares(grantedShares)}</p>
                       </div>
                       <div>
                         <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-purple-600 mb-1">Ungranted</p>
@@ -1406,7 +1406,7 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
           <SEISTracker entries={entries} />
 
           {convertibleEntries.length === 0 && optionEntries.length === 0 && (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center">
               <p className="text-slate-500 text-sm">No convertible instruments or options recorded yet.</p>
               <p className="text-slate-600 text-xs mt-1">Switch to the Cap Table tab to add entries.</p>
             </div>

@@ -71,7 +71,7 @@ const STATUS_CONFIG: Record<OutreachStatus, { label: string; color: string }> = 
 };
 
 const MILESTONE_CONFIG: Record<MilestoneStatus, { label: string; dot: string; badge: string }> = {
-  upcoming:    { label: 'Upcoming',     dot: 'bg-slate-500',   badge: 'bg-slate-800 text-slate-400' },
+  upcoming:    { label: 'Upcoming',     dot: 'bg-slate-500',   badge: 'bg-slate-100 dark:bg-slate-800 text-slate-400' },
   in_progress: { label: 'In Progress',  dot: 'bg-blue-400 animate-pulse', badge: 'bg-blue-500/10 text-blue-400' },
   achieved:    { label: 'Achieved',     dot: 'bg-emerald-500', badge: 'bg-emerald-500/10 text-emerald-400' },
   delayed:     { label: 'Delayed',      dot: 'bg-amber-400',   badge: 'bg-amber-500/10 text-amber-400' },
@@ -149,13 +149,13 @@ function StatusDropdown({
         {cfg.label} ▾
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-10 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-xl min-w-[140px]">
+        <div className="absolute right-0 top-full mt-1 z-10 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-xl min-w-[140px]">
           {(Object.entries(STATUS_CONFIG) as [OutreachStatus, { label: string; color: string }][]).map(([s, c]) => (
             <button
               key={s}
               type="button"
               onClick={() => select(s)}
-              className={`w-full text-left px-3 py-2 text-[11px] font-mono hover:bg-slate-800 transition-colors ${s === current ? 'text-white font-bold' : 'text-slate-400'}`}
+              className={`w-full text-left px-3 py-2 text-[11px] font-mono hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${s === current ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-400'}`}
             >
               {c.label}
             </button>
@@ -200,13 +200,13 @@ function MilestoneStatusDropdown({
         {cfg.label} ▾
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-10 bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-xl min-w-[140px]">
+        <div className="absolute right-0 top-full mt-1 z-10 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-xl min-w-[140px]">
           {(Object.entries(MILESTONE_CONFIG) as [MilestoneStatus, { label: string; dot: string; badge: string }][]).map(([s, c]) => (
             <button
               key={s}
               type="button"
               onClick={() => select(s)}
-              className={`w-full text-left px-3 py-2 text-[11px] font-mono hover:bg-slate-800 transition-colors ${s === current ? 'text-white font-bold' : 'text-slate-400'}`}
+              className={`w-full text-left px-3 py-2 text-[11px] font-mono hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${s === current ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-400'}`}
             >
               {c.label}
             </button>
@@ -246,74 +246,74 @@ function AddContactModal({ onAdd }: { onAdd: (c: Contact) => void }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors"
       >
         + Add Contact
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">Add Campaign Contact</h3>
-              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-white text-lg">×</button>
+          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Campaign Contact</h3>
+              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
             </div>
             <div className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Name *</label>
-                  <input value={form.name} onChange={e => field('name', e.target.value)} placeholder="Full name" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input value={form.name} onChange={e => field('name', e.target.value)} placeholder="Full name" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Type *</label>
-                  <select value={form.type} onChange={e => field('type', e.target.value as ContactType)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                  <select value={form.type} onChange={e => field('type', e.target.value as ContactType)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                     {(Object.entries(CONTACT_TYPE_LABELS) as [ContactType, string][]).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Organisation</label>
-                <input value={form.organisation} onChange={e => field('organisation', e.target.value)} placeholder="Party, media outlet, hospital…" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.organisation} onChange={e => field('organisation', e.target.value)} placeholder="Party, media outlet, hospital…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               {form.type === 'mp' && (
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Constituency</label>
-                  <input value={form.constituency} onChange={e => field('constituency', e.target.value)} placeholder="e.g. Birmingham, Selly Oak" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input value={form.constituency} onChange={e => field('constituency', e.target.value)} placeholder="e.g. Birmingham, Selly Oak" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
               )}
               {form.type === 'influencer' && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Platform</label>
-                    <input value={form.platform} onChange={e => field('platform', e.target.value)} placeholder="Instagram, YouTube…" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    <input value={form.platform} onChange={e => field('platform', e.target.value)} placeholder="Instagram, YouTube…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Followers</label>
-                    <input type="number" value={form.followers_count} onChange={e => field('followers_count', e.target.value)} placeholder="250000" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    <input type="number" value={form.followers_count} onChange={e => field('followers_count', e.target.value)} placeholder="250000" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                   </div>
                 </div>
               )}
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Email</label>
-                <input type="email" value={form.email} onChange={e => field('email', e.target.value)} placeholder="contact@example.com" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input type="email" value={form.email} onChange={e => field('email', e.target.value)} placeholder="contact@example.com" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Initial Status</label>
-                <select value={form.status} onChange={e => field('status', e.target.value as OutreachStatus)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                <select value={form.status} onChange={e => field('status', e.target.value as OutreachStatus)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   {(Object.entries(STATUS_CONFIG) as [OutreachStatus, { label: string }][]).map(([v, c]) => <option key={v} value={v}>{c.label}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Notes</label>
-                <textarea value={form.notes} onChange={e => field('notes', e.target.value)} rows={3} placeholder="Context, talking points, relationship notes…" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none font-mono" />
+                <textarea value={form.notes} onChange={e => field('notes', e.target.value)} rows={3} placeholder="Context, talking points, relationship notes…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none font-mono" />
               </div>
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
             </div>
-            <div className="px-6 py-4 border-t border-slate-800 flex gap-3">
-              <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
+              <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                 {isPending ? 'Saving…' : 'Add Contact'}
               </button>
-              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -346,51 +346,51 @@ function AddMilestoneModal({ onAdd }: { onAdd: (m: Milestone) => void }) {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors">
+      <button type="button" onClick={() => setOpen(true)} className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors">
         + Add Milestone
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">Add Milestone</h3>
-              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-white text-lg">×</button>
+          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Milestone</h3>
+              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Title *</label>
-                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Milestone name" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Milestone name" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Category</label>
-                  <select value={form.category} onChange={e => field('category', e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                  <select value={form.category} onChange={e => field('category', e.target.value)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                     {Object.entries(CATEGORY_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Target Date</label>
-                  <input type="date" value={form.target_date} onChange={e => field('target_date', e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60" />
+                  <input type="date" value={form.target_date} onChange={e => field('target_date', e.target.value)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Status</label>
-                <select value={form.status} onChange={e => field('status', e.target.value as MilestoneStatus)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                <select value={form.status} onChange={e => field('status', e.target.value as MilestoneStatus)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   {(Object.entries(MILESTONE_CONFIG) as [MilestoneStatus, { label: string }][]).map(([v, c]) => <option key={v} value={v}>{c.label}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Description</label>
-                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={3} placeholder="What does achieving this look like?" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={3} placeholder="What does achieving this look like?" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
             </div>
-            <div className="px-6 py-4 border-t border-slate-800 flex gap-3">
-              <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
+              <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                 {isPending ? 'Saving…' : 'Add Milestone'}
               </button>
-              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -423,39 +423,39 @@ function AddPressModal({ onAdd }: { onAdd: (p: PressLink) => void }) {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors">
+      <button type="button" onClick={() => setOpen(true)} className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors">
         + Add Press
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">Add Press Mention</h3>
-              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-white text-lg">×</button>
+          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Press Mention</h3>
+              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Headline *</label>
-                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Article headline" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Article headline" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Publication *</label>
-                  <input value={form.publication} onChange={e => field('publication', e.target.value)} placeholder="BBC, Guardian…" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input value={form.publication} onChange={e => field('publication', e.target.value)} placeholder="BBC, Guardian…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Published</label>
-                  <input type="date" value={form.published_date} onChange={e => field('published_date', e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60" />
+                  <input type="date" value={form.published_date} onChange={e => field('published_date', e.target.value)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">URL</label>
-                <input type="url" value={form.url} onChange={e => field('url', e.target.value)} placeholder="https://…" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input type="url" value={form.url} onChange={e => field('url', e.target.value)} placeholder="https://…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Sentiment</label>
-                <select value={form.sentiment} onChange={e => field('sentiment', e.target.value as 'positive' | 'neutral' | 'negative')} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                <select value={form.sentiment} onChange={e => field('sentiment', e.target.value as 'positive' | 'neutral' | 'negative')} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   <option value="positive">Positive</option>
                   <option value="neutral">Neutral</option>
                   <option value="negative">Negative</option>
@@ -463,11 +463,11 @@ function AddPressModal({ onAdd }: { onAdd: (p: PressLink) => void }) {
               </div>
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
             </div>
-            <div className="px-6 py-4 border-t border-slate-800 flex gap-3">
-              <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
+              <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                 {isPending ? 'Saving…' : 'Add'}
               </button>
-              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -514,7 +514,7 @@ function MilestonesTab({ milestones: initial }: { milestones: Milestone[] }) {
       </div>
 
       {/* Progress bar */}
-      <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+      <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
         <div
           className="h-full bg-emerald-500 rounded-full transition-all duration-500"
           style={{ width: milestones.length > 0 ? `${(achieved / milestones.length) * 100}%` : '0%' }}
@@ -525,13 +525,13 @@ function MilestonesTab({ milestones: initial }: { milestones: Milestone[] }) {
         {milestones.map(m => {
           const cfg = MILESTONE_CONFIG[m.status];
           return (
-            <div key={m.id} className={`bg-slate-900 border rounded-xl px-5 py-4 flex items-start gap-4 transition-opacity ${m.status === 'achieved' ? 'border-emerald-500/20' : 'border-slate-800'}`}>
+            <div key={m.id} className={`bg-white dark:bg-slate-900 border rounded-xl px-5 py-4 flex items-start gap-4 transition-opacity ${m.status === 'achieved' ? 'border-emerald-500/20' : 'border-slate-200 dark:border-slate-800'}`}>
               <div className={`mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 ${cfg.dot}`} />
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                  <span className="text-sm font-semibold text-white">{m.title}</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">{m.title}</span>
                   <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
-                    CATEGORY_LABELS[m.category] ? 'bg-slate-800 text-slate-400' : 'bg-slate-800 text-slate-500'
+                    CATEGORY_LABELS[m.category] ? 'bg-slate-100 dark:bg-slate-800 text-slate-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
                   }`}>
                     {CATEGORY_LABELS[m.category] ?? m.category}
                   </span>
@@ -600,7 +600,7 @@ function ContactsTab({ contacts: initial }: { contacts: Contact[] }) {
         {(Object.entries(CONTACT_TYPE_LABELS) as [ContactType, string][]).map(([type, label]) => (
           typeCounts[type] ? (
             <div key={type} className="text-xs font-mono text-slate-400">
-              {label}: <span className="text-white font-bold">{typeCounts[type]}</span>
+              {label}: <span className="text-slate-900 dark:text-white font-bold">{typeCounts[type]}</span>
             </div>
           ) : null
         ))}
@@ -618,7 +618,7 @@ function ContactsTab({ contacts: initial }: { contacts: Contact[] }) {
           placeholder="Search name, org, constituency…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="flex-1 min-w-48 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
+          className="flex-1 min-w-48 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
         />
         <div className="flex gap-1">
           {(['all', ...Object.keys(CONTACT_TYPE_LABELS)] as (ContactType | 'all')[]).map(t => (
@@ -626,7 +626,7 @@ function ContactsTab({ contacts: initial }: { contacts: Contact[] }) {
               key={t}
               type="button"
               onClick={() => setTypeFilter(t)}
-              className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${typeFilter === t ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+              className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${typeFilter === t ? 'bg-indigo-600 text-slate-900 dark:text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
             >
               {t === 'all' ? 'All' : CONTACT_TYPE_LABELS[t as ContactType]}
               {t !== 'all' && typeCounts[t] ? ` (${typeCounts[t]})` : ''}
@@ -639,10 +639,10 @@ function ContactsTab({ contacts: initial }: { contacts: Contact[] }) {
       {filtered.length === 0 ? (
         <p className="py-10 text-center text-sm text-slate-600 font-mono">No contacts — add your first via the button above</p>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-slate-800">
+              <tr className="border-b border-slate-200 dark:border-slate-800">
                 <th className="text-left px-4 py-3 font-mono text-slate-500 uppercase tracking-wide">Name</th>
                 <th className="text-left px-4 py-3 font-mono text-slate-500 uppercase tracking-wide hidden sm:table-cell">Type</th>
                 <th className="text-left px-4 py-3 font-mono text-slate-500 uppercase tracking-wide hidden md:table-cell">Org / Reach</th>
@@ -653,13 +653,13 @@ function ContactsTab({ contacts: initial }: { contacts: Contact[] }) {
             </thead>
             <tbody>
               {filtered.map(c => (
-                <tr key={c.id} className="border-b border-slate-800/60 last:border-0 hover:bg-slate-800/30 group">
+                <tr key={c.id} className="border-b border-slate-200 dark:border-slate-800/60 last:border-0 hover:bg-slate-800/30 group">
                   <td className="px-4 py-3">
-                    <p className="text-white font-medium">{c.name}</p>
+                    <p className="text-slate-900 dark:text-white font-medium">{c.name}</p>
                     {c.notes && <p className="text-[10px] text-slate-600 truncate max-w-[180px] mt-0.5">{c.notes}</p>}
                   </td>
                   <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-800 text-slate-400">
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">
                       {CONTACT_TYPE_LABELS[c.type]}
                     </span>
                   </td>
@@ -720,7 +720,7 @@ function PressTab({ press: initial }: { press: PressLink[] }) {
       <div className="flex items-center justify-between">
         <div className="flex gap-4 text-xs font-mono text-slate-400">
           {press.length > 0 && <>
-            <span>Total: <span className="text-white font-bold">{press.length}</span></span>
+            <span>Total: <span className="text-slate-900 dark:text-white font-bold">{press.length}</span></span>
             {positive > 0 && <span className="text-emerald-400">Positive: <span className="font-bold">{positive}</span></span>}
             {negative > 0 && <span className="text-red-400">Negative: <span className="font-bold">{negative}</span></span>}
           </>}
@@ -735,7 +735,7 @@ function PressTab({ press: initial }: { press: PressLink[] }) {
           {press.map(p => {
             const sc = SENTIMENT_CONFIG[p.sentiment];
             return (
-              <div key={p.id} className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-4 flex items-start gap-4 group">
+              <div key={p.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-4 flex items-start gap-4 group">
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <span className="text-xs font-mono text-slate-500 font-semibold">{p.publication}</span>
@@ -743,11 +743,11 @@ function PressTab({ press: initial }: { press: PressLink[] }) {
                     <span className="text-[10px] text-slate-600 font-mono ml-auto">{fmtDate(p.published_date)}</span>
                   </div>
                   {p.url ? (
-                    <a href={p.url} target="_blank" rel="noopener noreferrer" className="text-sm text-white hover:text-indigo-400 transition-colors font-medium leading-relaxed">
+                    <a href={p.url} target="_blank" rel="noopener noreferrer" className="text-sm text-slate-900 dark:text-white hover:text-indigo-400 transition-colors font-medium leading-relaxed">
                       {p.title} ↗
                     </a>
                   ) : (
-                    <p className="text-sm text-white font-medium leading-relaxed">{p.title}</p>
+                    <p className="text-sm text-slate-900 dark:text-white font-medium leading-relaxed">{p.title}</p>
                   )}
                 </div>
                 <button
@@ -782,7 +782,7 @@ export function CampaignBoard({ initialMilestones, initialContacts, initialPress
 
   return (
     <div>
-      <div className="flex gap-1 border-b border-slate-800 mb-6">
+      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800 mb-6">
         {tabs.map(t => (
           <button
             key={t.id}
@@ -790,12 +790,12 @@ export function CampaignBoard({ initialMilestones, initialContacts, initialPress
             onClick={() => setTab(t.id)}
             className={`px-4 py-2.5 text-sm font-mono rounded-t-lg transition-colors flex items-center gap-2 -mb-px border-b-2 ${
               tab === t.id
-                ? 'border-indigo-500 text-white bg-slate-800/50'
+                ? 'border-indigo-500 text-slate-900 dark:text-white bg-slate-800/50'
                 : 'border-transparent text-slate-500 hover:text-slate-300'
             }`}
           >
             {t.label}
-            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-500'}`}>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
               {t.count}
             </span>
           </button>

@@ -89,7 +89,7 @@ function RunHistory({ runs }: { runs: CronRun[] }) {
       {/* Success rate bar */}
       <div className="flex items-center gap-3">
         <span className="text-[10px] font-mono text-slate-500 w-24">Success rate</span>
-        <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+        <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-emerald-500 rounded-full transition-all duration-500"
             style={{ width: `${rate}%` }}
@@ -190,7 +190,7 @@ function JobCard({
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
       <div className="px-5 py-4 flex items-start gap-4">
         {/* Status dot */}
         <div className={`mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 ${lastCfg ? lastCfg.dot : 'bg-slate-700'}`} />
@@ -198,8 +198,8 @@ function JobCard({
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-0.5">
-            <span className="text-sm font-bold text-white">{job.label}</span>
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-800 text-slate-400">
+            <span className="text-sm font-bold text-slate-900 dark:text-white">{job.label}</span>
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400">
               {job.schedule}
             </span>
             {lastCfg && (
@@ -226,14 +226,14 @@ function JobCard({
             type="button"
             onClick={trigger}
             disabled={triggering}
-            className="px-3 py-1.5 text-[11px] font-mono rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40"
+            className="px-3 py-1.5 text-[11px] font-mono rounded-lg bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
           >
             {triggering ? 'Running…' : 'Run Now'}
           </button>
           <button
             type="button"
             onClick={() => setExpanded(v => !v)}
-            className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             {expanded ? 'Hide' : `History (${runs.length})`}
           </button>
@@ -241,7 +241,7 @@ function JobCard({
       </div>
 
       {expanded && (
-        <div className="px-5 pb-5 border-t border-slate-800 pt-4">
+        <div className="px-5 pb-5 border-t border-slate-200 dark:border-slate-800 pt-4">
           <RunHistory runs={runs} />
         </div>
       )}
@@ -269,7 +269,7 @@ export function CronClient({ initialRuns, adminEmail }: Props) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-sm font-bold text-white">Scheduled Jobs</h2>
+      <h2 className="text-sm font-bold text-slate-900 dark:text-white">Scheduled Jobs</h2>
       {CRON_JOBS.map(job => (
         <JobCard
           key={job.id}

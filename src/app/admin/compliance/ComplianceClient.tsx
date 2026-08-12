@@ -319,7 +319,7 @@ const STATUS_CONFIG: Record<
   },
   not_applicable: {
     label: 'N/A',
-    pill:  'bg-slate-800/60 text-slate-500 border-slate-700/40',
+    pill:  'bg-slate-100/80 dark:bg-slate-800/60 text-slate-500 border-slate-700/40',
   },
   blocked: {
     label: 'Blocked',
@@ -415,7 +415,7 @@ function TabSummaryBar({ items }: { items: MergedItem[] }) {
   return (
     <div className="flex flex-col gap-2 mb-5">
       {/* Mini progress bar */}
-      <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
         <div
           className="h-full bg-emerald-500 rounded-full transition-all duration-500"
           style={{ width: `${completePct}%` }}
@@ -482,19 +482,19 @@ function ItemCard({ item, onStatusChange, onNotesChange, onEvidenceChange, savin
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3 hover:border-slate-700 transition-colors">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-3 hover:border-slate-700 transition-colors">
       {/* Header row */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 shrink-0">
+            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-700 shrink-0">
               {item.code}
             </span>
             {saving && (
               <span className="text-[9px] font-mono text-slate-600 animate-pulse">saving…</span>
             )}
           </div>
-          <p className="text-sm font-bold text-white leading-snug">{item.title}</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">{item.title}</p>
           <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
         </div>
         <div className="shrink-0">
@@ -531,7 +531,7 @@ function ItemCard({ item, onStatusChange, onNotesChange, onEvidenceChange, savin
             }}
             placeholder="Add notes, links, responsible person…"
             rows={3}
-            className="mt-2 w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-slate-500 transition-colors"
+            className="mt-2 w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-slate-500 transition-colors"
           />
         )}
       </div>
@@ -557,7 +557,7 @@ function ItemCard({ item, onStatusChange, onNotesChange, onEvidenceChange, savin
                 setEvidenceEditing(false);
               }}
               placeholder="https://docs.example.com/evidence"
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
+              className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
             />
             <button type="submit" className="text-[11px] text-emerald-400 hover:text-emerald-300 font-mono shrink-0">
               Save
@@ -625,7 +625,7 @@ function OverallHeader({ allItems }: { allItems: MergedItem[] }) {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
       <div className="flex flex-col sm:flex-row sm:items-center gap-6">
         {/* Progress ring */}
         <div className="flex items-center justify-center shrink-0">
@@ -643,14 +643,14 @@ function OverallHeader({ allItems }: { allItems: MergedItem[] }) {
             />
           </svg>
           <div className="absolute flex flex-col items-center">
-            <span className="text-xl font-black text-white">{Math.round(pct)}%</span>
+            <span className="text-xl font-black text-slate-900 dark:text-white">{Math.round(pct)}%</span>
           </div>
         </div>
 
         {/* Stats */}
         <div className="flex-1 space-y-3">
           <div className="flex items-center gap-3 flex-wrap">
-            <p className="text-white font-bold text-lg">
+            <p className="text-slate-900 dark:text-white font-bold text-lg">
               {counts.complete} of {actionable} items complete
             </p>
             <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full border ${ragColors[rag]}`}>
@@ -801,8 +801,8 @@ export function ComplianceClient({ initialItems }: { initialItems: ComplianceIte
               onClick={() => setActiveTab(tab.id)}
               className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${
                 isActive
-                  ? `bg-slate-800 border-slate-600 text-white`
-                  : 'bg-transparent border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                  ? `bg-slate-100 dark:bg-slate-800 border-slate-600 text-slate-900 dark:text-white`
+                  : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
               }`}
             >
               <span className={`w-2 h-2 rounded-full shrink-0 ${ragDotCol[fwRag]}`} />

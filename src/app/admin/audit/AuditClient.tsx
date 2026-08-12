@@ -68,8 +68,8 @@ function StatCard({
   accent?: 'red';
 }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col gap-1">
-      <span className={`text-2xl font-extrabold ${accent === 'red' ? 'text-red-400' : 'text-white'}`}>
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col gap-1">
+      <span className={`text-2xl font-extrabold ${accent === 'red' ? 'text-red-400' : 'text-slate-900 dark:text-white'}`}>
         {value}
       </span>
       <span className="text-xs text-slate-400">{label}</span>
@@ -196,7 +196,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
       </div>
 
       {/* Filter bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
         {/* Severity pills */}
         <div className="flex items-center gap-1.5 flex-wrap">
           {(['all', 'info', 'warning', 'critical'] as SeverityFilter[]).map((s) => (
@@ -211,7 +211,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
                     ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
                     : s === 'info'
                     ? 'bg-slate-600/60 text-slate-200 border-slate-500/60'
-                    : 'bg-slate-700 text-white border-slate-600'
+                    : 'bg-slate-700 text-slate-900 dark:text-white border-slate-600'
                   : 'bg-transparent text-slate-400 border-slate-700 hover:border-slate-500 hover:text-slate-300'
               }`}
             >
@@ -226,7 +226,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
           placeholder="Search action or actor…"
           value={actionSearch}
           onChange={(e) => setActionSearch(e.target.value)}
-          className="flex-1 min-w-[180px] bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          className="flex-1 min-w-[180px] bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
         />
 
         {/* Date range */}
@@ -242,7 +242,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
               onClick={() => setDateRange(opt.value)}
               className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
                 dateRange === opt.value
-                  ? 'bg-slate-700 text-white border-slate-600'
+                  ? 'bg-slate-700 text-slate-900 dark:text-white border-slate-600'
                   : 'bg-transparent text-slate-400 border-slate-700 hover:border-slate-500 hover:text-slate-300'
               }`}
             >
@@ -254,14 +254,14 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
         {/* Export button */}
         <button
           onClick={exportCsv}
-          className="ml-auto px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+          className="ml-auto px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
         >
           Export CSV
         </button>
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center px-6">
             <svg className="w-12 h-12 text-slate-700 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -273,7 +273,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase tracking-wide">
+              <thead className="bg-slate-50 dark:bg-slate-950 text-slate-400 border-b border-slate-200 dark:border-slate-800 uppercase tracking-wide">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Timestamp</th>
                   <th className="px-4 py-3 font-semibold">Severity</th>
@@ -288,7 +288,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
                 {filtered.map((entry) => (
                   <React.Fragment key={entry.id}>
                     <tr
-                      className={`text-slate-300 hover:bg-slate-800/40 transition-colors ${
+                      className={`text-slate-600 dark:text-slate-300 hover:bg-slate-800/40 transition-colors ${
                         entry.severity === 'critical' ? 'border-l-2 border-red-500/50' : ''
                       }`}
                     >
@@ -365,9 +365,9 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
 
                     {/* Expanded metadata row */}
                     {expandedId === entry.id && entry.metadata && (
-                      <tr className="bg-slate-950/60">
+                      <tr className="bg-slate-100 dark:bg-slate-950/60">
                         <td colSpan={7} className="px-6 py-4">
-                          <pre className="text-xs text-slate-300 font-mono bg-slate-900 border border-slate-800 rounded-lg p-4 overflow-x-auto whitespace-pre-wrap">
+                          <pre className="text-xs text-slate-600 dark:text-slate-300 font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 overflow-x-auto whitespace-pre-wrap">
                             {JSON.stringify(entry.metadata, null, 2)}
                           </pre>
                         </td>
@@ -382,11 +382,11 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
 
         {/* Load more */}
         {hasMore && filtered.length > 0 && (
-          <div className="flex items-center justify-center py-4 border-t border-slate-800">
+          <div className="flex items-center justify-center py-4 border-t border-slate-200 dark:border-slate-800">
             <button
               onClick={loadMore}
               disabled={isPending}
-              className="px-6 py-2 rounded-lg text-sm font-semibold bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 transition-colors disabled:opacity-50"
+              className="px-6 py-2 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-50"
             >
               {isPending ? 'Loading…' : `Load more (${total - entries.length} remaining)`}
             </button>
@@ -395,7 +395,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
 
         {/* Footer count */}
         {filtered.length > 0 && (
-          <div className="px-4 py-3 border-t border-slate-800 text-xs text-slate-600 text-right">
+          <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-600 text-right">
             Showing {filtered.length} of {total} entries
           </div>
         )}

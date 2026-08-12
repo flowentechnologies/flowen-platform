@@ -55,7 +55,7 @@ interface Props {
 const TRIGGER_CONFIG: Record<TriggerType, { label: string; color: string }> = {
   user_event: { label: 'User Event',  color: 'bg-blue-500/10 text-blue-400' },
   schedule:   { label: 'Schedule',    color: 'bg-amber-500/10 text-amber-400' },
-  manual:     { label: 'Manual',      color: 'bg-slate-700 text-slate-300' },
+  manual:     { label: 'Manual',      color: 'bg-slate-700 text-slate-600 dark:text-slate-300' },
   webhook:    { label: 'Webhook',     color: 'bg-purple-500/10 text-purple-400' },
 };
 
@@ -127,7 +127,7 @@ function StepsPipeline({ steps }: { steps: WorkflowStep[] }) {
     <div className="flex flex-wrap gap-2 mt-3">
       {steps.map((step, i) => (
         <React.Fragment key={step.step}>
-          <div className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 min-w-[120px]">
+          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 min-w-[120px]">
             <p className="text-[9px] font-mono text-slate-600 uppercase tracking-wide mb-1">Step {step.step}</p>
             <p className="text-[11px] font-mono text-indigo-300 font-bold">{step.action}</p>
             {step.template && (
@@ -234,7 +234,7 @@ function WorkflowCard({
   }
 
   return (
-    <div className={`bg-slate-900 border rounded-2xl overflow-hidden transition-colors ${wf.status === 'active' ? 'border-slate-700' : 'border-slate-800'}`}>
+    <div className={`bg-white dark:bg-slate-900 border rounded-2xl overflow-hidden transition-colors ${wf.status === 'active' ? 'border-slate-700' : 'border-slate-200 dark:border-slate-800'}`}>
       {/* Header row */}
       <div className="px-5 py-4 flex items-start gap-4">
         {/* Status dot */}
@@ -243,7 +243,7 @@ function WorkflowCard({
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h3 className="text-sm font-bold text-white">{wf.name}</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">{wf.name}</h3>
             <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${triggerCfg.color}`}>
               {triggerCfg.label}
             </span>
@@ -302,7 +302,7 @@ function WorkflowCard({
           <button
             type="button"
             onClick={() => setExpanded(v => !v)}
-            className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors"
+            className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             {expanded ? 'Steps ▲' : 'Steps ▼'}
           </button>
@@ -312,7 +312,7 @@ function WorkflowCard({
             <button
               type="button"
               onClick={() => setHistoryOpen(v => !v)}
-              className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors"
+              className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               {historyOpen ? 'Runs ▲' : 'Runs ▼'}
             </button>
@@ -323,7 +323,7 @@ function WorkflowCard({
             type="button"
             onClick={handleDelete}
             disabled={isPending}
-            className="px-2 py-1.5 text-[11px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
+            className="px-2 py-1.5 text-[11px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40"
           >
             ×
           </button>
@@ -332,7 +332,7 @@ function WorkflowCard({
 
       {/* Steps panel */}
       {expanded && (
-        <div className="px-5 pb-4 border-t border-slate-800/60 pt-3">
+        <div className="px-5 pb-4 border-t border-slate-200 dark:border-slate-800/60 pt-3">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Execution Pipeline</p>
           <StepsPipeline steps={wf.steps} />
         </div>
@@ -340,7 +340,7 @@ function WorkflowCard({
 
       {/* Run history panel */}
       {historyOpen && wf.recent_runs && wf.recent_runs.length > 0 && (
-        <div className="px-5 pb-4 border-t border-slate-800/60 pt-3">
+        <div className="px-5 pb-4 border-t border-slate-200 dark:border-slate-800/60 pt-3">
           <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide mb-1">Recent Runs</p>
           <RunHistory runs={wf.recent_runs} />
         </div>
@@ -381,34 +381,34 @@ function NewWorkflowModal({ onCreated }: { onCreated: (wf: WorkflowDefinition) =
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors"
       >
         + New Workflow
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">New Workflow</h3>
-              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="text-slate-500 hover:text-white text-lg">×</button>
+          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">New Workflow</h3>
+              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
             </div>
 
             <div className="px-6 py-5 space-y-4">
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Name *</label>
-                <input value={form.name} onChange={e => field('name', e.target.value)} placeholder="Workflow name" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.name} onChange={e => field('name', e.target.value)} placeholder="Workflow name" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Description</label>
-                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={2} placeholder="What does this workflow do?" className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={2} placeholder="What does this workflow do?" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Trigger Type</label>
-                  <select value={form.trigger_type} onChange={e => field('trigger_type', e.target.value as TriggerType)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                  <select value={form.trigger_type} onChange={e => field('trigger_type', e.target.value as TriggerType)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                     {TRIGGER_TYPES.map(t => (
                       <option key={t} value={t}>{TRIGGER_CONFIG[t].label}</option>
                     ))}
@@ -416,7 +416,7 @@ function NewWorkflowModal({ onCreated }: { onCreated: (wf: WorkflowDefinition) =
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Initial Status</label>
-                  <select value={form.status} onChange={e => field('status', e.target.value as WorkflowStatus)} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60">
+                  <select value={form.status} onChange={e => field('status', e.target.value as WorkflowStatus)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                     <option value="draft">Draft</option>
                     <option value="paused">Paused</option>
                     <option value="active">Active</option>
@@ -429,11 +429,11 @@ function NewWorkflowModal({ onCreated }: { onCreated: (wf: WorkflowDefinition) =
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-800 flex gap-3">
-              <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
+              <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                 {isPending ? 'Creating…' : 'Create'}
               </button>
-              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -522,7 +522,7 @@ function WorkflowVisualiser({ workflows }: { workflows: WorkflowDefinition[] }) 
   });
 
   return (
-    <div className="overflow-x-auto rounded-xl bg-slate-950 border border-slate-800 select-none">
+    <div className="overflow-x-auto rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 select-none">
       <div style={{ width: VIS_W, height: canvasH, position: 'relative' }}>
 
         {/* Column headers */}
@@ -729,10 +729,10 @@ export function WorkflowsClient({ initialWorkflows }: Props) {
       <div className="flex flex-wrap items-center gap-3">
 
         {/* View toggle */}
-        <div className="flex gap-0.5 bg-slate-800/60 border border-slate-700/60 rounded-lg p-0.5">
+        <div className="flex gap-0.5 bg-slate-100/80 dark:bg-slate-800/60 border border-slate-700/60 rounded-lg p-0.5">
           {(['cards', 'visualiser'] as const).map(v => (
             <button key={v} type="button" onClick={() => setView(v)}
-              className={`px-3 py-1 text-xs font-mono rounded-md transition-colors capitalize ${view === v ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+              className={`px-3 py-1 text-xs font-mono rounded-md transition-colors capitalize ${view === v ? 'bg-slate-700 text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-300'}`}>
               {v === 'visualiser' ? '⬡ Visualiser' : '☰ Cards'}
             </button>
           ))}
@@ -743,13 +743,13 @@ export function WorkflowsClient({ initialWorkflows }: Props) {
           <>
             <div className="flex gap-1">
               <button type="button" onClick={() => setStatusFilter('all')}
-                className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${statusFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}>
+                className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${statusFilter === 'all' ? 'bg-indigo-600 text-slate-900 dark:text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
                 All ({workflows.length})
               </button>
               {(['active', 'paused', 'draft'] as WorkflowStatus[]).map(s =>
                 statusCounts[s] ? (
                   <button key={s} type="button" onClick={() => setStatusFilter(s)}
-                    className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${statusFilter === s ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}>
+                    className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${statusFilter === s ? 'bg-indigo-600 text-slate-900 dark:text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
                     {STATUS_CONFIG[s].label} ({statusCounts[s]})
                   </button>
                 ) : null

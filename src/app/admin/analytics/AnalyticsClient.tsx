@@ -85,7 +85,7 @@ function AxisLabels({ days }: { days: string[] }) {
 function HBar({ value, max, color = 'bg-emerald-500' }: { value: number; max: number; color?: string }) {
   const p = max > 0 ? Math.max((value / max) * 100, value > 0 ? 2 : 0) : 0;
   return (
-    <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+    <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
       <div className={`h-full ${color} rounded-full`} style={{ width: `${p}%` }} />
     </div>
   );
@@ -93,11 +93,11 @@ function HBar({ value, max, color = 'bg-emerald-500' }: { value: number; max: nu
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 
-function Stat({ label, value, sub, valueColor = 'text-white', growth }: {
+function Stat({ label, value, sub, valueColor = 'text-slate-900 dark:text-white', growth }: {
   label: string; value: string; sub?: string; valueColor?: string; growth?: number;
 }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
       <div className="flex items-center justify-between mb-2">
         <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide">{label}</p>
         {growth !== undefined && growthBadge(growth)}
@@ -118,10 +118,10 @@ function FunnelStep({ label, count, total, prevCount, color = 'bg-emerald-500' }
   return (
     <div className="flex items-center gap-4">
       <div className="w-40 shrink-0 text-right">
-        <p className="text-sm font-bold text-white">{count.toLocaleString()}</p>
+        <p className="text-sm font-bold text-slate-900 dark:text-white">{count.toLocaleString()}</p>
         <p className="text-[10px] text-slate-400">{label}</p>
       </div>
-      <div className="flex-1 h-6 bg-slate-800 rounded-lg overflow-hidden">
+      <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden">
         <div className={`h-full ${color}/40 rounded-lg`} style={{ width: `${Math.max(barPct, 1)}%` }} />
       </div>
       <div className="w-16 shrink-0">
@@ -180,9 +180,9 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
     <div className="space-y-8">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Analytics</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Analytics</h1>
           <p className="text-slate-400 text-sm mt-1">Funnels · Revenue · Clinical outcomes · Engagement</p>
           <Link href="/admin/analytics/live" className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 mt-1 font-medium">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -191,13 +191,13 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
         </div>
         <div className="flex items-center gap-3 shrink-0">
           {/* Range selector */}
-          <div className="flex bg-slate-900 border border-slate-800 rounded-xl p-1 gap-1">
+          <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 gap-1">
             {([7, 30, 90] as Range[]).map(r => (
               <button
                 key={r}
                 onClick={() => handleRange(r)}
                 disabled={isPending}
-                className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors ${range === r ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
+                className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors ${range === r ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 {r}d
               </button>
@@ -207,7 +207,7 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
           <button
             onClick={handleRefresh}
             disabled={isPending}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-400 hover:text-white transition-colors disabled:opacity-40"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-700 text-xs text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-40"
           >
             <svg className={`w-3.5 h-3.5 ${isPending ? 'animate-spin' : ''}`} viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clipRule="evenodd"/>
@@ -229,7 +229,7 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat label="MRR"            value={fmtCurrency(data.mrrPence)}    sub="Monthly recurring"    valueColor="text-emerald-400" />
           <Stat label="ARR"            value={fmtCurrency(data.arrPence)}    sub="Annual run rate"      valueColor="text-emerald-300" />
-          <Stat label="Active Subs"    value={data.activeSubs.toLocaleString()} sub="paying subscribers" valueColor="text-white" />
+          <Stat label="Active Subs"    value={data.activeSubs.toLocaleString()} sub="paying subscribers" valueColor="text-slate-900 dark:text-white" />
           <Stat label="Trialing"       value={data.trialingSubs.toLocaleString()} sub="in trial"          valueColor="text-sky-400" />
         </div>
       </div>
@@ -248,9 +248,9 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
       </div>
 
       {/* Acquisition funnel */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-6">
-          <h2 className="text-sm font-bold text-white">Acquisition Funnel</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Acquisition Funnel</h2>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">
             CONVERSION
           </span>
@@ -269,9 +269,9 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
             { label: 'Onboarded → Subscribed',  value: `${pct(data.activeSubs, data.onboarded)}%` },
             { label: 'Subscribed → Practised',  value: `${pct(data.practicedUsers, data.activeSubs)}%` },
           ].map(c => (
-            <div key={c.label} className="bg-slate-800 rounded-xl px-4 py-2.5 flex items-center gap-3">
+            <div key={c.label} className="bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-2.5 flex items-center gap-3">
               <span className="text-[10px] text-slate-400">{c.label}</span>
-              <span className="text-sm font-bold text-white font-mono">{c.value}</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">{c.value}</span>
             </div>
           ))}
         </div>
@@ -279,9 +279,9 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
 
       {/* Trend charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold text-white">New Registrations ({range}d)</h2>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">New Registrations ({range}d)</h2>
             <div className="flex items-center gap-2">
               {growthBadge(data.signupGrowthPct)}
               <span className="text-[10px] text-slate-500">{rangeLabel}</span>
@@ -289,37 +289,37 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
           </div>
           <DayBars days={days} counts={data.signupsByDay} color="bg-emerald-500" />
           <AxisLabels days={days} />
-          <div className="flex justify-between mt-4 pt-4 border-t border-slate-800">
+          <div className="flex justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
             <span className="text-xs text-slate-500">This period</span>
-            <span className="text-xs font-mono font-bold text-white">{data.newSignups} signups</span>
+            <span className="text-xs font-mono font-bold text-slate-900 dark:text-white">{data.newSignups} signups</span>
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold text-white">Practice Sessions ({range}d)</h2>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Practice Sessions ({range}d)</h2>
             <span className="text-[10px] text-slate-500 font-mono">{data.sessionsInRange} sessions</span>
           </div>
           <DayBars days={days} counts={data.sessionsByDay} color="bg-sky-500" />
           <AxisLabels days={days} />
-          <div className="flex justify-between mt-4 pt-4 border-t border-slate-800">
+          <div className="flex justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
             <span className="text-xs text-slate-500">Avg sessions / active user</span>
-            <span className="text-xs font-mono font-bold text-white">{data.avgSessionsPerUser}</span>
+            <span className="text-xs font-mono font-bold text-slate-900 dark:text-white">{data.avgSessionsPerUser}</span>
           </div>
         </div>
       </div>
 
       {/* Tier distribution + Engagement */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h2 className="text-sm font-bold text-white mb-5">User Tier Distribution</h2>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-5">User Tier Distribution</h2>
           <div className="space-y-3">
             {tierOrder.map(tier => {
               const count = data.tierCounts[tier] ?? 0;
               return (
                 <div key={tier} className="flex items-center gap-3">
                   <div className="w-40 shrink-0">
-                    <p className="text-xs text-slate-300">{tierLabels[tier]}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-300">{tierLabels[tier]}</p>
                     <p className="text-[10px] text-slate-500 font-mono">{count} users · {pct(count, data.totalUsers)}%</p>
                   </div>
                   <HBar value={count} max={maxTierCount} color={tierColors[tier]} />
@@ -330,8 +330,8 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h2 className="text-sm font-bold text-white mb-5">Engagement ({range}d)</h2>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-5">Engagement ({range}d)</h2>
           <div className="space-y-0">
             {[
               { label: 'Avg session duration',     value: fmtDuration(data.avgDurationSeconds),  sub: 'per completed session' },
@@ -341,12 +341,12 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
               { label: 'Waitlist size',             value: data.waitlistTotal.toLocaleString(),   sub: 'pending platform access' },
               { label: 'Revenue per active sub',    value: data.activeSubs > 0 ? fmtCurrency(Math.round(data.mrrPence / data.activeSubs)) : '—', sub: 'avg MRR per subscriber' },
             ].map(m => (
-              <div key={m.label} className="flex items-center justify-between gap-4 py-3 border-b border-slate-800 last:border-0">
+              <div key={m.label} className="flex items-center justify-between gap-4 py-3 border-b border-slate-200 dark:border-slate-800 last:border-0">
                 <div>
-                  <p className="text-xs text-slate-300">{m.label}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">{m.label}</p>
                   <p className="text-[10px] text-slate-500">{m.sub}</p>
                 </div>
-                <span className="text-sm font-bold font-mono text-white shrink-0">{m.value}</span>
+                <span className="text-sm font-bold font-mono text-slate-900 dark:text-white shrink-0">{m.value}</span>
               </div>
             ))}
           </div>
@@ -355,9 +355,9 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
 
       {/* Clinical outcomes */}
       {data.sessionsInRange > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-sm font-bold text-white">Clinical Outcomes ({range}d average)</h2>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Clinical Outcomes ({range}d average)</h2>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-red-500/10 text-red-400 border border-red-500/30">
               CLINICAL DATA
             </span>
@@ -372,7 +372,7 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
               <div key={d.label} className="bg-slate-800/50 rounded-xl p-4">
                 <p className="text-[10px] text-slate-400 mb-2">{d.label}</p>
                 <p className={`text-2xl font-black ${d.color}`}>{d.value}</p>
-                <div className="mt-2 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div className="mt-2 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div
                     className={`h-full ${d.barColor}/50 rounded-full`}
                     style={{ width: totalDisfluencies > 0 ? `${(d.portion / totalDisfluencies) * 100}%` : '0%' }}
@@ -404,8 +404,8 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
       )}
 
       {/* Growth summary */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-        <h2 className="text-sm font-bold text-white mb-5">Growth Summary</h2>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-5">Growth Summary</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: `Signups (${range}d)`,         value: data.newSignups.toLocaleString(),                        sub: `${data.signupGrowthPct > 0 ? '+' : ''}${data.signupGrowthPct}% ${rangeLabel}`,   growth: data.signupGrowthPct },
@@ -418,7 +418,7 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
                 <p className="text-[10px] text-slate-400">{s.label}</p>
                 {s.growth !== undefined && growthBadge(s.growth)}
               </div>
-              <p className="text-xl font-black text-white">{s.value}</p>
+              <p className="text-xl font-black text-slate-900 dark:text-white">{s.value}</p>
               <p className="text-[10px] text-slate-500 mt-1">{s.sub}</p>
             </div>
           ))}
@@ -429,7 +429,7 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
       <CohortPanel />
 
       {/* Session Quality Intelligence */}
-      <hr className="border-slate-800" />
+      <hr className="border-slate-200 dark:border-slate-800" />
       <QualityPanel />
 
       {/* Footer */}

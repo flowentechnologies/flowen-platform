@@ -34,7 +34,7 @@ function isExpiringSoon(iso: string): boolean {
 type FilterTab = 'all' | 'not_invited' | 'invited' | 'expired' | 'converted';
 
 const STATUS_BADGE: Record<WaitlistSignup['status'], string> = {
-  not_invited: 'bg-slate-800 text-slate-400',
+  not_invited: 'bg-slate-100 dark:bg-slate-800 text-slate-400',
   invited: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
   expired: 'bg-red-500/10 text-red-400 border border-red-500/20',
   converted: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
@@ -51,11 +51,11 @@ const STATUS_LABEL: Record<WaitlistSignup['status'], string> = {
 
 function KpiCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
       <p className="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-500 mb-1">
         {label}
       </p>
-      <p className="text-2xl font-bold text-white">{value}</p>
+      <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
     </div>
   );
 }
@@ -241,7 +241,7 @@ export function WaitlistClient({ initialSignups }: { initialSignups: WaitlistSig
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Waitlist</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Waitlist</h1>
         <p className="text-slate-500 text-sm mt-1">Manage signups and send invitations</p>
       </div>
 
@@ -256,15 +256,15 @@ export function WaitlistClient({ initialSignups }: { initialSignups: WaitlistSig
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Filter tabs */}
-        <div className="flex rounded-xl bg-slate-900 border border-slate-800 p-1 gap-0.5">
+        <div className="flex rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 gap-0.5">
           {FILTER_TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 filter === tab.key
-                  ? 'bg-slate-700 text-white'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-slate-700 text-slate-900 dark:text-white'
+                  : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {tab.label}
@@ -294,7 +294,7 @@ export function WaitlistClient({ initialSignups }: { initialSignups: WaitlistSig
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
         {filtered.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-slate-500 text-sm">No signups found</p>
@@ -303,13 +303,13 @@ export function WaitlistClient({ initialSignups }: { initialSignups: WaitlistSig
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="px-4 py-3 text-left w-10">
                     <input
                       type="checkbox"
                       checked={allFilteredSelected}
                       onChange={toggleAll}
-                      className="rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900"
+                      className="rounded border-slate-700 bg-slate-100 dark:bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900"
                     />
                   </th>
                   <th className="px-4 py-3 text-left text-[11px] font-mono font-bold uppercase tracking-widest text-slate-500">
@@ -352,18 +352,18 @@ export function WaitlistClient({ initialSignups }: { initialSignups: WaitlistSig
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleOne(signup.id)}
-                          className="rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900"
+                          className="rounded border-slate-700 bg-slate-100 dark:bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900"
                         />
                       </td>
 
                       {/* Email */}
-                      <td className="px-4 py-3 text-white font-medium text-xs">
+                      <td className="px-4 py-3 text-slate-900 dark:text-white font-medium text-xs">
                         {signup.email}
                       </td>
 
                       {/* Source */}
                       <td className="px-4 py-3">
-                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-800 text-slate-400 border border-slate-700">
+                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-700">
                           {signup.source || '—'}
                         </span>
                       </td>

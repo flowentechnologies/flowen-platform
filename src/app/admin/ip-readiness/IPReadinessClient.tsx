@@ -44,7 +44,7 @@ const AUDIT_STATUSES: { id: AuditStatus; label: string; cls: string }[] = [
   { id: 'in_progress', label: 'In Progress', cls: 'bg-amber-500/15 text-amber-400 border border-amber-500/30' },
   { id: 'complete',    label: 'Complete',    cls: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' },
   { id: 'blocked',     label: 'Blocked',     cls: 'bg-red-500/15 text-red-400 border border-red-500/30' },
-  { id: 'waived',      label: 'Waived',      cls: 'bg-slate-800 text-slate-600 border border-slate-800' },
+  { id: 'waived',      label: 'Waived',      cls: 'bg-slate-100 dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-800' },
 ];
 
 const RISK_LEVELS: { id: RiskLevel; label: string; cls: string; dot: string }[] = [
@@ -72,8 +72,8 @@ const FUNDING_STATUSES: { id: FundingStatus; label: string; cls: string }[] = [
   { id: 'in_progress',   label: 'In Progress',    cls: 'bg-amber-500/15 text-amber-400 border border-amber-500/30' },
   { id: 'awarded',       label: 'Awarded',        cls: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' },
   { id: 'rejected',      label: 'Rejected',       cls: 'bg-red-500/15 text-red-400 border border-red-500/30' },
-  { id: 'not_eligible',  label: 'Not Eligible',   cls: 'bg-slate-800 text-slate-600 border border-slate-800' },
-  { id: 'on_hold',       label: 'On Hold',        cls: 'bg-slate-800 text-slate-500 border border-slate-700' },
+  { id: 'not_eligible',  label: 'Not Eligible',   cls: 'bg-slate-100 dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-800' },
+  { id: 'on_hold',       label: 'On Hold',        cls: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-700' },
 ];
 
 const AUDIT_STATUS_MAP   = Object.fromEntries(AUDIT_STATUSES.map(s => [s.id, s]));
@@ -83,7 +83,7 @@ const FUNDING_STATUS_MAP = Object.fromEntries(FUNDING_STATUSES.map(s => [s.id, s
 
 // ── Shared UI atoms ───────────────────────────────────────────────────────────
 
-const inputCls = 'w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
+const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
 const labelCls = 'block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5';
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -179,7 +179,7 @@ function ReadinessSummary({ auditItems, fundingItems }: { auditItems: AuditItem[
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">IP VENTURE READINESS</span>
           </div>
-          <h2 className="text-lg font-black text-white">IP Debt & Venture Readiness</h2>
+          <h2 className="text-lg font-black text-slate-900 dark:text-white">IP Debt & Venture Readiness</h2>
           <p className="text-xs text-slate-500 mt-0.5">Tier 1 audit progress · Tier 2 funding pipeline · Investor-ready IP score</p>
         </div>
       </div>
@@ -187,22 +187,22 @@ function ReadinessSummary({ auditItems, fundingItems }: { auditItems: AuditItem[
       <DebtScoreGauge score={score} />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-slate-950/60 rounded-xl p-3.5">
+        <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl p-3.5">
           <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1">Audit Progress</p>
-          <p className="text-2xl font-black text-white">{complete}<span className="text-base text-slate-500">/{auditItems.length}</span></p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white">{complete}<span className="text-base text-slate-500">/{auditItems.length}</span></p>
           <p className="text-[10px] font-mono text-slate-600 mt-0.5">items complete / waived</p>
         </div>
-        <div className={`rounded-xl p-3.5 ${criticalBlockers.length > 0 ? 'bg-red-950/40 border border-red-500/20' : 'bg-slate-950/60'}`}>
+        <div className={`rounded-xl p-3.5 ${criticalBlockers.length > 0 ? 'bg-red-950/40 border border-red-500/20' : 'bg-slate-100 dark:bg-slate-950/60'}`}>
           <p className={`text-[9px] font-mono uppercase tracking-widest mb-1 ${criticalBlockers.length > 0 ? 'text-red-400' : 'text-slate-500'}`}>Critical Blockers</p>
           <p className={`text-2xl font-black ${criticalBlockers.length > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{criticalBlockers.length}</p>
           <p className="text-[10px] font-mono text-slate-600 mt-0.5">{criticalBlockers.length > 0 ? 'investor-blocking items' : 'no critical gaps'}</p>
         </div>
-        <div className="bg-slate-950/60 rounded-xl p-3.5">
+        <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl p-3.5">
           <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1">Funding Active</p>
           <p className="text-2xl font-black text-sky-400">{fundingActive}</p>
           <p className="text-[10px] font-mono text-slate-600 mt-0.5">programmes in flight</p>
         </div>
-        <div className="bg-slate-950/60 rounded-xl p-3.5">
+        <div className="bg-slate-100 dark:bg-slate-950/60 rounded-xl p-3.5">
           <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1">IP Funding Value</p>
           <p className="text-2xl font-black text-emerald-400">{awardedTotal > 0 ? fmtGBP(awardedTotal) : '—'}</p>
           <p className="text-[10px] font-mono text-slate-600 mt-0.5">{fundingAwarded.length} programme{fundingAwarded.length !== 1 ? 's' : ''} awarded</p>
@@ -231,7 +231,7 @@ type MainTab = 'tier1' | 'tier2';
 
 function TabBar({ active, onChange }: { active: MainTab; onChange: (t: MainTab) => void }) {
   return (
-    <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 w-fit">
+    <div className="flex gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 w-fit">
       {([
         { id: 'tier1' as const, label: 'Tier 1 — IP Audit' },
         { id: 'tier2' as const, label: 'Tier 2 — IP Funding & Access' },
@@ -242,8 +242,8 @@ function TabBar({ active, onChange }: { active: MainTab; onChange: (t: MainTab) 
           onClick={() => onChange(t.id)}
           className={`px-5 py-2 text-sm font-mono rounded-lg transition-colors whitespace-nowrap ${
             active === t.id
-              ? 'bg-indigo-600 text-white font-bold'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-indigo-600 text-slate-900 dark:text-white font-bold'
+              : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           {t.label}
@@ -310,7 +310,7 @@ function AuditForm({ initial, onSave, onCancel, saving }: {
   }
 
   return (
-    <div className="bg-slate-900 border border-indigo-500/20 rounded-2xl p-5 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-indigo-500/20 rounded-2xl p-5 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <FieldLabel>Category *</FieldLabel>
@@ -365,11 +365,11 @@ function AuditForm({ initial, onSave, onCancel, saving }: {
       </div>
       <div className="flex gap-3 pt-1">
         <button type="button" onClick={() => onSave(form)} disabled={saving || !form.title}
-          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40">
+          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
           {saving ? 'Saving…' : 'Save Item'}
         </button>
         <button type="button" onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
           Cancel
         </button>
       </div>
@@ -401,7 +401,7 @@ function AuditItemRow({ item, onEdit, onDelete, onStatusChange, deleting }: {
       <RiskDot level={item.risk_level} />
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <p className="text-sm font-semibold text-white leading-tight">{item.title}</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">{item.title}</p>
           <AuditStatusBadge status={item.status} />
           <span className={`text-[9px] font-mono font-bold ${risk.cls}`}>
             {risk.label.toUpperCase()} RISK
@@ -424,17 +424,17 @@ function AuditItemRow({ item, onEdit, onDelete, onStatusChange, deleting }: {
         <select
           value={item.status}
           onChange={e => onStatusChange(item.id, e.target.value as AuditStatus)}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-[10px] font-mono text-slate-300 focus:outline-none focus:border-indigo-500/60"
+          className="bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-[10px] font-mono text-slate-600 dark:text-slate-300 focus:outline-none focus:border-indigo-500/60"
           onClick={e => e.stopPropagation()}
         >
           {AUDIT_STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
         </select>
         <button type="button" onClick={() => onEdit(item)}
-          className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors">
+          className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors">
           Edit
         </button>
         <button type="button" onClick={() => onDelete(item.id)} disabled={deleting}
-          className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40">
+          className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40">
           ×
         </button>
       </div>
@@ -455,12 +455,12 @@ function AuditCategorySection({ cat, items, onEdit, onDelete, onStatusChange, de
   const hasCritical = items.some(i => i.risk_level === 'critical' && i.status !== 'complete' && i.status !== 'waived');
 
   return (
-    <div className={`rounded-2xl border overflow-hidden transition-colors ${hasCritical ? 'border-red-800/40 bg-red-950/10' : 'border-slate-800 bg-slate-900'}`}>
+    <div className={`rounded-2xl border overflow-hidden transition-colors ${hasCritical ? 'border-red-800/40 bg-red-950/10' : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900'}`}>
       <button type="button" onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/5 transition-colors">
         <div className="flex items-center gap-3">
           <span className="text-lg">{cat.icon}</span>
-          <span className="text-sm font-bold text-white">{cat.label}</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-white">{cat.label}</span>
           {hasCritical && (
             <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-red-500/20 text-red-400 border border-red-500/30">CRITICAL</span>
           )}
@@ -468,7 +468,7 @@ function AuditCategorySection({ cat, items, onEdit, onDelete, onStatusChange, de
         </div>
         <div className="flex items-center gap-3">
           {/* Mini progress */}
-          <div className="w-20 h-1.5 bg-slate-800 rounded-full overflow-hidden hidden sm:block">
+          <div className="w-20 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden hidden sm:block">
             <div
               className={`h-full rounded-full transition-all ${hasCritical ? 'bg-red-500' : 'bg-emerald-500'}`}
               style={{ width: items.length > 0 ? `${(complete / items.length) * 100}%` : '0%' }}
@@ -480,7 +480,7 @@ function AuditCategorySection({ cat, items, onEdit, onDelete, onStatusChange, de
         </div>
       </button>
       {open && (
-        <div className="divide-y divide-slate-800/60 border-t border-slate-800/60">
+        <div className="divide-y divide-slate-800/60 border-t border-slate-200 dark:border-slate-800/60">
           {items.map(item => (
             <AuditItemRow
               key={item.id}
@@ -570,19 +570,19 @@ function Tier1AuditTab({ items: initial, showToast }: {
               key={s.id}
               type="button"
               onClick={() => setFilterStatus(f => f === s.id ? 'all' : s.id)}
-              className={`bg-slate-900 border rounded-xl p-3.5 text-left transition-all ${
-                filterStatus === s.id ? 'border-indigo-500/50' : 'border-slate-800 hover:border-slate-700'
+              className={`bg-white dark:bg-slate-900 border rounded-xl p-3.5 text-left transition-all ${
+                filterStatus === s.id ? 'border-indigo-500/50' : 'border-slate-200 dark:border-slate-800 hover:border-slate-700'
               }`}
             >
               <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1">{s.label}</p>
-              <p className={`text-2xl font-black ${count > 0 ? 'text-white' : 'text-slate-700'}`}>{count}</p>
+              <p className={`text-2xl font-black ${count > 0 ? 'text-slate-900 dark:text-white' : 'text-slate-700'}`}>{count}</p>
             </button>
           );
         })}
       </div>
 
       {/* Score + progress bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-4 flex items-center gap-6 flex-wrap">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-4 flex items-center gap-6 flex-wrap">
         <div className="flex items-center gap-3">
           <div className={`text-2xl font-black ${score >= 80 ? 'text-emerald-400' : score >= 50 ? 'text-amber-400' : 'text-red-400'}`}>
             {score}%
@@ -593,7 +593,7 @@ function Tier1AuditTab({ items: initial, showToast }: {
           </div>
         </div>
         <div className="flex-1 min-w-[120px]">
-          <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${score >= 80 ? 'bg-emerald-500' : score >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
               style={{ width: `${score}%` }}
@@ -608,7 +608,7 @@ function Tier1AuditTab({ items: initial, showToast }: {
           <button
             type="button"
             onClick={() => setFilterCat('all')}
-            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${filterCat === 'all' ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${filterCat === 'all' ? 'bg-indigo-600 text-slate-900 dark:text-white font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
           >
             All ({items.length})
           </button>
@@ -620,7 +620,7 @@ function Tier1AuditTab({ items: initial, showToast }: {
                 key={c.id}
                 type="button"
                 onClick={() => setFilterCat(f => f === c.id ? 'all' : c.id)}
-                className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${filterCat === c.id ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${filterCat === c.id ? 'bg-indigo-600 text-slate-900 dark:text-white font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 {c.icon} {c.label} ({count})
               </button>
@@ -630,7 +630,7 @@ function Tier1AuditTab({ items: initial, showToast }: {
         <button
           type="button"
           onClick={() => { setShowAdd(v => !v); setEditing(null); }}
-          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors"
         >
           {showAdd ? 'Cancel' : '+ Add Item'}
         </button>
@@ -649,7 +649,7 @@ function Tier1AuditTab({ items: initial, showToast }: {
 
       {/* Items grouped by category */}
       {grouped.length === 0 ? (
-        <div className="py-16 text-center border border-dashed border-slate-800 rounded-2xl">
+        <div className="py-16 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
           <p className="text-sm text-slate-600 font-mono">
             {items.length === 0 ? 'No audit items yet — seed or add your first item' : 'No items match the current filter'}
           </p>
@@ -733,7 +733,7 @@ function FundingForm({ initial, onSave, onCancel, saving }: {
   }
 
   return (
-    <div className="bg-slate-900 border border-sky-500/20 rounded-2xl p-5 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-sky-500/20 rounded-2xl p-5 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <FieldLabel>Programme Type *</FieldLabel>
@@ -792,11 +792,11 @@ function FundingForm({ initial, onSave, onCancel, saving }: {
       </div>
       <div className="flex gap-3 pt-1">
         <button type="button" onClick={() => onSave(form)} disabled={saving || !form.name || !form.provider}
-          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition-colors disabled:opacity-40">
+          className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-sky-600 hover:bg-sky-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
           {saving ? 'Saving…' : 'Save Programme'}
         </button>
         <button type="button" onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors">
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
           Cancel
         </button>
       </div>
@@ -816,12 +816,12 @@ function FundingCard({ item, onEdit, onDelete, onStatusChange, deleting }: {
   const isActive  = ['eligible', 'applied', 'in_progress', 'awarded'].includes(item.status);
 
   return (
-    <div className={`group bg-slate-900 border rounded-xl p-4 hover:border-slate-700 transition-colors ${isActive ? 'border-slate-700' : 'border-slate-800'}`}>
+    <div className={`group bg-white dark:bg-slate-900 border rounded-xl p-4 hover:border-slate-700 transition-colors ${isActive ? 'border-slate-700' : 'border-slate-200 dark:border-slate-800'}`}>
       <div className="flex items-start gap-3">
         <span className="text-xl shrink-0">{typeCfg?.icon ?? '💼'}</span>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1.5">
-            <p className="text-sm font-bold text-white">{item.name}</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">{item.name}</p>
             <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${statusCfg.cls}`}>{statusCfg.label}</span>
             {typeCfg && (
               <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${typeCfg.badge}`}>{typeCfg.label}</span>
@@ -851,17 +851,17 @@ function FundingCard({ item, onEdit, onDelete, onStatusChange, deleting }: {
           <select
             value={item.status}
             onChange={e => onStatusChange(item.id, e.target.value as FundingStatus)}
-            className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-[10px] font-mono text-slate-300 focus:outline-none"
+            className="bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-[10px] font-mono text-slate-600 dark:text-slate-300 focus:outline-none"
           >
             {FUNDING_STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
           <div className="flex gap-1">
             <button type="button" onClick={() => onEdit(item)}
-              className="flex-1 px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors">
+              className="flex-1 px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors">
               Edit
             </button>
             <button type="button" onClick={() => onDelete(item.id)} disabled={deleting}
-              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40">
+              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-red-400 hover:border-red-800/50 transition-colors disabled:opacity-40">
               ×
             </button>
           </div>
@@ -955,11 +955,11 @@ function Tier2FundingTab({ items: initial, showToast }: {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Active Pipeline', value: String(items.filter(i => activeStatuses.includes(i.status)).length), sub: 'programmes in flight', accent: 'text-sky-400' },
-          { label: 'Total Opportunities', value: String(items.length), sub: 'across all types', accent: 'text-white' },
+          { label: 'Total Opportunities', value: String(items.length), sub: 'across all types', accent: 'text-slate-900 dark:text-white' },
           { label: 'Awarded', value: String(items.filter(i => i.status === 'awarded').length), sub: 'programmes secured', accent: 'text-emerald-400' },
           { label: 'Max Pipeline Value', value: totalPipeline > 0 ? fmtGBP(totalPipeline) : '—', sub: 'active programmes combined', accent: 'text-amber-400' },
         ].map(stat => (
-          <div key={stat.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <div key={stat.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
             <p className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
             <p className={`text-2xl font-black ${stat.accent}`}>{stat.value}</p>
             <p className="text-[10px] font-mono text-slate-600 mt-0.5">{stat.sub}</p>
@@ -973,14 +973,14 @@ function Tier2FundingTab({ items: initial, showToast }: {
           <button
             type="button"
             onClick={() => setFilterStatus('all')}
-            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${filterStatus === 'all' ? 'bg-sky-600 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${filterStatus === 'all' ? 'bg-sky-600 text-slate-900 dark:text-white font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
           >
             All ({items.length})
           </button>
           <button
             type="button"
             onClick={() => setFilterStatus(s => s === 'active' ? 'all' : 'active')}
-            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${filterStatus === 'active' ? 'bg-sky-600 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${filterStatus === 'active' ? 'bg-sky-600 text-slate-900 dark:text-white font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
           >
             Active ({items.filter(i => activeStatuses.includes(i.status)).length})
           </button>
@@ -992,7 +992,7 @@ function Tier2FundingTab({ items: initial, showToast }: {
                 key={t.id}
                 type="button"
                 onClick={() => setFilterType(f => f === t.id ? 'all' : t.id)}
-                className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${filterType === t.id ? 'bg-sky-600 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${filterType === t.id ? 'bg-sky-600 text-slate-900 dark:text-white font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 {t.icon} {t.label} ({count})
               </button>
@@ -1002,7 +1002,7 @@ function Tier2FundingTab({ items: initial, showToast }: {
         <button
           type="button"
           onClick={() => { setShowAdd(v => !v); setEditing(null); }}
-          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-sky-600 hover:bg-sky-500 text-slate-900 dark:text-white transition-colors"
         >
           {showAdd ? 'Cancel' : '+ Add Programme'}
         </button>
@@ -1021,7 +1021,7 @@ function Tier2FundingTab({ items: initial, showToast }: {
 
       {/* Items grouped by type */}
       {grouped.length === 0 ? (
-        <div className="py-16 text-center border border-dashed border-slate-800 rounded-2xl">
+        <div className="py-16 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
           <p className="text-sm text-slate-600 font-mono">
             {items.length === 0 ? 'No funding programmes yet — seed or add your first one' : 'No programmes match the current filter'}
           </p>
@@ -1032,7 +1032,7 @@ function Tier2FundingTab({ items: initial, showToast }: {
             <div key={type.id}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-base">{type.icon}</span>
-                <h3 className="text-sm font-bold text-slate-300">{type.label}</h3>
+                <h3 className="text-sm font-bold text-slate-600 dark:text-slate-300">{type.label}</h3>
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold ${type.badge}`}>{typeItems.length}</span>
               </div>
               <div className="space-y-2">

@@ -74,11 +74,11 @@ export default async function ContentPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Content</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Content</h1>
           <p className="text-slate-400 text-sm mt-1">
-            Effective: <span className="text-slate-300">{MASTER_POLICIES.effectiveDate}</span>
+            Effective: <span className="text-slate-600 dark:text-slate-300">{MASTER_POLICIES.effectiveDate}</span>
           </p>
         </div>
         <span className="self-start sm:self-auto px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
@@ -88,25 +88,25 @@ export default async function ContentPage() {
 
       {/* KPI row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-xs font-mono text-slate-400 uppercase tracking-wide mb-2">Email Templates</p>
-          <p className="text-4xl font-black text-white">{templateCount}</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white">{templateCount}</p>
           <p className="text-xs text-slate-600 mt-1 font-mono">transactional</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-xs font-mono text-slate-400 uppercase tracking-wide mb-2">Legal Documents</p>
-          <p className="text-4xl font-black text-white">{legalDocCount}</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white">{legalDocCount}</p>
           <p className="text-xs text-slate-600 mt-1 font-mono">UK GDPR / PECR compliant</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-xs font-mono text-slate-400 uppercase tracking-wide mb-2">Consent Records</p>
-          <p className="text-4xl font-black text-white">{totalConsent}</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white">{totalConsent}</p>
           <p className="text-xs text-slate-600 mt-1 font-mono">audit log entries</p>
         </div>
       </div>
 
       {/* Tabbed content */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <ContentTabs counts={counts} consentRecords={consentRecords} legalDocs={legalDocs} />
       </div>
     </div>

@@ -172,9 +172,9 @@ export default async function IntegrationsPage() {
     <div className="space-y-8">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Integrations</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Integrations</h1>
           <p className="text-slate-400 text-sm mt-1">Third-party services · Webhooks · API keys</p>
         </div>
         <span className="text-[10px] text-slate-500 font-mono hidden sm:block">{generatedAt} (London)</span>
@@ -191,15 +191,15 @@ export default async function IntegrationsPage() {
           {
             label: 'Webhook Events',
             value: totalWebhooks.toLocaleString(),
-            color: 'text-white',
+            color: 'text-slate-900 dark:text-white',
           },
           {
             label: 'API Keys Issued',
             value: String(activeApiKeys),
-            color: 'text-white',
+            color: 'text-slate-900 dark:text-white',
           },
         ].map(kpi => (
-          <div key={kpi.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <div key={kpi.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
             <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">{kpi.label}</p>
             <p className={`text-4xl font-black ${kpi.color}`}>{kpi.value}</p>
           </div>

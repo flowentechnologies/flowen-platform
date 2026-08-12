@@ -192,7 +192,7 @@ function StatusBadge({ status }: { status: string }) {
     open:      'bg-amber-500/15 text-amber-300 border-amber-500/40',
     mitigated: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
     accepted:  'bg-slate-700/60 text-slate-400 border-slate-600/50',
-    closed:    'bg-slate-800/60 text-slate-500 border-slate-700/40',
+    closed:    'bg-slate-100/80 dark:bg-slate-800/60 text-slate-500 border-slate-700/40',
   };
   const cls = config[status] ?? 'bg-slate-700 text-slate-400 border-slate-600';
   return (
@@ -222,14 +222,14 @@ function RiskMatrix({ entries }: { entries: HazardEntry[] }) {
   }, [entries]);
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-800/40 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="text-sm font-bold text-white">Risk Matrix (5×5)</span>
-          <span className="text-[10px] font-mono text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
+          <span className="text-sm font-bold text-slate-900 dark:text-white">Risk Matrix (5×5)</span>
+          <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
             Severity × Likelihood
           </span>
         </div>
@@ -344,7 +344,7 @@ function ScoreRadio({
           className={`flex flex-col items-center cursor-pointer rounded-lg border px-3 py-2 text-xs transition-all select-none ${
             value === n
               ? 'bg-indigo-600/20 border-indigo-500/60 text-indigo-300'
-              : 'bg-slate-800/60 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-200'
+              : 'bg-slate-100/80 dark:bg-slate-800/60 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-200'
           }`}
         >
           <input
@@ -369,9 +369,9 @@ function LiveRiskIndicator({ severity, likelihood }: { severity: number; likelih
   const score = riskScore(severity, likelihood);
   const level = computeRiskLevel(score);
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 border border-slate-700/50">
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-700/50">
       <div className="text-center">
-        <p className="text-2xl font-black text-white">{score}</p>
+        <p className="text-2xl font-black text-slate-900 dark:text-white">{score}</p>
         <p className="text-[10px] font-mono text-slate-500">score</p>
       </div>
       <div className="h-8 w-px bg-slate-700" />
@@ -495,10 +495,10 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden"
+      className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden"
     >
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/80">
-        <h3 className="text-base font-bold text-white">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-900/80">
+        <h3 className="text-base font-bold text-slate-900 dark:text-white">
           {editingEntry ? `Edit ${editingEntry.hazard_ref}` : 'Add New Hazard'}
         </h3>
         <button
@@ -514,7 +514,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
 
         {/* ── Section 1: Hazard Details ─────────────────────────────────── */}
         <section className="space-y-4">
-          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-800 pb-2">
+          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-200 dark:border-slate-800 pb-2">
             1 — Hazard Details
           </h4>
 
@@ -526,7 +526,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
               value={form.hazard_description}
               onChange={e => set('hazard_description', e.target.value)}
               placeholder="Describe the potential hazard clearly and concisely…"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
             />
           </div>
 
@@ -536,7 +536,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
               required
               value={form.affected_pathway}
               onChange={e => set('affected_pathway', e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/60 transition-colors appearance-none"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/60 transition-colors appearance-none"
             >
               {PATHWAYS.map(p => (
                 <option key={p} value={p}>{p}</option>
@@ -553,7 +553,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
                 value={form.cause}
                 onChange={e => set('cause', e.target.value)}
                 placeholder="What could cause this hazard to occur?"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
               />
             </div>
             <div className="space-y-1.5">
@@ -564,7 +564,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
                 value={form.effect}
                 onChange={e => set('effect', e.target.value)}
                 placeholder="What harm could result to the patient or user?"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
               />
             </div>
           </div>
@@ -572,7 +572,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
 
         {/* ── Section 2: Initial Risk ───────────────────────────────────── */}
         <section className="space-y-4">
-          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-800 pb-2">
+          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-200 dark:border-slate-800 pb-2">
             2 — Initial Risk (before mitigation)
           </h4>
 
@@ -604,7 +604,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
 
         {/* ── Section 3: Mitigation ─────────────────────────────────────── */}
         <section className="space-y-4">
-          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-800 pb-2">
+          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-200 dark:border-slate-800 pb-2">
             3 — Mitigation &amp; Residual Risk
           </h4>
 
@@ -616,7 +616,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
               value={form.mitigation}
               onChange={e => set('mitigation', e.target.value)}
               placeholder="Describe the controls, processes, and safeguards put in place to mitigate this hazard…"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
             />
           </div>
 
@@ -653,7 +653,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
 
         {/* ── Section 4: Review ─────────────────────────────────────────── */}
         <section className="space-y-4">
-          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-800 pb-2">
+          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-200 dark:border-slate-800 pb-2">
             4 — Review &amp; Status
           </h4>
 
@@ -663,7 +663,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
               <select
                 value={form.status}
                 onChange={e => set('status', e.target.value as Status)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/60 transition-colors appearance-none"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/60 transition-colors appearance-none"
               >
                 {STATUSES.map(s => (
                   <option key={s} value={s}>
@@ -680,7 +680,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
                 value={form.reviewed_by}
                 onChange={e => set('reviewed_by', e.target.value)}
                 placeholder="Name / role of reviewer (e.g. Clinical Safety Officer)"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 transition-colors"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 transition-colors"
               />
             </div>
           </div>
@@ -694,7 +694,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-800 bg-slate-900/80">
+      <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-900/80">
         <button
           type="button"
           onClick={onClose}
@@ -705,7 +705,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
         <button
           type="submit"
           disabled={saving}
-          className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-sm font-semibold text-white transition-colors"
+          className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-sm font-semibold text-slate-900 dark:text-white transition-colors"
         >
           {saving ? 'Saving…' : editingEntry ? 'Save Changes' : 'Add Hazard'}
         </button>
@@ -729,18 +729,18 @@ function DeleteDialog({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md mx-4 space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md mx-4 space-y-4">
         <div className="flex items-start gap-3">
           <span className="text-2xl">⚠</span>
           <div>
-            <h3 className="text-base font-bold text-white">Delete {entry.hazard_ref}?</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Delete {entry.hazard_ref}?</h3>
             <p className="text-sm text-slate-400 mt-1 leading-relaxed">
               This will permanently remove this hazard from the log. For DCB0129 compliance, consider
-              marking it as <strong className="text-slate-300">Closed</strong> instead to preserve the audit trail.
+              marking it as <strong className="text-slate-600 dark:text-slate-300">Closed</strong> instead to preserve the audit trail.
             </p>
           </div>
         </div>
-        <p className="text-sm text-slate-500 bg-slate-800/60 rounded-lg px-3 py-2 font-mono truncate">
+        <p className="text-sm text-slate-500 bg-slate-100/80 dark:bg-slate-800/60 rounded-lg px-3 py-2 font-mono truncate">
           {entry.hazard_description}
         </p>
         <div className="flex items-center justify-end gap-3 pt-2">
@@ -753,7 +753,7 @@ function DeleteDialog({
           <button
             onClick={onConfirm}
             disabled={deleting}
-            className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-sm font-semibold text-white transition-colors"
+            className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-sm font-semibold text-slate-900 dark:text-white transition-colors"
           >
             {deleting ? 'Deleting…' : 'Delete permanently'}
           </button>
@@ -820,7 +820,7 @@ function EmptyState({ onStartWithSeed }: { onStartWithSeed: (seed: SeedHazard) =
     <div className="space-y-6">
       <div className="text-center py-12">
         <div className="text-4xl mb-3">📋</div>
-        <h3 className="text-lg font-bold text-white mb-2">No hazards logged yet</h3>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">No hazards logged yet</h3>
         <p className="text-sm text-slate-400 max-w-md mx-auto">
           DCB0129 requires a populated hazard log before NHS procurement. Start by adding the
           hazards relevant to Flowen below, or add your own.
@@ -836,19 +836,19 @@ function EmptyState({ onStartWithSeed }: { onStartWithSeed: (seed: SeedHazard) =
             <button
               key={i}
               onClick={() => onStartWithSeed(seed)}
-              className="w-full text-left bg-slate-900 border border-slate-800 hover:border-slate-600 rounded-xl px-4 py-3 transition-all group"
+              className="w-full text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-600 rounded-xl px-4 py-3 transition-all group"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-500 border border-slate-700">
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-700">
                       H{String(i + 1).padStart(3, '0')}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-600 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700/50">
+                    <span className="text-[10px] font-mono text-slate-600 bg-slate-100/80 dark:bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700/50">
                       {seed.affected_pathway}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-300 group-hover:text-white transition-colors leading-snug">
+                  <p className="text-sm text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors leading-snug">
                     {seed.hazard_description}
                   </p>
                 </div>
@@ -983,12 +983,12 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
       {/* ── Stats strip ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Hazards',  value: stats.total,     color: 'text-white' },
+          { label: 'Total Hazards',  value: stats.total,     color: 'text-slate-900 dark:text-white' },
           { label: 'Open',           value: stats.open,      color: 'text-amber-400' },
           { label: 'Mitigated',      value: stats.mitigated, color: 'text-emerald-400' },
           { label: 'High / Critical',value: stats.highPlus,  color: 'text-red-400' },
         ].map(s => (
-          <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4">
+          <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4">
             <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
             <p className="text-[11px] font-mono text-slate-500 mt-0.5">{s.label}</p>
           </div>
@@ -1004,8 +1004,8 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
               onClick={() => setFilterTab(tab.id)}
               className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${
                 filterTab === tab.id
-                  ? 'bg-slate-800 border-slate-600 text-white'
-                  : 'bg-transparent border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                  ? 'bg-slate-100 dark:bg-slate-800 border-slate-600 text-slate-900 dark:text-white'
+                  : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
               }`}
             >
               {tab.label}
@@ -1021,12 +1021,12 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
             placeholder="Search hazards…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-slate-600 transition-colors w-48"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-slate-600 transition-colors w-48"
           />
           {entries.length > 0 && (
             <button
               onClick={() => exportCsv(entries)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-slate-300 hover:text-white transition-all font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all font-medium"
             >
               <span className="text-base leading-none">↓</span>
               Export CSV
@@ -1034,7 +1034,7 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
           )}
           <button
             onClick={openAddForm}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm font-semibold text-white transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm font-semibold text-slate-900 dark:text-white transition-colors"
           >
             <span className="text-lg leading-none">+</span>
             Add Hazard
@@ -1064,7 +1064,7 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
 
       {/* ── Hazard table ──────────────────────────────────────────────────── */}
       {entries.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-slate-500 text-sm">
               No hazards match the current filter.
@@ -1073,7 +1073,7 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800">
+                  <tr className="border-b border-slate-200 dark:border-slate-800">
                     {[
                       'Ref', 'Description', 'Pathway',
                       'Sev', 'Lhd', 'Score', 'Risk Level',
@@ -1096,7 +1096,7 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
                     >
                       {/* Ref */}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="font-mono text-xs font-bold text-slate-300 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+                        <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
                           {entry.hazard_ref}
                         </span>
                       </td>
@@ -1110,26 +1110,26 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
 
                       {/* Pathway */}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-[10px] font-mono text-slate-500 bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700/50">
+                        <span className="text-[10px] font-mono text-slate-500 bg-slate-100/80 dark:bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700/50">
                           {entry.affected_pathway}
                         </span>
                       </td>
 
                       {/* Severity */}
                       <td className="px-4 py-3 text-center whitespace-nowrap">
-                        <span className="font-mono text-xs font-bold text-slate-300">{entry.severity}</span>
+                        <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{entry.severity}</span>
                         <p className="text-[9px] text-slate-600 font-mono">{SEVERITY_LABELS[entry.severity]}</p>
                       </td>
 
                       {/* Likelihood */}
                       <td className="px-4 py-3 text-center whitespace-nowrap">
-                        <span className="font-mono text-xs font-bold text-slate-300">{entry.likelihood}</span>
+                        <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{entry.likelihood}</span>
                         <p className="text-[9px] text-slate-600 font-mono">{LIKELIHOOD_LABELS[entry.likelihood]}</p>
                       </td>
 
                       {/* Risk Score */}
                       <td className="px-4 py-3 text-center whitespace-nowrap">
-                        <span className="text-lg font-black text-white">{entry.risk_score}</span>
+                        <span className="text-lg font-black text-slate-900 dark:text-white">{entry.risk_score}</span>
                       </td>
 
                       {/* Risk Level */}
@@ -1178,7 +1178,7 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
 
           {/* Table footer */}
           {filtered.length > 0 && (
-            <div className="px-4 py-3 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-600">
+            <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-600">
               <span>
                 {filtered.length} of {entries.length} hazard{entries.length !== 1 ? 's' : ''}
               </span>

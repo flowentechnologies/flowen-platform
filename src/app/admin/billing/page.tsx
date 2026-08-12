@@ -177,9 +177,9 @@ export default async function BillingPage() {
     <div className="space-y-8">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Billing</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Billing</h1>
           <p className="text-slate-400 text-sm mt-1">Revenue, subscriptions, payments, refunds</p>
         </div>
         <div className="flex items-center gap-3 self-start sm:self-auto">
@@ -203,10 +203,10 @@ export default async function BillingPage() {
         {[
           { label: 'MRR',                value: formatCurrency(mrrPence),         sub: 'Monthly recurring',       color: 'text-emerald-400' },
           { label: 'ARR',                value: formatCurrency(arrPence),          sub: 'Annual run rate',         color: 'text-emerald-300' },
-          { label: 'Active Subscribers', value: activeSubs.length.toString(),      sub: `${pastDueSubs.length} past due`, color: 'text-white' },
+          { label: 'Active Subscribers', value: activeSubs.length.toString(),      sub: `${pastDueSubs.length} past due`, color: 'text-slate-900 dark:text-white' },
           { label: 'This Month Revenue', value: formatCurrency(monthRevenuePence), sub: `${formatCurrency(refundPence)} refunded`, color: 'text-sky-400' },
         ].map(kpi => (
-          <div key={kpi.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <div key={kpi.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
             <p className="text-xs font-mono text-slate-400 uppercase tracking-wide mb-2">{kpi.label}</p>
             <p className={`text-3xl font-black ${kpi.color}`}>{kpi.value}</p>
             <p className="text-xs text-slate-500 mt-1">{kpi.sub}</p>
@@ -216,13 +216,13 @@ export default async function BillingPage() {
 
       {/* Cycle breakdown */}
       {Object.keys(cycleMap).length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-          <h2 className="text-sm font-bold text-white mb-4">Billing Cycle Breakdown</h2>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Billing Cycle Breakdown</h2>
           <div className="flex flex-wrap gap-3">
             {Object.entries(cycleMap).map(([cycle, count]) => (
-              <div key={cycle} className="flex items-center gap-2 bg-slate-800 rounded-xl px-4 py-2.5">
+              <div key={cycle} className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl px-4 py-2.5">
                 <span className="text-slate-400 text-xs font-mono">{cycle}</span>
-                <span className="text-white font-bold text-sm">{count}</span>
+                <span className="text-slate-900 dark:text-white font-bold text-sm">{count}</span>
                 <span className="text-slate-500 text-[10px]">
                   ({((count / activeSubs.length) * 100).toFixed(0)}%)
                 </span>
@@ -233,34 +233,34 @@ export default async function BillingPage() {
       )}
 
       {/* Active subscriptions */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white">Active Subscriptions</h2>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Active Subscriptions</h2>
           <span className="text-xs font-mono text-slate-500">{activeSubs.length} total</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-950 border-b border-slate-800">
+            <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
               <tr>
                 {['Customer', 'Plan', 'MRR', 'Status', 'Renews', ''].map(h => (
                   <th key={h} className="px-4 py-3 text-[10px] font-mono text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {activeSubs.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-10 text-center text-slate-500 text-sm">No active subscriptions</td></tr>
               ) : activeSubs.map(sub => (
                 <tr key={sub.id} className="hover:bg-slate-800/30 transition-colors">
                   <td className="px-4 py-3">
-                    <p className="text-xs text-white font-medium">{sub.customerEmail}</p>
+                    <p className="text-xs text-slate-900 dark:text-white font-medium">{sub.customerEmail}</p>
                     {sub.customerName && <p className="text-[10px] text-slate-500 font-mono">{sub.customerName}</p>}
                     {sub.cancelAtPeriodEnd && (
                       <span className="text-[10px] text-amber-400 font-mono">cancelling</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-xs text-slate-300 font-mono whitespace-nowrap">{formatCurrency(sub.amount, sub.currency)}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 font-mono whitespace-nowrap">{formatCurrency(sub.amount, sub.currency)}</p>
                     <p className="text-[10px] text-slate-500">{sub.interval}</p>
                   </td>
                   <td className="px-4 py-3 text-xs font-mono text-emerald-400 whitespace-nowrap">
@@ -289,10 +289,10 @@ export default async function BillingPage() {
 
       {/* Past due / dunning */}
       {pastDueSubs.length > 0 && (
-        <div className="bg-slate-900 border border-amber-500/20 rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-amber-500/20 rounded-2xl overflow-hidden">
           <div className="px-6 py-4 border-b border-amber-500/20 bg-amber-500/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="text-sm font-bold text-white">Past Due — Dunning</h2>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Past Due — Dunning</h2>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
                 {pastDueSubs.length} AT RISK
               </span>
@@ -300,20 +300,20 @@ export default async function BillingPage() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-950 border-b border-slate-800">
+              <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   {['Customer', 'Plan', 'MRR', 'Renewal', ''].map(h => (
                     <th key={h} className="px-4 py-3 text-[10px] font-mono text-slate-500 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {pastDueSubs.map(sub => (
                   <tr key={sub.id} className="hover:bg-slate-800/30 transition-colors">
                     <td className="px-4 py-3">
-                      <p className="text-xs text-white font-medium">{sub.customerEmail}</p>
+                      <p className="text-xs text-slate-900 dark:text-white font-medium">{sub.customerEmail}</p>
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-300 font-mono whitespace-nowrap">
+                    <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-300 font-mono whitespace-nowrap">
                       {formatCurrency(sub.amount, sub.currency)} {sub.interval}
                     </td>
                     <td className="px-4 py-3 text-xs font-mono text-amber-400 whitespace-nowrap">
@@ -337,26 +337,26 @@ export default async function BillingPage() {
       )}
 
       {/* Recent payments */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800">
-          <h2 className="text-sm font-bold text-white">Recent Payments</h2>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Recent Payments</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-950 border-b border-slate-800">
+            <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
               <tr>
                 {['Customer', 'Amount', 'Status', 'Date', 'Charge ID', ''].map(h => (
                   <th key={h} className="px-4 py-3 text-[10px] font-mono text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {recentCharges.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-10 text-center text-slate-500 text-sm">No payment history</td></tr>
               ) : recentCharges.map(ch => (
                 <tr key={ch.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="px-4 py-3 text-xs text-white font-medium">{ch.customerEmail}</td>
-                  <td className="px-4 py-3 text-xs font-mono text-white whitespace-nowrap">
+                  <td className="px-4 py-3 text-xs text-slate-900 dark:text-white font-medium">{ch.customerEmail}</td>
+                  <td className="px-4 py-3 text-xs font-mono text-slate-900 dark:text-white whitespace-nowrap">
                     {formatCurrency(ch.amount, ch.currency)}
                   </td>
                   <td className="px-4 py-3">
@@ -386,24 +386,24 @@ export default async function BillingPage() {
 
       {/* Recent refunds */}
       {recentRefunds.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-800">
-            <h2 className="text-sm font-bold text-white">Recent Refunds</h2>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Recent Refunds</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-950 border-b border-slate-800">
+              <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   {['Refund ID', 'Amount', 'Status', 'Reason', 'Date'].map(h => (
                     <th key={h} className="px-4 py-3 text-[10px] font-mono text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {recentRefunds.map(r => (
                   <tr key={r.id} className="hover:bg-slate-800/30 transition-colors">
                     <td className="px-4 py-3 text-[10px] text-slate-500 font-mono">{r.id}</td>
-                    <td className="px-4 py-3 text-xs font-mono text-white whitespace-nowrap">
+                    <td className="px-4 py-3 text-xs font-mono text-slate-900 dark:text-white whitespace-nowrap">
                       {formatCurrency(r.amount, r.currency)}
                     </td>
                     <td className="px-4 py-3">

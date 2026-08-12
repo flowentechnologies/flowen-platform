@@ -66,19 +66,19 @@ function SkeletonRow() {
     <tr className="animate-pulse">
       <td className="p-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-slate-800" />
+          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800" />
           <div className="space-y-1.5">
-            <div className="h-3 w-36 bg-slate-800 rounded" />
-            <div className="h-2 w-24 bg-slate-800 rounded" />
+            <div className="h-3 w-36 bg-slate-100 dark:bg-slate-800 rounded" />
+            <div className="h-2 w-24 bg-slate-100 dark:bg-slate-800 rounded" />
           </div>
         </div>
       </td>
-      <td className="p-4"><div className="h-3 w-16 bg-slate-800 rounded" /></td>
-      <td className="p-4"><div className="h-3 w-10 bg-slate-800 rounded" /></td>
-      <td className="p-4"><div className="h-3 w-12 bg-slate-800 rounded" /></td>
-      <td className="p-4"><div className="h-3 w-20 bg-slate-800 rounded" /></td>
-      <td className="p-4"><div className="h-3 w-20 bg-slate-800 rounded" /></td>
-      <td className="p-4"><div className="h-3 w-10 bg-slate-800 rounded" /></td>
+      <td className="p-4"><div className="h-3 w-16 bg-slate-100 dark:bg-slate-800 rounded" /></td>
+      <td className="p-4"><div className="h-3 w-10 bg-slate-100 dark:bg-slate-800 rounded" /></td>
+      <td className="p-4"><div className="h-3 w-12 bg-slate-100 dark:bg-slate-800 rounded" /></td>
+      <td className="p-4"><div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded" /></td>
+      <td className="p-4"><div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded" /></td>
+      <td className="p-4"><div className="h-3 w-10 bg-slate-100 dark:bg-slate-800 rounded" /></td>
     </tr>
   );
 }
@@ -111,36 +111,36 @@ function ActionsDropdown({ user, onToggleAdmin, onToggleEarlyAccess, onResetPass
         type="button"
         onClick={() => setOpen((v) => !v)}
         disabled={loading}
-        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 transition-colors disabled:opacity-50"
+        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors disabled:opacity-50"
       >
         Actions
       </button>
       {open && (
-        <div className="absolute right-0 mt-1 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
+        <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
           <button
             type="button"
             onClick={() => { onToggleEarlyAccess(user.id); setOpen(false); }}
-            className="w-full text-left px-4 py-2.5 text-xs text-emerald-400 hover:bg-slate-800 hover:text-emerald-300 transition-colors"
+            className="w-full text-left px-4 py-2.5 text-xs text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-300 transition-colors"
           >
             {user.early_access ? 'Revoke beta access' : 'Grant beta access'}
           </button>
           <button
             type="button"
             onClick={() => { onToggleAdmin(user.id); setOpen(false); }}
-            className="w-full text-left px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+            className="w-full text-left px-4 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             {user.is_admin ? 'Remove admin' : 'Make admin'}
           </button>
           <button
             type="button"
             onClick={() => { onResetPassword(user.id, user.email); setOpen(false); }}
-            className="w-full text-left px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+            className="w-full text-left px-4 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             Send password reset
           </button>
           <a
             href={`/admin/users/${user.id}`}
-            className="block px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+            className="block px-4 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             View profile
           </a>
@@ -279,9 +279,9 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Users</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Users</h1>
           <p className="text-slate-400 text-sm mt-1">
             {loading ? 'Loading...' : `${users.length.toLocaleString()} total users`}
           </p>
@@ -293,7 +293,7 @@ export default function AdminUsersPage() {
 
       {/* At-Risk Users */}
       {(atRiskLoading || atRiskUsers.length > 0) && (
-        <div className="bg-slate-900 border border-amber-700/40 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-amber-700/40 rounded-2xl p-5">
           <div className="flex items-center gap-3 mb-4">
             <h2 className="text-sm font-bold text-amber-400">At-Risk Users</h2>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
@@ -308,12 +308,12 @@ export default function AdminUsersPage() {
             <div className="animate-pulse space-y-2">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-full bg-slate-800" />
+                  <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800" />
                   <div className="space-y-1.5 flex-1">
-                    <div className="h-3 w-40 bg-slate-800 rounded" />
-                    <div className="h-2 w-24 bg-slate-800 rounded" />
+                    <div className="h-3 w-40 bg-slate-100 dark:bg-slate-800 rounded" />
+                    <div className="h-2 w-24 bg-slate-100 dark:bg-slate-800 rounded" />
                   </div>
-                  <div className="h-3 w-28 bg-slate-800 rounded" />
+                  <div className="h-3 w-28 bg-slate-100 dark:bg-slate-800 rounded" />
                 </div>
               ))}
             </div>
@@ -340,7 +340,7 @@ export default function AdminUsersPage() {
                       {(user.display_name ?? '?').slice(0, 1).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-xs font-medium truncate">
+                      <p className="text-slate-900 dark:text-white text-xs font-medium truncate">
                         {user.display_name ?? <span className="text-slate-500 italic">No name</span>}
                       </p>
                       <p className="text-[10px] font-mono text-amber-600 mt-0.5">
@@ -354,7 +354,7 @@ export default function AdminUsersPage() {
                     )}
                     <a
                       href={`/admin/users/${user.id}`}
-                      className="shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-mono font-medium border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors"
+                      className="shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-mono font-medium border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                     >
                       View profile
                     </a>
@@ -373,9 +373,9 @@ export default function AdminUsersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by email or name..."
-          className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20"
+          className="flex-1 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20"
         />
-        <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
+        <div className="flex gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1">
           {tabs.map((t) => (
             <button
               key={t.key}
@@ -383,8 +383,8 @@ export default function AdminUsersPage() {
               onClick={() => setTab(t.key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 tab === t.key
-                  ? 'bg-slate-800 text-white'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white'
+                  : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {t.label}
@@ -394,10 +394,10 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-950 border-b border-slate-800">
+            <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th className="px-4 py-3 text-xs font-mono text-slate-500 uppercase tracking-wide">User</th>
                 <th className="px-4 py-3 text-xs font-mono text-slate-500 uppercase tracking-wide">Tier</th>
@@ -409,7 +409,7 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 text-xs font-mono text-slate-500 uppercase tracking-wide"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {loading ? (
                 Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
               ) : filtered.length === 0 ? (
@@ -428,7 +428,7 @@ export default function AdminUsersPage() {
                       <div className="flex items-center gap-3">
                         <Initials name={user.display_name} email={user.email} />
                         <div className="min-w-0">
-                          <p className="text-white text-xs font-medium truncate">{user.email}</p>
+                          <p className="text-slate-900 dark:text-white text-xs font-medium truncate">{user.email}</p>
                           {user.display_name && (
                             <p className="text-slate-500 text-[10px] font-mono truncate">{user.display_name}</p>
                           )}

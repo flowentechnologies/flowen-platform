@@ -158,7 +158,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
             {result.sent} sent · {result.failed} failed · {result.total} total recipients
           </p>
           {result.errors.length > 0 && (
-            <pre className="mt-4 text-[10px] text-red-400 font-mono bg-slate-950 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap">
+            <pre className="mt-4 text-[10px] text-red-400 font-mono bg-slate-50 dark:bg-slate-950 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap">
               {result.errors.join('\n')}
             </pre>
           )}
@@ -166,7 +166,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
         <button
           type="button"
           onClick={() => setResult(null)}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Send another
         </button>
@@ -187,13 +187,13 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
               className={`p-3 rounded-xl border text-left transition-colors ${
                 segment === seg
                   ? 'border-indigo-500/60 bg-indigo-500/10'
-                  : 'border-slate-700 bg-slate-900 hover:border-slate-600'
+                  : 'border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-600'
               }`}
             >
               <p className={`text-xs font-mono mb-1 ${segment === seg ? 'text-indigo-400' : 'text-slate-500'}`}>
                 {SEGMENT_LABELS[seg]}
               </p>
-              <p className={`text-xl font-black ${segment === seg ? 'text-white' : 'text-slate-500'}`}>
+              <p className={`text-xl font-black ${segment === seg ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>
                 {counts[seg]}
               </p>
             </button>
@@ -208,7 +208,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
           value={subject}
           onChange={e => setSubject(e.target.value)}
           placeholder="Email subject line…"
-          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30"
         />
       </div>
 
@@ -219,7 +219,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
           onChange={e => setBody(e.target.value)}
           rows={8}
           placeholder="Write your message here. Each paragraph will be rendered as its own block in the email…"
-          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 resize-y font-mono leading-relaxed"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 resize-y font-mono leading-relaxed"
         />
         <p className="mt-1.5 text-[10px] text-slate-600 font-mono">Plain text only · newlines become paragraph breaks · {body.length} chars</p>
       </div>
@@ -227,7 +227,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
       {/* Preview pane */}
       {preview && subject && body && (
         <div className="rounded-xl border border-slate-700 overflow-hidden">
-          <div className="bg-slate-800 px-4 py-2 flex items-center justify-between">
+          <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex items-center justify-between">
             <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wide">Preview</span>
             <button type="button" onClick={() => setPreview(false)} className="text-[10px] font-mono text-slate-500 hover:text-slate-300">hide</button>
           </div>
@@ -236,11 +236,11 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
               <div className="px-6 py-4 border-b border-[#334155]">
                 <span className="inline-flex items-center gap-2">
                   <span className="w-6 h-6 bg-emerald-500 rounded-md inline-flex items-center justify-center text-xs font-black text-slate-900">F</span>
-                  <span className="text-sm font-bold text-white">Flowen</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">Flowen</span>
                 </span>
               </div>
               <div className="px-6 py-5">
-                <h2 className="text-lg font-extrabold text-white mb-3">{subject}</h2>
+                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-3">{subject}</h2>
                 {body.split('\n').filter(Boolean).map((line, i) => (
                   <p key={i} className="text-sm text-slate-400 leading-relaxed mb-3">{line}</p>
                 ))}
@@ -260,8 +260,8 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
       {confirming ? (
         <div className="bg-amber-500/5 border border-amber-500/30 rounded-2xl p-5 space-y-4">
           <p className="text-sm text-amber-300 font-mono">
-            Send <span className="font-bold text-white">"{subject}"</span> to{' '}
-            <span className="font-bold text-white">{recipientCount}</span> {SEGMENT_LABELS[segment]} recipients?
+            Send <span className="font-bold text-slate-900 dark:text-white">"{subject}"</span> to{' '}
+            <span className="font-bold text-slate-900 dark:text-white">{recipientCount}</span> {SEGMENT_LABELS[segment]} recipients?
           </p>
           <p className="text-[11px] text-slate-500 font-mono">This action cannot be undone. Emails will be sent one-by-one (max 500).</p>
           <div className="flex gap-3">
@@ -269,7 +269,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
               type="button"
               onClick={send}
               disabled={isPending}
-              className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40"
+              className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
             >
               {isPending ? 'Sending…' : `Confirm — send to ${recipientCount}`}
             </button>
@@ -277,7 +277,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
               type="button"
               onClick={() => setConfirming(false)}
               disabled={isPending}
-              className="px-5 py-2.5 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors disabled:opacity-40"
+              className="px-5 py-2.5 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-40"
             >
               Cancel
             </button>
@@ -289,7 +289,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
             <button
               type="button"
               onClick={() => setPreview(true)}
-              className="px-4 py-2.5 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+              className="px-4 py-2.5 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               Preview email
             </button>
@@ -298,7 +298,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
             type="button"
             disabled={!subject.trim() || !body.trim() || recipientCount === 0}
             onClick={() => setConfirming(true)}
-            className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Send to {recipientCount} recipient{recipientCount !== 1 ? 's' : ''}
           </button>
@@ -314,7 +314,7 @@ function TemplatesTab() {
   return (
     <div className="space-y-3">
       {EMAIL_TEMPLATES.map(t => (
-        <div key={t.fn} className="bg-slate-900 border border-slate-800 rounded-xl px-5 py-4 flex items-start gap-4">
+        <div key={t.fn} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-4 flex items-start gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <code className="text-xs text-indigo-400 font-mono">{t.fn}()</code>
@@ -324,7 +324,7 @@ function TemplatesTab() {
                 {t.recipient}
               </span>
             </div>
-            <p className="text-sm text-white font-medium truncate">{t.subject}</p>
+            <p className="text-sm text-slate-900 dark:text-white font-medium truncate">{t.subject}</p>
             <p className="text-xs text-slate-500 mt-0.5">{t.preview}</p>
           </div>
           <div className="text-right shrink-0">
@@ -343,15 +343,15 @@ function LegalTab({ docs }: { docs: { key: string; title: string; content: strin
   return (
     <div className="space-y-4">
       {docs.map(doc => (
-        <details key={doc.key} className="group bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <details key={doc.key} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
           <summary className="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-slate-800/50 transition-colors list-none">
-            <span className="text-sm font-semibold text-white">{doc.title}</span>
+            <span className="text-sm font-semibold text-slate-900 dark:text-white">{doc.title}</span>
             <span className="text-[10px] font-mono text-slate-500 group-open:text-slate-300 transition-colors">
               <span className="group-open:hidden">▼ expand</span>
               <span className="hidden group-open:inline">▲ collapse</span>
             </span>
           </summary>
-          <div className="border-t border-slate-800 px-5 py-5">
+          <div className="border-t border-slate-200 dark:border-slate-800 px-5 py-5">
             <pre className="text-[11px] text-slate-400 font-mono leading-relaxed whitespace-pre-wrap overflow-x-auto max-h-96">
               {doc.content.trim()}
             </pre>
@@ -382,16 +382,16 @@ function ConsentTab({ records }: { records: ConsentRecord[] }) {
         placeholder="Filter by type, action, or email…"
         value={filter}
         onChange={e => setFilter(e.target.value)}
-        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
+        className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
       />
 
       {filtered.length === 0 ? (
         <p className="py-10 text-center text-sm text-slate-600 font-mono">No consent records found</p>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-slate-800">
+              <tr className="border-b border-slate-200 dark:border-slate-800">
                 <th className="text-left px-4 py-3 font-mono text-slate-500 uppercase tracking-wide">Type</th>
                 <th className="text-left px-4 py-3 font-mono text-slate-500 uppercase tracking-wide">Action</th>
                 <th className="text-left px-4 py-3 font-mono text-slate-500 uppercase tracking-wide hidden sm:table-cell">Version</th>
@@ -402,9 +402,9 @@ function ConsentTab({ records }: { records: ConsentRecord[] }) {
             </thead>
             <tbody>
               {filtered.slice(0, 200).map(r => (
-                <tr key={r.id} className="border-b border-slate-800/60 last:border-0 hover:bg-slate-800/30">
+                <tr key={r.id} className="border-b border-slate-200 dark:border-slate-800/60 last:border-0 hover:bg-slate-800/30">
                   <td className="px-4 py-3">
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-800 text-slate-300">
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                       {r.consent_type}
                     </span>
                   </td>
@@ -413,7 +413,7 @@ function ConsentTab({ records }: { records: ConsentRecord[] }) {
                       r.action === 'granted'  ? 'bg-emerald-500/10 text-emerald-400' :
                       r.action === 'revoked'  ? 'bg-red-500/10 text-red-400' :
                       r.action === 'updated'  ? 'bg-blue-500/10 text-blue-400' :
-                                                'bg-slate-800 text-slate-400'
+                                                'bg-slate-100 dark:bg-slate-800 text-slate-400'
                     }`}>
                       {r.action}
                     </span>
@@ -429,7 +429,7 @@ function ConsentTab({ records }: { records: ConsentRecord[] }) {
             </tbody>
           </table>
           {filtered.length > 200 && (
-            <p className="px-4 py-3 text-[10px] text-slate-600 font-mono border-t border-slate-800">
+            <p className="px-4 py-3 text-[10px] text-slate-600 font-mono border-t border-slate-200 dark:border-slate-800">
               Showing 200 of {filtered.length} records
             </p>
           )}
@@ -456,7 +456,7 @@ export function ContentTabs({ counts, consentRecords, legalDocs }: Props) {
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex gap-1 border-b border-slate-800 mb-6">
+      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800 mb-6">
         {tabs.map(t => (
           <button
             key={t.id}
@@ -464,14 +464,14 @@ export function ContentTabs({ counts, consentRecords, legalDocs }: Props) {
             onClick={() => setTab(t.id)}
             className={`px-4 py-2.5 text-sm font-mono rounded-t-lg transition-colors flex items-center gap-2 -mb-px border-b-2 ${
               tab === t.id
-                ? 'border-indigo-500 text-white bg-slate-800/50'
+                ? 'border-indigo-500 text-slate-900 dark:text-white bg-slate-800/50'
                 : 'border-transparent text-slate-500 hover:text-slate-300'
             }`}
           >
             {t.label}
             {t.count !== undefined && (
               <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-500'
+                tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
               }`}>
                 {t.count}
               </span>

@@ -80,8 +80,8 @@ function ServicesTab({ integrations }: { integrations: IntegrationDef[] }) {
       {integrations.map(svc => (
         <div
           key={svc.name}
-          className={`bg-slate-900 border rounded-2xl p-5 flex flex-col gap-3 ${
-            svc.status === 'connected' ? 'border-slate-800' :
+          className={`bg-white dark:bg-slate-900 border rounded-2xl p-5 flex flex-col gap-3 ${
+            svc.status === 'connected' ? 'border-slate-200 dark:border-slate-800' :
             svc.status === 'error'    ? 'border-red-500/30' :
                                         'border-slate-800/50'
           }`}
@@ -95,9 +95,9 @@ function ServicesTab({ integrations }: { integrations: IntegrationDef[] }) {
                   svc.status === 'error'     ? 'bg-red-400 animate-pulse' :
                                               'bg-slate-600'
                 }`} />
-                <p className="text-sm font-bold text-white">{svc.name}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">{svc.name}</p>
               </div>
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-800 text-slate-400">
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400">
                 {svc.category}
               </span>
             </div>
@@ -116,7 +116,7 @@ function ServicesTab({ integrations }: { integrations: IntegrationDef[] }) {
 
           {/* Latency (Stripe only) */}
           {svc.latencyMs !== null && (
-            <div className="pt-2 border-t border-slate-800">
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
               <p className="text-[10px] font-mono text-slate-500">
                 Latency: <span className={`font-bold ${svc.latencyMs < 500 ? 'text-emerald-400' : 'text-amber-400'}`}>
                   {svc.latencyMs}ms
@@ -168,17 +168,17 @@ function CreateKeyModal({ onCreated }: { onCreated: (key: NewKeyResult) => void 
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors"
       >
         + New API Key
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">Create API Key</h3>
-              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-white text-lg">×</button>
+          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Create API Key</h3>
+              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               <div>
@@ -187,7 +187,7 @@ function CreateKeyModal({ onCreated }: { onCreated: (key: NewKeyResult) => void 
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="e.g. Mobile App v2"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60"
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60"
                 />
               </div>
               <div>
@@ -200,8 +200,8 @@ function CreateKeyModal({ onCreated }: { onCreated: (key: NewKeyResult) => void 
                       onClick={() => toggleScope(s)}
                       className={`text-left px-2.5 py-1.5 rounded-lg text-[11px] font-mono transition-colors ${
                         scopes.includes(s)
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-slate-800 text-slate-400 hover:text-white'
+                          ? 'bg-indigo-600 text-slate-900 dark:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       {s}
@@ -215,24 +215,24 @@ function CreateKeyModal({ onCreated }: { onCreated: (key: NewKeyResult) => void 
                   type="date"
                   value={expiry}
                   onChange={e => setExpiry(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500/60"
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60"
                 />
               </div>
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
             </div>
-            <div className="px-6 py-4 border-t border-slate-800 flex gap-3">
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
               <button
                 type="button"
                 onClick={submit}
                 disabled={isPending}
-                className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40"
+                className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
               >
                 {isPending ? 'Generating…' : 'Create Key'}
               </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"
+                className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Cancel
               </button>
@@ -258,24 +258,24 @@ function RevealModal({ result, onClose }: { result: NewKeyResult; onClose: () =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-emerald-500/30 rounded-2xl w-full max-w-md shadow-2xl">
-        <div className="px-6 py-4 border-b border-slate-800">
+      <div className="bg-white dark:bg-slate-900 border border-emerald-500/30 rounded-2xl w-full max-w-md shadow-2xl">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
           <h3 className="text-sm font-bold text-emerald-400">API Key Created</h3>
           <p className="text-xs text-slate-500 mt-0.5">Copy this key now — it will not be shown again.</p>
         </div>
         <div className="px-6 py-5 space-y-4">
           <div>
             <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Key Name</p>
-            <p className="text-sm text-white font-semibold">{result.name}</p>
+            <p className="text-sm text-slate-900 dark:text-white font-semibold">{result.name}</p>
           </div>
           <div>
             <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Secret Key</p>
-            <div className="bg-slate-800 border border-emerald-500/20 rounded-xl px-4 py-3 flex items-center gap-3">
+            <div className="bg-slate-100 dark:bg-slate-800 border border-emerald-500/20 rounded-xl px-4 py-3 flex items-center gap-3">
               <code className="flex-1 text-[11px] font-mono text-emerald-300 break-all">{result.plaintext}</code>
               <button
                 type="button"
                 onClick={copy}
-                className="shrink-0 px-3 py-1.5 text-[10px] font-mono rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+                className="shrink-0 px-3 py-1.5 text-[10px] font-mono rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors"
               >
                 {copied ? 'Copied!' : 'Copy'}
               </button>
@@ -290,11 +290,11 @@ function RevealModal({ result, onClose }: { result: NewKeyResult; onClose: () =>
             </div>
           </div>
         </div>
-        <div className="px-6 py-4 border-t border-slate-800">
+        <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800">
           <button
             type="button"
             onClick={onClose}
-            className="w-full px-4 py-2 text-sm font-mono rounded-xl bg-slate-800 text-white hover:bg-slate-700 transition-colors"
+            className="w-full px-4 py-2 text-sm font-mono rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-700 transition-colors"
           >
             I&apos;ve saved the key
           </button>
@@ -358,10 +358,10 @@ function ApiKeysTab({ initialKeys }: { initialKeys: ApiKeyRow[] }) {
       {keys.length === 0 ? (
         <p className="py-12 text-center text-sm text-slate-600 font-mono">No API keys — create your first above</p>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-slate-800">
+              <tr className="border-b border-slate-200 dark:border-slate-800">
                 <th className="text-left px-4 py-3 font-mono text-slate-500 uppercase tracking-wide">Name</th>
                 <th className="text-left px-4 py-3 font-mono text-slate-500 uppercase tracking-wide hidden sm:table-cell">Key</th>
                 <th className="text-left px-4 py-3 font-mono text-slate-500 uppercase tracking-wide hidden md:table-cell">Scopes</th>
@@ -373,9 +373,9 @@ function ApiKeysTab({ initialKeys }: { initialKeys: ApiKeyRow[] }) {
             </thead>
             <tbody>
               {keys.map(k => (
-                <tr key={k.id} className={`border-b border-slate-800/60 last:border-0 ${k.revoked ? 'opacity-40' : ''}`}>
+                <tr key={k.id} className={`border-b border-slate-200 dark:border-slate-800/60 last:border-0 ${k.revoked ? 'opacity-40' : ''}`}>
                   <td className="px-4 py-3">
-                    <p className="text-white font-medium">{k.name}</p>
+                    <p className="text-slate-900 dark:text-white font-medium">{k.name}</p>
                     <p className="text-[10px] text-slate-600 font-mono mt-0.5">{k.created_at ? fmtDateShort(k.created_at) : ''}</p>
                   </td>
                   <td className="px-4 py-3 hidden sm:table-cell">
@@ -386,10 +386,10 @@ function ApiKeysTab({ initialKeys }: { initialKeys: ApiKeyRow[] }) {
                   <td className="px-4 py-3 hidden md:table-cell">
                     <div className="flex flex-wrap gap-1">
                       {k.scopes.slice(0, 3).map(s => (
-                        <span key={s} className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-800 text-slate-400">{s}</span>
+                        <span key={s} className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400">{s}</span>
                       ))}
                       {k.scopes.length > 3 && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-800 text-slate-500">+{k.scopes.length - 3}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500">+{k.scopes.length - 3}</span>
                       )}
                     </div>
                   </td>
@@ -455,9 +455,9 @@ function WebhooksTab({
     <div className="space-y-6">
       {/* Type breakdown */}
       {Object.keys(webhookTypes).length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-800">
-            <h3 className="text-sm font-bold text-white">Event Type Breakdown</h3>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Event Type Breakdown</h3>
           </div>
           <div className="p-5 space-y-2.5">
             {Object.entries(webhookTypes)
@@ -465,7 +465,7 @@ function WebhooksTab({
               .map(([type, count]) => (
                 <div key={type} className="flex items-center gap-3">
                   <span className="text-[11px] font-mono text-slate-400 w-56 truncate">{type}</span>
-                  <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-indigo-500 rounded-full"
                       style={{ width: `${(count / Math.max(...Object.values(webhookTypes))) * 100}%` }}
@@ -479,18 +479,18 @@ function WebhooksTab({
       )}
 
       {/* Recent events */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white">Recent Events</h3>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Recent Events</h3>
           <span className="text-[10px] font-mono text-slate-500">{totalWebhooks} total · showing {webhookEvents.length}</span>
         </div>
-        <div className="divide-y divide-slate-800 max-h-96 overflow-y-auto">
+        <div className="divide-y divide-slate-200 dark:divide-slate-800 max-h-96 overflow-y-auto">
           {webhookEvents.length === 0 ? (
             <p className="px-5 py-8 text-xs text-slate-500 text-center font-mono">No webhook events recorded</p>
           ) : webhookEvents.map(w => (
             <div key={w.event_id} className="px-5 py-3 flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs text-white font-mono truncate">{w.event_type}</p>
+                <p className="text-xs text-slate-900 dark:text-white font-mono truncate">{w.event_type}</p>
                 <p className="text-[10px] text-slate-600 font-mono mt-0.5 truncate">{w.event_id}</p>
               </div>
               <span className="text-[10px] text-slate-500 font-mono whitespace-nowrap shrink-0">
@@ -530,9 +530,9 @@ export function IntegrationsClient({
   ];
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
       {/* Tab bar */}
-      <div className="flex gap-1 px-4 pt-4 border-b border-slate-800">
+      <div className="flex gap-1 px-4 pt-4 border-b border-slate-200 dark:border-slate-800">
         {tabs.map(t => (
           <button
             key={t.id}
@@ -540,14 +540,14 @@ export function IntegrationsClient({
             onClick={() => setTab(t.id)}
             className={`px-4 py-2.5 text-sm font-mono rounded-t-lg transition-colors flex items-center gap-2 -mb-px border-b-2 ${
               tab === t.id
-                ? 'border-indigo-500 text-white bg-slate-800/50'
+                ? 'border-indigo-500 text-slate-900 dark:text-white bg-slate-800/50'
                 : 'border-transparent text-slate-500 hover:text-slate-300'
             }`}
           >
             {t.label}
             {t.count !== undefined && (
               <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-                tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-500'
+                tab === t.id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
               }`}>
                 {t.count}
               </span>

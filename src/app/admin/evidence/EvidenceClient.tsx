@@ -101,7 +101,7 @@ function RAGBadge({ status }: { status: RAGStatus }) {
 function ProgressBar({ pct, status }: { pct: number; status: RAGStatus }) {
   const colorCls = status === 'green' ? 'bg-emerald-500' : status === 'amber' ? 'bg-amber-500' : 'bg-rose-500';
   return (
-    <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
       <div
         className={`h-full ${colorCls} rounded-full transition-all`}
         style={{ width: `${Math.min(pct, 100)}%` }}
@@ -114,9 +114,9 @@ function ProgressBar({ pct, status }: { pct: number; status: RAGStatus }) {
 
 function SectionCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-5">
       <div>
-        <h2 className="text-base font-bold text-white">{title}</h2>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white">{title}</h2>
         {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
       </div>
       {children}
@@ -126,7 +126,7 @@ function SectionCard({ title, subtitle, children }: { title: string; subtitle?: 
 
 // ── Stat ───────────────────────────────────────────────────────────────────────
 
-function Stat({ label, value, sub, valueColor = 'text-white' }: {
+function Stat({ label, value, sub, valueColor = 'text-slate-900 dark:text-white' }: {
   label: string; value: string; sub?: string; valueColor?: string;
 }) {
   return (
@@ -151,12 +151,12 @@ function ChecklistItem({ label, status, note }: { label: string; status: CheckSt
   };
   const c = cfg[status];
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-slate-800/60 last:border-0">
+    <div className="flex items-start gap-3 py-3 border-b border-slate-200 dark:border-slate-800/60 last:border-0">
       <span className={`flex-shrink-0 w-6 h-6 rounded-md border flex items-center justify-center text-xs font-black ${c.iconCls}`}>
         {c.icon}
       </span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white">{label}</p>
+        <p className="text-sm font-medium text-slate-900 dark:text-white">{label}</p>
         <p className={`text-xs mt-0.5 ${c.noteCls}`}>{note}</p>
       </div>
     </div>
@@ -357,7 +357,7 @@ export function EvidenceClient({ data }: { data: EvidenceData }) {
       </div>
 
       {/* Readiness score hero */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 flex flex-col sm:flex-row items-center gap-8">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col sm:flex-row items-center gap-8">
         {/* Ring */}
         <div className="flex-shrink-0 relative" style={{ width: 140, height: 140 }}>
           <div
@@ -366,15 +366,15 @@ export function EvidenceClient({ data }: { data: EvidenceData }) {
               background: `conic-gradient(${color} calc(${score} * 1%), #1e293b 0)`,
             }}
           />
-          <div className="absolute inset-3 rounded-full bg-slate-900 flex flex-col items-center justify-center">
-            <span className="text-2xl font-black text-white">{score}</span>
+          <div className="absolute inset-3 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center">
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{score}</span>
             <span className="text-[9px] text-slate-500 font-mono">/100</span>
           </div>
         </div>
         {/* Text */}
         <div className="flex-1 text-center sm:text-left">
           <p className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">NHS Readiness Score</p>
-          <p className="text-3xl font-black text-white mb-2">{score}/100</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white mb-2">{score}/100</p>
           <p className="text-sm font-semibold" style={{ color }}>{readinessLabel(score)}</p>
           <p className="text-xs text-slate-500 mt-3 max-w-md">
             Score weights: DCB0129 30% · DTAC 25% · DSPT 20% · Hazard log safety 15% · Clinical outcomes 10%
@@ -432,7 +432,7 @@ export function EvidenceClient({ data }: { data: EvidenceData }) {
               return (
                 <div key={fw} className="space-y-1.5">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-mono font-bold text-slate-300">{fw}</span>
+                    <span className="font-mono font-bold text-slate-600 dark:text-slate-300">{fw}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-slate-500">{pct}%</span>
                       <RAGBadge status={frameworkRAG(pct)} />
@@ -477,14 +477,14 @@ export function EvidenceClient({ data }: { data: EvidenceData }) {
           {improvingPct !== null ? (
             <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
               <p className="text-[10px] font-mono text-blue-400 uppercase tracking-widest mb-1.5">Evidence statement</p>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                <strong className="text-white">{improvingPct.toFixed(1)}%</strong> of users with sufficient data
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                <strong className="text-slate-900 dark:text-white">{improvingPct.toFixed(1)}%</strong> of users with sufficient data
                 (≥6 sessions) show a measurable reduction in disfluency events compared to their baseline,
                 demonstrating real-world clinical effectiveness of the Flowen intervention.
               </p>
             </div>
           ) : (
-            <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
+            <div className="bg-slate-100/60 dark:bg-slate-800/40 border border-slate-700 rounded-xl p-4">
               <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1.5">Evidence statement</p>
               <p className="text-sm text-slate-500">
                 Insufficient longitudinal data. Users need ≥6 sessions for improvement analysis.
@@ -503,11 +503,11 @@ export function EvidenceClient({ data }: { data: EvidenceData }) {
             <Stat label="ICB pipeline" value={fmtNum(data.icb_pipeline)} valueColor="text-blue-400" sub="Procurement contacts" />
           </div>
 
-          <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-4">
+          <div className="bg-slate-100/60 dark:bg-slate-800/40 border border-slate-700 rounded-xl p-4">
             <p className="text-xs text-slate-400 leading-relaxed">
               Real-world deployment data demonstrates safe operation at scale across{' '}
-              <strong className="text-white">{fmtNum(data.total_users)}</strong> registered users and{' '}
-              <strong className="text-white">{fmtNum(data.sessions_total)}</strong> recorded sessions,
+              <strong className="text-slate-900 dark:text-white">{fmtNum(data.total_users)}</strong> registered users and{' '}
+              <strong className="text-slate-900 dark:text-white">{fmtNum(data.sessions_total)}</strong> recorded sessions,
               with no serious adverse events reported.
             </p>
           </div>
@@ -518,7 +518,7 @@ export function EvidenceClient({ data }: { data: EvidenceData }) {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-slate-800">
+                <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="text-left text-[10px] font-mono text-slate-600 uppercase pb-2 pr-3">Framework</th>
                   <th className="text-center text-[10px] font-mono text-slate-600 uppercase pb-2 px-2">Done</th>
                   <th className="text-center text-[10px] font-mono text-slate-600 uppercase pb-2 px-2">WIP</th>
@@ -529,12 +529,12 @@ export function EvidenceClient({ data }: { data: EvidenceData }) {
               </thead>
               <tbody>
                 {data.compliance.map(c => (
-                  <tr key={c.framework} className="border-b border-slate-800/60">
-                    <td className="py-2 pr-3 font-mono font-bold text-slate-300">{c.framework}</td>
+                  <tr key={c.framework} className="border-b border-slate-200 dark:border-slate-800/60">
+                    <td className="py-2 pr-3 font-mono font-bold text-slate-600 dark:text-slate-300">{c.framework}</td>
                     <td className="py-2 px-2 text-center text-emerald-400">{c.complete}</td>
                     <td className="py-2 px-2 text-center text-amber-400">{c.in_progress}</td>
                     <td className="py-2 px-2 text-center text-slate-500">{c.not_started}</td>
-                    <td className="py-2 px-2 text-center text-white font-semibold">{c.pct_complete}%</td>
+                    <td className="py-2 px-2 text-center text-slate-900 dark:text-white font-semibold">{c.pct_complete}%</td>
                     <td className="py-2 text-center"><RAGBadge status={frameworkRAG(c.pct_complete)} /></td>
                   </tr>
                 ))}
@@ -566,9 +566,9 @@ export function EvidenceClient({ data }: { data: EvidenceData }) {
       </div>
 
       {/* Procurement Readiness Checklist */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <div className="mb-5">
-          <h2 className="text-base font-bold text-white">Procurement Readiness Checklist</h2>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">Procurement Readiness Checklist</h2>
           <p className="text-xs text-slate-500 mt-0.5">
             Standard NHS digital health procurement requirements (ICB / NHS England DDAT framework)
           </p>

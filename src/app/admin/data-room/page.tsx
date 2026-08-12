@@ -39,9 +39,9 @@ export default async function DataRoomPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Data Room</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Data Room</h1>
           <p className="text-slate-400 text-sm mt-1">Investor due diligence vault · private documents · access control</p>
         </div>
         <span className="self-start sm:self-auto px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">
@@ -51,23 +51,23 @@ export default async function DataRoomPage() {
 
       {/* KPI strip */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Documents</p>
-          <p className="text-3xl font-black text-white">{documents.length}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{documents.length}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">{documents.length > 0 ? fmtBytes(totalSize) : '—'}</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Active Invites</p>
-          <p className="text-3xl font-black text-white">{activeInvites}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{activeInvites}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">{invites.length} total</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Last Upload</p>
-          <p className="text-lg font-black text-white leading-tight mt-1">{lastUpdated}</p>
+          <p className="text-lg font-black text-slate-900 dark:text-white leading-tight mt-1">{lastUpdated}</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Storage</p>
-          <p className="text-3xl font-black text-white">{documents.length > 0 ? fmtBytes(totalSize) : '0'}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{documents.length > 0 ? fmtBytes(totalSize) : '0'}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">Supabase · private bucket</p>
         </div>
       </div>
@@ -80,13 +80,13 @@ export default async function DataRoomPage() {
           legal: 'bg-blue-500/10 text-blue-400',
           clinical: 'bg-purple-500/10 text-purple-400',
           technical: 'bg-orange-500/10 text-orange-400',
-          corporate: 'bg-slate-600/40 text-slate-300',
+          corporate: 'bg-slate-600/40 text-slate-600 dark:text-slate-300',
           regulatory: 'bg-amber-500/10 text-amber-400',
         };
         return (
           <div className="flex flex-wrap gap-2">
             {Object.entries(cats).map(([cat, count]) => (
-              <span key={cat} className={`px-3 py-1 rounded-full text-xs font-mono font-bold ${catColors[cat] ?? 'bg-slate-800 text-slate-400'}`}>
+              <span key={cat} className={`px-3 py-1 rounded-full text-xs font-mono font-bold ${catColors[cat] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}: {count}
               </span>
             ))}
@@ -95,7 +95,7 @@ export default async function DataRoomPage() {
       })()}
 
       {/* Main panel */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <DataRoomClient
           initialDocuments={documents}
           initialInvites={invites}

@@ -60,8 +60,8 @@ export default async function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="pb-6 border-b border-slate-800">
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Alert &amp; Notification Rules</h1>
+      <div className="pb-6 border-b border-slate-200 dark:border-slate-800">
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Alert &amp; Notification Rules</h1>
         <p className="text-slate-400 text-sm mt-1">
           Automated watchdog — grant deadlines, GDPR compliance, hazard monitoring, and user retention.
         </p>

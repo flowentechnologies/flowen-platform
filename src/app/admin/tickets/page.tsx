@@ -53,9 +53,9 @@ export default async function TicketsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Tickets</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Tickets</h1>
           <p className="text-slate-400 text-sm mt-1">Support queue · SLA tracking · reply thread</p>
         </div>
         <div className="flex items-center gap-3">
@@ -71,25 +71,25 @@ export default async function TicketsPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className={`border rounded-2xl p-5 ${open > 0 ? 'bg-slate-900 border-slate-800' : 'bg-slate-900 border-slate-800'}`}>
+        <div className={`border rounded-2xl p-5 ${open > 0 ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Open Tickets</p>
-          <p className="text-4xl font-black text-white">{open}</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white">{open}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">{tickets.length} total</p>
         </div>
-        <div className={`border rounded-2xl p-5 ${breached > 0 ? 'bg-red-500/5 border-red-500/20' : 'bg-slate-900 border-slate-800'}`}>
+        <div className={`border rounded-2xl p-5 ${breached > 0 ? 'bg-red-500/5 border-red-500/20' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">SLA Breaches</p>
-          <p className={`text-4xl font-black ${breached > 0 ? 'text-red-400' : 'text-white'}`}>{breached}</p>
+          <p className={`text-4xl font-black ${breached > 0 ? 'text-red-400' : 'text-slate-900 dark:text-white'}`}>{breached}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">active tickets over SLA</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Avg Resolution</p>
-          <p className="text-4xl font-black text-white">{avgHours !== null ? `${avgHours}h` : '—'}</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white">{avgHours !== null ? `${avgHours}h` : '—'}</p>
           <p className="text-[10px] text-slate-600 mt-1 font-mono">{resolved.length} resolved</p>
         </div>
       </div>
 
       {/* Board */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <TicketsClient initialTickets={enriched} adminEmail={adminEmail} />
       </div>
     </div>
