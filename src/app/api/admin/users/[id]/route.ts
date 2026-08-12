@@ -15,11 +15,22 @@ export interface AdminUserProfile {
   email: string;
   display_name: string | null;
   tier: string | null;
+  role: string | null;
   is_admin: boolean;
   early_access: boolean;
   onboarding_complete: boolean;
   created_at: string;
   last_sign_in_at: string | null;
+  // KYC fields
+  date_of_birth: string | null;
+  country_of_residence: string | null;
+  phone_number: string | null;
+  employer_name: string | null;
+  hcpc_number: string | null;
+  institution_name: string | null;
+  marketing_consent: boolean;
+  id_verified: boolean;
+  id_verified_at: string | null;
   // practice stats
   total_sessions: number;
   total_duration_seconds: number;
@@ -49,7 +60,8 @@ export async function GET(
   const [profileRes, authRes, sessionsRes] = await Promise.all([
     client
       .from('profiles')
-      .select('id,display_name,tier,is_admin,early_access,onboarding_complete,created_at')
+      // eslint-disable-next-line max-len
+      .select('id,display_name,tier,role,is_admin,early_access,onboarding_complete,created_at,date_of_birth,country_of_residence,phone_number,employer_name,hcpc_number,institution_name,marketing_consent,id_verified,id_verified_at')
       .eq('id', id)
       .single(),
     client.schema('auth').from('users').select('id,email,last_sign_in_at').eq('id', id).single(),
@@ -79,11 +91,23 @@ export async function GET(
     email: auth?.email ?? '',
     display_name: profile.display_name,
     tier: profile.tier,
+    role: profile.role ?? null,
     is_admin: profile.is_admin,
     early_access: profile.early_access,
     onboarding_complete: profile.onboarding_complete,
     created_at: profile.created_at,
     last_sign_in_at: auth?.last_sign_in_at ?? null,
+    // KYC
+    date_of_birth:        profile.date_of_birth ?? null,
+    country_of_residence: profile.country_of_residence ?? null,
+    phone_number:         profile.phone_number ?? null,
+    employer_name:        profile.employer_name ?? null,
+    hcpc_number:          profile.hcpc_number ?? null,
+    institution_name:     profile.institution_name ?? null,
+    marketing_consent:    profile.marketing_consent ?? false,
+    id_verified:          profile.id_verified ?? false,
+    id_verified_at:       profile.id_verified_at ?? null,
+    // practice stats
     total_sessions: sessions.length,
     total_duration_seconds: totalDuration,
     last_session_at: lastSession,
