@@ -32,6 +32,11 @@ const W = 400;
 const H = 480;
 const LERP = 0.20;
 
+// Webcam resolution we request — needed to preserve 4:3 aspect ratio when
+// projecting normalised [0,1] MediaPipe landmarks onto the canvas.
+const CAM_W = 640;
+const CAM_H = 480;
+
 // ── Face mesh indices (MediaPipe 478-point model) ─────────────────────────────
 
 const FACE_OVAL = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
@@ -265,8 +270,8 @@ function drawCalibration(
 
   const { scale, ox, oy } = computeFaceTransform(landmarks);
 
-  const px = (i: number) => ox + (landmarks[i]?.x ?? 0.5) * W * scale - (scale - 1) * W * 0.5;
-  const py = (i: number) => oy + (landmarks[i]?.y ?? 0.5) * H * scale - (scale - 1) * H * 0.5;
+  const px = (i: number) => ox + (landmarks[i]?.x ?? 0.5) * CAM_W * scale;
+  const py = (i: number) => oy + (landmarks[i]?.y ?? 0.5) * CAM_H * scale;
 
   // Draw mesh connections
   ctx.lineWidth   = 0.6;
@@ -340,28 +345,21 @@ function drawLandmarkFace(
 
   const { scale, ox, oy } = computeFaceTransform(landmarks);
 
-  // Project a landmark to canvas coords, applying head roll via rotate
-  const px = (lm: FaceLandmark) => ox + lm.x * W * scale;
-  const py = (lm: FaceLandmark) => oy + lm.y * H * scale;
+  // Head yaw / pitch / roll are already encoded in the raw landmark positions —
+  // MediaPipe moves every point as the user moves their head. Applying a separate
+  // canvas transform on top would double the effect. We project landmarks directly.
+  const px = (lm: FaceLandmark) => ox + lm.x * CAM_W * scale;
+  const py = (lm: FaceLandmark) => oy + lm.y * CAM_H * scale;
   const lm  = (i: number) => landmarks[i] ?? { x: 0.5, y: 0.5, z: 0 };
 
-  // ── Apply head rotation canvas transform ────────────────────────────────
-  // Roll is applied as canvas rotation; yaw + pitch add a slight perspective squeeze
-  ctx.save();
-  const cx = W / 2, cy = H * 0.45;
-  ctx.translate(cx, cy);
-  ctx.rotate(s.roll);
-  // Perspective compression: face compresses on the turn axis
-  const xScale = Math.cos(s.yaw)   * 0.25 + 0.75;   // [0.75, 1.0] range
-  const yScale = Math.cos(s.pitch) * 0.25 + 0.75;
-  ctx.scale(xScale, yScale);
-  // Small translation to simulate 3D parallax
-  ctx.translate(-cx + Math.sin(s.yaw) * 18, -cy - Math.sin(s.pitch) * 12);
-
   // ── Face oval fill ───────────────────────────────────────────────────────
+  // Face oval fill — gradient from key-light at nose bridge outward.
+  // Use face-oval x-span in canvas pixels for gradient radius so it always covers the face.
+  const faceSpanPx = (Math.max(...FACE_OVAL.map(i => landmarks[i]?.x ?? 0.5)) -
+                      Math.min(...FACE_OVAL.map(i => landmarks[i]?.x ?? 0.5))) * CAM_W * scale;
   const faceGrad = ctx.createRadialGradient(
-    px(lm(168)) - 20, py(lm(168)) - 30, 10,  // key light near nose bridge
-    px(lm(168)), py(lm(168)), scale * 220,
+    px(lm(168)) - 12, py(lm(168)) - 18, 8,
+    px(lm(168)),      py(lm(168)),       faceSpanPx * 0.75,
   );
   faceGrad.addColorStop(0,    '#F0BE88');
   faceGrad.addColorStop(0.45, '#D4976A');
@@ -435,8 +433,6 @@ function drawLandmarkFace(
   ctx.fillStyle = specG;
   ctx.fill();
 
-  ctx.restore(); // head-rotation transform
-
   // ── Live tracking HUD (bottom strip) ──────────────────────────────────────
   if (speaking) {
     ctx.fillStyle = 'rgba(16,185,129,0.08)';
@@ -460,11 +456,16 @@ function computeFaceTransform(landmarks: FaceLandmark[]) {
   const faceH = Math.max(maxY - minY, 0.01);
   const faceCx = (minX + maxX) / 2;
   const faceCy = (minY + maxY) / 2;
-  // Scale so face oval occupies 80% of canvas width
-  const scale = (0.80 * W) / (faceW * W);
-  // Offset to centre the face; keep face 45% down the canvas (chin visible)
-  const ox = W / 2 - faceCx * W * scale;
-  const oy = H * 0.42 - faceCy * H * scale;
+  // Convert normalised coords to camera pixels then scale to canvas,
+  // using the smaller axis scale so the face fits without cropping.
+  // This preserves the actual 4:3 camera aspect ratio instead of distorting.
+  const scale = Math.min(
+    (0.80 * W) / (faceW * CAM_W),
+    (0.86 * H) / (faceH * CAM_H),
+  );
+  // Centre the face oval at 44% down the canvas (gives chin room below).
+  const ox = W / 2 - faceCx * CAM_W * scale;
+  const oy = H * 0.44 - faceCy * CAM_H * scale;
   return { scale, ox, oy };
 }
 

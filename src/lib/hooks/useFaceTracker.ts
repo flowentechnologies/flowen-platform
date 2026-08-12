@@ -303,13 +303,12 @@ export function useFaceTracker(
             } else {
               const blends = applyBlendsCalibration(rawBlends, baselineBlendsRef.current);
               const extra  = applyExtraCalibration(rawExtra,  baselineExtraRef.current);
-              const lms    = baselineLandmarkRef.current
-                ? shiftLandmarks(rawLandmarks, baselineLandmarkRef.current)
-                : rawLandmarks;
+              // Pass raw landmarks for rendering — calibration baseline only normalises blend
+              // shapes. Shifting landmark positions destroys the spatial data needed to draw.
               onFrameRef.current({
                 blends, extraBlends: extra,
                 speaking:    blends.jawOpen > SPEAKING_JAW_THRESHOLD,
-                headPose, landmarks: lms, calibrating: false,
+                headPose, landmarks: rawLandmarks, calibrating: false,
               });
             }
           }
