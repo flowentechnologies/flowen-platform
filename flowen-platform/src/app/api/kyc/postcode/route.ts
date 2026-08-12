@@ -91,10 +91,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     ? `${cleaned.slice(0, -3)} ${cleaned.slice(-3)}`
     : cleaned;
 
+  // For Scotland/Wales/NI, Postcodes.io returns null for region — fall back to district
+  const displayRegion = r.region ?? r.admin_district;
+
   return NextResponse.json<PostcodeLookupResponse>({
     valid: true,
     postcode: norm,
-    region: r.region,
+    region: displayRegion,
     district: r.admin_district,
     country: r.country,
   });
