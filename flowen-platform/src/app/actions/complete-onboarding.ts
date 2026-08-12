@@ -28,6 +28,13 @@ export async function completeOnboarding(opts: {
   hcpcNumber?: string;
   institutionName?: string;
   marketingConsent?: boolean;
+  // Address fields
+  addressLine1?: string;
+  addressLine2?: string;
+  addressCity?: string;
+  addressPostcode?: string;      // normalised by Postcodes.io lookup
+  addressRegion?: string;        // returned by Postcodes.io
+  addressVerifiedAt?: string;    // ISO timestamp — set when Postcodes.io confirmed the postcode
 }): Promise<{ error?: string }> {
   // Derive identity from session cookie — never trust client-supplied user IDs
   const cookieStore = await cookies();
@@ -83,6 +90,18 @@ export async function completeOnboarding(opts: {
   if (opts.marketingConsent !== undefined) {
     profileUpdate.marketing_consent    = opts.marketingConsent;
     profileUpdate.marketing_consent_at = opts.marketingConsent ? opts.consentAt : null;
+  }
+
+  // Address — only store if at least line 1 is provided
+  if (opts.addressLine1?.trim()) {
+    profileUpdate.address_line1    = opts.addressLine1.trim();
+    profileUpdate.address_line2    = opts.addressLine2?.trim() || null;
+    profileUpdate.address_city     = opts.addressCity?.trim() || null;
+    profileUpdate.address_postcode = opts.addressPostcode?.trim().toUpperCase() || null;
+    profileUpdate.address_region   = opts.addressRegion?.trim() || null;
+    if (opts.addressVerifiedAt) {
+      profileUpdate.address_verified_at = opts.addressVerifiedAt;
+    }
   }
 
   const { error } = await admin

@@ -10,6 +10,8 @@ import posthog from 'posthog-js';
 // Internal step: 1 Name · 2 Role · 3 Stammer (PWS only) · 4 Funding · 5 KYC · 6 Recommendation
 type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
+type PostcodeStatus = 'idle' | 'loading' | 'verified' | 'error' | 'manual';
+
 interface State {
   // Core
   name: string;
@@ -19,13 +21,23 @@ interface State {
   challenges: string[];
   // Step 4 (funding)
   fundingPath: string;
-  // Step 5 (KYC)
+  // Step 5 (KYC — personal details)
   dobDay: string;
   dobMonth: string;
   dobYear: string;
   country: string;           // 'GB' | 'IE' | 'OTHER'
   phone: string;             // optional
   contextualField: string;   // employer / university / hcpc / trust name
+  // Step 5 (KYC — address)
+  postcodeInput: string;     // raw input before lookup
+  postcodeStatus: PostcodeStatus;
+  postcodeError: string;
+  addressPostcode: string;   // normalised after successful lookup
+  addressRegion: string;
+  addressVerifiedAt: string; // ISO timestamp of successful lookup
+  addressLine1: string;
+  addressLine2: string;
+  addressCity: string;
 }
 
 type RecommendationType = 'funded_atw' | 'funded_dsa' | 'funded_nhs' | 'standard' | 'clinician' | 'researcher';
@@ -367,6 +379,15 @@ export default function OnboardingPage() {
     country: 'GB',
     phone: '',
     contextualField: '',
+    postcodeInput: '',
+    postcodeStatus: 'idle',
+    postcodeError: '',
+    addressPostcode: '',
+    addressRegion: '',
+    addressVerifiedAt: '',
+    addressLine1: '',
+    addressLine2: '',
+    addressCity: '',
   });
 
   // Whether the user has a stammer (determines if step 3 appears)
@@ -450,6 +471,13 @@ export default function OnboardingPage() {
         hcpcNumber:          state.role === 'clinician' ? state.contextualField || undefined : undefined,
         institutionName:     (['student','nhs'].includes(state.fundingPath) && state.role !== 'clinician') ? state.contextualField || undefined : undefined,
         marketingConsent,
+        // Address
+        addressLine1:        state.addressLine1 || undefined,
+        addressLine2:        state.addressLine2 || undefined,
+        addressCity:         state.addressCity || undefined,
+        addressPostcode:     state.addressPostcode || undefined,
+        addressRegion:       state.addressRegion || undefined,
+        addressVerifiedAt:   state.addressVerifiedAt || undefined,
       });
 
       if (actionError) { setError(actionError); return; }
@@ -465,6 +493,8 @@ export default function OnboardingPage() {
         has_phone:         !!state.phone,
         has_contextual:    !!state.contextualField,
         marketing_consent: marketingConsent,
+        has_address:       !!state.addressLine1,
+        address_verified:  state.postcodeStatus === 'verified',
       });
 
       document.cookie = 'flowen_ob=1; path=/; max-age=31536000; SameSite=Lax';
@@ -680,6 +710,29 @@ export default function OnboardingPage() {
 
   // ─── Step 5: KYC ─────────────────────────────────────────────────────────────
   if (step === 5) {
+    async function lookupPostcode() {
+      const raw = state.postcodeInput.trim();
+      if (!raw) return;
+      patch({ postcodeStatus: 'loading', postcodeError: '' });
+      try {
+        const res = await fetch(`/api/kyc/postcode?postcode=${encodeURIComponent(raw)}`);
+        const json = await res.json();
+        if (json.valid) {
+          patch({
+            postcodeStatus:    'verified',
+            addressPostcode:   json.postcode,
+            addressRegion:     json.region ?? '',
+            addressVerifiedAt: new Date().toISOString(),
+            postcodeError:     '',
+          });
+        } else {
+          patch({ postcodeStatus: 'error', postcodeError: json.error ?? 'Postcode not found' });
+        }
+      } catch {
+        patch({ postcodeStatus: 'error', postcodeError: 'Could not reach postcode service — enter address manually below' });
+      }
+    }
+
     function handleKycNext() {
       setError(null);
       // Validate DOB if any part is entered
@@ -690,6 +743,11 @@ export default function OnboardingPage() {
       // Phone is optional but must be plausible if given
       if (state.phone && !/^[+\d\s\-().]{7,20}$/.test(state.phone)) {
         setError('Please enter a valid phone number, or leave it blank');
+        return;
+      }
+      // Address line 1 is required if the user started filling in an address
+      if ((state.postcodeStatus === 'verified' || state.postcodeStatus === 'manual') && !state.addressLine1.trim()) {
+        setError('Please enter your first line of address');
         return;
       }
       nextStep();
@@ -815,6 +873,122 @@ export default function OnboardingPage() {
               <p className="text-[11px] text-slate-600 mt-1.5">{ctxField.hint}</p>
             </div>
           )}
+
+          {/* ── Address ──────────────────────────────────────────────────────── */}
+          <div className="border-t border-slate-800 pt-6 space-y-4">
+            <div>
+              <p className="text-xs font-mono uppercase tracking-widest text-slate-500">
+                Home address <span className="text-slate-600 normal-case tracking-normal">(optional)</span>
+              </p>
+              <p className="text-[11px] text-slate-600 mt-1">
+                Required for Access to Work and DSA funding applications.
+              </p>
+            </div>
+
+            {/* Postcode lookup */}
+            <div>
+              <label className="block text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-2">
+                Postcode
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  inputMode="text"
+                  autoCapitalize="characters"
+                  value={state.postcodeInput}
+                  onChange={e => patch({
+                    postcodeInput: e.target.value.toUpperCase(),
+                    // Reset verification when user edits
+                    postcodeStatus: 'idle',
+                    addressPostcode: '',
+                    addressRegion: '',
+                    addressVerifiedAt: '',
+                  })}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); lookupPostcode(); } }}
+                  placeholder="e.g. SW1A 1AA"
+                  className={`flex-1 bg-slate-900 border rounded-xl px-4 py-3 text-white text-sm font-mono placeholder-slate-600 focus:outline-none transition ${
+                    state.postcodeStatus === 'verified'
+                      ? 'border-emerald-500/60'
+                      : state.postcodeStatus === 'error'
+                      ? 'border-red-500/50'
+                      : 'border-slate-700 focus:border-emerald-500/60'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={lookupPostcode}
+                  disabled={!state.postcodeInput.trim() || state.postcodeStatus === 'loading'}
+                  className="px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold transition-all whitespace-nowrap"
+                >
+                  {state.postcodeStatus === 'loading' ? (
+                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                  ) : 'Verify'}
+                </button>
+              </div>
+
+              {/* Postcode status feedback */}
+              {state.postcodeStatus === 'verified' && (
+                <p className="text-[11px] text-emerald-400 flex items-center gap-1.5 mt-2">
+                  <svg className="w-3 h-3 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd"/>
+                  </svg>
+                  Postcode verified{state.addressRegion ? ` · ${state.addressRegion}` : ''}
+                </p>
+              )}
+              {state.postcodeStatus === 'error' && (
+                <div className="mt-2 space-y-1.5">
+                  <p className="text-[11px] text-red-400">{state.postcodeError}</p>
+                  <button
+                    type="button"
+                    onClick={() => patch({ postcodeStatus: 'manual', postcodeError: '' })}
+                    className="text-[11px] text-slate-500 hover:text-slate-300 underline transition-colors"
+                  >
+                    Enter address manually instead
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Address fields — shown after successful lookup or manual mode */}
+            {(state.postcodeStatus === 'verified' || state.postcodeStatus === 'manual') && (
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={state.addressLine1}
+                  onChange={e => patch({ addressLine1: e.target.value })}
+                  placeholder="Address line 1"
+                  autoFocus
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition"
+                />
+                <input
+                  type="text"
+                  value={state.addressLine2}
+                  onChange={e => patch({ addressLine2: e.target.value })}
+                  placeholder="Address line 2 (optional)"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition"
+                />
+                <input
+                  type="text"
+                  value={state.addressCity}
+                  onChange={e => patch({ addressCity: e.target.value })}
+                  placeholder="Town or city"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition"
+                />
+                {state.postcodeStatus === 'manual' && (
+                  <input
+                    type="text"
+                    value={state.postcodeInput}
+                    onChange={e => patch({ postcodeInput: e.target.value.toUpperCase(), addressPostcode: e.target.value.toUpperCase() })}
+                    placeholder="Postcode"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm font-mono placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition"
+                  />
+                )}
+              </div>
+            )}
+          </div>
 
           {error && (
             <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">{error}</p>
