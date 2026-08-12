@@ -1176,98 +1176,385 @@ function drawTeeth(
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// MODE 3 — Procedural face: no camera, audio-driven (same as original canvas face)
+// MODE 3 — Procedural face: no camera, audio-driven
+// Quality parity with landmark face — same structural depth, tongue, teeth, lips.
 // ════════════════════════════════════════════════════════════════════════════
+
+// Procedural geometry constants (kept stable so the face layout never shifts)
+const PFX = 200, PFY = 232;           // face ellipse centre
+const PFR = 114, PFRY = 152;           // face radii x, y
+const PCHIN_Y = PFY + PFRY;            // 384 — chin bottom
+const PEY_Y = PFY - 18;               // 214 — eye centre y
+const PLEY_X = PFX - 38;              // 162 — left eye x
+const PREY_X = PFX + 38;              // 238 — right eye x
+const PNOSE_TIP_Y = PFY + 34;         // 266 — nose tip y
+const PMOUTH_Y = PFY + 76;            // 308 — mouth corner base y
 
 function drawProceduralFace(ctx: CanvasRenderingContext2D, s: AvatarState, _speaking: boolean) {
   ctx.clearRect(0, 0, W, H);
+  ctx.shadowBlur = 0;
 
-  const bgGrad = ctx.createRadialGradient(200, 260, 20, 200, 240, 290);
-  bgGrad.addColorStop(0, '#131c2b'); bgGrad.addColorStop(1, '#0d1117');
+  // Background
+  const bgGrad = ctx.createRadialGradient(PFX, PFY + 28, 20, PFX, PFY + 8, 290);
+  bgGrad.addColorStop(0, '#141c2b'); bgGrad.addColorStop(1, '#080c12');
   ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
 
-  // Neck
-  ctx.beginPath(); ctx.moveTo(168,352); ctx.lineTo(232,352); ctx.lineTo(245,480); ctx.lineTo(155,480); ctx.closePath();
+  // ── Neck + shoulders ────────────────────────────────────────────────────────
+  ctx.beginPath();
+  ctx.ellipse(PFX, PCHIN_Y + 18, 28, 24, 0, 0, Math.PI);
+  ctx.fillStyle = '#C49060'; ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(PFX - 32, PCHIN_Y - 8);
+  ctx.lineTo(PFX + 32, PCHIN_Y - 8);
+  ctx.lineTo(PFX + 48, H);
+  ctx.lineTo(PFX - 48, H);
+  ctx.closePath();
   ctx.fillStyle = '#C49060'; ctx.fill();
 
-  // Face
-  const fg = ctx.createRadialGradient(185, 195, 22, 200, 230, 162);
-  fg.addColorStop(0,'#ECC088'); fg.addColorStop(0.5,'#D4A06A'); fg.addColorStop(0.85,'#BB8448'); fg.addColorStop(1,'#A07038');
-  ctx.beginPath(); ctx.ellipse(200, 232, 114, 152, 0, 0, Math.PI*2); ctx.fillStyle=fg; ctx.fill();
+  // ── Face base ───────────────────────────────────────────────────────────────
+  const faceGrad = ctx.createRadialGradient(PFX - 15, PFY - 38, 22, PFX, PFY, 162);
+  faceGrad.addColorStop(0,    '#F0BE88');
+  faceGrad.addColorStop(0.45, '#D4976A');
+  faceGrad.addColorStop(0.80, '#B87848');
+  faceGrad.addColorStop(1,    '#9A6030');
+  ctx.beginPath(); ctx.ellipse(PFX, PFY, PFR, PFRY, 0, 0, Math.PI * 2);
+  ctx.fillStyle = faceGrad; ctx.fill();
 
-  // Hair
+  // ── Hair ────────────────────────────────────────────────────────────────────
   ctx.save();
-  ctx.beginPath(); ctx.ellipse(200, 232, 114, 152, 0, 0, Math.PI*2); ctx.clip();
-  ctx.fillStyle = '#231108';
-  ctx.fillRect(0, 0, W, 166);
+  ctx.beginPath(); ctx.ellipse(PFX, PFY, PFR, PFRY, 0, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = '#1A0E06';
+  ctx.fillRect(0, 0, W, PFY - PFRY + 80);  // hairline
   ctx.restore();
-  ctx.beginPath(); ctx.ellipse(88,195,16,62,0.08,0,Math.PI*2); ctx.fillStyle='#231108'; ctx.fill();
-  ctx.beginPath(); ctx.ellipse(312,195,16,62,-0.08,0,Math.PI*2); ctx.fillStyle='#231108'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(PFX - PFR + 6, PFY - 36, 16, 58, 0.1,  0, Math.PI * 2);
+  ctx.fillStyle = '#1A0E06'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(PFX + PFR - 6, PFY - 36, 16, 58, -0.1, 0, Math.PI * 2);
+  ctx.fillStyle = '#1A0E06'; ctx.fill();
 
-  // Blush
-  ctx.beginPath(); ctx.ellipse(144,278,24,13,-0.1,0,Math.PI*2); ctx.fillStyle='rgba(218,100,80,0.13)'; ctx.fill();
-  ctx.beginPath(); ctx.ellipse(256,278,24,13,0.1,0,Math.PI*2); ctx.fillStyle='rgba(218,100,80,0.13)'; ctx.fill();
+  // ── Structural depth overlays ────────────────────────────────────────────────
 
-  // Brows
-  const bl = (s.browInner*0.45 + s.browOuterL*0.55 - s.browDownL*0.6) * 12;
-  const br = (s.browInner*0.45 + s.browOuterR*0.55 - s.browDownR*0.6) * 12;
-  ctx.lineCap='round'; ctx.lineWidth=5.5; ctx.strokeStyle='#2A1006';
-  ctx.beginPath(); ctx.moveTo(142,185-bl); ctx.quadraticCurveTo(166,175-bl-s.browInner*5,194,185-bl+2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(206,185-br+2); ctx.quadraticCurveTo(234,175-br-s.browInner*5,258,185-br); ctx.stroke();
+  // Jawline shadow
+  const csg = ctx.createRadialGradient(PFX, PCHIN_Y + 2, 0, PFX, PCHIN_Y + 4, 44);
+  csg.addColorStop(0, 'rgba(40,18,6,0.42)'); csg.addColorStop(1, 'rgba(40,18,6,0)');
+  ctx.beginPath(); ctx.ellipse(PFX, PCHIN_Y + 3, 44, 10, 0, 0, Math.PI * 2);
+  ctx.fillStyle = csg; ctx.fill();
 
-  drawProceduralEye(ctx, 162, 214, s.blinkL, s.squintL, s.lookX, s.lookY);
-  drawProceduralEye(ctx, 238, 214, s.blinkR, s.squintR, s.lookX, s.lookY);
+  // Temple hollows
+  for (const [tx, ty, sign] of [
+    [PFX - PFR + 6,  PFY - 34, -1],
+    [PFX + PFR - 6,  PFY - 34,  1],
+  ] as [number, number, number][]) {
+    const tg = ctx.createRadialGradient(tx + sign * 4, ty - 8, 0, tx, ty - 6, 24);
+    tg.addColorStop(0, 'rgba(50,24,8,0.28)'); tg.addColorStop(1, 'rgba(50,24,8,0)');
+    ctx.beginPath(); ctx.ellipse(tx + sign * 3, ty - 8, 18, 30, 0, 0, Math.PI * 2);
+    ctx.fillStyle = tg; ctx.fill();
+  }
 
-  // Nose
-  ctx.beginPath(); ctx.moveTo(200,237); ctx.quadraticCurveTo(196,256,184,265); ctx.quadraticCurveTo(200,271,216,265); ctx.quadraticCurveTo(204,256,200,237);
-  ctx.fillStyle='#C49060'; ctx.fill();
-  ctx.beginPath(); ctx.ellipse(187,266,6.5,4,-0.18,0,Math.PI*2); ctx.fillStyle='rgba(100,55,20,0.55)'; ctx.fill();
-  ctx.beginPath(); ctx.ellipse(213,266,6.5,4,0.18,0,Math.PI*2); ctx.fillStyle='rgba(100,55,20,0.55)'; ctx.fill();
+  // Under-eye shadows
+  for (const [ex, ey] of [[PLEY_X, PEY_Y + 14], [PREY_X, PEY_Y + 14]] as [number, number][]) {
+    ctx.beginPath(); ctx.ellipse(ex, ey, 20, 5.5, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(70,35,12,0.22)'; ctx.fill();
+  }
 
+  // Cheek puff
+  if (s.cheekPuff > 0.04) {
+    for (const [cx, cy] of [[PFX - 56, PFY + 46], [PFX + 56, PFY + 46]] as [number, number][]) {
+      const pR = 22 * (1 + s.cheekPuff * 0.55);
+      const pG = ctx.createRadialGradient(cx, cy, 0, cx, cy, pR);
+      pG.addColorStop(0, `rgba(220,140,90,${s.cheekPuff * 0.25})`);
+      pG.addColorStop(1, 'rgba(220,140,90,0)');
+      ctx.beginPath(); ctx.ellipse(cx, cy, pR, pR * 0.7, 0, 0, Math.PI * 2);
+      ctx.fillStyle = pG; ctx.fill();
+    }
+  }
+
+  // Nasolabial folds
+  const smile = (s.smileL + s.smileR) / 2;
+  const foldAlpha = 0.12 + smile * 0.35;
+  for (const [sx, sy, ex2, ey2, sign] of [
+    [PFX - 14, PNOSE_TIP_Y,     PFX - 46, PMOUTH_Y, -1],
+    [PFX + 14, PNOSE_TIP_Y,     PFX + 46, PMOUTH_Y,  1],
+  ] as [number, number, number, number, number][]) {
+    ctx.beginPath();
+    ctx.moveTo(sx + sign * 2, sy + 2);
+    ctx.bezierCurveTo(sx + sign * 5, sy + 10, ex2 + sign * 4, ey2 - 5, ex2, ey2);
+    ctx.strokeStyle = `rgba(120,55,20,${foldAlpha})`;
+    ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.stroke();
+  }
+
+  // Philtrum shadow
+  const philG = ctx.createLinearGradient(PFX - 6, 0, PFX + 6, 0);
+  philG.addColorStop(0, 'rgba(90,40,12,0)');
+  philG.addColorStop(0.5, 'rgba(90,40,12,0.20)');
+  philG.addColorStop(1, 'rgba(90,40,12,0)');
+  ctx.beginPath(); ctx.ellipse(PFX, PNOSE_TIP_Y + 22, 5.5, 7, 0, 0, Math.PI * 2);
+  ctx.fillStyle = philG; ctx.fill();
+
+  // Cheek blush
+  const blushA = 0.09 + (s.cheekPuff + s.squintL + s.squintR) * 0.05;
+  ctx.beginPath(); ctx.ellipse(PFX - 56, PFY + 46, 24, 14, -0.15, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(210,90,70,${blushA})`; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(PFX + 56, PFY + 46, 24, 14,  0.15, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(210,90,70,${blushA})`; ctx.fill();
+
+  // ── Eyebrows ─────────────────────────────────────────────────────────────────
+  const bl = (s.browInner * 0.45 + s.browOuterL * 0.55 - s.browDownL * 0.6) * 12;
+  const br = (s.browInner * 0.45 + s.browOuterR * 0.55 - s.browDownR * 0.6) * 12;
+  ctx.lineCap = 'round'; ctx.lineWidth = 5.5; ctx.strokeStyle = '#2A1006';
+  ctx.beginPath();
+  ctx.moveTo(142, 185 - bl);
+  ctx.quadraticCurveTo(166, 175 - bl - s.browInner * 5, 194, 185 - bl + 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(206, 185 - br + 2);
+  ctx.quadraticCurveTo(234, 175 - br - s.browInner * 5, 258, 185 - br);
+  ctx.stroke();
+
+  // ── Eyes ─────────────────────────────────────────────────────────────────────
+  drawProceduralEye(ctx, PLEY_X, PEY_Y, s.blinkL, s.squintL, s.lookX, s.lookY);
+  drawProceduralEye(ctx, PREY_X, PEY_Y, s.blinkR, s.squintR, s.lookX, s.lookY);
+
+  // ── Nose ─────────────────────────────────────────────────────────────────────
+  drawProceduralNose(ctx, s);
+
+  // ── Mouth ────────────────────────────────────────────────────────────────────
   drawProceduralMouth(ctx, s);
+
+  // ── Forehead specular highlight ───────────────────────────────────────────────
+  const specX = PFX - 8, specY = PFY - 12;
+  const specG = ctx.createRadialGradient(specX, specY, 0, specX, specY, 30);
+  specG.addColorStop(0, 'rgba(255,250,240,0.18)');
+  specG.addColorStop(1, 'rgba(255,250,240,0)');
+  ctx.beginPath(); ctx.ellipse(specX, specY, 28, 18, -0.3, 0, Math.PI * 2);
+  ctx.fillStyle = specG; ctx.fill();
 }
 
-function drawProceduralEye(ctx: CanvasRenderingContext2D, cx: number, cy: number, blink: number, squint: number, lookX: number, lookY: number) {
-  const ew=30, eh=17;
-  ctx.beginPath(); ctx.ellipse(cx,cy,ew,eh,0,0,Math.PI*2); ctx.fillStyle='#F3EDE5'; ctx.fill();
-  const iX = cx + (lookX-0.5)*10, iY = cy + (lookY-0.5)*5;
-  const iG = ctx.createRadialGradient(iX-3,iY-3,0,iX,iY,12);
-  iG.addColorStop(0,'#7A4E28'); iG.addColorStop(1,'#2A1408');
-  ctx.beginPath(); ctx.arc(iX,iY,12,0,Math.PI*2); ctx.fillStyle=iG; ctx.fill();
-  ctx.beginPath(); ctx.arc(iX,iY,6.5,0,Math.PI*2); ctx.fillStyle='#0e0908'; ctx.fill();
-  ctx.beginPath(); ctx.arc(iX+4,iY-3,3,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.88)'; ctx.fill();
+function drawProceduralEye(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number,
+  blink: number, squint: number,
+  lookX: number, lookY: number,
+) {
+  const ew = 30, eh = 17;
+
+  // 1. Clip to eye shape — same approach as landmark eye
+  ctx.save();
+  ctx.beginPath(); ctx.ellipse(cx, cy, ew, eh, 0, 0, Math.PI * 2); ctx.clip();
+
+  // 2. Sclera
+  ctx.fillStyle = '#F3EDE5'; ctx.fill();
+
+  // 3. Iris with radial gradient
+  const iX = cx + (lookX - 0.5) * 12, iY = cy + (lookY - 0.5) * 6;
+  const irisR = eh * 0.76 * Math.max(0.05, 1 - blink * 0.88);
+  const iG = ctx.createRadialGradient(iX - irisR * 0.22, iY - irisR * 0.22, 0, iX, iY, irisR);
+  iG.addColorStop(0,   '#7A4E28');
+  iG.addColorStop(0.6, '#4A2E14');
+  iG.addColorStop(1,   '#2A1408');
+  ctx.beginPath(); ctx.arc(iX, iY, irisR, 0, Math.PI * 2);
+  ctx.fillStyle = iG; ctx.fill();
+
+  // 4. Pupil
+  ctx.beginPath(); ctx.arc(iX, iY, irisR * 0.44, 0, Math.PI * 2);
+  ctx.fillStyle = '#0A0806'; ctx.fill();
+
+  // 5. Dual specular highlights
+  ctx.beginPath(); ctx.arc(iX + irisR * 0.28, iY - irisR * 0.30, irisR * 0.18, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.fill();
+  ctx.beginPath(); ctx.arc(iX - irisR * 0.18, iY + irisR * 0.22, irisR * 0.09, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fill();
+
+  // 6. Eyelid blink — skin fill descends from top
   if (blink > 0.02) {
-    ctx.save();
-    ctx.beginPath(); ctx.ellipse(cx,cy,ew+1,eh+1,0,0,Math.PI*2); ctx.clip();
-    ctx.fillStyle='#D4A06A'; ctx.fillRect(cx-ew-1,cy-eh-1,(ew+1)*2,(eh*2+2)*blink); ctx.restore();
+    ctx.fillStyle = '#D4A06A';
+    ctx.fillRect(cx - ew - 2, cy - eh - 2, (ew + 2) * 2, (eh + 2) * 2 * blink);
   }
-  ctx.beginPath(); ctx.moveTo(cx-ew,cy-3-(squint*6)); ctx.quadraticCurveTo(cx,cy-eh-4,cx+ew,cy-3-(squint*6));
-  ctx.strokeStyle='#180A04'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.stroke();
+
+  ctx.restore();
+
+  // 7. Upper eyelash line (outside clip)
+  ctx.beginPath();
+  ctx.moveTo(cx - ew, cy - squint * 6);
+  ctx.quadraticCurveTo(cx, cy - eh - 5 - squint * 4, cx + ew, cy - squint * 6);
+  ctx.strokeStyle = '#100804'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.stroke();
+
+  // 8. Lower lash line
+  ctx.beginPath();
+  ctx.moveTo(cx - ew + 3, cy + eh * 0.65);
+  ctx.quadraticCurveTo(cx, cy + eh + 2, cx + ew - 3, cy + eh * 0.65);
+  ctx.strokeStyle = 'rgba(20,8,4,0.4)'; ctx.lineWidth = 1.8; ctx.stroke();
+}
+
+function drawProceduralNose(ctx: CanvasRenderingContext2D, s: AvatarState) {
+  const tipX = PFX, tipY = PNOSE_TIP_Y;
+  const bridgeTopY = PFY - 26;   // ~206, between eyes and brows
+
+  // Bridge highlight (left of centreline)
+  ctx.beginPath();
+  ctx.moveTo(tipX - 1.5, bridgeTopY);
+  ctx.lineTo(tipX - 1.5, tipY);
+  ctx.strokeStyle = 'rgba(240,190,130,0.32)';
+  ctx.lineWidth = 4.5; ctx.lineCap = 'round'; ctx.stroke();
+
+  // Bridge shadow (right of centreline)
+  ctx.beginPath();
+  ctx.moveTo(tipX + 3.5, bridgeTopY);
+  ctx.lineTo(tipX + 3.5, tipY);
+  ctx.strokeStyle = 'rgba(80,35,10,0.22)';
+  ctx.lineWidth = 3; ctx.stroke();
+
+  // Nose tip shadow
+  ctx.beginPath(); ctx.ellipse(tipX, tipY + 4, 10, 7, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(120,55,20,0.32)'; ctx.fill();
+
+  // Tip highlight dot
+  ctx.beginPath(); ctx.arc(tipX - 2.5, tipY - 1, 3, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(240,185,120,0.30)'; ctx.fill();
+
+  // Ala shadows — widen with noseSneer
+  for (const [nx, ny, angle, sneer] of [
+    [PFX - 13, tipY,  -0.28, s.noseSneerL],
+    [PFX + 13, tipY,   0.28, s.noseSneerR],
+  ] as [number, number, number, number][]) {
+    const sw = 1 + sneer * 0.4;
+    ctx.beginPath(); ctx.ellipse(nx, ny, 6 * sw, 4.5, angle, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(80,35,12,${0.48 + sneer * 0.22})`; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(nx - 1.5, ny - 1.5, 3.5 * sw, 2.5, angle, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(220,150,80,0.18)'; ctx.fill();
+  }
+
+  // Philtrum column ridge highlights
+  for (const offX of [-3.5, 3.5]) {
+    const philG = ctx.createLinearGradient(0, tipY + 4, 0, tipY + 22);
+    philG.addColorStop(0, 'rgba(220,150,80,0.22)');
+    philG.addColorStop(1, 'rgba(220,150,80,0)');
+    ctx.beginPath();
+    ctx.moveTo(tipX + offX * 0.6, tipY + 4);
+    ctx.lineTo(tipX + offX,       tipY + 22);
+    ctx.strokeStyle = philG; ctx.lineWidth = 1.8; ctx.stroke();
+  }
 }
 
 function drawProceduralMouth(ctx: CanvasRenderingContext2D, s: AvatarState) {
-  const baseY=308, halfW=46, jaw=s.jawOpen;
-  const smile=(s.smileL+s.smileR)/2, frown=(s.frownL+s.frownR)/2;
-  const cDy=smile*14-frown*9, cDx=smile*5;
-  const lX=200-halfW-cDx, rX=200+halfW+cDx;
-  const ulY=baseY-4-jaw*10, llY=baseY+8+jaw*32;
+  const baseX = PFX, baseY = PMOUTH_Y, halfW = 46;
 
-  if (jaw>0.02) {
+  const smile = (s.smileL + s.smileR) / 2;
+  const frown = (s.frownL + s.frownR) / 2;
+  // Corners: cDy > 0 = corners drop (correct cupid's bow smile shape on upper lip)
+  const cDy = smile * 14 - frown * 9;
+  const cDx = smile * 5 - s.puckerFunnel * 8;
+  const lcx = baseX - halfW - cDx, lcy = baseY + cDy;
+  const rcx = baseX + halfW + cDx, rcy = baseY + cDy;
+
+  const upperUpAvg    = (s.mouthUpperUpL  + s.mouthUpperUpR)  / 2;
+  const lowerDownAvg  = (s.mouthLowerDownL + s.mouthLowerDownR) / 2;
+  const ulY  = baseY - 4  - s.jawOpen * 10 - upperUpAvg * 8   - s.mouthShrugUpper * 5;
+  const llY  = baseY + 8  + s.jawOpen * 34 + lowerDownAvg * 6 + s.mouthShrugLower * 5;
+
+  // Inner gum reference positions for teeth/tongue
+  const upperInnerY = baseY       + s.mouthRollUpper * 5;
+  const lowerInnerY = baseY + 4   + s.jawOpen * 28 - s.mouthRollLower * 5;
+  const openingY    = Math.max(0, lowerInnerY - upperInnerY);
+  const isOpen      = openingY > 2;
+
+  // ── Mouth cavity path (reused for clipping) ────────────────────────────────
+  const cavityPath = () => {
     ctx.beginPath();
-    ctx.moveTo(lX,baseY+cDy); ctx.bezierCurveTo(200-halfW*.5,ulY+jaw*6,200+halfW*.5,ulY+jaw*6,rX,baseY+cDy);
-    ctx.bezierCurveTo(200+halfW*.5,llY-jaw*8,200-halfW*.5,llY-jaw*8,lX,baseY+cDy); ctx.closePath();
-    ctx.fillStyle='#4A1212'; ctx.fill();
-    const tH=Math.max(0,jaw*20-5);
-    if (tH>1) {
-      ctx.save(); ctx.beginPath();
-      ctx.moveTo(lX,baseY+cDy); ctx.bezierCurveTo(200-halfW*.5,ulY+jaw*6,200+halfW*.5,ulY+jaw*6,rX,baseY+cDy);
-      ctx.bezierCurveTo(200+halfW*.5,llY-jaw*8,200-halfW*.5,llY-jaw*8,lX,baseY+cDy); ctx.closePath(); ctx.clip();
-      ctx.fillStyle='#EDE8DC'; ctx.fillRect(lX+4,baseY+cDy-1,rX-lX-8,tH); ctx.restore();
+    ctx.moveTo(lcx, lcy);
+    ctx.bezierCurveTo(lcx + 18, ulY + s.jawOpen * 6, rcx - 18, ulY + s.jawOpen * 6, rcx, rcy);
+    ctx.bezierCurveTo(rcx - 18, llY - s.jawOpen * 8, lcx + 18, llY - s.jawOpen * 8, lcx, lcy);
+    ctx.closePath();
+  };
+
+  if (isOpen) {
+    cavityPath();
+    const cavG = ctx.createRadialGradient(baseX, (upperInnerY + lowerInnerY) / 2, 0, baseX, (upperInnerY + lowerInnerY) / 2, 50);
+    cavG.addColorStop(0,    '#280606');
+    cavG.addColorStop(0.45, '#3A0C0C');
+    cavG.addColorStop(1,    '#4A1616');
+    ctx.fillStyle = cavG; ctx.fill();
+
+    // ── Tongue ──────────────────────────────────────────────────────────────
+    if (s.tongueOut > 0.04 || s.tongueUp > 0.22 || s.tongueFlat > 0.2) {
+      drawTongue(ctx, 1.0, s, openingY, baseX, upperInnerY, lowerInnerY);
+    }
+
+    // ── Teeth (clipped to cavity) ────────────────────────────────────────────
+    const teethW  = (rcx - lcx) * 0.88;
+    const uTeethH = Math.max(0, openingY * 0.38 - 1.5);
+    if (uTeethH > 0.5 && teethW > 4) {
+      ctx.save(); cavityPath(); ctx.clip();
+      drawTeeth(ctx, baseX - teethW / 2, upperInnerY - 0.5, teethW, uTeethH, 1.0, true, baseX);
+      if (openingY > 14) {
+        const lH = Math.max(0, openingY * 0.26 - 2);
+        const lW = teethW * 0.85;
+        if (lH > 0.5) drawTeeth(ctx, baseX - lW / 2, lowerInnerY - lH + 0.5, lW, lH, 1.0, false, baseX);
+      }
+      ctx.restore();
     }
   }
-  ctx.beginPath(); ctx.moveTo(lX,baseY+cDy); ctx.bezierCurveTo(200-halfW*.5,llY-jaw*4,200+halfW*.5,llY-jaw*4,rX,baseY+cDy);
-  ctx.strokeStyle='#8A4830'; ctx.lineWidth=4.5; ctx.lineCap='round'; ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(lX,baseY+cDy); ctx.bezierCurveTo(200-halfW*.65,ulY,200-halfW*.12,ulY-5,200,ulY-4);
-  ctx.bezierCurveTo(200+halfW*.12,ulY-5,200+halfW*.65,ulY,rX,baseY+cDy);
-  ctx.strokeStyle='#803820'; ctx.lineWidth=3.5; ctx.stroke();
+
+  // ── Lower lip fill ─────────────────────────────────────────────────────────
+  ctx.beginPath();
+  ctx.moveTo(lcx, lcy);
+  ctx.bezierCurveTo(lcx + 14, llY - s.jawOpen * 4, rcx - 14, llY - s.jawOpen * 4, rcx, rcy);
+  ctx.lineTo(rcx, rcy); ctx.lineTo(lcx, lcy); ctx.closePath();
+  const llG = ctx.createLinearGradient(0, lcy, 0, llY);
+  llG.addColorStop(0,   '#7A3420');
+  llG.addColorStop(0.4, '#B05538');
+  llG.addColorStop(1,   '#903828');
+  ctx.fillStyle = llG; ctx.fill();
+
+  // ── Upper lip fill ─────────────────────────────────────────────────────────
+  ctx.beginPath();
+  ctx.moveTo(lcx, lcy);
+  ctx.bezierCurveTo(lcx + 16, ulY, baseX - 16, ulY - 5, baseX, ulY - 4);
+  ctx.bezierCurveTo(baseX + 16, ulY - 5, rcx - 16, ulY, rcx, rcy);
+  ctx.lineTo(rcx, rcy); ctx.lineTo(lcx, lcy); ctx.closePath();
+  const ulG = ctx.createLinearGradient(0, ulY, 0, lcy);
+  ulG.addColorStop(0,   '#8A3018');
+  ulG.addColorStop(0.5, '#A84028');
+  ulG.addColorStop(1,   '#7A3020');
+  ctx.fillStyle = ulG; ctx.fill();
+
+  // ── Lip edges ──────────────────────────────────────────────────────────────
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(lcx, lcy);
+  ctx.bezierCurveTo(lcx + 16, ulY, baseX - 16, ulY - 5, baseX, ulY - 4);
+  ctx.bezierCurveTo(baseX + 16, ulY - 5, rcx - 16, ulY, rcx, rcy);
+  ctx.strokeStyle = '#5A1E0E'; ctx.lineWidth = 1.8; ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(lcx, lcy);
+  ctx.bezierCurveTo(lcx + 14, llY - s.jawOpen * 4, rcx - 14, llY - s.jawOpen * 4, rcx, rcy);
+  ctx.strokeStyle = '#6A2818'; ctx.lineWidth = 1.8; ctx.stroke();
+
+  // ── Cupid's bow highlight ──────────────────────────────────────────────────
+  const bowG = ctx.createRadialGradient(baseX, ulY - 4, 0, baseX, ulY - 4, 10);
+  bowG.addColorStop(0, 'rgba(220,135,95,0.55)');
+  bowG.addColorStop(1, 'rgba(220,135,95,0)');
+  ctx.beginPath(); ctx.arc(baseX, ulY - 4, 10, 0, Math.PI * 2);
+  ctx.fillStyle = bowG; ctx.fill();
+
+  // ── Lower lip centre sheen ─────────────────────────────────────────────────
+  const midLipY = (lcy + llY) / 2;
+  const sheenG = ctx.createRadialGradient(baseX - 1, midLipY - 1, 0, baseX, midLipY, 16);
+  sheenG.addColorStop(0, 'rgba(200,110,70,0.40)');
+  sheenG.addColorStop(1, 'rgba(200,110,70,0)');
+  ctx.beginPath(); ctx.ellipse(baseX, midLipY - 1, 18, 7, 0, 0, Math.PI * 2);
+  ctx.fillStyle = sheenG; ctx.fill();
+
+  // ── Mouth corners + dimples ────────────────────────────────────────────────
+  for (const [cx, cy] of [[lcx, lcy], [rcx, rcy]] as [number, number][]) {
+    ctx.beginPath(); ctx.arc(cx, cy, 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(90,35,16,0.75)'; ctx.fill();
+  }
+  if (smile > 0.12 || (s.dimpleL + s.dimpleR) / 2 > 0.05) {
+    const dimple = (s.dimpleL + s.dimpleR) / 2;
+    for (const [dx, dy] of [[lcx - 8, lcy - 4], [rcx + 8, rcy - 4]] as [number, number][]) {
+      ctx.beginPath(); ctx.arc(dx, dy, 2.8, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(110,48,20,${Math.min(0.5, (smile + dimple) * 0.35)})`; ctx.fill();
+    }
+  }
 }
