@@ -1,6 +1,7 @@
 import { assertAdmin } from '@/lib/admin/guard';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { ASRWorkflow } from './ASRWorkflow';
 
 export const metadata: Metadata = { title: 'Disfluent ASR Engine v1.0 — Flowen Admin' };
 
@@ -176,6 +177,16 @@ export default async function ASREnginePage() {
           <MetaRow label="Training config" value={`${MODEL.epochs} · ${MODEL.optimiser}`} />
           <MetaRow label="Compute used"    value={MODEL.compute} />
         </dl>
+      </div>
+
+      {/* Inference pipeline diagram */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-1">Inference Pipeline</h2>
+        <p className="text-xs text-slate-400 mb-4">
+          Six-stage end-to-end pipeline from microphone to structured disfluency event stream.
+          Click any stage to inspect its specification.
+        </p>
+        <ASRWorkflow />
       </div>
 
       {/* Disfluency tokenisation */}
