@@ -111,7 +111,7 @@ export default function GuidePage() {
         <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
           PLATFORM GUIDE
         </span>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight mt-4">
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-4">
           How to use Flowen
         </h1>
         <p className="text-slate-400 text-sm mt-2 max-w-2xl">
@@ -123,7 +123,7 @@ export default function GuidePage() {
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="px-3 py-1 rounded-full text-xs font-mono text-slate-400 border border-slate-800 hover:border-emerald-500/40 hover:text-emerald-400 transition-colors"
+              className="px-3 py-1 rounded-full text-xs font-mono text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/40 hover:text-emerald-400 transition-colors"
             >
               {s.label}
             </a>
@@ -137,10 +137,10 @@ export default function GuidePage() {
           <section key={section.id} id={section.id} className="scroll-mt-24">
             {/* Section header */}
             <div className="flex items-center gap-3 mb-5">
-              <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 text-xs font-mono font-bold uppercase tracking-wider">
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-mono font-bold uppercase tracking-wider">
                 {section.badge}
               </span>
-              <h2 className="text-xl font-bold text-white">{section.label}</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{section.label}</h2>
               <Link
                 href={section.href}
                 className="ml-auto text-xs text-emerald-400 hover:text-emerald-300 font-mono transition-colors"
@@ -150,7 +150,7 @@ export default function GuidePage() {
             </div>
 
             {/* Annotated screenshot */}
-            <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-2xl shadow-black/40 mb-6 bg-slate-900">
+            <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl shadow-black/40 mb-6 bg-white dark:bg-slate-900">
               <Image
                 src={section.screenshot}
                 alt={`${section.label} screenshot`}
@@ -159,18 +159,18 @@ export default function GuidePage() {
                 className="w-full"
               />
               {/* Badge overlay */}
-              <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-sm border border-slate-700 text-xs font-mono text-slate-300">
+              <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-sm border border-slate-300 dark:border-slate-700 text-xs font-mono text-slate-600 dark:text-slate-300">
                 {section.label}
               </div>
             </div>
 
             {/* Description */}
-            <p className="text-slate-300 text-sm leading-relaxed mb-5">
+            <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-5">
               {section.description}
             </p>
 
             {/* Tips */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+            <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
               <p className="text-xs font-mono uppercase text-emerald-400/70 mb-3 tracking-wider">Tips</p>
               <ul className="space-y-2">
                 {section.tips.map((tip, i) => (
@@ -186,7 +186,7 @@ export default function GuidePage() {
       </div>
 
       {/* Footer CTA */}
-      <div className="mt-20 border-t border-slate-800 pt-10 text-center">
+      <div className="mt-20 border-t border-slate-200 dark:border-slate-800 pt-10 text-center">
         <p className="text-slate-400 text-sm mb-4">Still have questions?</p>
         <Link
           href="/dashboard/support"

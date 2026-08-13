@@ -164,11 +164,11 @@ export default async function AnalyticsPage() {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Progress</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Progress</h1>
           <p className="text-slate-400 text-sm mt-1">Your improvement over time.</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10 text-center space-y-3">
-          <p className="text-white font-semibold text-lg">No sessions yet.</p>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-10 text-center space-y-3">
+          <p className="text-slate-900 dark:text-white font-semibold text-lg">No sessions yet.</p>
           <p className="text-slate-400 text-sm">Complete a practice session to see your progress charts here.</p>
         </div>
       </div>
@@ -180,7 +180,7 @@ export default async function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-white">Progress</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Progress</h1>
           <p className="text-slate-400 text-sm mt-1">
             {n} session{n !== 1 ? 's' : ''} recorded
           </p>
@@ -188,7 +188,7 @@ export default async function AnalyticsPage() {
         <a
           href="/api/reports/my-progress"
           download
-          className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-2"
+          className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-2"
         >
           <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a.75.75 0 01.75.75v7.44l2.47-2.47a.75.75 0 111.06 1.06l-3.75 3.75a.75.75 0 01-1.06 0L5.72 9.78a.75.75 0 111.06-1.06l2.47 2.47V3.75A.75.75 0 0110 3zm-6.25 13.5a.75.75 0 000 1.5h12.5a.75.75 0 000-1.5H3.75z" clipRule="evenodd" />
@@ -231,19 +231,19 @@ export default async function AnalyticsPage() {
               : 'text-slate-600',
           },
         ].map(card => (
-          <div key={card.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-2">
+          <div key={card.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-2">
             <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">{card.label}</span>
-            <span className={`text-3xl font-bold leading-none ${card.color || 'text-white'}`}>{card.value}</span>
+            <span className={`text-3xl font-bold leading-none ${card.color || 'text-slate-900 dark:text-white'}`}>{card.value}</span>
             <span className="text-slate-400 text-xs">{card.sub}</span>
           </div>
         ))}
       </div>
 
       {/* BPM trend chart */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
         <div>
           <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks per minute</p>
-          <p className="text-white font-semibold text-sm mt-0.5">Fluency over time</p>
+          <p className="text-slate-900 dark:text-white font-semibold text-sm mt-0.5">Fluency over time</p>
         </div>
         {trendPoints.length < 2 ? (
           <p className="text-slate-500 text-xs py-8 text-center">Complete at least 2 sessions to see the trend.</p>
@@ -267,10 +267,10 @@ export default async function AnalyticsPage() {
       {/* Weekly chart + Calendar side by side */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Weekly sessions */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
           <div>
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Last 12 weeks</p>
-            <p className="text-white font-semibold text-sm mt-0.5">Practice consistency</p>
+            <p className="text-slate-900 dark:text-white font-semibold text-sm mt-0.5">Practice consistency</p>
           </div>
           <WeeklyChart weeks={weekBars} targetSessions={targetSessions} />
           <div className="flex items-center gap-4 pt-1 flex-wrap">
@@ -286,10 +286,10 @@ export default async function AnalyticsPage() {
         </div>
 
         {/* Calendar heatmap */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
           <div>
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Activity</p>
-            <p className="text-white font-semibold text-sm mt-0.5">Practice calendar</p>
+            <p className="text-slate-900 dark:text-white font-semibold text-sm mt-0.5">Practice calendar</p>
           </div>
           <CalendarHeatmap days={calDays} />
           <p className="text-[10px] text-slate-600 font-mono pt-1">
@@ -299,7 +299,7 @@ export default async function AnalyticsPage() {
       </div>
 
       {/* Zone reference */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-4">
         <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-3">Fluency zones</p>
         <div className="grid grid-cols-3 gap-4">
           {[

@@ -373,7 +373,7 @@ export function MicroClient() {
           <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
             Quick Practice
           </span>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             {activeExercise.name}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
@@ -382,7 +382,7 @@ export function MicroClient() {
         </div>
 
         {/* Timer card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 flex flex-col items-center gap-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col items-center gap-6">
           {showDone ? (
             <div className="flex flex-col items-center gap-3 py-4">
               <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
@@ -418,7 +418,7 @@ export function MicroClient() {
               </div>
 
               {/* Tip */}
-              <div className="w-full border-t border-slate-800 pt-4">
+              <div className="w-full border-t border-slate-200 dark:border-slate-800 pt-4">
                 <p className="text-xs text-slate-500 text-center italic leading-relaxed">
                   {activeExercise.tip}
                 </p>
@@ -466,7 +466,7 @@ export function MicroClient() {
         <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
           Quick Practice
         </span>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
           Choose an exercise
         </h1>
         <p className="text-sm text-slate-500 mt-1">30&ndash;60 second targeted exercises</p>
@@ -480,11 +480,11 @@ export function MicroClient() {
             <button
               key={exercise.id}
               onClick={() => openExercise(exercise)}
-              className="bg-slate-900 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-left transition-all active:scale-[0.98] group"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-left transition-all active:scale-[0.98] group"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1 min-w-0">
-                  <p className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors truncate">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-emerald-300 transition-colors truncate">
                     {exercise.name}
                   </p>
                   <p className="text-xs text-slate-500 font-mono">{exercise.duration}s</p>

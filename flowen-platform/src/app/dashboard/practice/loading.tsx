@@ -6,8 +6,8 @@ export default function PracticeLoading() {
       <div className="flex items-center gap-2">
         {[0, 1, 2, 3].map(i => (
           <div key={i} className="flex items-center gap-2 flex-1 last:flex-none">
-            <div className="w-7 h-7 rounded-full animate-pulse bg-slate-800/70 shrink-0" />
-            {i < 3 && <div className="flex-1 h-0.5 animate-pulse bg-slate-800/70" />}
+            <div className="w-7 h-7 rounded-full animate-pulse bg-slate-200 dark:bg-slate-800/70 shrink-0" />
+            {i < 3 && <div className="flex-1 h-0.5 animate-pulse bg-slate-200 dark:bg-slate-800/70" />}
           </div>
         ))}
       </div>
@@ -18,23 +18,23 @@ export default function PracticeLoading() {
         </div>
         <Bone className="h-6 w-20 rounded-full" />
       </div>
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
         <Bone className="h-2.5 w-20" />
         <div className="flex gap-3 justify-center">
           {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className="flex flex-col items-center gap-1">
-              <div className="h-2 w-6 animate-pulse rounded bg-slate-800/70" />
-              <div className="w-12 h-12 rounded-full animate-pulse bg-slate-800/70" />
+              <div className="h-2 w-6 animate-pulse rounded bg-slate-200 dark:bg-slate-800/70" />
+              <div className="w-12 h-12 rounded-full animate-pulse bg-slate-200 dark:bg-slate-800/70" />
             </div>
           ))}
         </div>
       </div>
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
         <Bone className="h-2.5 w-28" />
         <Bone className="h-6 w-48" />
         <Bone className="h-3 w-full" />
         <Bone className="h-3 w-3/4" />
-        <div className="border-t border-slate-800 pt-4 space-y-2">
+        <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2">
           <Bone className="h-2 w-20" />
           <Bone className="h-3 w-full" />
           <Bone className="h-3 w-4/5" />

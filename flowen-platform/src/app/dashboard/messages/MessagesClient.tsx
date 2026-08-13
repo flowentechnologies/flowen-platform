@@ -97,17 +97,17 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
 
   if (loading) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center">
         <p className="text-slate-400 text-sm">Loading messages...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-slate-800">
-        <p className="text-white font-semibold text-sm">{slpName}</p>
+      <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
+        <p className="text-slate-900 dark:text-white font-semibold text-sm">{slpName}</p>
         <p className="text-slate-500 text-xs mt-0.5">Your speech-language pathologist</p>
       </div>
 
@@ -128,8 +128,8 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
                 <div
                   className={`max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     isMe
-                      ? 'bg-emerald-500/20 border border-emerald-500/30 text-white'
-                      : 'bg-slate-800 border border-slate-700 text-slate-200'
+                      ? 'bg-emerald-500/20 border border-emerald-500/30 text-slate-900 dark:text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200'
                   }`}
                 >
                   {msg.content}
@@ -148,7 +148,7 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
       </div>
 
       {/* Input area */}
-      <div className="border-t border-slate-800 p-4 flex flex-col gap-2">
+      <div className="border-t border-slate-200 dark:border-slate-800 p-4 flex flex-col gap-2">
         {sendError && (
           <p className="text-rose-400 text-xs px-1" role="alert">{sendError}</p>
         )}
@@ -160,7 +160,7 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
           onKeyDown={handleKeyDown}
           maxLength={2000}
           placeholder="Type a message… (Enter to send)"
-          className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500 transition-colors"
+          className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500 transition-colors"
         />
         <button
           onClick={() => send().catch(console.error)}

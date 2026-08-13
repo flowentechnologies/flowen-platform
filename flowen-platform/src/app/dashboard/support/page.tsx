@@ -42,12 +42,12 @@ const FAQS = [
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-slate-800 last:border-0">
+    <div className="border-b border-slate-200 dark:border-slate-800 last:border-0">
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-start justify-between gap-4 py-4 text-left"
       >
-        <span className="text-sm font-medium text-white leading-snug">{q}</span>
+        <span className="text-sm font-medium text-slate-900 dark:text-white leading-snug">{q}</span>
         <svg
           className={`w-4 h-4 text-slate-500 shrink-0 mt-0.5 transition-transform ${open ? 'rotate-180' : ''}`}
           viewBox="0 0 20 20" fill="currentColor"
@@ -105,7 +105,7 @@ function ContactForm() {
     return (
       <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-8 text-center">
         <div className="text-4xl mb-3">✅</div>
-        <h3 className="text-white font-bold text-lg mb-1">Ticket submitted</h3>
+        <h3 className="text-slate-900 dark:text-white font-bold text-lg mb-1">Ticket submitted</h3>
         <p className="text-slate-400 text-sm">We'll reply to your email within 24–48 hours. Check your inbox for a confirmation.</p>
         <button onClick={() => { setSent(false); setSubject(''); setMessage(''); setCategory('general'); }} className="mt-4 text-xs text-slate-500 hover:text-slate-300 underline">
           Submit another ticket
@@ -115,15 +115,15 @@ function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-      <h3 className="text-white font-bold text-base">Send a message</h3>
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+      <h3 className="text-slate-900 dark:text-white font-bold text-base">Send a message</h3>
 
       <div>
         <label className="block text-xs font-mono text-slate-400 uppercase tracking-wide mb-2">Category</label>
         <select
           value={category}
           onChange={e => setCategory(e.target.value)}
-          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+          className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
         >
           {CATEGORIES.map(c => (
             <option key={c.value} value={c.value}>{c.label}</option>
@@ -139,7 +139,7 @@ function ContactForm() {
           onChange={e => setSubject(e.target.value)}
           placeholder="Briefly describe your issue"
           maxLength={200}
-          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+          className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
         />
       </div>
 
@@ -151,7 +151,7 @@ function ContactForm() {
           onChange={e => setMessage(e.target.value)}
           placeholder="Describe your issue in detail. Include steps to reproduce if reporting a bug."
           maxLength={5000}
-          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-y"
+          className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-y"
         />
         <p className="text-[10px] text-slate-600 mt-1 text-right">{message.length}/5000</p>
       </div>
@@ -185,8 +185,8 @@ export default function SupportPage() {
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-10">
 
       {/* Header */}
-      <div className="pb-6 border-b border-slate-800">
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Support Centre</h1>
+      <div className="pb-6 border-b border-slate-200 dark:border-slate-800">
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Support Centre</h1>
         <p className="text-slate-400 text-sm mt-1">Help articles, FAQs, and direct support</p>
       </div>
 
@@ -218,10 +218,10 @@ export default function SupportPage() {
             external: false,
           },
         ].map(card => (
-          <div key={card.title} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3">
+          <div key={card.title} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-3">
             <span className="text-3xl">{card.icon}</span>
             <div>
-              <p className="text-white font-semibold text-sm">{card.title}</p>
+              <p className="text-slate-900 dark:text-white font-semibold text-sm">{card.title}</p>
               <p className="text-slate-500 text-xs mt-1 leading-snug">{card.desc}</p>
             </div>
             {card.external ? (
@@ -238,10 +238,10 @@ export default function SupportPage() {
       </div>
 
       {/* SLA info */}
-      <div className="flex gap-3 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5">
+      <div className="flex gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5">
         <span className="text-lg shrink-0">⏱</span>
         <div>
-          <p className="text-slate-300 text-sm font-medium">Response time commitments</p>
+          <p className="text-slate-600 dark:text-slate-300 text-sm font-medium">Response time commitments</p>
           <p className="text-slate-500 text-xs mt-0.5">
             Bugs: 4h · Billing: 8h · Technical & Clinical: 24h · General: 48h (business hours, Monday–Friday)
           </p>
@@ -253,8 +253,8 @@ export default function SupportPage() {
 
         {/* FAQ */}
         <div>
-          <h2 className="text-lg font-bold text-white mb-4">Frequently asked questions</h2>
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl px-6">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Frequently asked questions</h2>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-6">
             {FAQS.map(faq => (
               <FaqItem key={faq.q} {...faq} />
             ))}
@@ -263,7 +263,7 @@ export default function SupportPage() {
 
         {/* Contact form */}
         <div>
-          <h2 className="text-lg font-bold text-white mb-4">Contact us</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Contact us</h2>
           <ContactForm />
         </div>
       </div>
@@ -273,7 +273,7 @@ export default function SupportPage() {
         <p className="text-sky-400 text-sm font-medium mb-1">Clinical & accessibility support</p>
         <p className="text-slate-400 text-xs leading-relaxed">
           If you require accommodations, are a speech-language pathologist, or have a clinical query, please select{' '}
-          <strong className="text-slate-300">Clinical / speech therapy</strong> in the contact form or email us directly.
+          <strong className="text-slate-600 dark:text-slate-300">Clinical / speech therapy</strong> in the contact form or email us directly.
           All clinical communications are handled under NHS DCB0129 clinical safety protocols.
         </p>
       </div>
