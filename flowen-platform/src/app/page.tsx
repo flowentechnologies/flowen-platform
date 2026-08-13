@@ -18,24 +18,6 @@ export default function LandingPage() {
   const [demoPlaying, setDemoPlaying] = useState(false);
   const [demoMuted, setDemoMuted] = useState(true);
 
-  useEffect(() => {
-    const video = demoVideoRef.current;
-    if (!video) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          video.play().then(() => setDemoPlaying(true)).catch(() => {});
-        } else {
-          video.pause();
-          setDemoPlaying(false);
-        }
-      },
-      { threshold: 0.25 },
-    );
-    observer.observe(video);
-    return () => observer.disconnect();
-  }, []);
-
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -124,14 +106,6 @@ export default function LandingPage() {
 
   return (
     <>
-    {/* Preload the hero video at highest browser priority */}
-    {/* eslint-disable-next-line @next/next/no-head-element */}
-    <link
-      rel="preload"
-      href="/assets/videos/Flowen_Hero.mp4"
-      as="video"
-      type="video/mp4"
-    />
     <div className="min-h-screen bg-[#06080F] text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-black">
       
       {/* Navigation Header */}
@@ -185,12 +159,6 @@ export default function LandingPage() {
                 className="w-full sm:w-auto px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-base transition-all shadow-lg shadow-emerald-500/30"
               >
                 Get started free →
-              </a>
-              <a
-                href="/auth/login"
-                className="w-full sm:w-auto px-8 py-4 rounded-xl border border-white/25 hover:border-white/50 text-white font-semibold text-base bg-white/5 backdrop-blur-sm transition-all"
-              >
-                Sign in
               </a>
             </div>
 
@@ -303,14 +271,12 @@ export default function LandingPage() {
         </div>
 
         {/* Stats strip */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Pipeline Latency', value: '<80ms' },
             { label: 'Sample Rate', value: '16kHz' },
-            { label: 'Viseme States', value: '42' },
             { label: 'Encryption', value: 'AES-256' },
             { label: 'Data Residency', value: 'UK-GBR' },
-            { label: 'Clinical Standard', value: 'DCB0129' },
           ].map(stat => (
             <div key={stat.label} className="bg-[#0A0D14] border border-slate-800 rounded-xl p-4 text-center">
               <div className="text-xl font-black text-emerald-400 font-mono">{stat.value}</div>
@@ -319,20 +285,10 @@ export default function LandingPage() {
           ))}
         </div>
 
-        {/* Social proof strip */}
-        <div className="mt-10 pt-8 border-t border-slate-800/60 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-          <div>
-            <div className="text-2xl font-black text-emerald-400 font-mono">88%</div>
-            <div className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">of beta users completed onboarding within their first session</div>
-          </div>
-          <div>
-            <div className="text-2xl font-black text-slate-300 font-mono">RCSLT</div>
-            <div className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">techniques aligned with Royal College of Speech and Language Therapists clinical guidance on fluency disorders</div>
-          </div>
-          <div>
-            <div className="text-2xl font-black text-slate-300 font-mono">DCB0129</div>
-            <div className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">NHS clinical safety standard — documentation available to commissioners on request</div>
-          </div>
+        {/* Social proof */}
+        <div className="mt-10 pt-8 border-t border-slate-800/60 text-center">
+          <div className="text-2xl font-black text-emerald-400 font-mono">88%</div>
+          <div className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">of beta users completed onboarding within their first session</div>
         </div>
       </section>
 
@@ -360,12 +316,12 @@ export default function LandingPage() {
                 <li className="flex items-center">✓ Personal fluency progress metrics</li>
               </ul>
             </div>
-            <button
-              onClick={() => { setSelectedTier('Founding Member (£19.99/mo)'); scrollToSection('contact'); }}
-              className="mt-8 w-full py-3 rounded-xl border border-slate-700 hover:border-emerald-500 hover:text-emerald-400 font-semibold text-sm transition-all"
+            <a
+              href="/auth/signup"
+              className="mt-8 w-full py-3 rounded-xl border border-slate-700 hover:border-emerald-500 hover:text-emerald-400 font-semibold text-sm transition-all text-center block"
             >
-              Select Tier
-            </button>
+              Get started →
+            </a>
           </div>
 
           {/* Standard Consumer */}
@@ -385,12 +341,12 @@ export default function LandingPage() {
                 <li className="flex items-center">✓ Fluency progress analytics</li>
               </ul>
             </div>
-            <button
-              onClick={() => { setSelectedTier('Standard Access (£39.99/mo)'); scrollToSection('contact'); }}
-              className="mt-8 w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all"
+            <a
+              href="/auth/signup"
+              className="mt-8 w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all text-center block"
             >
-              Select Tier
-            </button>
+              Get started →
+            </a>
           </div>
 
           {/* Government / Public Funds */}
@@ -546,53 +502,6 @@ export default function LandingPage() {
             <div className="text-slate-400 text-sm">Fluency progress, session trends, and SLT remote monitoring (Funded Access)</div>
           </div>
         </div>
-      </section>
-
-      {/* See the Platform — screenshot gallery */}
-      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-slate-800/60">
-        <div className="text-center mb-12">
-          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-violet-500/10 text-violet-400 border border-violet-500/30">
-            PLATFORM PREVIEW
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mt-4">See the platform</h2>
-          <p className="mt-3 text-slate-400 text-sm max-w-xl mx-auto">
-            Every screen you need — from daily practice to clinical monitoring.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[
-            { src:'/assets/screenshots/dashboard-home.jpg',     label:'Dashboard', desc:'Daily overview and session launcher' },
-            { src:'/assets/screenshots/dashboard-practice.jpg', label:'Practice',  desc:'5 stages · 10 rotating exercises each' },
-            { src:'/assets/screenshots/dashboard-analytics.jpg',label:'Analytics', desc:'Fluency trends and stage progress' },
-            { src:'/assets/screenshots/clinician.jpg',          label:'Clinician', desc:'Remote patient monitoring for SLTs' },
-            { src:'/assets/screenshots/viseme-reference.jpg',   label:'Viseme System', desc:'ARKit face tracking — phoneme-matched visemes' },
-            { src:'/assets/screenshots/practice-micro.jpg',     label:'Micro Exercises', desc:'30–60 second targeted drills' },
-          ].map(item => (
-            <div key={item.label} className="group rounded-2xl overflow-hidden border border-slate-800 hover:border-emerald-500/30 transition-colors bg-slate-900/40">
-              <div className="overflow-hidden">
-                <Image src={item.src} alt={item.label} width={1280} height={800} className="w-full object-cover group-hover:scale-[1.02] transition-transform duration-500" />
-              </div>
-              <div className="px-4 py-3 border-t border-slate-800">
-                <p className="text-sm font-semibold text-white">{item.label}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Team */}
-      <section className="py-16 px-6 max-w-4xl mx-auto border-t border-slate-800/60 text-center">
-        <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700">
-          THE TEAM
-        </span>
-        <h2 className="text-2xl font-bold text-white mt-4">Built by clinicians and engineers</h2>
-        <p className="text-slate-400 text-sm mt-4 max-w-xl mx-auto leading-relaxed">
-          Flowen is built by a multidisciplinary team with backgrounds in speech and language therapy, acoustic signal processing, and regulated health software. Our Clinical Safety Officer holds DCB0129 accountability, and our development practices are reviewed against NHS Digital's software assurance framework.
-        </p>
-        <a href="/about" className="inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-colors mt-6">
-          Meet the team →
-        </a>
       </section>
 
       {/* Form Submission Section */}
