@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { ProgrammeState } from '@/lib/programme';
 
 type Trend = 'improving' | 'plateauing' | 'regressing' | 'no_data';
@@ -24,6 +24,8 @@ type RecentSession = {
 };
 
 interface DashboardClientProps {
+  serverDate: string;
+  greeting: string;
   displayName: string;
   tier: string | null;
   sessionCount: number;
@@ -35,13 +37,6 @@ interface DashboardClientProps {
   recentBpms: number[];
   recentSessions: RecentSession[];
   programmeState: ProgrammeState | null;
-}
-
-function greeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return 'morning';
-  if (h < 18) return 'afternoon';
-  return 'evening';
 }
 
 function formatDuration(seconds: number): string {
@@ -56,13 +51,13 @@ function bpmColor(bpm: number): string {
   return 'text-red-600 dark:text-red-400';
 }
 
-// Builds an array of the last 30 calendar days, oldest first
-function buildLast30Days(): string[] {
+// Builds an array of the last 30 calendar days, oldest first.
+// Accepts the request-time Date so SSR and hydration agree on the same anchor.
+function buildLast30Days(now: Date): string[] {
   const days: string[] = [];
-  const now = new Date();
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now);
-    d.setDate(d.getDate() - i);
+    d.setUTCDate(d.getUTCDate() - i);
     days.push(d.toISOString().slice(0, 10));
   }
   return days;
@@ -323,6 +318,8 @@ function ProgrammeCard({ state }: { state: ProgrammeState }) {
 }
 
 export function DashboardClient({
+  serverDate,
+  greeting,
   displayName,
   tier,
   sessionCount,
@@ -335,8 +332,11 @@ export function DashboardClient({
   recentSessions,
   programmeState,
 }: DashboardClientProps) {
-  const days30 = buildLast30Days();
-  const todayKey = new Date().toISOString().slice(0, 10);
+  // Parse the server-computed timestamp once so SSR and hydration use the same anchor,
+  // avoiding text-node mismatches (React error #418) from date/time differences.
+  const now = useMemo(() => new Date(serverDate), [serverDate]);
+  const days30 = useMemo(() => buildLast30Days(now), [now]);
+  const todayKey = serverDate.slice(0, 10);
   const totalActivitySessions = Object.values(sessionsByDay).reduce(
     (a, b) => a + b,
     0
@@ -378,7 +378,7 @@ export function DashboardClient({
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Good {greeting()}, {displayName}.
+            Good {greeting}, {displayName}.
           </h1>
           {tier && (
             <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">

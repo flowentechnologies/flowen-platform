@@ -29,6 +29,13 @@ type Session = {
   created_at: string;
 };
 
+function computeGreeting(date: Date): string {
+  const h = date.getHours();
+  if (h < 12) return 'morning';
+  if (h < 18) return 'afternoon';
+  return 'evening';
+}
+
 export default async function DashboardPage() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -148,8 +155,12 @@ export default async function DashboardPage() {
   // Last 5 sessions for history list (most recent first)
   const recentSessions = sessions.slice(-5).reverse();
 
+  const requestTime = new Date();
+
   return (
     <DashboardClient
+      serverDate={requestTime.toISOString()}
+      greeting={computeGreeting(requestTime)}
       displayName={profile?.display_name ?? user.email?.split('@')[0] ?? 'there'}
       tier={profile?.tier ?? null}
       sessionCount={n}

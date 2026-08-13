@@ -39,6 +39,7 @@ export default async function RoadmapPage() {
   await assertAdmin();
 
   const milestones = await fetchMilestones();
+  const serverNow = new Date().toISOString();
 
   return (
     <div className="space-y-6">
@@ -48,7 +49,7 @@ export default async function RoadmapPage() {
           Phase progress tracker — Launch · NHS Pilot · Scale
         </p>
       </div>
-      <RoadmapClient initialMilestones={milestones} />
+      <RoadmapClient initialMilestones={milestones} serverNow={serverNow} />
     </div>
   );
 }
