@@ -43,6 +43,13 @@ const NAV: NavSection[] = [
     ],
   },
   {
+    section: 'AI & Models',
+    items: [
+      { label: 'ASR Engine',       href: '/admin/asr-engine' },
+      { label: 'Training Dataset', href: '/admin/training-dataset' },
+    ],
+  },
+  {
     section: 'Investment',
     items: [
       { label: 'Venture', href: '/admin/venture' },
