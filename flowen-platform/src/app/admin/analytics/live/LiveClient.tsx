@@ -19,7 +19,7 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
   return (
     <div className="bg-[#0A0D14] border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
       <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">{label}</p>
-      <p className="text-3xl font-bold text-slate-900 dark:text-white">{value}</p>
+      <p className="text-3xl font-bold text-white">{value}</p>
       {sub && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
     </div>
   );
@@ -121,7 +121,7 @@ export default function LiveClient() {
                   style={{ height: `${Math.max(2, Math.round((visitors / maxDay) * 96))}px` }}
                 />
                 <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center pointer-events-none">
-                  <div className="bg-slate-700 text-slate-900 dark:text-white text-[10px] rounded px-1.5 py-0.5 whitespace-nowrap">
+                  <div className="bg-slate-700 text-white text-[10px] rounded px-1.5 py-0.5 whitespace-nowrap">
                     {date}: {visitors}
                   </div>
                 </div>

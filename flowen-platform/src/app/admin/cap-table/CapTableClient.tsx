@@ -257,7 +257,7 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+      className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
     />
   );
 }
@@ -270,7 +270,7 @@ function Select({ value, onChange, options }: {
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors"
+      className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors"
     >
       {options.map(o => (
         <option key={o.id} value={o.id}>{o.label}</option>
@@ -330,7 +330,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-6 space-y-5">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl p-6 space-y-5">
       <h3 className="text-sm font-bold text-slate-900 dark:text-white">{initial ? 'Edit Entry' : 'Add Entry'}</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -428,7 +428,7 @@ function EntryForm({ initial, onSave, onCancel }: EntryFormProps) {
           onChange={e => set('notes')(e.target.value)}
           rows={3}
           placeholder="Any relevant notes..."
-          className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
         />
       </div>
 
@@ -519,7 +519,7 @@ function HoldingsTable({ entries, totalIssued, fullyDiluted, onEdit, onDelete }:
                     >
                       <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">{entry.holder_name}</td>
                       <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-700">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-700">
                           {INSTRUMENT_LABEL[entry.instrument]}
                         </span>
                       </td>
@@ -832,7 +832,7 @@ function DilutionModeller({
     setRaiseAmount(String(s.raiseAmount));
   }
 
-  const inputCls = 'w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 transition-colors';
+  const inputCls = 'w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 transition-colors';
   const labelCls = 'block text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 mb-1.5';
 
   return (
@@ -855,7 +855,7 @@ function DilutionModeller({
             type="button"
             onClick={saveScenario}
             disabled={!result}
-            className="px-3.5 py-1.5 text-xs font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
+            className="px-3.5 py-1.5 text-xs font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
           >
             Save scenario
           </button>
@@ -895,7 +895,7 @@ function DilutionModeller({
               className={`px-2.5 py-1 text-[10px] font-mono rounded-lg border transition-colors ${
                 pm === s.preMoney && ra === s.raiseAmount
                   ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
-                  : 'bg-slate-100 dark:bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {s.label}
@@ -969,7 +969,7 @@ function DilutionModeller({
                     <td className="px-4 py-3 text-right tabular-nums text-emerald-400 font-mono text-[11px]">new</td>
                   </tr>
                   {/* Total row */}
-                  <tr className="border-t-2 border-slate-700 bg-slate-50 dark:bg-slate-950">
+                  <tr className="border-t-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
                     <td className="px-5 py-3 font-bold text-slate-900 dark:text-white">Total (FD post-round)</td>
                     <td className="px-4 py-3 text-right tabular-nums text-slate-900 dark:text-white font-bold">{fmtShares(result.newTotal)}</td>
                     <td className="px-4 py-3 text-right tabular-nums text-slate-400">100.00%</td>
@@ -1033,7 +1033,7 @@ function DilutionModeller({
                   <button
                     type="button"
                     onClick={() => applyScenario(s)}
-                    className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white shrink-0 transition-colors"
+                    className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white shrink-0 transition-colors"
                   >
                     Load
                   </button>

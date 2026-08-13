@@ -53,7 +53,7 @@ export function SubscriptionActions({ subscriptionId, cancelAtPeriodEnd }: Props
   return (
     <div className="relative" ref={ref}>
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl border bg-white dark:bg-slate-900 border-slate-700 text-sm text-slate-900 dark:text-white shadow-xl">
+        <div className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white shadow-xl">
           {toast}
         </div>
       )}
@@ -61,12 +61,12 @@ export function SubscriptionActions({ subscriptionId, cancelAtPeriodEnd }: Props
         type="button"
         onClick={() => setOpen(v => !v)}
         disabled={loading || markedCancelled}
-        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {loading ? '…' : markedCancelled ? 'Cancelling' : 'Actions'}
       </button>
       {open && (
-        <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
+        <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
           <button
             type="button"
             onClick={() => post('cancel_subscription')}

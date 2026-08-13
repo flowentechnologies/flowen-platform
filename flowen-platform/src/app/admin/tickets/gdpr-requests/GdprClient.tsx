@@ -96,7 +96,7 @@ function CreateRequestModal({ onCreated }: { onCreated: (r: GdprRequest) => void
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Log GDPR Request</h3>
               <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
@@ -106,18 +106,18 @@ function CreateRequestModal({ onCreated }: { onCreated: (r: GdprRequest) => void
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">User Email *</label>
                   <input value={form.user_email} onChange={e => field('user_email', e.target.value)} placeholder="user@example.com"
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Name</label>
                   <input value={form.user_name} onChange={e => field('user_name', e.target.value)} placeholder="Full name"
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Request Type *</label>
                 <select value={form.request_type} onChange={e => field('request_type', e.target.value as GdprRequestType)}
-                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   {(Object.entries(TYPE_CONFIG) as [GdprRequestType, { label: string; article: string }][]).map(([v, c]) => (
                     <option key={v} value={v}>{c.label} ({c.article})</option>
                   ))}
@@ -126,13 +126,13 @@ function CreateRequestModal({ onCreated }: { onCreated: (r: GdprRequest) => void
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">User ID (if known)</label>
                 <input value={form.user_id} onChange={e => field('user_id', e.target.value)} placeholder="UUID from auth.users"
-                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 font-mono text-xs" />
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 font-mono text-xs" />
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Details</label>
                 <textarea value={form.details} onChange={e => field('details', e.target.value)} rows={3}
                   placeholder="Subject's request verbatim or summary…"
-                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
               <p className="text-[11px] text-slate-600 font-mono">SLA: 30-day clock starts now (UK GDPR Art. 12(3))</p>
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
@@ -143,7 +143,7 @@ function CreateRequestModal({ onCreated }: { onCreated: (r: GdprRequest) => void
                 {isPending ? 'Creating…' : 'Log Request'}
               </button>
               <button type="button" onClick={() => setOpen(false)}
-                className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+                className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -249,7 +249,7 @@ function RequestRow({ req, onUpdate, onDelete }: {
                   Mark Complete
                 </button>
                 <button type="button" onClick={() => updateStatus('rejected')} disabled={isPending}
-                  className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-700/50 transition-colors disabled:opacity-40">
+                  className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-700/50 transition-colors disabled:opacity-40">
                   Reject
                 </button>
               </div>
@@ -267,7 +267,7 @@ function RequestRow({ req, onUpdate, onDelete }: {
                           {isPending ? 'Applying…' : 'Confirm Erasure'}
                         </button>
                         <button type="button" onClick={() => setErasureConfirm(false)}
-                          className="px-3 py-2 text-xs font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                          className="px-3 py-2 text-xs font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                           Cancel
                         </button>
                       </div>

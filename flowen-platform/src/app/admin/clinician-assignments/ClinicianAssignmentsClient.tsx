@@ -17,7 +17,7 @@ function SelectUser({ options, value, onChange, placeholder }: {
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors"
     >
       <option value="">{placeholder}</option>
       {options.map(o => (
@@ -127,7 +127,7 @@ export function ClinicianAssignmentsClient({ initialData }: { initialData: Assig
             value={notes}
             onChange={e => setNotes(e.target.value)}
             placeholder="e.g. Referred by Dr Smith — focus on fluency shaping"
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
           />
         </div>
 

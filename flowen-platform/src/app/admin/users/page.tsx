@@ -111,12 +111,12 @@ function ActionsDropdown({ user, onToggleAdmin, onToggleEarlyAccess, onResetPass
         type="button"
         onClick={() => setOpen((v) => !v)}
         disabled={loading}
-        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors disabled:opacity-50"
+        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors disabled:opacity-50"
       >
         Actions
       </button>
       {open && (
-        <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
+        <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-xl z-10 overflow-hidden">
           <button
             type="button"
             onClick={() => { onToggleEarlyAccess(user.id); setOpen(false); }}
@@ -354,7 +354,7 @@ export default function AdminUsersPage() {
                     )}
                     <a
                       href={`/admin/users/${user.id}`}
-                      className="shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-mono font-medium border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+                      className="shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-mono font-medium border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                     >
                       View profile
                     </a>
@@ -373,7 +373,7 @@ export default function AdminUsersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by email or name..."
-          className="flex-1 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20"
+          className="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20"
         />
         <div className="flex gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1">
           {tabs.map((t) => (

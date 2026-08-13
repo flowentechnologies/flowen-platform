@@ -87,7 +87,7 @@ export default function FeedbackClient({ initialFeedback }: Props) {
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
               filter === t
                 ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
-                : 'bg-slate-100 dark:bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300'
+                : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500 hover:text-slate-300'
             }`}
           >
             {t === 'all' ? 'All' : TYPE_CONFIG[t].label} ({counts[t]})

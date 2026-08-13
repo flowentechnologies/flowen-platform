@@ -114,7 +114,7 @@ function affiliateToForm(a: AffiliateWithStats): AffForm {
   };
 }
 
-const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition-colors';
+const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/60 transition-colors';
 const labelCls = 'block text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 mb-1.5';
 
 function AffiliateModal({
@@ -169,7 +169,7 @@ function AffiliateModal({
               {(['standard','premium','partner'] as AffiliateTier[]).map(t => (
                 <button key={t} type="button" onClick={() => applyTier(t)}
                   className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
-                    form.tier === t ? TIER_CONFIG[t].badge : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-900 dark:hover:text-white'
+                    form.tier === t ? TIER_CONFIG[t].badge : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700 hover:text-slate-900 dark:hover:text-white'
                   }`}>
                   {TIER_CONFIG[t].label}
                 </button>
@@ -224,7 +224,7 @@ function AffiliateModal({
               {saving ? 'Saving…' : initial ? 'Save Changes' : 'Add Affiliate'}
             </button>
             <button type="button" onClick={onClose}
-              className="px-4 py-2.5 text-sm font-bold rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+              className="px-4 py-2.5 text-sm font-bold rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               Cancel
             </button>
           </div>
@@ -252,7 +252,7 @@ function ReferralLinkCard({ affiliate }: { affiliate: AffiliateWithStats }) {
       <span className="text-slate-500 truncate flex-1">{link}</span>
       <button type="button" onClick={copyLink}
         className={`shrink-0 px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all ${
-          copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white'
         }`}>
         {copied ? '✓' : 'Copy'}
       </button>
@@ -309,11 +309,11 @@ function AffiliateRow({
         <td className="px-4 py-3.5">
           <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button type="button" onClick={() => setExpanded(v => !v)}
-              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               {expanded ? 'Hide' : 'View'}
             </button>
             <button type="button" onClick={onEdit}
-              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+              className="px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               Edit
             </button>
             <button type="button" onClick={onDelete}
@@ -423,7 +423,7 @@ function ConversionModal({
   return (
     <>
       <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+        <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Record Conversion</h3>
           <p className="text-xs text-slate-500 mb-5">Affiliate: <span className="text-slate-900 dark:text-white">{affiliate.name}</span></p>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -455,7 +455,7 @@ function ConversionModal({
                 {saving ? 'Saving…' : 'Record'}
               </button>
               <button type="button" onClick={onClose}
-                className="px-4 py-2.5 text-sm font-bold rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                className="px-4 py-2.5 text-sm font-bold rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                 Cancel
               </button>
             </div>
@@ -523,7 +523,7 @@ function PayoutsTab({
                 <td className="px-4 py-3">
                   {p.status !== 'paid' && (
                     <button type="button" onClick={() => { setMarkingId(p.id); setPayRef(''); }}
-                      className="opacity-0 group-hover:opacity-100 px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all">
+                      className="opacity-0 group-hover:opacity-100 px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/30 transition-all">
                       Mark paid
                     </button>
                   )}
@@ -538,7 +538,7 @@ function PayoutsTab({
                     <div className="flex items-center gap-3 flex-wrap">
                       <input value={payRef} onChange={e => setPayRef(e.target.value)}
                         placeholder="Payment reference (optional)"
-                        className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/60" />
+                        className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/60" />
                       <button type="button" onClick={() => { onMarkPaid(p.id, payRef); setMarkingId(null); }}
                         className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors">
                         Confirm paid
@@ -587,7 +587,7 @@ function PerformanceTab({ affiliates }: { affiliates: AffiliateWithStats[] }) {
           <div key={a.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
             <div className="flex items-start justify-between gap-4 mb-3 flex-wrap">
               <div className="flex items-center gap-3">
-                <span className="w-7 h-7 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-black text-slate-400">
+                <span className="w-7 h-7 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center justify-center text-xs font-black text-slate-400">
                   {i + 1}
                 </span>
                 <div>

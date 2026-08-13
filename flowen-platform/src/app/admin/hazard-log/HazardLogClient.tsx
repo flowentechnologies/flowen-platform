@@ -229,7 +229,7 @@ function RiskMatrix({ entries }: { entries: HazardEntry[] }) {
       >
         <div className="flex items-center gap-3">
           <span className="text-sm font-bold text-slate-900 dark:text-white">Risk Matrix (5×5)</span>
-          <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
+          <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-300 dark:border-slate-700">
             Severity × Likelihood
           </span>
         </div>
@@ -495,7 +495,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden"
+      className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl overflow-hidden"
     >
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-900/80">
         <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -526,7 +526,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
               value={form.hazard_description}
               onChange={e => set('hazard_description', e.target.value)}
               placeholder="Describe the potential hazard clearly and concisely…"
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
             />
           </div>
 
@@ -536,7 +536,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
               required
               value={form.affected_pathway}
               onChange={e => set('affected_pathway', e.target.value)}
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/60 transition-colors appearance-none"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/60 transition-colors appearance-none"
             >
               {PATHWAYS.map(p => (
                 <option key={p} value={p}>{p}</option>
@@ -553,7 +553,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
                 value={form.cause}
                 onChange={e => set('cause', e.target.value)}
                 placeholder="What could cause this hazard to occur?"
-                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
               />
             </div>
             <div className="space-y-1.5">
@@ -564,7 +564,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
                 value={form.effect}
                 onChange={e => set('effect', e.target.value)}
                 placeholder="What harm could result to the patient or user?"
-                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
               />
             </div>
           </div>
@@ -616,7 +616,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
               value={form.mitigation}
               onChange={e => set('mitigation', e.target.value)}
               placeholder="Describe the controls, processes, and safeguards put in place to mitigate this hazard…"
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
             />
           </div>
 
@@ -663,7 +663,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
               <select
                 value={form.status}
                 onChange={e => set('status', e.target.value as Status)}
-                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/60 transition-colors appearance-none"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/60 transition-colors appearance-none"
               >
                 {STATUSES.map(s => (
                   <option key={s} value={s}>
@@ -680,7 +680,7 @@ function HazardForm({ editingEntry, onClose, onSaved, initialForm }: HazardFormP
                 value={form.reviewed_by}
                 onChange={e => set('reviewed_by', e.target.value)}
                 placeholder="Name / role of reviewer (e.g. Clinical Safety Officer)"
-                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 transition-colors"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 transition-colors"
               />
             </div>
           </div>
@@ -729,7 +729,7 @@ function DeleteDialog({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md mx-4 space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl p-6 w-full max-w-md mx-4 space-y-4">
         <div className="flex items-start gap-3">
           <span className="text-2xl">⚠</span>
           <div>
@@ -841,7 +841,7 @@ function EmptyState({ onStartWithSeed }: { onStartWithSeed: (seed: SeedHazard) =
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-700">
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700">
                       H{String(i + 1).padStart(3, '0')}
                     </span>
                     <span className="text-[10px] font-mono text-slate-600 bg-slate-100/80 dark:bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700/50">
@@ -1026,7 +1026,7 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
           {entries.length > 0 && (
             <button
               onClick={() => exportCsv(entries)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all font-medium"
             >
               <span className="text-base leading-none">↓</span>
               Export CSV
@@ -1096,7 +1096,7 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
                     >
                       {/* Ref */}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+                        <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700">
                           {entry.hazard_ref}
                         </span>
                       </td>

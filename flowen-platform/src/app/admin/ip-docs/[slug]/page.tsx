@@ -73,7 +73,7 @@ export default async function IpDocPage({ params }: Props) {
                 <span className="text-slate-700">·</span>
                 <span className="text-xs text-slate-500">{doc.date}</span>
               </div>
-              <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">{doc.title}</h1>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight mb-3">{doc.title}</h1>
               <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold border ${STATUS_BADGE[doc.status]}`}>
                 {STATUS_LABEL[doc.status]}
               </span>

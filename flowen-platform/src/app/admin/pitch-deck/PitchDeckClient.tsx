@@ -33,7 +33,7 @@ function CopyButton({ text }: { text: string }) {
   }
   return (
     <button onClick={copy}
-      className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors ${copied ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500'}`}>
+      className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors ${copied ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-300 dark:border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-500'}`}>
       {copied ? 'Copied' : 'Copy'}
     </button>
   );
@@ -42,7 +42,7 @@ function CopyButton({ text }: { text: string }) {
 function StatusBadge({ invite }: { invite: DeckInvite }) {
   const expired = invite.expires_at && new Date(invite.expires_at) < new Date();
   if (invite.revoked) return <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-red-500/10 text-red-400 border border-red-500/30">Revoked</span>;
-  if (expired)        return <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-700 text-slate-500 border border-slate-700">Expired</span>;
+  if (expired)        return <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-700 text-slate-500 border border-slate-300 dark:border-slate-700">Expired</span>;
   return <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 animate-pulse">Active</span>;
 }
 
@@ -77,7 +77,7 @@ function CreateInvitePanel({ siteUrl, onCreated }: { siteUrl: string; onCreated:
       </button>
 
       {open && (
-        <div className="mt-4 bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-5 max-w-lg">
+        <div className="mt-4 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl p-5 max-w-lg">
           {newLink ? (
             <div className="space-y-3">
               <p className="text-xs font-bold text-emerald-400">Link created successfully</p>
@@ -85,7 +85,7 @@ function CreateInvitePanel({ siteUrl, onCreated }: { siteUrl: string; onCreated:
               <div className="flex gap-2">
                 <CopyButton text={newLink} />
                 <button onClick={() => { setNewLink(null); setOpen(false); }}
-                  className="text-[10px] font-mono px-3 py-1 rounded border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                  className="text-[10px] font-mono px-3 py-1 rounded border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                   Done
                 </button>
               </div>
@@ -98,23 +98,23 @@ function CreateInvitePanel({ siteUrl, onCreated }: { siteUrl: string; onCreated:
                 <div>
                   <label className="text-[10px] font-mono text-slate-500 block mb-1">Investor Name *</label>
                   <input required value={form.investor_name} onChange={e => setForm(f => ({ ...f, investor_name: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
                 </div>
                 <div>
                   <label className="text-[10px] font-mono text-slate-500 block mb-1">Firm / Fund</label>
                   <input value={form.firm} onChange={e => setForm(f => ({ ...f, firm: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
                 </div>
               </div>
               <div>
                 <label className="text-[10px] font-mono text-slate-500 block mb-1">Email (optional)</label>
                 <input type="email" value={form.investor_email} onChange={e => setForm(f => ({ ...f, investor_email: e.target.value }))}
-                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
               </div>
               <div>
                 <label className="text-[10px] font-mono text-slate-500 block mb-1">Expires in (days, leave 0 = never)</label>
                 <input type="number" min="0" value={form.expires_days} onChange={e => setForm(f => ({ ...f, expires_days: e.target.value }))}
-                  className="w-32 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
+                  className="w-32 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
               </div>
               <div className="flex gap-2 pt-1">
                 <button type="submit" disabled={isPending}
@@ -122,7 +122,7 @@ function CreateInvitePanel({ siteUrl, onCreated }: { siteUrl: string; onCreated:
                   {isPending ? 'Creating…' : 'Generate Link'}
                 </button>
                 <button type="button" onClick={() => setOpen(false)}
-                  className="px-3 py-2 rounded-lg border border-slate-700 text-slate-400 text-xs hover:text-slate-900 dark:hover:text-white transition-colors">
+                  className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 text-xs hover:text-slate-900 dark:hover:text-white transition-colors">
                   Cancel
                 </button>
               </div>
@@ -271,12 +271,12 @@ export function PitchDeckClient({ initialInvites, recentViews, siteUrl }: Props)
                     <div className="flex items-center gap-2">
                       {isActive && (
                         <button onClick={() => handleRevoke(invite.id)}
-                          className="text-[10px] font-mono px-2 py-1 rounded border border-slate-700 text-amber-500 hover:text-amber-400 hover:border-amber-500/50 transition-colors">
+                          className="text-[10px] font-mono px-2 py-1 rounded border border-slate-300 dark:border-slate-700 text-amber-500 hover:text-amber-400 hover:border-amber-500/50 transition-colors">
                           Revoke
                         </button>
                       )}
                       <button onClick={() => handleDelete(invite.id)}
-                        className="text-[10px] font-mono px-2 py-1 rounded border border-slate-700 text-red-500/60 hover:text-red-400 hover:border-red-500/50 transition-colors">
+                        className="text-[10px] font-mono px-2 py-1 rounded border border-slate-300 dark:border-slate-700 text-red-500/60 hover:text-red-400 hover:border-red-500/50 transition-colors">
                         Delete
                       </button>
                     </div>

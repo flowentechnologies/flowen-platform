@@ -150,7 +150,7 @@ function CreateTicketModal({ onCreated }: { onCreated: (t: Ticket) => void }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Create Support Ticket</h3>
               <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
@@ -160,31 +160,31 @@ function CreateTicketModal({ onCreated }: { onCreated: (t: Ticket) => void }) {
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">User Email *</label>
                   <input value={form.user_email} onChange={e => field('user_email', e.target.value)} placeholder="user@example.com"
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Name</label>
                   <input value={form.user_name} onChange={e => field('user_name', e.target.value)} placeholder="Full name"
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Subject *</label>
                 <input value={form.subject} onChange={e => field('subject', e.target.value)} placeholder="Brief description of the issue"
-                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Priority</label>
                   <select value={form.priority} onChange={e => field('priority', e.target.value as TicketPriority)}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                     {(Object.entries(PRIORITY_CONFIG) as [TicketPriority, { label: string }][]).map(([v, c]) => <option key={v} value={v}>{c.label}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Category</label>
                   <select value={form.category} onChange={e => field('category', e.target.value as TicketCategory)}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                     {(Object.entries(CATEGORY_LABELS) as [TicketCategory, string][]).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 </div>
@@ -193,7 +193,7 @@ function CreateTicketModal({ onCreated }: { onCreated: (t: Ticket) => void }) {
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Message *</label>
                 <textarea value={form.message} onChange={e => field('message', e.target.value)} rows={5}
                   placeholder="Full description of the issue…"
-                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
             </div>
@@ -203,7 +203,7 @@ function CreateTicketModal({ onCreated }: { onCreated: (t: Ticket) => void }) {
                 {isPending ? 'Creating…' : 'Create Ticket'}
               </button>
               <button type="button" onClick={() => setOpen(false)}
-                className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+                className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -294,21 +294,21 @@ function TicketDrawer({ ticket, adminEmail, onUpdate, onClose }: {
           <div className="flex items-center gap-1.5">
             <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wide">Status</label>
             <select value={ticket.status} onChange={e => updateField('status', e.target.value)} disabled={isPending}
-              className="bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-500 disabled:opacity-40">
+              className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-500 disabled:opacity-40">
               {(Object.entries(STATUS_CONFIG) as [TicketStatus, { label: string }][]).map(([v, c]) => <option key={v} value={v}>{c.label}</option>)}
             </select>
           </div>
           <div className="flex items-center gap-1.5">
             <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wide">Priority</label>
             <select value={ticket.priority} onChange={e => updateField('priority', e.target.value)} disabled={isPending}
-              className="bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-500 disabled:opacity-40">
+              className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-500 disabled:opacity-40">
               {(Object.entries(PRIORITY_CONFIG) as [TicketPriority, { label: string }][]).map(([v, c]) => <option key={v} value={v}>{c.label}</option>)}
             </select>
           </div>
           <div className="flex items-center gap-1.5">
             <label className="text-[10px] font-mono text-slate-600 uppercase tracking-wide">Category</label>
             <select value={ticket.category} onChange={e => updateField('category', e.target.value)} disabled={isPending}
-              className="bg-white dark:bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-500 disabled:opacity-40">
+              className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-500 disabled:opacity-40">
               {(Object.entries(CATEGORY_LABELS) as [TicketCategory, string][]).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </div>
@@ -362,7 +362,7 @@ function TicketDrawer({ ticket, adminEmail, onUpdate, onClose }: {
                   Save Notes
                 </button>
                 <button type="button" onClick={() => { setNotesEditing(false); setNotes(ticket.internal_notes ?? ''); }}
-                  className="px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+                  className="px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
               </div>
             </div>
           ) : (
@@ -382,7 +382,7 @@ function TicketDrawer({ ticket, adminEmail, onUpdate, onClose }: {
               onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) sendReply(); }}
               rows={3}
               placeholder="Reply to user… (Cmd+Enter to send)"
-              className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none"
             />
             <div className="flex gap-3 mt-2">
               <button type="button" onClick={sendReply} disabled={!reply.trim() || isPending}

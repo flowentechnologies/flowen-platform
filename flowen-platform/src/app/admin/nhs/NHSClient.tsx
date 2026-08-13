@@ -76,7 +76,7 @@ function Input({ value, onChange, placeholder, type = 'text', disabled }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 disabled:opacity-50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 disabled:opacity-50"
     />
   );
 }
@@ -93,7 +93,7 @@ function Textarea({ value, onChange, placeholder, rows = 2 }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 resize-none"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 resize-none"
     />
   );
 }
@@ -107,7 +107,7 @@ function Select({ value, onChange, options }: {
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500/50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500/50"
     >
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
@@ -350,7 +350,7 @@ function ICBFormPanel({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -554,7 +554,7 @@ function ICBTab({
                           <button
                             type="button"
                             onClick={() => setEditingId(id => id === c.id ? null : c.id)}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                           >
                             Edit
                           </button>
@@ -726,7 +726,7 @@ function SLPFormPanel({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -903,7 +903,7 @@ function SLPTab({
                           <button
                             type="button"
                             onClick={() => setEditingId(id => id === s.id ? null : s.id)}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                           >
                             Edit
                           </button>
@@ -1085,7 +1085,7 @@ function PledgeFormPanel({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -1261,7 +1261,7 @@ function PledgesTab({
                           <button
                             type="button"
                             onClick={() => setEditingId(id => id === p.id ? null : p.id)}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                           >
                             Edit
                           </button>

@@ -149,7 +149,7 @@ function StatusDropdown({
         {cfg.label} ▾
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-10 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-xl min-w-[140px]">
+        <div className="absolute right-0 top-full mt-1 z-10 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl overflow-hidden shadow-xl min-w-[140px]">
           {(Object.entries(STATUS_CONFIG) as [OutreachStatus, { label: string; color: string }][]).map(([s, c]) => (
             <button
               key={s}
@@ -200,7 +200,7 @@ function MilestoneStatusDropdown({
         {cfg.label} ▾
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-10 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-xl min-w-[140px]">
+        <div className="absolute right-0 top-full mt-1 z-10 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl overflow-hidden shadow-xl min-w-[140px]">
           {(Object.entries(MILESTONE_CONFIG) as [MilestoneStatus, { label: string; dot: string; badge: string }][]).map(([s, c]) => (
             <button
               key={s}
@@ -253,7 +253,7 @@ function AddContactModal({ onAdd }: { onAdd: (c: Contact) => void }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Campaign Contact</h3>
               <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
@@ -262,50 +262,50 @@ function AddContactModal({ onAdd }: { onAdd: (c: Contact) => void }) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Name *</label>
-                  <input value={form.name} onChange={e => field('name', e.target.value)} placeholder="Full name" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input value={form.name} onChange={e => field('name', e.target.value)} placeholder="Full name" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Type *</label>
-                  <select value={form.type} onChange={e => field('type', e.target.value as ContactType)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                  <select value={form.type} onChange={e => field('type', e.target.value as ContactType)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                     {(Object.entries(CONTACT_TYPE_LABELS) as [ContactType, string][]).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Organisation</label>
-                <input value={form.organisation} onChange={e => field('organisation', e.target.value)} placeholder="Party, media outlet, hospital…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.organisation} onChange={e => field('organisation', e.target.value)} placeholder="Party, media outlet, hospital…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               {form.type === 'mp' && (
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Constituency</label>
-                  <input value={form.constituency} onChange={e => field('constituency', e.target.value)} placeholder="e.g. Birmingham, Selly Oak" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input value={form.constituency} onChange={e => field('constituency', e.target.value)} placeholder="e.g. Birmingham, Selly Oak" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
               )}
               {form.type === 'influencer' && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Platform</label>
-                    <input value={form.platform} onChange={e => field('platform', e.target.value)} placeholder="Instagram, YouTube…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    <input value={form.platform} onChange={e => field('platform', e.target.value)} placeholder="Instagram, YouTube…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Followers</label>
-                    <input type="number" value={form.followers_count} onChange={e => field('followers_count', e.target.value)} placeholder="250000" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    <input type="number" value={form.followers_count} onChange={e => field('followers_count', e.target.value)} placeholder="250000" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                   </div>
                 </div>
               )}
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Email</label>
-                <input type="email" value={form.email} onChange={e => field('email', e.target.value)} placeholder="contact@example.com" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input type="email" value={form.email} onChange={e => field('email', e.target.value)} placeholder="contact@example.com" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Initial Status</label>
-                <select value={form.status} onChange={e => field('status', e.target.value as OutreachStatus)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                <select value={form.status} onChange={e => field('status', e.target.value as OutreachStatus)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   {(Object.entries(STATUS_CONFIG) as [OutreachStatus, { label: string }][]).map(([v, c]) => <option key={v} value={v}>{c.label}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Notes</label>
-                <textarea value={form.notes} onChange={e => field('notes', e.target.value)} rows={3} placeholder="Context, talking points, relationship notes…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none font-mono" />
+                <textarea value={form.notes} onChange={e => field('notes', e.target.value)} rows={3} placeholder="Context, talking points, relationship notes…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none font-mono" />
               </div>
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
             </div>
@@ -313,7 +313,7 @@ function AddContactModal({ onAdd }: { onAdd: (c: Contact) => void }) {
               <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                 {isPending ? 'Saving…' : 'Add Contact'}
               </button>
-              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -352,7 +352,7 @@ function AddMilestoneModal({ onAdd }: { onAdd: (m: Milestone) => void }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Milestone</h3>
               <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
@@ -360,29 +360,29 @@ function AddMilestoneModal({ onAdd }: { onAdd: (m: Milestone) => void }) {
             <div className="px-6 py-5 space-y-4">
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Title *</label>
-                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Milestone name" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Milestone name" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Category</label>
-                  <select value={form.category} onChange={e => field('category', e.target.value)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                  <select value={form.category} onChange={e => field('category', e.target.value)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                     {Object.entries(CATEGORY_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Target Date</label>
-                  <input type="date" value={form.target_date} onChange={e => field('target_date', e.target.value)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60" />
+                  <input type="date" value={form.target_date} onChange={e => field('target_date', e.target.value)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Status</label>
-                <select value={form.status} onChange={e => field('status', e.target.value as MilestoneStatus)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                <select value={form.status} onChange={e => field('status', e.target.value as MilestoneStatus)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   {(Object.entries(MILESTONE_CONFIG) as [MilestoneStatus, { label: string }][]).map(([v, c]) => <option key={v} value={v}>{c.label}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Description</label>
-                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={3} placeholder="What does achieving this look like?" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={3} placeholder="What does achieving this look like?" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
             </div>
@@ -390,7 +390,7 @@ function AddMilestoneModal({ onAdd }: { onAdd: (m: Milestone) => void }) {
               <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                 {isPending ? 'Saving…' : 'Add Milestone'}
               </button>
-              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -429,7 +429,7 @@ function AddPressModal({ onAdd }: { onAdd: (p: PressLink) => void }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Press Mention</h3>
               <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
@@ -437,25 +437,25 @@ function AddPressModal({ onAdd }: { onAdd: (p: PressLink) => void }) {
             <div className="px-6 py-5 space-y-4">
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Headline *</label>
-                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Article headline" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Article headline" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Publication *</label>
-                  <input value={form.publication} onChange={e => field('publication', e.target.value)} placeholder="BBC, Guardian…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input value={form.publication} onChange={e => field('publication', e.target.value)} placeholder="BBC, Guardian…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Published</label>
-                  <input type="date" value={form.published_date} onChange={e => field('published_date', e.target.value)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60" />
+                  <input type="date" value={form.published_date} onChange={e => field('published_date', e.target.value)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">URL</label>
-                <input type="url" value={form.url} onChange={e => field('url', e.target.value)} placeholder="https://…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input type="url" value={form.url} onChange={e => field('url', e.target.value)} placeholder="https://…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Sentiment</label>
-                <select value={form.sentiment} onChange={e => field('sentiment', e.target.value as 'positive' | 'neutral' | 'negative')} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                <select value={form.sentiment} onChange={e => field('sentiment', e.target.value as 'positive' | 'neutral' | 'negative')} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   <option value="positive">Positive</option>
                   <option value="neutral">Neutral</option>
                   <option value="negative">Negative</option>
@@ -467,7 +467,7 @@ function AddPressModal({ onAdd }: { onAdd: (p: PressLink) => void }) {
               <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                 {isPending ? 'Saving…' : 'Add'}
               </button>
-              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -618,7 +618,7 @@ function ContactsTab({ contacts: initial }: { contacts: Contact[] }) {
           placeholder="Search name, org, constituency…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="flex-1 min-w-48 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
+          className="flex-1 min-w-48 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
         />
         <div className="flex gap-1">
           {(['all', ...Object.keys(CONTACT_TYPE_LABELS)] as (ContactType | 'all')[]).map(t => (

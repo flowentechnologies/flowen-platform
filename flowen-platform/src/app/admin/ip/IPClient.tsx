@@ -52,7 +52,7 @@ const JURISDICTIONS = ['UK', 'EU', 'US', 'Global', 'Multiple'];
 const STATUSES = [
   { id: 'registered',   label: 'Registered',   color: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' },
   { id: 'pending',      label: 'Pending',       color: 'bg-amber-500/15 text-amber-300 border border-amber-500/30 animate-pulse' },
-  { id: 'unregistered', label: 'Unregistered',  color: 'bg-slate-700/40 text-slate-400 border border-slate-700' },
+  { id: 'unregistered', label: 'Unregistered',  color: 'bg-slate-700/40 text-slate-400 border border-slate-300 dark:border-slate-700' },
   { id: 'licensed',     label: 'Licensed',      color: 'bg-sky-500/15 text-sky-300 border border-sky-500/30' },
   { id: 'expired',      label: 'Expired',       color: 'bg-red-500/15 text-red-300 border border-red-500/30' },
 ];
@@ -126,11 +126,11 @@ function AssetForm({
     setForm(f => ({ ...f, [k]: v }));
   }
 
-  const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
+  const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
   const labelCls = 'block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5';
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl p-5 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>Asset Type *</label>
@@ -274,7 +274,7 @@ function AssetForm({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -360,7 +360,7 @@ function AssetCard({
           <button
             type="button"
             onClick={() => onEdit(asset)}
-            className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
+            className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
           >
             Edit
           </button>
@@ -501,7 +501,7 @@ function InvestorSummaryCard({ assets, versions }: { assets: IPAsset[]; versions
           className={`shrink-0 px-3.5 py-2 text-xs font-mono font-bold rounded-xl border transition-all ${
             copied
               ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-              : 'bg-slate-100 dark:bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500'
+              : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500'
           }`}
         >
           {copied ? 'Copied ✓' : 'Copy for investor'}
@@ -804,11 +804,11 @@ function VersionForm({
     setForm(f => ({ ...f, [k]: v }));
   }
 
-  const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
+  const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
   const labelCls = 'block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5';
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl p-5 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>Model Name</label>
@@ -880,7 +880,7 @@ function VersionForm({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -982,7 +982,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
 
   function versionStatus(v: ModelVersion): { label: string; cls: string } {
     if (v.deployed && !v.deprecated) return { label: 'PRODUCTION', cls: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 animate-pulse' };
-    if (v.deprecated) return { label: 'DEPRECATED', cls: 'bg-slate-700/40 text-slate-500 border border-slate-700' };
+    if (v.deprecated) return { label: 'DEPRECATED', cls: 'bg-slate-700/40 text-slate-500 border border-slate-300 dark:border-slate-700' };
     return { label: 'DEV', cls: 'bg-amber-500/15 text-amber-300 border border-amber-500/30' };
   }
 
@@ -1043,7 +1043,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
           </div>
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-900 border border-dashed border-slate-700 rounded-2xl p-6 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-center">
           <p className="text-sm text-slate-600 font-mono">No production version deployed</p>
           <p className="text-xs text-slate-700 font-mono mt-1">Add a version and mark it as deployed to track production</p>
         </div>
@@ -1144,7 +1144,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
                         <button
                           type="button"
                           onClick={() => { setEditingVersion(v); setShowAddForm(false); }}
-                          className="px-2.5 py-1 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
+                          className="px-2.5 py-1 text-[11px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
                         >
                           Edit
                         </button>

@@ -215,7 +215,7 @@ export function FunnelPanel() {
                 {data.waitlist_sources.map(({ source, count }) => (
                   <span
                     key={source}
-                    className="px-3 py-1 rounded-full text-xs bg-slate-100 dark:bg-slate-800 border border-slate-700 text-slate-600 dark:text-slate-300 font-mono"
+                    className="px-3 py-1 rounded-full text-xs bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-mono"
                   >
                     {source}: <span className="font-bold text-slate-900 dark:text-white">{count.toLocaleString()}</span>
                   </span>
