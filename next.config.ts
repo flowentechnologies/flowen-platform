@@ -51,6 +51,17 @@ const nextConfig: NextConfig = {
         source: '/(.*)',
         headers: securityHeaders,
       },
+      {
+        // Preload the hero video on the landing page at the HTTP layer —
+        // avoids placing a <link> tag in the client component body.
+        source: '/',
+        headers: [
+          {
+            key: 'Link',
+            value: '</assets/videos/Flowen_Hero.mp4>; rel=preload; as=video; type=video/mp4',
+          },
+        ],
+      },
     ];
   },
 
