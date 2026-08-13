@@ -89,8 +89,8 @@ export default async function BillingPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
       {/* Header */}
-      <div className="pb-6 border-b border-slate-800">
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Billing</h1>
+      <div className="pb-6 border-b border-slate-200 dark:border-slate-800">
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Billing</h1>
         <p className="text-slate-400 text-sm mt-1">
           Manage your subscription and payment details
         </p>

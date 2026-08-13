@@ -145,8 +145,8 @@ function StepBar({ current }: { current: Screen }) {
               i < idx
                 ? 'bg-emerald-500 border-emerald-500 text-slate-950'
                 : i === idx
-                ? 'bg-slate-900 border-emerald-500 text-emerald-400'
-                : 'bg-slate-900 border-slate-700 text-slate-600'
+                ? 'bg-white dark:bg-slate-900 border-emerald-500 text-emerald-400'
+                : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-600'
             }`}>
               {i < idx ? (
                 <svg viewBox="0 0 14 14" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -851,7 +851,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
             <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
               Practice Engine
             </span>
-            <h1 className="text-2xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Choose your stage
             </h1>
           </div>
@@ -924,7 +924,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         )}
 
         {/* Stage selector */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
           <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
             Select stage
           </p>
@@ -954,10 +954,10 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
                       title={locked ? 'Complete your current programme week to unlock' : undefined}
                       className={`w-12 h-12 rounded-full text-sm font-bold border-2 transition-all ${
                         locked
-                          ? 'bg-slate-900 border-slate-800 text-slate-700 cursor-not-allowed'
+                          ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 cursor-not-allowed'
                           : s.id === stageId
                           ? 'bg-emerald-500 border-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20 active:scale-95'
-                          : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-emerald-500/50 hover:text-slate-200 active:scale-95'
+                          : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 hover:border-emerald-500/50 hover:text-slate-200 active:scale-95'
                       }`}
                     >
                       {locked ? (
@@ -974,23 +974,23 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         </div>
 
         {/* Stage detail card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
           <div className="flex items-center gap-3">
             <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
               {stage.target}
             </span>
           </div>
-          <h2 className="text-xl font-bold text-white">{stage.name}</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">{stage.name}</h2>
           <p className="text-slate-400 leading-relaxed text-sm">{stage.desc}</p>
-          <div className="border-t border-slate-800 pt-4 space-y-2">
+          <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Instruction</p>
-            <p className="text-slate-300 text-sm leading-relaxed">{stage.instruction}</p>
+            <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{stage.instruction}</p>
           </div>
-          <div className="border-t border-slate-800 pt-4 space-y-2">
+          <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Cue</p>
             <p className="text-slate-400 text-sm italic">{stage.cue}</p>
           </div>
-          <div className="border-t border-slate-800 pt-4">
+          <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
               Recommended duration: {stage.minMins} min
             </p>
@@ -999,7 +999,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
         {/* Recent sessions */}
         {recentSessions.length > 0 && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
               Recent sessions
             </p>
@@ -1069,21 +1069,21 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         </button>
 
         {/* Avatar — neutral idle pose */}
-        <div className="rounded-2xl overflow-hidden border border-slate-800 shadow-xl shadow-black/30">
+        <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-black/30">
           <FaceAvatar blends={ZERO_BLENDS} speaking={false} />
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
           <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400">
             {stage.target}
           </span>
-          <h2 className="text-xl font-bold text-white">{stage.name}</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">{stage.name}</h2>
           <p className="text-slate-400 text-sm leading-relaxed">{stage.instruction}</p>
 
-          <div className="border-t border-slate-800 pt-4 space-y-3">
+          <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Before you begin</p>
             <div className="space-y-2 text-slate-400 text-sm">
-              <p>Click <strong className="text-white">Start</strong> to allow microphone access.</p>
+              <p>Click <strong className="text-slate-900 dark:text-white">Start</strong> to allow microphone access.</p>
               <p>Audio is processed locally and not stored on our servers.</p>
               {captionSupported && (
                 <p className="text-emerald-400/80">Live captions will appear during your session.</p>
@@ -1141,13 +1141,13 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         <StepBar current="recording" />
 
         {/* 3D Avatar with camera face-tracking PiP + calibration overlay */}
-        <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-2xl shadow-black/40">
+        <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl shadow-black/40">
           <FaceAvatar ref={avatarRef} blends={ZERO_BLENDS} speaking={false} />
 
           {/* Calibration overlay — covers avatar with instruction + countdown */}
           {faceStatus === 'calibrating' && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950/80 backdrop-blur-sm">
-              <p className="text-xs font-mono uppercase tracking-widest text-slate-300">
+              <p className="text-xs font-mono uppercase tracking-widest text-slate-600 dark:text-slate-300">
                 Relax your face and look at the camera
               </p>
               <span className="text-5xl font-extrabold font-mono text-emerald-400 tabular-nums leading-none">
@@ -1174,7 +1174,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         </div>
 
         {/* Camera face-tracking control */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 space-y-2">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 space-y-2">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 shrink-0">
@@ -1228,8 +1228,8 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
                 faceStatus === 'active' || faceStatus === 'calibrating'
                   ? 'border-emerald-500/30 text-emerald-500/80 hover:border-emerald-500/50 hover:text-emerald-400'
                   : faceStatus === 'loading' || faceStatus === 'requesting'
-                    ? 'border-slate-700 text-slate-600 cursor-not-allowed'
-                    : 'border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400'
+                    ? 'border-slate-300 dark:border-slate-700 text-slate-600 cursor-not-allowed'
+                    : 'border-slate-300 dark:border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400'
               }`}
             >
               {faceStatus === 'active' || faceStatus === 'calibrating'
@@ -1242,13 +1242,13 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
           {/* Recalibrate row — shown when active and already calibrated */}
           {faceStatus === 'active' && faceCalibrated && (
-            <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+            <div className="flex items-center justify-between pt-1 border-t border-slate-200 dark:border-slate-800">
               <p className="text-[10px] text-slate-600">
                 Face not tracking well? Recalibrate with a fresh neutral expression.
               </p>
               <button
                 onClick={recalibrate}
-                className="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded border border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400 transition-all"
+                className="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400 transition-all"
                 aria-label="Recalibrate face tracking baseline"
               >
                 Recalibrate
@@ -1258,7 +1258,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
           {/* First-time prompt — nudge user to calibrate if active but not yet done */}
           {faceStatus === 'active' && !faceCalibrated && (
-            <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+            <div className="flex items-center justify-between pt-1 border-t border-slate-200 dark:border-slate-800">
               <p className="text-[10px] text-amber-400/70">
                 Relax your face, then calibrate so the avatar matches your neutral expression.
               </p>
@@ -1274,7 +1274,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         </div>
 
         {/* Waveform card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
           {/* Recording indicator — role="status" lets screen readers announce this on mount */}
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
@@ -1305,15 +1305,15 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-3 gap-4 border-t border-slate-800 pt-4">
+          <div className="grid grid-cols-3 gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
             <div className="space-y-1">
               <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Time</p>
-              <p className="text-xl font-bold font-mono text-white">{formatDuration(elapsed)}</p>
+              <p className="text-xl font-bold font-mono text-slate-900 dark:text-white">{formatDuration(elapsed)}</p>
             </div>
             <div className="space-y-1">
               <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks</p>
               {/* aria-live: announces each new block detection to screen readers */}
-              <p className={`text-xl font-bold font-mono ${blocks > 0 ? 'text-red-400' : 'text-white'}`}
+              <p className={`text-xl font-bold font-mono ${blocks > 0 ? 'text-red-400' : 'text-slate-900 dark:text-white'}`}
                  aria-live="polite" aria-atomic="true" aria-label={`${blocks} blocks detected`}>{blocks}</p>
             </div>
             <div className="space-y-1">
@@ -1341,7 +1341,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         <ExercisePanel key={stageId} stageId={stageId} />
 
         {/* Voice coach */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Voice Coach</span>
@@ -1366,14 +1366,14 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
               className={`text-[10px] font-mono px-2.5 py-1 rounded-lg border transition-all ${
                 coachEnabled
                   ? 'border-emerald-500/30 text-emerald-500/80 hover:border-emerald-500/50 hover:text-emerald-400'
-                  : 'border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400'
+                  : 'border-slate-300 dark:border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400'
               }`}
             >
               <span aria-hidden="true">{coachEnabled ? 'Mute' : 'Unmute'}</span>
             </button>
           </div>
           {/* Coach feedback — polite live region so AT reads new coaching cues */}
-          <p className={`text-sm leading-relaxed transition-colors ${coachText ? 'text-slate-300' : 'text-slate-600 italic text-xs'}`}
+          <p className={`text-sm leading-relaxed transition-colors ${coachText ? 'text-slate-600 dark:text-slate-300' : 'text-slate-600 italic text-xs'}`}
              aria-live="polite" aria-atomic="true">
             {coachText ?? (coachEnabled ? 'Listening to your practice…' : 'Coach muted')}
           </p>
@@ -1381,7 +1381,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
         {/* Live captions */}
         {captionSupported && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Live captions</p>
             {/* role="log" implies aria-live="polite" + aria-relevant="additions" —
                 ideal for a scrolling transcript that accumulates new speech. */}
@@ -1393,7 +1393,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
             >
               {finalTranscript || interimTranscript ? (
                 <span>
-                  <span className="text-slate-200">{finalTranscript}</span>
+                  <span className="text-slate-700 dark:text-slate-200">{finalTranscript}</span>
                   {interimTranscript && (
                     <span className="text-slate-500">{finalTranscript ? ' ' : ''}{interimTranscript}</span>
                   )}
@@ -1411,8 +1411,8 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           disabled={!canStop}
           className={`w-full rounded-xl px-6 py-4 font-bold text-sm transition-colors ${
             canStop
-              ? 'bg-red-600 hover:bg-red-500 active:bg-red-700 text-white shadow-lg shadow-red-600/20'
-              : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+              ? 'bg-red-600 hover:bg-red-500 active:bg-red-700 text-slate-900 dark:text-white shadow-lg shadow-red-600/20'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed'
           }`}
         >
           {canStop ? 'End session' : `Recording — ${elapsed}s (minimum 10s)`}
@@ -1438,7 +1438,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
             <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400">
               Programme milestone
             </span>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight mt-1">
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
               Week {(progression.newWeek ?? 2) - 1} complete
             </h1>
           </div>
@@ -1450,12 +1450,12 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
             <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400/70">
               Week {progression.newWeek} · {progression.weekPhase}
             </span>
-            <p className="text-xl font-bold text-white mt-1">{progression.weekTitle}</p>
+            <p className="text-xl font-bold text-slate-900 dark:text-white mt-1">{progression.weekTitle}</p>
           </div>
           {progression.nextStages && progression.nextStages.length > 0 && (
             <p className="text-sm text-slate-400">
               Stages unlocked:{' '}
-              <strong className="text-white">{progression.nextStages.join(', ')}</strong>
+              <strong className="text-slate-900 dark:text-white">{progression.nextStages.join(', ')}</strong>
             </p>
           )}
           {progression.avgBpm !== undefined && (
@@ -1474,7 +1474,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           </button>
           <button
             onClick={discardAndReset}
-            className="w-full rounded-xl px-6 py-3 font-semibold text-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-colors"
+            className="w-full rounded-xl px-6 py-3 font-semibold text-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             Practice again
           </button>
@@ -1511,15 +1511,15 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
       <div>
         <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Session complete</span>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">Your results</h1>
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Your results</h1>
       </div>
 
       {/* Stats grid */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-1">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Duration</p>
-            <p className="text-2xl font-bold font-mono text-white">{formatDurationLong(elapsed)}</p>
+            <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white">{formatDurationLong(elapsed)}</p>
           </div>
           <div className="space-y-1">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks detected</p>
@@ -1535,14 +1535,14 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           </div>
           <div className="space-y-1">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Stage</p>
-            <p className="text-base font-bold text-white">{stage.name}</p>
+            <p className="text-base font-bold text-slate-900 dark:text-white">{stage.name}</p>
           </div>
         </div>
       </div>
 
       {/* Comparison */}
       {lastBpm !== null && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-2">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-2">
           <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">vs last session</p>
           <div className="flex items-baseline gap-3">
             <span className="text-sm text-slate-400">Last: {lastBpm.toFixed(1)} blocks/min</span>
@@ -1555,7 +1555,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
       {/* Playback */}
       {audioUrl && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
           <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
             Playback — hear your voice
           </p>
@@ -1570,9 +1570,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
       {/* Transcript */}
       {finalTranscript && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
           <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Session transcript</p>
-          <p className="text-slate-300 text-sm leading-relaxed">{finalTranscript}</p>
+          <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{finalTranscript}</p>
         </div>
       )}
 
@@ -1595,7 +1595,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         <button
           onClick={() => saveSession(true)}
           disabled={saving}
-          className="w-full rounded-xl px-6 py-3 font-semibold text-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full rounded-xl px-6 py-3 font-semibold text-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Save & do another session
         </button>

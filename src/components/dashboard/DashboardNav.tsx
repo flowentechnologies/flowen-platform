@@ -220,7 +220,7 @@ export function DashboardNav({ user }: { user: UserProfile }) {
               >
                 {link.label}
                 {isMessages && unread > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-0.5 leading-none">
+                  <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-red-500 text-slate-900 dark:text-white text-[9px] font-bold px-0.5 leading-none">
                     {unread > 9 ? '9+' : unread}
                   </span>
                 )}
@@ -238,7 +238,7 @@ export function DashboardNav({ user }: { user: UserProfile }) {
             >
               Clinician View
               {unread > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-0.5 leading-none">
+                <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 flex items-center justify-center rounded-full bg-red-500 text-slate-900 dark:text-white text-[9px] font-bold px-0.5 leading-none">
                   {unread > 9 ? '9+' : unread}
                 </span>
               )}

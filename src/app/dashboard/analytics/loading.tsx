@@ -9,17 +9,17 @@ export default function AnalyticsLoading() {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
             <Bone className="h-2.5 w-20" />
             <Bone className="h-8 w-14" />
           </div>
         ))}
       </div>
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
         <Bone className="h-3 w-28" />
         <div className="h-40 flex items-end gap-1">
           {Array.from({ length: 20 }).map((_, i) => (
-            <div key={i} className="flex-1 animate-pulse bg-slate-800/70 rounded-sm"
+            <div key={i} className="flex-1 animate-pulse bg-slate-200 dark:bg-slate-800/70 rounded-sm"
               style={{ height: `${30 + Math.random() * 70}%`, animationDelay: `${i * 40}ms` }} />
           ))}
         </div>

@@ -71,7 +71,7 @@ function StatusBadge({ status }: { status: string | null }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-slate-800 text-slate-500 border border-slate-700">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700">
       No subscription
     </span>
   );
@@ -104,16 +104,16 @@ function CurrentPlanCard({
   const renewsOrCancels = cancelAtPeriodEnd ? 'Cancels' : 'Renews';
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
       <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
         Current Plan
       </p>
 
       <div className="flex flex-wrap items-start gap-3">
-        <h2 className="text-xl font-bold text-white flex-1 min-w-0">{name}</h2>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex-1 min-w-0">{name}</h2>
         <div className="flex items-center gap-2 flex-wrap">
           {tierInterval && (
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-semibold bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-300 dark:border-slate-700">
               {intervalLabel(tierInterval)}
             </span>
           )}
@@ -145,7 +145,7 @@ function CurrentPlanCard({
       {currentPeriodEnd && (
         <p className="text-sm text-slate-400">
           {renewsOrCancels}{' '}
-          <span className="text-slate-300 font-medium">{formatDate(currentPeriodEnd)}</span>
+          <span className="text-slate-600 dark:text-slate-300 font-medium">{formatDate(currentPeriodEnd)}</span>
         </p>
       )}
     </div>
@@ -179,13 +179,13 @@ function ManageBillingCard({ hasSubscription, stripeCustomerId }: Pick<BillingPr
 
   if (hasSubscription && stripeCustomerId) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
         <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
           Manage Billing
         </p>
 
         <div>
-          <h2 className="text-lg font-bold text-white">Billing &amp; Payments</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Billing &amp; Payments</h2>
           <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">
             Update your payment method, download invoices, or cancel your subscription via
             the Stripe billing portal.
@@ -219,13 +219,13 @@ function ManageBillingCard({ hasSubscription, stripeCustomerId }: Pick<BillingPr
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
       <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
         Manage Billing
       </p>
 
       <div>
-        <h2 className="text-lg font-bold text-white">Upgrade your plan</h2>
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Upgrade your plan</h2>
         <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">
           You&apos;re currently on the free tier. Upgrade to unlock unlimited practice sessions
           and advanced analytics.

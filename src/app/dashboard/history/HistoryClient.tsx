@@ -10,7 +10,7 @@ function TranscriptRow({ transcript, colSpan }: { transcript: string; colSpan: n
     <tr className="bg-slate-800/30">
       <td colSpan={colSpan} className="px-6 py-4">
         <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1.5">Transcript</p>
-        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap break-words max-h-40 overflow-y-auto">
+        <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap break-words max-h-40 overflow-y-auto">
           {transcript}
         </p>
       </td>
@@ -78,7 +78,7 @@ export function HistoryClient({ sessions }: Props) {
         <button
           onClick={() => setPage((p) => Math.max(1, p - 1))}
           disabled={safePage === 1}
-          className="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           Prev
         </button>
@@ -88,7 +88,7 @@ export function HistoryClient({ sessions }: Props) {
         <button
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           disabled={safePage === totalPages}
-          className="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           Next
         </button>
@@ -128,17 +128,17 @@ export function HistoryClient({ sessions }: Props) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         <div>
-          <h1 className="text-2xl font-bold text-white">Session History</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Session History</h1>
           <p className="text-slate-400 text-sm mt-1">All your practice sessions in one place.</p>
         </div>
-        <div className="mt-10 bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-4">
-          <p className="text-white font-semibold text-lg">No sessions yet.</p>
+        <div className="mt-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center space-y-4">
+          <p className="text-slate-900 dark:text-white font-semibold text-lg">No sessions yet.</p>
           <p className="text-slate-400 text-sm">
             Start your first practice session to see your history here.
           </p>
           <Link
             href="/dashboard/practice"
-            className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold transition-colors"
+            className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-900 dark:text-white text-sm font-semibold transition-colors"
           >
             Start practising
           </Link>
@@ -151,7 +151,7 @@ export function HistoryClient({ sessions }: Props) {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
       {/* Heading */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Session History</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Session History</h1>
         <p className="text-slate-400 text-sm mt-1">
           {totalSessions} session{totalSessions !== 1 ? 's' : ''} recorded
         </p>
@@ -183,12 +183,12 @@ export function HistoryClient({ sessions }: Props) {
         ].map((card) => (
           <div
             key={card.label}
-            className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-2"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-2"
           >
             <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
               {card.label}
             </span>
-            <span className="text-3xl font-bold text-white leading-none">{card.value}</span>
+            <span className="text-3xl font-bold text-slate-900 dark:text-white leading-none">{card.value}</span>
             <span className="text-slate-400 text-xs">{card.sub}</span>
           </div>
         ))}
@@ -213,13 +213,13 @@ export function HistoryClient({ sessions }: Props) {
             value={filter}
             onChange={(e) => { setFilter(e.target.value); setPage(1); }}
             placeholder="Filter by date (e.g. Jul)"
-            className="pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 text-sm text-white placeholder-slate-600 outline-none transition-colors w-52"
+            className="pl-9 pr-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 text-sm text-slate-900 dark:text-white placeholder-slate-600 outline-none transition-colors w-52"
           />
         </div>
         <select
           value={stageFilter ?? ''}
           onChange={e => { setStageFilter(e.target.value === '' ? null : Number(e.target.value)); setPage(1); }}
-          className="py-2 pl-3 pr-8 rounded-xl bg-slate-900 border border-slate-800 focus:border-emerald-500/60 text-sm text-white outline-none transition-colors appearance-none cursor-pointer"
+          className="py-2 pl-3 pr-8 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-emerald-500/60 text-sm text-slate-900 dark:text-white outline-none transition-colors appearance-none cursor-pointer"
         >
           <option value="">All stages</option>
           {Object.entries(STAGE_NAMES).map(([id, name]) => (
@@ -242,9 +242,9 @@ export function HistoryClient({ sessions }: Props) {
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between gap-4 flex-wrap">
-          <h2 className="text-white font-semibold text-sm">All sessions</h2>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 flex-wrap">
+          <h2 className="text-slate-900 dark:text-white font-semibold text-sm">All sessions</h2>
           <PageButtons />
         </div>
 
@@ -256,7 +256,7 @@ export function HistoryClient({ sessions }: Props) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left border-b border-slate-800/60">
+                <tr className="text-left border-b border-slate-200 dark:border-slate-800/60">
                   <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
                     Date
                   </th>
@@ -280,7 +280,7 @@ export function HistoryClient({ sessions }: Props) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {pageSlice.map((s) => {
                   const bpm = calcBpm(s.total_blocks_detected, s.duration_seconds);
                   const barWidth = bpmBarWidth(bpm);
@@ -295,20 +295,20 @@ export function HistoryClient({ sessions }: Props) {
                         <td className="px-6 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
                           {formatDate(s.created_at)}
                         </td>
-                        <td className="px-6 py-3 text-slate-300 text-xs whitespace-nowrap">
+                        <td className="px-6 py-3 text-slate-600 dark:text-slate-300 text-xs whitespace-nowrap">
                           {stageName}
                         </td>
-                        <td className="px-6 py-3 text-slate-300 text-xs whitespace-nowrap">
+                        <td className="px-6 py-3 text-slate-600 dark:text-slate-300 text-xs whitespace-nowrap">
                           {formatDuration(s.duration_seconds)}
                         </td>
                         <td className={`px-6 py-3 text-xs font-semibold tabular-nums ${blocksColor(s.total_blocks_detected)}`}>
                           {s.total_blocks_detected}
                         </td>
-                        <td className="px-6 py-3 text-xs font-semibold tabular-nums text-slate-300 whitespace-nowrap">
+                        <td className="px-6 py-3 text-xs font-semibold tabular-nums text-slate-600 dark:text-slate-300 whitespace-nowrap">
                           {bpm.toFixed(1)}
                         </td>
                         <td className="px-6 py-3">
-                          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden min-w-[80px]">
+                          <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden min-w-[80px]">
                             <div
                               className={`h-full rounded-full transition-all ${bpmBarColor(bpm)}`}
                               style={{ width: `${barWidth}%` }}
@@ -342,7 +342,7 @@ export function HistoryClient({ sessions }: Props) {
         )}
 
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-slate-800 flex items-center justify-between gap-4">
+          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4">
             <span className="text-xs text-slate-600 tabular-nums">
               Showing {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} of {filtered.length}
             </span>

@@ -39,7 +39,7 @@ export function ClinicianClient({ patients }: { patients: PatientSummary[] }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Your Patients</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Your Patients</h1>
           <p className="text-slate-400 text-sm mt-1">
             {patients.length === 0
               ? 'No patients assigned yet.'
@@ -63,13 +63,13 @@ export function ClinicianClient({ patients }: { patients: PatientSummary[] }) {
       </div>
 
       {patients.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto">
             <svg className="w-7 h-7 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
             </svg>
           </div>
-          <p className="text-white font-semibold text-lg">No patients assigned</p>
+          <p className="text-slate-900 dark:text-white font-semibold text-lg">No patients assigned</p>
           <p className="text-slate-400 text-sm max-w-sm mx-auto">
             Contact your administrator to get patients assigned to your caseload.
           </p>
@@ -80,12 +80,12 @@ export function ClinicianClient({ patients }: { patients: PatientSummary[] }) {
             <Link
               key={p.id}
               href={`/dashboard/clinician/${p.id}`}
-              className="group bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 transition-all space-y-4"
+              className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-700 rounded-2xl p-5 transition-all space-y-4"
             >
               {/* Name + trend */}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-white font-semibold truncate">
+                  <p className="text-slate-900 dark:text-white font-semibold truncate">
                     {p.display_name ?? p.email?.split('@')[0] ?? 'Unknown'}
                   </p>
                   <p className="text-slate-500 text-xs truncate">{p.email}</p>
@@ -97,22 +97,22 @@ export function ClinicianClient({ patients }: { patients: PatientSummary[] }) {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <p className="text-[9px] font-mono uppercase tracking-widest text-slate-600">Sessions</p>
-                  <p className="text-lg font-bold text-white">{p.totalSessions}</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">{p.totalSessions}</p>
                 </div>
                 <div>
                   <p className="text-[9px] font-mono uppercase tracking-widest text-slate-600">Practice</p>
-                  <p className="text-lg font-bold text-white">{p.totalMins}m</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">{p.totalMins}m</p>
                 </div>
                 <div>
                   <p className="text-[9px] font-mono uppercase tracking-widest text-slate-600">Blk/min</p>
-                  <p className="text-lg font-bold text-white">
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">
                     {p.recentBpm !== null ? p.recentBpm.toFixed(1) : '—'}
                   </p>
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+              <div className="flex items-center justify-between pt-1 border-t border-slate-200 dark:border-slate-800">
                 <span className="text-[10px] text-slate-600">
                   {p.lastSessionAt ? `Last: ${ago(p.lastSessionAt)}` : 'No sessions yet'}
                 </span>

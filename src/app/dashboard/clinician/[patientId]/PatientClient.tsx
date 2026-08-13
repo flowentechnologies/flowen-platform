@@ -85,7 +85,7 @@ function NoteCell({ session, patientId }: { session: PatientSession; patientId: 
           value={text}
           onChange={e => setText(e.target.value)}
           rows={2}
-          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500"
+          className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500"
           placeholder="Add clinical note…"
         />
         <div className="flex gap-1.5">
@@ -98,7 +98,7 @@ function NoteCell({ session, patientId }: { session: PatientSession; patientId: 
           </button>
           <button
             onClick={() => { setEditing(false); setText(session.note ?? ''); }}
-            className="px-2 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] transition-colors"
+            className="px-2 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-[10px] transition-colors"
           >
             Cancel
           </button>
@@ -110,7 +110,7 @@ function NoteCell({ session, patientId }: { session: PatientSession; patientId: 
   return (
     <div className="flex items-start gap-2 group/note">
       {text ? (
-        <span className="text-xs text-slate-300 leading-relaxed flex-1">{text}</span>
+        <span className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed flex-1">{text}</span>
       ) : (
         <span className="text-[10px] text-slate-600 italic flex-1">No note</span>
       )}
@@ -189,13 +189,13 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
   };
 
   if (loading) return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 animate-pulse h-32" />
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 animate-pulse h-32" />
   );
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-white font-semibold text-sm">Treatment Plan</h2>
+        <h2 className="text-slate-900 dark:text-white font-semibold text-sm">Treatment Plan</h2>
         {!editing && (
           <button onClick={startEdit} className="text-xs text-slate-500 hover:text-emerald-400 transition-colors">
             {plan ? (saved ? '✓ Saved' : 'Edit') : '+ Create plan'}
@@ -212,7 +212,7 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
           <div className="space-y-3">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-wide text-slate-600 mb-1">Phase</p>
-              <p className="text-white font-medium">{plan.phase}</p>
+              <p className="text-slate-900 dark:text-white font-medium">{plan.phase}</p>
             </div>
             <div>
               <p className="text-[10px] font-mono uppercase tracking-wide text-slate-600 mb-1">Prescribed stages</p>
@@ -228,12 +228,12 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
           <div className="space-y-3">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-wide text-slate-600 mb-1">Session goal</p>
-              <p className="text-white font-medium">{plan.sessions_per_week}×/week · {plan.minutes_per_session} min each</p>
+              <p className="text-slate-900 dark:text-white font-medium">{plan.sessions_per_week}×/week · {plan.minutes_per_session} min each</p>
             </div>
             {plan.goals && (
               <div>
                 <p className="text-[10px] font-mono uppercase tracking-wide text-slate-600 mb-1">Clinical goals</p>
-                <p className="text-slate-300 leading-relaxed">{plan.goals}</p>
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{plan.goals}</p>
               </div>
             )}
           </div>
@@ -248,7 +248,7 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
             <select
               value={draft.phase ?? 'Establishment'}
               onChange={e => setDraft(d => ({ ...d, phase: e.target.value }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
             >
               {PHASES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
@@ -265,7 +265,7 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
                     key={s}
                     type="button"
                     onClick={() => toggleStage(s)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${active ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${active ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300' : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 hover:border-slate-600'}`}
                   >
                     {s} — {STAGE_LABELS[s]}
                   </button>
@@ -280,14 +280,14 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
               <label className="text-[10px] font-mono uppercase tracking-wide text-slate-500">Sessions per week</label>
               <input type="number" min={1} max={14} value={draft.sessions_per_week ?? 3}
                 onChange={e => setDraft(d => ({ ...d, sessions_per_week: Number(e.target.value) }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-mono uppercase tracking-wide text-slate-500">Minutes per session</label>
               <input type="number" min={1} max={60} value={draft.minutes_per_session ?? 10}
                 onChange={e => setDraft(d => ({ ...d, minutes_per_session: Number(e.target.value) }))}
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -300,7 +300,7 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
               value={draft.goals ?? ''}
               onChange={e => setDraft(d => ({ ...d, goals: e.target.value }))}
               placeholder="e.g. Reduce block rate to <2/min during phrase-level speech over 4 weeks…"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-600 resize-none focus:outline-none focus:border-emerald-500"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 resize-none focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -310,7 +310,7 @@ function TreatmentPlanCard({ patientId }: { patientId: string }) {
               {saving ? 'Saving…' : 'Save plan'}
             </button>
             <button onClick={() => setEditing(false)}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm border border-slate-700 transition-colors">
+              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm border border-slate-300 dark:border-slate-700 transition-colors">
               Cancel
             </button>
           </div>
@@ -423,8 +423,8 @@ function MiniChat({ patientId, myId }: { patientId: string; myId: string | null 
                 <div
                   className={`max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     isMe
-                      ? 'bg-emerald-500/20 border border-emerald-500/30 text-white'
-                      : 'bg-slate-800 border border-slate-700 text-slate-200'
+                      ? 'bg-emerald-500/20 border border-emerald-500/30 text-slate-900 dark:text-white'
+                      : 'bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200'
                   }`}
                 >
                   {msg.content}
@@ -444,7 +444,7 @@ function MiniChat({ patientId, myId }: { patientId: string; myId: string | null 
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-slate-800 p-4 flex flex-col gap-2">
+      <div className="border-t border-slate-200 dark:border-slate-800 p-4 flex flex-col gap-2">
         {sendError && (
           <p className="text-rose-400 text-xs px-1" role="alert">{sendError}</p>
         )}
@@ -456,7 +456,7 @@ function MiniChat({ patientId, myId }: { patientId: string; myId: string | null 
             onKeyDown={handleKeyDown}
             maxLength={2000}
             placeholder="Type a message… (Enter to send)"
-            className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500 transition-colors"
+            className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500 transition-colors"
           />
           <button
             onClick={() => send().catch(console.error)}
@@ -492,7 +492,7 @@ export function PatientClient({ patient, clinicianId }: { patient: PatientDetail
         </Link>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold text-white">{displayName}</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{displayName}</h1>
             <p className="text-slate-400 text-sm mt-0.5">{patient.email}</p>
             <p className="text-slate-600 text-xs mt-1">
               Assigned {new Date(patient.assigned_at).toLocaleDateString('en-GB', { dateStyle: 'medium' })}
@@ -505,7 +505,7 @@ export function PatientClient({ patient, clinicianId }: { patient: PatientDetail
             <a
               href={`/api/reports/patient/${patientId}`}
               download
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1.5"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a.75.75 0 01.75.75v7.44l2.47-2.47a.75.75 0 111.06 1.06l-3.75 3.75a.75.75 0 01-1.06 0L5.72 9.78a.75.75 0 111.06-1.06l2.47 2.47V3.75A.75.75 0 0110 3zm-6.25 13.5a.75.75 0 000 1.5h12.5a.75.75 0 000-1.5H3.75z" clipRule="evenodd"/></svg>
               PDF Report
@@ -522,9 +522,9 @@ export function PatientClient({ patient, clinicianId }: { patient: PatientDetail
           { label: 'Blk/min (recent)', value: recentBpm !== null ? recentBpm.toFixed(1) : '—' },
           { label: 'Improvement', value: improvementPct !== null ? `${improvementPct > 0 ? '+' : ''}${improvementPct}%` : '—' },
         ].map(card => (
-          <div key={card.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
+          <div key={card.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-2">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">{card.label}</p>
-            <p className="text-3xl font-bold text-white leading-none">{card.value}</p>
+            <p className="text-3xl font-bold text-slate-900 dark:text-white leading-none">{card.value}</p>
           </div>
         ))}
       </div>
@@ -534,7 +534,7 @@ export function PatientClient({ patient, clinicianId }: { patient: PatientDetail
 
       {/* Sparkline */}
       {chartSessions.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-xs font-mono uppercase tracking-widest text-slate-600 mb-4">Block rate — last {chartSessions.length} sessions</p>
           <div className="flex items-end gap-1 h-20">
             {chartSessions.map((s, i) => {
@@ -555,32 +555,32 @@ export function PatientClient({ patient, clinicianId }: { patient: PatientDetail
 
       {/* Session history table */}
       {patient.sessions.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-10 text-center">
           <p className="text-slate-400 text-sm">No sessions recorded yet.</p>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-800">
-            <h2 className="text-white font-semibold text-sm">Session history</h2>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+            <h2 className="text-slate-900 dark:text-white font-semibold text-sm">Session history</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left border-b border-slate-800/60">
+                <tr className="text-left border-b border-slate-200 dark:border-slate-800/60">
                   {['Date', 'Stage', 'Duration', 'Blocks', 'Blk/min', 'Clinical notes'].map(h => (
                     <th key={h} className="px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {reversedSessions.map(s => {
                   const bpm = s.duration_seconds > 0 ? s.total_blocks_detected / (s.duration_seconds / 60) : 0;
                   return (
                     <tr key={s.id} className="hover:bg-slate-800/30 transition-colors group">
                       <td className="px-4 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">{fmt(s.created_at)}</td>
                       <td className="px-4 py-3 text-slate-400 text-xs whitespace-nowrap">{s.stage_id ? (STAGE_LABELS[s.stage_id] ?? `Stage ${s.stage_id}`) : '—'}</td>
-                      <td className="px-4 py-3 text-slate-300 text-xs">{fmtDur(s.duration_seconds)}</td>
-                      <td className="px-4 py-3 text-slate-300 text-xs">{s.total_blocks_detected}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 text-xs">{fmtDur(s.duration_seconds)}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 text-xs">{s.total_blocks_detected}</td>
                       <td className={`px-4 py-3 text-xs font-semibold tabular-nums ${bpmColor(bpm)}`}>{bpm.toFixed(1)}</td>
                       <td className="px-4 py-3 min-w-[200px]">
                         <NoteCell session={s} patientId={patientId} />
@@ -595,9 +595,9 @@ export function PatientClient({ patient, clinicianId }: { patient: PatientDetail
       )}
 
       {/* Messages panel */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 flex items-center justify-between border-b border-slate-800">
-          <h2 className="text-white font-semibold text-sm">Messages</h2>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+          <h2 className="text-slate-900 dark:text-white font-semibold text-sm">Messages</h2>
           <button
             onClick={() => setShowMessages(v => !v)}
             className="text-xs text-slate-500 hover:text-emerald-400 transition-colors"

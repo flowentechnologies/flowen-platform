@@ -10,8 +10,8 @@ function Section({ title, description, danger, children }: {
   title: string; description?: string; danger?: boolean; children: React.ReactNode;
 }) {
   return (
-    <div className={`bg-slate-900 border rounded-2xl p-6 ${danger ? 'border-red-900/40' : 'border-slate-800'}`}>
-      <h2 className={`text-sm font-bold mb-0.5 ${danger ? 'text-red-400' : 'text-white'}`}>{title}</h2>
+    <div className={`bg-white dark:bg-slate-900 border rounded-2xl p-6 ${danger ? 'border-red-900/40' : 'border-slate-200 dark:border-slate-800'}`}>
+      <h2 className={`text-sm font-bold mb-0.5 ${danger ? 'text-red-400' : 'text-slate-900 dark:text-white'}`}>{title}</h2>
       {description && <p className="text-slate-500 text-xs mb-5 leading-relaxed">{description}</p>}
       {!description && <div className="mb-4" />}
       {children}
@@ -124,8 +124,8 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10 space-y-5">
-      <div className="pb-6 border-b border-slate-800">
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Settings</h1>
+      <div className="pb-6 border-b border-slate-200 dark:border-slate-800">
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Settings</h1>
         <p className="text-slate-400 text-sm mt-1">Manage your profile, security, and account data</p>
       </div>
 
@@ -139,7 +139,7 @@ export default function SettingsPage() {
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
               placeholder="Your name"
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white text-sm placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -159,7 +159,7 @@ export default function SettingsPage() {
       <Section title="Security" description="Change your password or update your sign-in method.">
         <button
           onClick={() => router.push('/auth/forgot-password')}
-          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-white transition-colors"
+          className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white transition-colors"
         >
           Reset password via email
         </button>
@@ -169,7 +169,7 @@ export default function SettingsPage() {
       <Section title="Help & Support" description="Get help, report issues, or contact the Flowen team.">
         <button
           onClick={() => router.push('/dashboard/support')}
-          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-white transition-colors"
+          className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white transition-colors"
         >
           Open Support Centre →
         </button>
@@ -180,7 +180,7 @@ export default function SettingsPage() {
         <a
           href="/api/user/export"
           download
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-white transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white transition-colors"
         >
           <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -194,7 +194,7 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-white">Practice reminders</p>
+              <p className="text-sm text-slate-900 dark:text-white">Practice reminders</p>
               <p className="text-xs text-slate-500 mt-0.5">Sent when you haven&apos;t practiced in 3+ days</p>
             </div>
             <button
@@ -211,7 +211,7 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-white">Streak milestones</p>
+              <p className="text-sm text-slate-900 dark:text-white">Streak milestones</p>
               <p className="text-xs text-slate-500 mt-0.5">Celebrate 3, 7, 14, and 30-day streaks</p>
             </div>
             <button
@@ -228,14 +228,14 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-white">Reminder time (UTC)</p>
+              <p className="text-sm text-slate-900 dark:text-white">Reminder time (UTC)</p>
               <p className="text-xs text-slate-500 mt-0.5">Hour you&apos;d like to receive reminders</p>
             </div>
             <select
               value={reminderHour}
               onChange={e => setReminderHour(Number(e.target.value))}
               disabled={!notifLoaded}
-              className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors disabled:opacity-40"
+              className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors disabled:opacity-40"
             >
               {Array.from({ length: 24 }, (_, h) => (
                 <option key={h} value={h}>{String(h).padStart(2, '0')}:00 UTC</option>
@@ -260,7 +260,7 @@ export default function SettingsPage() {
         <form action={logout}>
           <button
             type="submit"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm text-white transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white transition-colors"
           >
             <svg className="w-4 h-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clipRule="evenodd"/>
@@ -292,7 +292,7 @@ export default function SettingsPage() {
             {erasureError && (
               <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">{erasureError}</p>
             )}
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
               Type <span className="font-mono text-red-400">DELETE MY ACCOUNT</span> to confirm:
             </p>
             <input
@@ -300,19 +300,19 @@ export default function SettingsPage() {
               value={confirmText}
               onChange={e => setConfirmText(e.target.value)}
               placeholder="DELETE MY ACCOUNT"
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-red-800/50 text-white placeholder-slate-600 focus:outline-none focus:border-red-500 text-sm font-mono"
+              className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-red-800/50 text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-red-500 text-sm font-mono"
             />
             <div className="flex gap-3">
               <button
                 onClick={handleErasure}
                 disabled={erasing || confirmText !== 'DELETE MY ACCOUNT'}
-                className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-600 text-white text-sm font-semibold transition-colors disabled:opacity-40"
+                className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-600 text-slate-900 dark:text-white text-sm font-semibold transition-colors disabled:opacity-40"
               >
                 {erasing ? 'Processing…' : 'Confirm deletion'}
               </button>
               <button
                 onClick={() => { setShowConfirm(false); setConfirmText(''); setErasureError(''); }}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm border border-slate-700 transition-colors"
+                className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm border border-slate-300 dark:border-slate-700 transition-colors"
               >
                 Cancel
               </button>

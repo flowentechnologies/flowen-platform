@@ -9,7 +9,7 @@ export default function HistoryLoading() {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
             <Bone className="h-2.5 w-20" />
             <Bone className="h-8 w-16" />
             <Bone className="h-2 w-12" />
@@ -17,11 +17,11 @@ export default function HistoryLoading() {
         ))}
       </div>
       <Bone className="h-9 w-64 rounded-xl" />
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
           <Bone className="h-3 w-24" />
         </div>
-        <div className="divide-y divide-slate-800">
+        <div className="divide-y divide-slate-200 dark:divide-slate-800">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="px-6 py-3 flex items-center gap-6" style={{ animationDelay: `${i * 60}ms` }}>
               <Bone className="h-2.5 w-24" />
@@ -29,7 +29,7 @@ export default function HistoryLoading() {
               <Bone className="h-2.5 w-12" />
               <Bone className="h-2.5 w-8" />
               <Bone className="h-2.5 w-10" />
-              <div className="flex-1 h-2 bg-slate-800/70 rounded-full overflow-hidden">
+              <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-800/70 rounded-full overflow-hidden">
                 <div className="h-full bg-slate-700/70 rounded-full animate-pulse" style={{ width: `${20 + (i * 13) % 70}%` }} />
               </div>
             </div>
