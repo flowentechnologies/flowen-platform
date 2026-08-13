@@ -8,12 +8,11 @@ import { formatDate } from '../format';
 import { blog } from '../lib/blog-client';
 import '../blog-content.css';
 
+// Do not pre-render article pages at build time — the BabyLoveGrowth API
+// rate-limits at 2 req/s and parallel SSG across many articles triggers 429s.
+// ISR (revalidate 24 h) serves pages on first request then caches them.
 export const revalidate = 86400;
-
-export async function generateStaticParams() {
-  const articles = await blog.getAllArticles();
-  return articles.map((article) => ({ slug: article.slug }));
-}
+export const dynamicParams = true;
 
 export async function generateMetadata({
   params,
