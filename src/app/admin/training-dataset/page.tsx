@@ -1,6 +1,7 @@
 import { assertAdmin } from '@/lib/admin/guard';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { DatasetWorkflow } from './DatasetWorkflow';
 
 export const metadata: Metadata = { title: 'Disfluent Speech Training Dataset — Flowen Admin' };
 
@@ -44,39 +45,6 @@ const VERSIONS = [
   { ver: 'v1.0', date: '2025-10-01', clips:  34_200, hours: 271,  speakers:   428, notes: 'Initial corpus — English (UK) only. Bootstrapped from Flowen beta users (consented).' },
 ];
 
-const PIPELINE: { step: string; detail: string; status: 'automated' | 'ongoing' | 'manual' }[] = [
-  {
-    step: '1. Consent capture',
-    detail: 'User opts in at onboarding step 6 (GDPR Art. 9(2)(a) explicit consent). Stored in profiles.opt_in_telemetry. Withdrawal honoured within 30 days.',
-    status: 'automated',
-  },
-  {
-    step: '2. Session audio ingestion',
-    detail: 'Encrypted upload to Supabase Storage (EU West). Speaker identity one-way hashed before tagging. Clip trimmed to ±2 s around detected events.',
-    status: 'automated',
-  },
-  {
-    step: '3. Auto-labelling',
-    detail: 'Production ASR model (flowen-asr-v1.0.x) labels each clip with disfluency event tokens. Confidence scores above 0.70 accepted; below threshold queued for human review.',
-    status: 'automated',
-  },
-  {
-    step: '4. Human QA review',
-    detail: 'Certified SLT annotators review 10% random sample + all low-confidence predictions. Inter-annotator agreement target: κ ≥ 0.75 per event class.',
-    status: 'ongoing',
-  },
-  {
-    step: '5. Dataset versioning',
-    detail: 'Accepted clips committed to corpus at version boundary. SHA-256 checksum of full dataset recorded in Model Registry for audit trail. Withdrawal exclusions applied before commit.',
-    status: 'automated',
-  },
-  {
-    step: '6. Training batch export',
-    detail: 'Training batch exported as sharded JSONL (audio path + label sequence + speaker hash). No PII in export. Speaker hash enables per-speaker normalisation during training.',
-    status: 'automated',
-  },
-];
-
 const IP_LINKS = [
   { href: '/admin/ip-docs/dataset-catalogue',          label: 'Proprietary Disfluent Speech Dataset Catalogue' },
   { href: '/admin/ip-docs/gdpr-consent-framework',     label: 'Session Data GDPR Consent & Processing Framework' },
@@ -98,11 +66,6 @@ function StatCard({ label, value, sub, accent = 'text-slate-900 dark:text-white'
   );
 }
 
-function PipelineStatusDot({ status }: { status: 'automated' | 'ongoing' | 'manual' }) {
-  if (status === 'automated') return <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 mt-1" />;
-  if (status === 'ongoing')   return <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 mt-1" />;
-  return <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0 mt-1" />;
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -227,34 +190,11 @@ export default async function TrainingDatasetPage() {
 
       {/* Data collection pipeline */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500">Data Collection & Labelling Pipeline</h2>
-          <div className="flex items-center gap-3 ml-auto">
-            {[
-              { dot: 'bg-emerald-400', label: 'Automated' },
-              { dot: 'bg-amber-400',   label: 'Ongoing/manual' },
-            ].map(s => (
-              <span key={s.label} className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-                {s.label}
-              </span>
-            ))}
-          </div>
-        </div>
-        <div className="space-y-4">
-          {PIPELINE.map((step, i) => (
-            <div key={step.step} className="flex gap-4">
-              <div className="flex flex-col items-center shrink-0">
-                <PipelineStatusDot status={step.status} />
-                {i < PIPELINE.length - 1 && <div className="w-px flex-1 bg-slate-200 dark:bg-slate-800 mt-1.5" />}
-              </div>
-              <div className="pb-4 flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{step.step}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{step.detail}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-1">Data Collection & Labelling Pipeline</h2>
+        <p className="text-xs text-slate-400 mb-4">
+          Six-step pipeline from user consent to training export. Click any step to inspect its specification and compliance details.
+        </p>
+        <DatasetWorkflow />
       </div>
 
       {/* Storage & security */}
