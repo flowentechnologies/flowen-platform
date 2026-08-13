@@ -84,7 +84,7 @@ function Input({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
     />
   );
 }
@@ -101,7 +101,7 @@ function Textarea({ value, onChange, placeholder, rows = 2 }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 resize-none"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 resize-none"
     />
   );
 }
@@ -115,7 +115,7 @@ function Select({ value, onChange, options }: {
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500/50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500/50"
     >
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
@@ -274,7 +274,7 @@ function RoundTab({
               {roundTypeBadge(config?.round_type ?? null)}
             </span>
             {config?.instrument && (
-              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-700">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
                 {INSTRUMENTS.find(i => i.value === config.instrument)?.label ?? config.instrument}
               </span>
             )}
@@ -282,7 +282,7 @@ function RoundTab({
           <button
             type="button"
             onClick={startEdit}
-            className="px-4 py-2 text-xs font-mono font-bold rounded-xl border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+            className="px-4 py-2 text-xs font-mono font-bold rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
           >
             Edit Round
           </button>
@@ -333,7 +333,7 @@ function RoundTab({
           <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${
             config?.seis_advance_assurance
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-              : 'bg-slate-100/80 dark:bg-slate-800/60 border-slate-700 text-slate-500'
+              : 'bg-slate-100/80 dark:bg-slate-800/60 border-slate-300 dark:border-slate-700 text-slate-500'
           }`}>
             <span className="text-sm">{config?.seis_advance_assurance ? '✓' : '◌'}</span>
             <div>
@@ -346,7 +346,7 @@ function RoundTab({
           <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${
             config?.eis_eligible
               ? 'bg-sky-500/10 border-sky-500/30 text-sky-400'
-              : 'bg-slate-100/80 dark:bg-slate-800/60 border-slate-700 text-slate-500'
+              : 'bg-slate-100/80 dark:bg-slate-800/60 border-slate-300 dark:border-slate-700 text-slate-500'
           }`}>
             <span className="text-sm">{config?.eis_eligible ? '✓' : '◌'}</span>
             <div>
@@ -440,7 +440,7 @@ function RoundTab({
             <button
               type="button"
               onClick={cancel}
-              className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               Cancel
             </button>
@@ -601,7 +601,7 @@ function InvestorFormPanel({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -788,7 +788,7 @@ function InvestorsTab({
                           <button
                             type="button"
                             onClick={() => setEditingId(id => id === inv.id ? null : inv.id)}
-                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+                            className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                           >
                             Edit
                           </button>
@@ -880,7 +880,7 @@ function MilestoneTimeline() {
                   ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
                   : m.status === 'active'
                   ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse'
-                  : 'bg-slate-100 dark:bg-slate-800 border-slate-700 text-slate-600'
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600'
               }`}>
                 {m.status === 'done' ? (
                   <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 8 6 11 13 5" /></svg>
@@ -990,7 +990,7 @@ function KpiBoard({
           className={`px-4 py-2 text-xs font-mono font-bold rounded-xl border transition-colors ${
             copied
               ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'
-              : 'border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600'
+              : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600'
           }`}
         >
           {copied ? '✓ Copied!' : 'Copy Investor Summary'}
@@ -1280,7 +1280,7 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 rows={20}
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 font-mono leading-relaxed whitespace-pre-wrap focus:outline-none focus:border-amber-500/50 resize-y"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 font-mono leading-relaxed whitespace-pre-wrap focus:outline-none focus:border-amber-500/50 resize-y"
               />
             </div>
             <div>
@@ -1308,7 +1308,7 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
               onChange={e => setRecipientInput(e.target.value)}
               rows={3}
               placeholder="investor1@example.com, investor2@example.com"
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 font-mono focus:outline-none focus:border-amber-500/50 resize-none"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 font-mono focus:outline-none focus:border-amber-500/50 resize-none"
             />
             <p className="text-[10px] font-mono text-slate-600 mt-1.5">
               Sent as BCC — each investor receives it individually. Their addresses are not visible to each other.
@@ -1385,7 +1385,7 @@ function UpdatesTab({ investors }: { investors: Investor[] }) {
                         <button
                           type="button"
                           onClick={() => setExpandedId(id => id === update.id ? null : update.id)}
-                          className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+                          className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                         >
                           {expandedId === update.id ? 'Collapse' : 'View'}
                         </button>
@@ -1607,7 +1607,7 @@ function RunwayTab({
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
                 placeholder="e.g. 15000"
-                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
               />
             </div>
             <div>
@@ -1619,14 +1619,14 @@ function RunwayTab({
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
                 placeholder="e.g. 180000"
-                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
               />
             </div>
           </div>
         </div>
 
         {/* Empty state prompt */}
-        <div className="bg-white dark:bg-slate-900 border border-dashed border-slate-700 rounded-2xl py-20 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl py-20 text-center">
           <p className="text-slate-500 font-mono text-sm mb-2">Enter your monthly burn and current cash balance to see runway projections</p>
           <p className="text-slate-700 font-mono text-xs">Projections recalculate instantly as you type</p>
         </div>
@@ -1657,7 +1657,7 @@ function RunwayTab({
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               placeholder="e.g. 15000"
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
             />
           </div>
           <div>
@@ -1669,7 +1669,7 @@ function RunwayTab({
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               placeholder="e.g. 180000"
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
             />
           </div>
         </div>

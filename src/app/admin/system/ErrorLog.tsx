@@ -104,7 +104,7 @@ function ErrorRow({ entry, onUpdate }: { entry: ErrorEntry; onUpdate: (id: strin
               type="button"
               onClick={() => act('delete_error')}
               disabled={loading}
-              className="px-2.5 py-1.5 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-700/50 transition-colors disabled:opacity-40"
+              className="px-2.5 py-1.5 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-700/50 transition-colors disabled:opacity-40"
             >
               Delete
             </button>

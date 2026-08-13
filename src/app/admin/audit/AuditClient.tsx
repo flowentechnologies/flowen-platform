@@ -212,7 +212,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
                     : s === 'info'
                     ? 'bg-slate-600/60 text-slate-200 border-slate-500/60'
                     : 'bg-slate-700 text-slate-900 dark:text-white border-slate-600'
-                  : 'bg-transparent text-slate-400 border-slate-700 hover:border-slate-500 hover:text-slate-300'
+                  : 'bg-transparent text-slate-400 border-slate-300 dark:border-slate-700 hover:border-slate-500 hover:text-slate-300'
               }`}
             >
               {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -226,7 +226,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
           placeholder="Search action or actor…"
           value={actionSearch}
           onChange={(e) => setActionSearch(e.target.value)}
-          className="flex-1 min-w-[180px] bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          className="flex-1 min-w-[180px] bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
         />
 
         {/* Date range */}
@@ -243,7 +243,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
               className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
                 dateRange === opt.value
                   ? 'bg-slate-700 text-slate-900 dark:text-white border-slate-600'
-                  : 'bg-transparent text-slate-400 border-slate-700 hover:border-slate-500 hover:text-slate-300'
+                  : 'bg-transparent text-slate-400 border-slate-300 dark:border-slate-700 hover:border-slate-500 hover:text-slate-300'
               }`}
             >
               {opt.label}
@@ -254,7 +254,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
         {/* Export button */}
         <button
           onClick={exportCsv}
-          className="ml-auto px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
+          className="ml-auto px-4 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
         >
           Export CSV
         </button>
@@ -386,7 +386,7 @@ export function AuditClient({ initialEntries, total: initialTotal }: Props) {
             <button
               onClick={loadMore}
               disabled={isPending}
-              className="px-6 py-2 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-50"
+              className="px-6 py-2 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-50"
             >
               {isPending ? 'Loading…' : `Load more (${total - entries.length} remaining)`}
             </button>

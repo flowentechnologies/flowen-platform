@@ -121,7 +121,7 @@ function FlagForm({ editing, onSubmit, onCancel, submitting }: FlagFormProps) {
   const isCreate = !editing;
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-white dark:bg-slate-900 p-6 mt-4">
+    <div className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 mt-4">
       <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">
         {isCreate ? 'Create flag' : `Edit: ${editing?.name}`}
       </h3>
@@ -142,8 +142,8 @@ function FlagForm({ editing, onSubmit, onCancel, submitting }: FlagFormProps) {
               placeholder="new_onboarding_flow"
               className={`w-full rounded-lg border px-3 py-2 text-xs font-mono bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 ${
                 !isCreate
-                  ? 'border-slate-700 opacity-60 cursor-not-allowed'
-                  : 'border-slate-700 hover:border-slate-600'
+                  ? 'border-slate-300 dark:border-slate-700 opacity-60 cursor-not-allowed'
+                  : 'border-slate-300 dark:border-slate-700 hover:border-slate-600'
               }`}
             />
           </div>
@@ -159,7 +159,7 @@ function FlagForm({ editing, onSubmit, onCancel, submitting }: FlagFormProps) {
               onChange={(e) => setField('name', e.target.value)}
               required
               placeholder="New Onboarding Flow"
-              className="w-full rounded-lg border border-slate-700 hover:border-slate-600 px-3 py-2 text-xs bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 hover:border-slate-600 px-3 py-2 text-xs bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
             />
           </div>
         </div>
@@ -174,7 +174,7 @@ function FlagForm({ editing, onSubmit, onCancel, submitting }: FlagFormProps) {
             onChange={(e) => setField('description', e.target.value)}
             rows={2}
             placeholder="What does this flag control?"
-            className="w-full rounded-lg border border-slate-700 hover:border-slate-600 px-3 py-2 text-xs bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 hover:border-slate-600 px-3 py-2 text-xs bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
           />
         </div>
 
@@ -189,7 +189,7 @@ function FlagForm({ editing, onSubmit, onCancel, submitting }: FlagFormProps) {
             max={100}
             value={form.rollout_pct}
             onChange={(e) => setField('rollout_pct', Math.min(100, Math.max(0, parseInt(e.target.value, 10) || 0)))}
-            className="w-24 rounded-lg border border-slate-700 hover:border-slate-600 px-3 py-2 text-xs bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-24 rounded-lg border border-slate-300 dark:border-slate-700 hover:border-slate-600 px-3 py-2 text-xs bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
           />
           <p className="mt-1 text-[10px] text-slate-600">100 = all eligible users</p>
         </div>

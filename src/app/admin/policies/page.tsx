@@ -1420,7 +1420,7 @@ export default async function PoliciesPage() {
           >
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] font-mono font-bold text-slate-500">{doc.id}</span>
-              <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${TAG_COLORS[doc.tag] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-700'}`}>
+              <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${TAG_COLORS[doc.tag] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-300 dark:border-slate-700'}`}>
                 {doc.tag}
               </span>
             </div>
@@ -1438,14 +1438,14 @@ export default async function PoliciesPage() {
           <details key={doc.id} id={doc.id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
             <summary className="flex items-start gap-4 p-5 cursor-pointer list-none hover:bg-slate-800/40 transition-colors">
               <div className="flex-shrink-0 mt-0.5">
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-700">
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-300 dark:border-slate-700">
                   {doc.id}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white">{doc.title}</h2>
-                  <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${TAG_COLORS[doc.tag] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-700'}`}>
+                  <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${TAG_COLORS[doc.tag] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-300 dark:border-slate-700'}`}>
                     {doc.tag}
                   </span>
                   <span className="text-[10px] font-mono text-slate-600 flex-shrink-0">{doc.version}</span>

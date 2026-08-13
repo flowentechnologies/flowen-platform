@@ -40,7 +40,7 @@ const AUDIT_CATEGORIES: { id: AuditCategory; label: string; icon: string }[] = [
 ];
 
 const AUDIT_STATUSES: { id: AuditStatus; label: string; cls: string }[] = [
-  { id: 'not_started', label: 'Not Started', cls: 'bg-slate-700/50 text-slate-400 border border-slate-700' },
+  { id: 'not_started', label: 'Not Started', cls: 'bg-slate-700/50 text-slate-400 border border-slate-300 dark:border-slate-700' },
   { id: 'in_progress', label: 'In Progress', cls: 'bg-amber-500/15 text-amber-400 border border-amber-500/30' },
   { id: 'complete',    label: 'Complete',    cls: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' },
   { id: 'blocked',     label: 'Blocked',     cls: 'bg-red-500/15 text-red-400 border border-red-500/30' },
@@ -66,14 +66,14 @@ const FUNDING_TYPES: { id: FundingType; label: string; icon: string; badge: stri
 ];
 
 const FUNDING_STATUSES: { id: FundingStatus; label: string; cls: string }[] = [
-  { id: 'researching',   label: 'Researching',    cls: 'bg-slate-700/50 text-slate-400 border border-slate-700' },
+  { id: 'researching',   label: 'Researching',    cls: 'bg-slate-700/50 text-slate-400 border border-slate-300 dark:border-slate-700' },
   { id: 'eligible',      label: 'Eligible',       cls: 'bg-sky-500/15 text-sky-400 border border-sky-500/30' },
   { id: 'applied',       label: 'Applied',        cls: 'bg-amber-500/15 text-amber-400 border border-amber-500/30' },
   { id: 'in_progress',   label: 'In Progress',    cls: 'bg-amber-500/15 text-amber-400 border border-amber-500/30' },
   { id: 'awarded',       label: 'Awarded',        cls: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' },
   { id: 'rejected',      label: 'Rejected',       cls: 'bg-red-500/15 text-red-400 border border-red-500/30' },
   { id: 'not_eligible',  label: 'Not Eligible',   cls: 'bg-slate-100 dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-800' },
-  { id: 'on_hold',       label: 'On Hold',        cls: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-700' },
+  { id: 'on_hold',       label: 'On Hold',        cls: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700' },
 ];
 
 const AUDIT_STATUS_MAP   = Object.fromEntries(AUDIT_STATUSES.map(s => [s.id, s]));
@@ -83,7 +83,7 @@ const FUNDING_STATUS_MAP = Object.fromEntries(FUNDING_STATUSES.map(s => [s.id, s
 
 // ── Shared UI atoms ───────────────────────────────────────────────────────────
 
-const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
+const inputCls = 'w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60';
 const labelCls = 'block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5';
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -369,7 +369,7 @@ function AuditForm({ initial, onSave, onCancel, saving }: {
           {saving ? 'Saving…' : 'Save Item'}
         </button>
         <button type="button" onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
           Cancel
         </button>
       </div>
@@ -424,13 +424,13 @@ function AuditItemRow({ item, onEdit, onDelete, onStatusChange, deleting }: {
         <select
           value={item.status}
           onChange={e => onStatusChange(item.id, e.target.value as AuditStatus)}
-          className="bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-[10px] font-mono text-slate-600 dark:text-slate-300 focus:outline-none focus:border-indigo-500/60"
+          className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-[10px] font-mono text-slate-600 dark:text-slate-300 focus:outline-none focus:border-indigo-500/60"
           onClick={e => e.stopPropagation()}
         >
           {AUDIT_STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
         </select>
         <button type="button" onClick={() => onEdit(item)}
-          className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors">
+          className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors">
           Edit
         </button>
         <button type="button" onClick={() => onDelete(item.id)} disabled={deleting}
@@ -796,7 +796,7 @@ function FundingForm({ initial, onSave, onCancel, saving }: {
           {saving ? 'Saving…' : 'Save Programme'}
         </button>
         <button type="button" onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
           Cancel
         </button>
       </div>
@@ -816,7 +816,7 @@ function FundingCard({ item, onEdit, onDelete, onStatusChange, deleting }: {
   const isActive  = ['eligible', 'applied', 'in_progress', 'awarded'].includes(item.status);
 
   return (
-    <div className={`group bg-white dark:bg-slate-900 border rounded-xl p-4 hover:border-slate-700 transition-colors ${isActive ? 'border-slate-700' : 'border-slate-200 dark:border-slate-800'}`}>
+    <div className={`group bg-white dark:bg-slate-900 border rounded-xl p-4 hover:border-slate-700 transition-colors ${isActive ? 'border-slate-300 dark:border-slate-700' : 'border-slate-200 dark:border-slate-800'}`}>
       <div className="flex items-start gap-3">
         <span className="text-xl shrink-0">{typeCfg?.icon ?? '💼'}</span>
         <div className="flex-1 min-w-0">
@@ -851,13 +851,13 @@ function FundingCard({ item, onEdit, onDelete, onStatusChange, deleting }: {
           <select
             value={item.status}
             onChange={e => onStatusChange(item.id, e.target.value as FundingStatus)}
-            className="bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-[10px] font-mono text-slate-600 dark:text-slate-300 focus:outline-none"
+            className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-[10px] font-mono text-slate-600 dark:text-slate-300 focus:outline-none"
           >
             {FUNDING_STATUSES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
           <div className="flex gap-1">
             <button type="button" onClick={() => onEdit(item)}
-              className="flex-1 px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors">
+              className="flex-1 px-2 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors">
               Edit
             </button>
             <button type="button" onClick={() => onDelete(item.id)} disabled={deleting}

@@ -207,7 +207,7 @@ function UserPnLTable({ users }: { users: UserPnL[] }) {
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Search user…"
-          className="w-full sm:max-w-xs bg-slate-100/80 dark:bg-slate-800/60 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500/60"
+          className="w-full sm:max-w-xs bg-slate-100/80 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500/60"
         />
       </div>
       <div className="overflow-x-auto">
@@ -580,7 +580,7 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
             <span className="text-xs font-mono text-slate-400">{loading ? 'Refreshing…' : `Updated ${relTime(lastFetch.toISOString())}`}</span>
           </div>
           <button onClick={refresh} disabled={loading}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-700 hover:border-slate-500 transition-colors disabled:opacity-40">
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 hover:border-slate-500 transition-colors disabled:opacity-40">
             ↻ Refresh
           </button>
         </div>

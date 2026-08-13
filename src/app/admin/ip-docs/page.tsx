@@ -46,7 +46,7 @@ export default async function IpDocsHubPage() {
 
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">IP Document Library</h1>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight mb-2">IP Document Library</h1>
           <p className="text-slate-400 text-sm max-w-2xl">
             Internal IP documents, legal templates, audit reports, and policies. All documents
             are confidential and admin-access only. Legal templates must be reviewed by a
@@ -61,7 +61,7 @@ export default async function IpDocsHubPage() {
             { label: 'Internally Approved', value: approved, color: 'text-emerald-400' },
             { label: 'Needs Legal Review', value: needsLegal, color: 'text-rose-400' },
           ].map(s => (
-            <div key={s.label} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 px-5 py-4">
+            <div key={s.label} className="rounded-xl border border-slate-800/40 bg-slate-900/40 px-5 py-4">
               <div className={`text-2xl font-extrabold ${s.color}`}>{s.value}</div>
               <div className="text-xs text-slate-500 mt-0.5">{s.label}</div>
             </div>
@@ -86,7 +86,7 @@ export default async function IpDocsHubPage() {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="text-xs text-slate-500 shrink-0">{TYPE_LABEL[doc.type]}</div>
-                      <div className="font-medium text-sm text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate">{doc.title}</div>
+                      <div className="font-medium text-sm text-slate-200 group-hover:text-white transition-colors truncate">{doc.title}</div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 ml-4">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${STATUS_BADGE[doc.status]}`}>

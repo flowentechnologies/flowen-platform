@@ -166,7 +166,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
         <button
           type="button"
           onClick={() => setResult(null)}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Send another
         </button>
@@ -187,7 +187,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
               className={`p-3 rounded-xl border text-left transition-colors ${
                 segment === seg
                   ? 'border-indigo-500/60 bg-indigo-500/10'
-                  : 'border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-600'
+                  : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-600'
               }`}
             >
               <p className={`text-xs font-mono mb-1 ${segment === seg ? 'text-indigo-400' : 'text-slate-500'}`}>
@@ -208,7 +208,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
           value={subject}
           onChange={e => setSubject(e.target.value)}
           placeholder="Email subject line…"
-          className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30"
         />
       </div>
 
@@ -219,14 +219,14 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
           onChange={e => setBody(e.target.value)}
           rows={8}
           placeholder="Write your message here. Each paragraph will be rendered as its own block in the email…"
-          className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 resize-y font-mono leading-relaxed"
+          className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 resize-y font-mono leading-relaxed"
         />
         <p className="mt-1.5 text-[10px] text-slate-600 font-mono">Plain text only · newlines become paragraph breaks · {body.length} chars</p>
       </div>
 
       {/* Preview pane */}
       {preview && subject && body && (
-        <div className="rounded-xl border border-slate-700 overflow-hidden">
+        <div className="rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
           <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex items-center justify-between">
             <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wide">Preview</span>
             <button type="button" onClick={() => setPreview(false)} className="text-[10px] font-mono text-slate-500 hover:text-slate-300">hide</button>
@@ -236,11 +236,11 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
               <div className="px-6 py-4 border-b border-[#334155]">
                 <span className="inline-flex items-center gap-2">
                   <span className="w-6 h-6 bg-emerald-500 rounded-md inline-flex items-center justify-center text-xs font-black text-slate-900">F</span>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">Flowen</span>
+                  <span className="text-sm font-bold text-white">Flowen</span>
                 </span>
               </div>
               <div className="px-6 py-5">
-                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-3">{subject}</h2>
+                <h2 className="text-lg font-extrabold text-white mb-3">{subject}</h2>
                 {body.split('\n').filter(Boolean).map((line, i) => (
                   <p key={i} className="text-sm text-slate-400 leading-relaxed mb-3">{line}</p>
                 ))}
@@ -277,7 +277,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
               type="button"
               onClick={() => setConfirming(false)}
               disabled={isPending}
-              className="px-5 py-2.5 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-40"
+              className="px-5 py-2.5 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-40"
             >
               Cancel
             </button>
@@ -289,7 +289,7 @@ function BroadcastTab({ counts }: { counts: SegmentCounts }) {
             <button
               type="button"
               onClick={() => setPreview(true)}
-              className="px-4 py-2.5 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="px-4 py-2.5 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               Preview email
             </button>
@@ -382,7 +382,7 @@ function ConsentTab({ records }: { records: ConsentRecord[] }) {
         placeholder="Filter by type, action, or email…"
         value={filter}
         onChange={e => setFilter(e.target.value)}
-        className="w-full bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
+        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
       />
 
       {filtered.length === 0 ? (

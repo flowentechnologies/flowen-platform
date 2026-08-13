@@ -194,7 +194,7 @@ function Input({
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50"
     />
   );
 }
@@ -213,7 +213,7 @@ function Textarea({
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 resize-none"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 resize-none"
     />
   );
 }
@@ -229,7 +229,7 @@ function SelectInput({
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500/50"
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500/50"
     >
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
@@ -244,7 +244,7 @@ function DeadlineChip({ deadline }: { deadline: string | null | undefined }) {
   const cls =
     days < 0   ? 'bg-red-900/30 text-red-400 border border-red-800/40' :
     days <= 30  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' :
-                  'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-700';
+                  'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-300 dark:border-slate-700';
   const label = days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? 'Today' : `${days}d`;
   return (
     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono ${cls}`}>
@@ -402,7 +402,7 @@ function GrantFormContent({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           Cancel
         </button>
@@ -447,7 +447,7 @@ function KanbanCard({
         <button
           type="button"
           onClick={() => onEdit(grant)}
-          className="opacity-0 group-hover:opacity-100 px-2 py-0.5 text-[10px] font-mono rounded border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-all flex-shrink-0"
+          className="opacity-0 group-hover:opacity-100 px-2 py-0.5 text-[10px] font-mono rounded border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-all flex-shrink-0"
         >
           Edit
         </button>
@@ -760,7 +760,7 @@ function GrantWriteTab({ grants }: { grants: Grant[] }) {
             <select
               value={selectedGrantId}
               onChange={e => setSelectedGrantId(e.target.value)}
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500/50"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500/50"
             >
               {grants.map(g => (
                 <option key={g.id} value={g.id}>
@@ -790,7 +790,7 @@ function GrantWriteTab({ grants }: { grants: Grant[] }) {
                   className={`px-3 py-1.5 text-[11px] font-mono rounded-lg border transition-colors ${
                     selectedSection === s.id
                       ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 font-bold'
-                      : 'bg-slate-100 dark:bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600'
+                      : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600'
                   }`}
                 >
                   {s.label}
@@ -809,7 +809,7 @@ function GrantWriteTab({ grants }: { grants: Grant[] }) {
               onChange={e => setExtraContext(e.target.value)}
               placeholder="Add any specific context or requirements for this section (e.g. word limits, specific questions to answer)..."
               rows={3}
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 resize-none"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 resize-none"
             />
           </div>
 
@@ -848,7 +848,7 @@ function GrantWriteTab({ grants }: { grants: Grant[] }) {
                     key={i}
                     type="button"
                     onClick={() => handleRestoreHistory(entry)}
-                    className="w-full text-left bg-slate-100/80 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-lg px-3 py-2 transition-colors"
+                    className="w-full text-left bg-slate-100/80 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:border-slate-600 rounded-lg px-3 py-2 transition-colors"
                   >
                     <p className="text-[11px] font-mono text-slate-900 dark:text-white truncate">{entry.grantName}</p>
                     <p className="text-[10px] font-mono text-slate-500">
@@ -875,7 +875,7 @@ function GrantWriteTab({ grants }: { grants: Grant[] }) {
                   <span className="text-slate-600">—</span>
                   <span className="text-xs font-mono text-slate-400">{draftMeta.sectionLabel}</span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-100 dark:bg-slate-800 border border-slate-700 text-slate-400">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-400">
                   {draftMeta.wordCount} words
                 </span>
               </div>
@@ -903,14 +903,14 @@ function GrantWriteTab({ grants }: { grants: Grant[] }) {
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="px-4 py-2 text-xs font-mono rounded-lg border border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+                  className="px-4 py-2 text-xs font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                 >
                   {copied ? 'Copied!' : 'Copy'}
                 </button>
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="px-4 py-2 text-xs font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+                  className="px-4 py-2 text-xs font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                 >
                   Clear
                 </button>
@@ -930,7 +930,7 @@ function GrantWriteTab({ grants }: { grants: Grant[] }) {
           ) : (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-center min-h-[420px]">
               <div className="text-center px-6">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center justify-center mx-auto mb-4">
                   <svg className="w-5 h-5 text-slate-600" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                   </svg>
@@ -1120,7 +1120,7 @@ export function GrantsClient({ initialGrants }: { initialGrants: Grant[] }) {
             <button
               type="button"
               onClick={() => exportCsv(grants)}
-              className="px-3.5 py-2 text-xs font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+              className="px-3.5 py-2 text-xs font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
             >
               CSV Export
             </button>
@@ -1233,7 +1233,7 @@ export function GrantsClient({ initialGrants }: { initialGrants: Grant[] }) {
                   mode: 'add',
                   prefill: { name: rec.name, funder: rec.funder, grant_type: rec.grant_type },
                 })}
-                className="text-left bg-slate-100/80 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-xl p-4 transition-colors group"
+                className="text-left bg-slate-100/80 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:border-slate-600 rounded-xl p-4 transition-colors group"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-400 transition-colors leading-snug">{rec.name}</p>
@@ -1331,7 +1331,7 @@ export function GrantsClient({ initialGrants }: { initialGrants: Grant[] }) {
                         <button
                           type="button"
                           onClick={() => setPanel({ mode: 'edit', grant: g })}
-                          className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
+                          className="px-2.5 py-1 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-600 transition-colors"
                         >
                           Edit
                         </button>

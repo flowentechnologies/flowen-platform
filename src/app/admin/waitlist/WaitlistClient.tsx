@@ -309,7 +309,7 @@ export function WaitlistClient({ initialSignups }: { initialSignups: WaitlistSig
                       type="checkbox"
                       checked={allFilteredSelected}
                       onChange={toggleAll}
-                      className="rounded border-slate-700 bg-slate-100 dark:bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900"
+                      className="rounded border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900"
                     />
                   </th>
                   <th className="px-4 py-3 text-left text-[11px] font-mono font-bold uppercase tracking-widest text-slate-500">
@@ -352,7 +352,7 @@ export function WaitlistClient({ initialSignups }: { initialSignups: WaitlistSig
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleOne(signup.id)}
-                          className="rounded border-slate-700 bg-slate-100 dark:bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900"
+                          className="rounded border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900"
                         />
                       </td>
 
@@ -363,7 +363,7 @@ export function WaitlistClient({ initialSignups }: { initialSignups: WaitlistSig
 
                       {/* Source */}
                       <td className="px-4 py-3">
-                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-700">
+                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-300 dark:border-slate-700">
                           {signup.source || '—'}
                         </span>
                       </td>

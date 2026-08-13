@@ -118,7 +118,7 @@ function CheckResultsPanel({
   onDismiss: () => void;
 }) {
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-xl p-5 space-y-3">
+    <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-5 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-slate-900 dark:text-white">Check Results</h3>
         <button
@@ -212,7 +212,7 @@ function AddRuleForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-700 rounded-xl p-5 space-y-4">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-5 space-y-4">
       <h3 className="text-sm font-bold text-slate-900 dark:text-white">Add Alert Rule</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -225,7 +225,7 @@ function AddRuleForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Grant Deadline Warning"
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
 
@@ -237,7 +237,7 @@ function AddRuleForm({
             type="email"
             value={recipientEmail}
             onChange={(e) => setRecipientEmail(e.target.value)}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
       </div>
@@ -249,7 +249,7 @@ function AddRuleForm({
         <select
           value={ruleType}
           onChange={(e) => setRuleType(e.target.value as RuleType)}
-          className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+          className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
         >
           {RULE_TYPES.map((t) => (
             <option key={t} value={t}>
@@ -271,7 +271,7 @@ function AddRuleForm({
             max="365"
             value={thresholdDays}
             onChange={(e) => setThresholdDays(e.target.value)}
-            className="w-32 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="w-32 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
         </div>
       )}
@@ -286,7 +286,7 @@ function AddRuleForm({
             min="1"
             value={thresholdCount}
             onChange={(e) => setThresholdCount(e.target.value)}
-            className="w-32 bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="w-32 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
         </div>
       )}
@@ -368,7 +368,7 @@ function RuleCard({
               {meta.label}
             </span>
             {!rule.enabled && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-700/50 text-slate-500 border border-slate-700">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-700/50 text-slate-500 border border-slate-300 dark:border-slate-700">
                 DISABLED
               </span>
             )}
@@ -628,7 +628,7 @@ export function NotificationsClient({ initialRules, initialHistory }: Props) {
           <button
             type="button"
             onClick={() => setShowAddForm((o) => !o)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg transition-colors border border-slate-700"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg transition-colors border border-slate-300 dark:border-slate-700"
           >
             <span className="text-lg leading-none">+</span> Add Rule
           </button>

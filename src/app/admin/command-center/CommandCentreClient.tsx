@@ -227,7 +227,7 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
         <div className="flex items-center gap-3">
           <button
             onClick={refresh} disabled={loading}
-            className="px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
+            className="px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
           >
             {loading ? '↻ Refreshing…' : '↻ Refresh'}
           </button>
@@ -376,10 +376,10 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
               founding: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
               standard: 'bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-600',
               public_funds: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
-              vocali_freemium: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-700',
+              vocali_freemium: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700',
             };
             return (
-              <div key={tier} className={`px-4 py-2.5 rounded-xl border ${colors[tier] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-700'}`}>
+              <div key={tier} className={`px-4 py-2.5 rounded-xl border ${colors[tier] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-300 dark:border-slate-700'}`}>
                 <p className="text-[10px] font-mono uppercase tracking-wide">{tier.replace(/_/g, ' ')}</p>
                 <p className="text-xl font-black mt-0.5">{count}</p>
                 <p className="text-[9px] font-mono opacity-60">{tierP}%</p>

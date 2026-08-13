@@ -152,7 +152,7 @@ function UploadModal({ onUploaded }: { onUploaded: (doc: Document) => void }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Upload Document</h3>
               <button type="button" onClick={() => { setOpen(false); setError(null); }} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
@@ -161,7 +161,7 @@ function UploadModal({ onUploaded }: { onUploaded: (doc: Document) => void }) {
             <div className="px-6 py-5 space-y-4">
               {/* Drop zone */}
               <div
-                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${file ? 'border-indigo-500/60 bg-indigo-500/5' : 'border-slate-700 hover:border-slate-500'}`}
+                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${file ? 'border-indigo-500/60 bg-indigo-500/5' : 'border-slate-300 dark:border-slate-700 hover:border-slate-500'}`}
                 onClick={() => fileRef.current?.click()}
               >
                 <input ref={fileRef} type="file" className="hidden" onChange={onFileChange}
@@ -181,25 +181,25 @@ function UploadModal({ onUploaded }: { onUploaded: (doc: Document) => void }) {
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Title *</label>
-                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Document title" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="Document title" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Category *</label>
-                  <select value={form.category} onChange={e => field('category', e.target.value as Category)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                  <select value={form.category} onChange={e => field('category', e.target.value as Category)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                     {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Version</label>
-                  <input value={form.version} onChange={e => field('version', e.target.value)} placeholder="v1" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input value={form.version} onChange={e => field('version', e.target.value)} placeholder="v1" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Description</label>
-                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={2} placeholder="Brief description for the index…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={2} placeholder="Brief description for the index…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
 
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
@@ -214,7 +214,7 @@ function UploadModal({ onUploaded }: { onUploaded: (doc: Document) => void }) {
               >
                 {progress === 'uploading' ? 'Uploading…' : progress === 'done' ? 'Done ✓' : 'Upload'}
               </button>
-              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -257,7 +257,7 @@ function CreateInviteModal({ onCreated, siteUrl }: { onCreated: (inv: Invite) =>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">{created ? 'Invite Created' : 'Create Investor Invite'}</h3>
               <button type="button" onClick={close} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
@@ -272,7 +272,7 @@ function CreateInviteModal({ onCreated, siteUrl }: { onCreated: (inv: Invite) =>
                   <button
                     type="button"
                     onClick={() => navigator.clipboard.writeText(`${siteUrl}/data-room/${created.token}`)}
-                    className="mt-2 px-3 py-1.5 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="mt-2 px-3 py-1.5 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     Copy link
                   </button>
@@ -283,23 +283,23 @@ function CreateInviteModal({ onCreated, siteUrl }: { onCreated: (inv: Invite) =>
               <div className="px-6 py-5 space-y-4">
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Investor Name *</label>
-                  <input value={form.investor_name} onChange={e => field('investor_name', e.target.value)} placeholder="Full name or firm" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input value={form.investor_name} onChange={e => field('investor_name', e.target.value)} placeholder="Full name or firm" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Email *</label>
-                  <input type="email" value={form.investor_email} onChange={e => field('investor_email', e.target.value)} placeholder="investor@fund.com" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                  <input type="email" value={form.investor_email} onChange={e => field('investor_email', e.target.value)} placeholder="investor@fund.com" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Access Level</label>
-                    <select value={form.access_level} onChange={e => field('access_level', e.target.value as 'standard' | 'full')} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                    <select value={form.access_level} onChange={e => field('access_level', e.target.value as 'standard' | 'full')} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                       <option value="standard">Standard</option>
                       <option value="full">Full</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Expires</label>
-                    <input type="date" value={form.expires_at} onChange={e => field('expires_at', e.target.value)} defaultValue={defaultExpiry} min={new Date().toISOString().slice(0, 10)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60" />
+                    <input type="date" value={form.expires_at} onChange={e => field('expires_at', e.target.value)} defaultValue={defaultExpiry} min={new Date().toISOString().slice(0, 10)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60" />
                   </div>
                 </div>
                 <p className="text-[11px] text-slate-600 font-mono">Defaults to 30-day expiry if not set.</p>
@@ -315,7 +315,7 @@ function CreateInviteModal({ onCreated, siteUrl }: { onCreated: (inv: Invite) =>
                   <button type="button" onClick={submit} disabled={isPending} className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40">
                     {isPending ? 'Creating…' : 'Create Invite'}
                   </button>
-                  <button type="button" onClick={close} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+                  <button type="button" onClick={close} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
                 </>
               )}
             </div>
@@ -415,7 +415,7 @@ function DocumentsTab({ docs: initial }: { docs: Document[] }) {
                     type="button"
                     onClick={() => download(doc)}
                     disabled={downloading === doc.id}
-                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
+                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40"
                   >
                     {downloading === doc.id ? '…' : '↓ Download'}
                   </button>
@@ -511,7 +511,7 @@ function InvitesTab({ invites: initial, siteUrl }: { invites: Invite[]; siteUrl:
                     <button
                       type="button"
                       onClick={() => copyLink(inv.token)}
-                      className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                      className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
                       {copying === inv.token ? 'Copied ✓' : 'Copy link'}
                     </button>

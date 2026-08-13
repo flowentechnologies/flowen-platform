@@ -139,7 +139,7 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Upload Asset</h3>
               <button type="button" onClick={() => { setOpen(false); setError(null); }} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
@@ -148,7 +148,7 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
             <div className="px-6 py-5 space-y-4">
               {/* Drop zone */}
               <div
-                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${file ? 'border-indigo-500/60 bg-indigo-500/5' : 'border-slate-700 hover:border-slate-500'}`}
+                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${file ? 'border-indigo-500/60 bg-indigo-500/5' : 'border-slate-300 dark:border-slate-700 hover:border-slate-500'}`}
                 onClick={() => fileRef.current?.click()}
               >
                 <input
@@ -173,24 +173,24 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Name *</label>
-                <input value={form.name} onChange={e => field('name', e.target.value)} placeholder="Asset name" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.name} onChange={e => field('name', e.target.value)} placeholder="Asset name" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Folder</label>
-                <select value={form.folder} onChange={e => field('folder', e.target.value as Folder)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                <select value={form.folder} onChange={e => field('folder', e.target.value as Folder)} className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   {FOLDERS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
                 </select>
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Tags <span className="normal-case text-slate-600">(comma-separated)</span></label>
-                <input value={form.tags} onChange={e => field('tags', e.target.value)} placeholder="hero, onboarding, brand" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                <input value={form.tags} onChange={e => field('tags', e.target.value)} placeholder="hero, onboarding, brand" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
               </div>
 
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Description</label>
-                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={2} placeholder="Optional description…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                <textarea value={form.description} onChange={e => field('description', e.target.value)} rows={2} placeholder="Optional description…" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
 
               {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
@@ -205,7 +205,7 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
               >
                 {progress === 'uploading' ? 'Uploading…' : progress === 'done' ? 'Done ✓' : 'Upload'}
               </button>
-              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+              <button type="button" onClick={() => { setOpen(false); setError(null); }} className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -288,7 +288,7 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
           placeholder="Search by name or tag…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="flex-1 min-w-48 bg-white dark:bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
+          className="flex-1 min-w-48 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500"
         />
         <div className="flex flex-wrap gap-1">
           <button
@@ -359,7 +359,7 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
                   <button
                     type="button"
                     onClick={() => copyUrl(asset)}
-                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
+                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
                   >
                     {copied === asset.id ? 'Copied ✓' : 'Copy URL'}
                   </button>
@@ -367,7 +367,7 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
                     href={asset.public_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
+                    className="px-3 py-1.5 text-[11px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors"
                   >
                     Open ↗
                   </a>

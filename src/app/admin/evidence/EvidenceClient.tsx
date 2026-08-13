@@ -484,7 +484,7 @@ export function EvidenceClient({ data }: { data: EvidenceData }) {
               </p>
             </div>
           ) : (
-            <div className="bg-slate-100/60 dark:bg-slate-800/40 border border-slate-700 rounded-xl p-4">
+            <div className="bg-slate-100/60 dark:bg-slate-800/40 border border-slate-300 dark:border-slate-700 rounded-xl p-4">
               <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1.5">Evidence statement</p>
               <p className="text-sm text-slate-500">
                 Insufficient longitudinal data. Users need ≥6 sessions for improvement analysis.
@@ -503,7 +503,7 @@ export function EvidenceClient({ data }: { data: EvidenceData }) {
             <Stat label="ICB pipeline" value={fmtNum(data.icb_pipeline)} valueColor="text-blue-400" sub="Procurement contacts" />
           </div>
 
-          <div className="bg-slate-100/60 dark:bg-slate-800/40 border border-slate-700 rounded-xl p-4">
+          <div className="bg-slate-100/60 dark:bg-slate-800/40 border border-slate-300 dark:border-slate-700 rounded-xl p-4">
             <p className="text-xs text-slate-400 leading-relaxed">
               Real-world deployment data demonstrates safe operation at scale across{' '}
               <strong className="text-slate-900 dark:text-white">{fmtNum(data.total_users)}</strong> registered users and{' '}

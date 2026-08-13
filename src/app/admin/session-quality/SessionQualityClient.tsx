@@ -298,10 +298,10 @@ function TierBadge({ tier }: { tier: string | null }) {
     founding:        'bg-amber-500/10 text-amber-400 border-amber-500/30',
     standard:        'bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-600',
     public_funds:    'bg-sky-500/10 text-sky-400 border-sky-500/30',
-    vocali_freemium: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-700',
+    vocali_freemium: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700',
   };
   const label = tier ?? 'standard';
-  const cls = map[label] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-700';
+  const cls = map[label] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-300 dark:border-slate-700';
   return (
     <span
       className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${cls} uppercase`}
@@ -373,7 +373,7 @@ function UserTable({ users }: { users: UserProgress[] }) {
           placeholder="Search by email or name..."
           value={query}
           onChange={e => setQuery(e.target.value)}
-          className="w-full sm:w-72 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-700 text-xs text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500 font-mono"
+          className="w-full sm:w-72 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-slate-500 font-mono"
         />
       </div>
 
@@ -544,7 +544,7 @@ export function SessionQualityClient({
         <button
           onClick={refresh}
           disabled={loading}
-          className="px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40 self-start sm:self-auto"
+          className="px-3 py-1.5 text-xs font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors disabled:opacity-40 self-start sm:self-auto"
         >
           {loading ? '↻ Refreshing...' : '↻ Refresh'}
         </button>

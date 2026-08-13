@@ -142,13 +142,13 @@ function EditMemberModal({ member, onSave }: { member: Member; onSave: (patch: P
   return (
     <>
       <button type="button" onClick={() => setOpen(true)}
-        className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+        className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
         Edit
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">{member.display_name ?? member.email}</h3>
@@ -160,7 +160,7 @@ function EditMemberModal({ member, onSave }: { member: Member; onSave: (patch: P
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Role</label>
                 <select value={form.role} onChange={e => field('role', e.target.value)}
-                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/60">
                   {(Object.entries(ROLE_CONFIG) as [StaffRole, { label: string; perms: string }][]).map(([v, c]) => (
                     <option key={v} value={v}>{c.label} — {c.perms}</option>
                   ))}
@@ -170,19 +170,19 @@ function EditMemberModal({ member, onSave }: { member: Member; onSave: (patch: P
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Department</label>
                   <input value={form.department} onChange={e => field('department', e.target.value)} placeholder="Engineering, Clinical…"
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Title</label>
                   <input value={form.title} onChange={e => field('title', e.target.value)} placeholder="CTO, Lead Dev…"
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Bio / Notes</label>
                 <textarea value={form.bio} onChange={e => field('bio', e.target.value)} rows={2}
                   placeholder="Short bio or internal notes…"
-                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
+                  className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none" />
               </div>
             </div>
             <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
@@ -191,7 +191,7 @@ function EditMemberModal({ member, onSave }: { member: Member; onSave: (patch: P
                 {isPending ? 'Saving…' : 'Save'}
               </button>
               <button type="button" onClick={() => setOpen(false)}
-                className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+                className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
             </div>
           </div>
         </div>
@@ -268,7 +268,7 @@ function TeamTab({ members: initial, currentUserId }: { members: Member[]; curre
                   className={`px-2.5 py-1.5 text-[11px] font-mono rounded-lg border transition-colors disabled:opacity-40 ${
                     revoking === m.id
                       ? 'border-red-700/50 bg-red-500/10 text-red-400'
-                      : 'border-slate-700 text-slate-600 hover:text-red-400 hover:border-red-800/50'
+                      : 'border-slate-300 dark:border-slate-700 text-slate-600 hover:text-red-400 hover:border-red-800/50'
                   }`}>
                   {revoking === m.id ? 'Confirm remove' : 'Remove'}
                 </button>
@@ -320,7 +320,7 @@ function InviteModal({ adminEmail, onCreated }: { adminEmail: string; onCreated:
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">{result ? 'Invite Created' : 'Invite Team Member'}</h3>
               <button type="button" onClick={close} className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg">×</button>
@@ -335,7 +335,7 @@ function InviteModal({ adminEmail, onCreated }: { adminEmail: string; onCreated:
                   <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wide">Invite Link (expires 7 days)</p>
                   <p className="text-xs font-mono text-slate-900 dark:text-white break-all">{result.url}</p>
                   <button type="button" onClick={() => navigator.clipboard.writeText(result.url)}
-                    className="mt-1 px-3 py-1.5 text-[10px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    className="mt-1 px-3 py-1.5 text-[10px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                     Copy link
                   </button>
                 </div>
@@ -346,13 +346,13 @@ function InviteModal({ adminEmail, onCreated }: { adminEmail: string; onCreated:
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Email *</label>
                   <input type="email" value={form.email} onChange={e => field('email', e.target.value)} placeholder="colleague@example.com"
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Role</label>
                   <div className="space-y-2">
                     {(Object.entries(ROLE_CONFIG) as [StaffRole, { label: string; color: string; perms: string }][]).map(([v, c]) => (
-                      <label key={v} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${form.role === v ? 'border-indigo-500/60 bg-indigo-500/5' : 'border-slate-700 hover:border-slate-600'}`}>
+                      <label key={v} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${form.role === v ? 'border-indigo-500/60 bg-indigo-500/5' : 'border-slate-300 dark:border-slate-700 hover:border-slate-600'}`}>
                         <input type="radio" name="role" value={v} checked={form.role === v} onChange={() => field('role', v)} className="accent-indigo-500" />
                         <div>
                           <span className={`text-xs font-mono font-bold ${c.color.split(' ')[1]}`}>{c.label}</span>
@@ -365,7 +365,7 @@ function InviteModal({ adminEmail, onCreated }: { adminEmail: string; onCreated:
                 <div>
                   <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Department</label>
                   <input value={form.department} onChange={e => field('department', e.target.value)} placeholder="Engineering, Clinical…"
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60" />
                 </div>
                 {error && <p className="text-xs text-red-400 font-mono">{error}</p>}
               </div>
@@ -382,7 +382,7 @@ function InviteModal({ adminEmail, onCreated }: { adminEmail: string; onCreated:
                     {isPending ? 'Creating…' : 'Send Invite'}
                   </button>
                   <button type="button" onClick={close}
-                    className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
+                    className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Cancel</button>
                 </>
               )}
             </div>
@@ -461,7 +461,7 @@ function InvitesTab({ invites: initial, adminEmail }: { invites: Invite[]; admin
                 <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                   {!inactive_ && (
                     <button type="button" onClick={() => copyLink(inv.token)}
-                      className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                      className="px-2.5 py-1.5 text-[11px] font-mono rounded-lg border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                       {copying === inv.token ? 'Copied ✓' : 'Copy link'}
                     </button>
                   )}
@@ -539,7 +539,7 @@ function HandoffTab({ handoffs: initial, adminEmail, adminName }: { handoffs: Ha
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {(Object.entries(SHIFT_CONFIG) as [ShiftPeriod, { label: string; hours: string; color: string }][]).map(([s, c]) => (
               <button key={s} type="button" onClick={() => field('shift', s)}
-                className={`p-3 rounded-xl border text-left transition-colors ${form.shift === s ? 'border-indigo-500/60 bg-indigo-500/10' : 'border-slate-700 hover:border-slate-600'}`}>
+                className={`p-3 rounded-xl border text-left transition-colors ${form.shift === s ? 'border-indigo-500/60 bg-indigo-500/10' : 'border-slate-300 dark:border-slate-700 hover:border-slate-600'}`}>
                 <p className={`text-[10px] font-mono font-bold ${form.shift === s ? 'text-indigo-400' : 'text-slate-500'}`}>{c.label}</p>
                 <p className="text-[9px] text-slate-600 font-mono">{c.hours}</p>
               </button>
@@ -550,14 +550,14 @@ function HandoffTab({ handoffs: initial, adminEmail, adminName }: { handoffs: Ha
             <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Summary *</label>
             <textarea value={form.summary} onChange={e => field('summary', e.target.value)} rows={4}
               placeholder="What happened this shift? Key events, user contacts, incidents, metrics…"
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none leading-relaxed" />
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none leading-relaxed" />
           </div>
 
           <div>
             <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Action Items for Next Shift</label>
             <textarea value={form.action_items} onChange={e => field('action_items', e.target.value)} rows={2}
               placeholder="• Follow up on ticket #123&#10;• Check Stripe payment for user@example.com"
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none font-mono leading-relaxed" />
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/60 resize-none font-mono leading-relaxed" />
           </div>
 
           <div>
