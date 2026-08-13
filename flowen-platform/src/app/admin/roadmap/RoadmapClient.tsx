@@ -93,14 +93,14 @@ function fmtMonthYear(iso: string | null | undefined): string {
   return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
 }
 
-function isOverdue(m: RoadmapMilestone): boolean {
+function isOverdue(m: RoadmapMilestone, now: Date): boolean {
   if (!m.target_date || m.status === 'complete' || m.status === 'deferred') return false;
-  return new Date(m.target_date + 'T00:00:00') < new Date();
+  return new Date(m.target_date + 'T00:00:00') < now;
 }
 
-function isDueSoon(m: RoadmapMilestone): boolean {
+function isDueSoon(m: RoadmapMilestone, now: Date): boolean {
   if (!m.target_date || m.status === 'complete' || m.status === 'deferred') return false;
-  const diff = new Date(m.target_date + 'T00:00:00').getTime() - Date.now();
+  const diff = new Date(m.target_date + 'T00:00:00').getTime() - now.getTime();
   return diff >= 0 && diff <= 30 * 86_400_000;
 }
 
@@ -324,12 +324,13 @@ function PhaseProgressBlock({
 
 // ── Milestone card ────────────────────────────────────────────────────────────
 
-function MilestoneCard({ milestone, onEdit }: {
+function MilestoneCard({ milestone, onEdit, now }: {
   milestone: RoadmapMilestone;
   onEdit: (m: RoadmapMilestone) => void;
+  now: Date;
 }) {
-  const overdue   = isOverdue(milestone);
-  const dueSoon   = isDueSoon(milestone);
+  const overdue   = isOverdue(milestone, now);
+  const dueSoon   = isDueSoon(milestone, now);
   const statusCfg = STATUS_CONFIG[milestone.status];
   const catCfg    = CATEGORY_CONFIG[milestone.category];
   const dotCls    = PRIORITY_DOT[milestone.priority];
@@ -590,7 +591,11 @@ type PanelState =
   | { mode: 'add' }
   | { mode: 'edit'; milestone: RoadmapMilestone };
 
-export function RoadmapClient({ initialMilestones }: { initialMilestones: RoadmapMilestone[] }) {
+export function RoadmapClient({ initialMilestones, serverNow }: { initialMilestones: RoadmapMilestone[]; serverNow: string }) {
+  // Stable timestamp from the server — SSR and hydration both use the same Date,
+  // preventing text-node mismatches in overdue/due-soon labels (React error #418).
+  const now = useMemo(() => new Date(serverNow), [serverNow]);
+
   const [milestones, setMilestones] = useState<RoadmapMilestone[]>(initialMilestones);
   const [panel,      setPanel]      = useState<PanelState>({ mode: 'closed' });
   const [catFilter,  setCatFilter]  = useState<Category | 'all'>('all');
@@ -839,6 +844,7 @@ export function RoadmapClient({ initialMilestones }: { initialMilestones: Roadma
                       key={m.id}
                       milestone={m}
                       onEdit={m => setPanel({ mode: 'edit', milestone: m })}
+                      now={now}
                     />
                   ))}
                 </div>
