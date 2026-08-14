@@ -7,9 +7,9 @@ import { FlowenLogo } from '@/components/FlowenLogo';
 const NAV_LINKS = [
   { label: 'How it works', href: '/how-it-works' },
   { label: 'Technology', href: '/#technology' },
+  { label: 'For SLTs', href: '/clinicians' },
   { label: 'Pricing', href: '/#pricing' },
   { label: 'About', href: '/about' },
-  { label: 'FAQ', href: '/faq' },
   { label: 'Resources', href: '/resources' },
 ];
 
