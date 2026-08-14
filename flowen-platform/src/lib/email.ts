@@ -1313,7 +1313,77 @@ export async function sendAdminAffiliateApplicationAlert(opts: {
   });
 }
 
-// ── 30. Patient discharge notification ───────────────────────────────────────
+// ── 30. SLT inactivity digest ─────────────────────────────────────────────────
+// Sent from clinical@flowen.digital to an SLT when one or more assigned
+// patients have not practised for INACTIVITY_THRESHOLD_DAYS (5) days.
+// One consolidated email per SLT per run, not one per patient.
+
+export async function sendSlpInactivityDigest(opts: {
+  slpEmail: string;
+  slpName: string;
+  patients: Array<{
+    patientId: string;
+    patientName: string;
+    patientEmail: string;
+    daysSince: number;
+  }>;
+}): Promise<boolean> {
+  const FONT_LOCAL = `-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif`;
+  const SITE_URL   = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://flowen.digital';
+  const count      = opts.patients.length;
+  const subject    = count === 1
+    ? `Patient inactivity alert — ${opts.patients[0].patientName} hasn't practised in ${opts.patients[0].daysSince} days`
+    : `Patient inactivity alert — ${count} patients need attention`;
+
+  const patientRows = opts.patients
+    .sort((a, b) => b.daysSince - a.daysSince)
+    .map(p => {
+      const label = p.daysSince >= 999 ? 'Never practised' : `${p.daysSince} days inactive`;
+      const color = p.daysSince >= 14 ? '#ef4444' : '#f59e0b';
+      return `
+        <tr>
+          <td style="padding:12px 0;border-bottom:1px solid #141c28;vertical-align:middle;">
+            <p style="margin:0 0 2px;font-size:14px;font-weight:600;color:#c8d4e3;font-family:${FONT_LOCAL};">${p.patientName}</p>
+            <p style="margin:0;font-size:12px;color:#475d7a;font-family:${FONT_LOCAL};">${p.patientEmail}</p>
+          </td>
+          <td style="padding:12px 0 12px 20px;border-bottom:1px solid #141c28;vertical-align:middle;white-space:nowrap;">
+            <span style="display:inline-block;padding:3px 10px;border-radius:20px;background:${color}1a;border:1px solid ${color}40;font-size:11px;font-weight:700;color:${color};font-family:${FONT_LOCAL};">${label}</span>
+          </td>
+          <td style="padding:12px 0 12px 16px;border-bottom:1px solid #141c28;vertical-align:middle;">
+            <a href="${SITE_URL}/slp/patients/${p.patientId}" style="font-size:12px;color:#0ea5e9;text-decoration:none;font-weight:600;font-family:${FONT_LOCAL};">View →</a>
+          </td>
+        </tr>`;
+    }).join('');
+
+  const html = wrap({
+    dept:      'clinical',
+    category:  'Inactivity Alert',
+    preheader: count === 1
+      ? `${opts.patients[0].patientName} hasn't practised in ${opts.patients[0].daysSince} days.`
+      : `${count} of your patients haven't practised in 5+ days.`,
+    body: `
+      ${h1(`Hi ${opts.slpName} — ${count === 1 ? 'a patient needs' : `${count} patients need`} attention.`)}
+      ${p(`The following patient${count === 1 ? '' : 's'} ${count === 1 ? 'has' : 'have'} not logged a practice session in 5 or more days. Early re-engagement often prevents longer dropout.`)}
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0;">
+        ${patientRows}
+      </table>
+      ${btn('View my caseload', `${SITE_URL}/slp/caseload`, '#0ea5e9')}
+      ${note(`You'll receive one alert per patient every 7 days while they remain inactive. Reply to this email or write to <a href="mailto:clinical@flowen.digital" style="color:#0ea5e9;text-decoration:none;">clinical@flowen.digital</a> with any questions.`)}
+    `,
+  });
+
+  return sendEmail({
+    from:    FROM.clinical,
+    to:      opts.slpEmail,
+    subject,
+    replyTo: 'clinical@flowen.digital',
+    tags:    [{ name: 'type', value: 'slp_inactivity_digest' }],
+    text:    `Hi ${opts.slpName},\n\n${count} patient${count === 1 ? '' : 's'} ${count === 1 ? 'has' : 'have'} not practised in 5+ days:\n\n${opts.patients.map(p => `- ${p.patientName} (${p.patientEmail}): ${p.daysSince >= 999 ? 'never practised' : `${p.daysSince} days inactive`}`).join('\n')}\n\nView your caseload: ${SITE_URL}/slp/caseload\n\nThe Flowen Clinical Team\nclinical@flowen.digital`,
+    html,
+  });
+}
+
+// ── 31. Patient discharge notification ───────────────────────────────────────
 // Sent from clinical@flowen.digital when an SLT discharges a patient.
 
 export async function sendPatientDischargeNotification(opts: {
