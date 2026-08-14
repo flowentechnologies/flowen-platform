@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { assertAdmin } from '@/lib/admin/guard';
 import DocPageLayout, {
   DocH2, DocH3, DocP, DocUL, DocLI, DocCallout, DocTable, type TocEntry,
 } from '@/components/DocPageLayout';
@@ -26,7 +27,9 @@ const TOC: TocEntry[] = [
   { id: 'contacts', label: '9. Key Contacts' },
 ];
 
-export default function StaffTrainingPage() {
+export default async function StaffTrainingPage() {
+  await assertAdmin();
+
   return (
     <DocPageLayout
       tag="INTERNAL"
