@@ -19,6 +19,9 @@ interface DocPageLayoutProps {
   readTime: string;
   toc: TocEntry[];
   children: ReactNode;
+  /** Override the default "Resources" parent crumb */
+  parentLabel?: string;
+  parentHref?: string;
 }
 
 const TAG_STYLES: Record<string, string> = {
@@ -48,6 +51,7 @@ const FlowenLogoSvg = () => (
 
 export default function DocPageLayout({
   tag, tagColor, title, subtitle, date, readTime, toc, children,
+  parentLabel = 'Resources', parentHref = '/resources',
 }: DocPageLayoutProps) {
   return (
     <>
@@ -97,7 +101,7 @@ export default function DocPageLayout({
           <nav className="flex items-center gap-2 text-xs text-slate-500">
             <Link href="/" className="hover:text-slate-300 transition-colors">Home</Link>
             <span>/</span>
-            <Link href="/resources" className="hover:text-slate-300 transition-colors">Resources</Link>
+            <Link href={parentHref} className="hover:text-slate-300 transition-colors">{parentLabel}</Link>
             <span>/</span>
             <span className="text-slate-400">{title}</span>
           </nav>

@@ -34,6 +34,7 @@ export default function MarketingFooter() {
               <li><Link href="/clinicians" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">For SLTs</Link></li>
               <li><Link href="/waitlist" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Join Waitlist</Link></li>
               <li><Link href="/resources" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Resources</Link></li>
+              <li><Link href="/training" className="text-sm text-slate-500 hover:text-emerald-400 transition-colors">Training</Link></li>
             </ul>
           </div>
 
