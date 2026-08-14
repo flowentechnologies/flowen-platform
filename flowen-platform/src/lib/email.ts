@@ -1313,6 +1313,45 @@ export async function sendAdminAffiliateApplicationAlert(opts: {
   });
 }
 
+// ── 30. Patient discharge notification ───────────────────────────────────────
+// Sent from clinical@flowen.digital when an SLT discharges a patient.
+
+export async function sendPatientDischargeNotification(opts: {
+  patientEmail: string;
+  patientName: string;
+  reason?: string;
+}) {
+  await sendEmail({
+    from:    FROM.clinical,
+    to:      opts.patientEmail,
+    subject: 'Your Flowen clinical programme has concluded',
+    replyTo: 'clinical@flowen.digital',
+    tags:    [{ name: 'type', value: 'patient_discharge' }],
+    text:    `Hi ${opts.patientName},\n\nYour speech & language therapist has completed your supervised programme on Flowen.\n\nYour account and practice history remain fully accessible — you can continue practising independently at any time.\n\nIf you have questions about your discharge or would like a referral, contact your SLT directly or write to clinical@flowen.digital.\n\nThe Flowen Clinical Team\nclinical@flowen.digital`,
+    html: wrap({
+      dept:      'clinical',
+      category:  'Clinical Update',
+      preheader: 'Your supervised programme on Flowen has concluded.',
+      body: `
+        ${h1(`Your programme has concluded, ${opts.patientName}.`)}
+        ${p("Your speech & language therapist has completed your supervised programme on Flowen.")}
+        ${opts.reason ? `
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:16px 0;">
+            <tr>
+              <td bgcolor="#070a0f" style="background:#070a0f;border-radius:6px;border:1px solid #141c28;padding:16px 20px;">
+                <p style="margin:0 0 8px;font-size:10px;font-weight:700;color:#475d7a;text-transform:uppercase;letter-spacing:0.9px;font-family:${FONT};">Clinical note</p>
+                <p style="margin:0;font-size:14px;color:#94a3b5;line-height:1.7;font-family:${FONT};">${opts.reason}</p>
+              </td>
+            </tr>
+          </table>` : ''}
+        ${p("Your account and all your practice history remain fully accessible. You can continue practising independently — your progress and session data are all still there.")}
+        ${btn('Go to my dashboard', `${(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://flowen.digital')}/dashboard`)}
+        ${note(`Questions about your discharge or next steps? Reply to this email or write to <a href="mailto:clinical@flowen.digital" style="color:#0ea5e9;text-decoration:none;">clinical@flowen.digital</a>.`)}
+      `,
+    }),
+  });
+}
+
 // ── Deprecated alias ──────────────────────────────────────────────────────────
 
 /** @deprecated use sendAdminWaitlistAlert */

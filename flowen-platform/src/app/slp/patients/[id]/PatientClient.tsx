@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { addSessionNote, updateTreatmentPlan } from '@/app/actions/slp-patient-actions';
+import { useRouter } from 'next/navigation';
+import { addSessionNote, updateTreatmentPlan, dischargePatient } from '@/app/actions/slp-patient-actions';
 
 export interface Session {
   id: string;
@@ -356,16 +357,151 @@ function SessionTable({ sessions }: { sessions: Session[] }) {
   );
 }
 
+// ── Discharge panel ────────────────────────────────────────────────────────────
+
+function DischargePanel({
+  patientId, slpId, patientEmail, patientName,
+}: {
+  patientId: string;
+  slpId: string;
+  patientEmail: string;
+  patientName: string;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [open, setOpen]             = useState(false);
+  const [confirmed, setConfirmed]   = useState(false);
+  const [reason, setReason]         = useState('');
+  const [notify, setNotify]         = useState(true);
+  const [error, setError]           = useState('');
+
+  function discharge() {
+    setError('');
+    startTransition(async () => {
+      const res = await dischargePatient({
+        patientId, slpId, patientEmail, patientName,
+        sendNotification: notify,
+        reason: reason.trim() || undefined,
+      });
+      if (res.ok) {
+        // Brief pause so the SLT sees the transition, then return to caseload
+        setTimeout(() => router.push('/slp/caseload'), 800);
+      } else {
+        setError(res.error ?? 'Discharge failed. Please try again.');
+      }
+    });
+  }
+
+  if (pending) {
+    return (
+      <div className="flex items-center gap-3 px-5 py-4 bg-slate-900 border border-slate-800 rounded-2xl">
+        <div className="h-4 w-4 rounded-full border-2 border-rose-500 border-t-transparent animate-spin" />
+        <p className="text-sm text-slate-400">Discharging patient…</p>
+      </div>
+    );
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-xs text-slate-600 hover:text-rose-400 transition-colors border border-slate-800 hover:border-rose-500/30 rounded-xl px-4 py-2.5"
+      >
+        Discharge patient
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-slate-900 border border-rose-500/20 rounded-2xl p-5 space-y-4">
+      <div>
+        <p className="text-sm font-bold text-rose-400 mb-1">Discharge {patientName}</p>
+        <p className="text-xs text-slate-400 leading-relaxed">
+          This will remove <strong className="text-slate-200">{patientName}</strong> from your caseload and deactivate their treatment plan.
+          Their account and session history remain intact — they can continue using Flowen independently.
+        </p>
+      </div>
+
+      {/* Reason */}
+      <div>
+        <label className="text-[10px] font-mono uppercase tracking-wide text-slate-500 block mb-1.5">
+          Clinical reason <span className="text-slate-600">(optional)</span>
+        </label>
+        <textarea
+          value={reason}
+          onChange={e => setReason(e.target.value)}
+          rows={2}
+          placeholder="e.g. Treatment goals met — transferring to independent self-management"
+          className="w-full bg-slate-800 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 resize-none focus:outline-none focus:border-rose-500/50 placeholder:text-slate-600 transition-colors"
+        />
+      </div>
+
+      {/* Notify toggle */}
+      <label className="flex items-center gap-3 cursor-pointer select-none">
+        <div
+          onClick={() => setNotify(n => !n)}
+          className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${notify ? 'bg-rose-500' : 'bg-slate-700'}`}
+        >
+          <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${notify ? 'translate-x-4' : 'translate-x-0.5'}`} />
+        </div>
+        <span className="text-xs text-slate-400">
+          Send discharge notification email to {patientName}
+        </span>
+      </label>
+
+      {error && (
+        <p className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">{error}</p>
+      )}
+
+      {/* Confirm step */}
+      {!confirmed ? (
+        <div className="flex items-center gap-2 pt-1">
+          <button
+            onClick={() => setConfirmed(true)}
+            className="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm font-semibold hover:bg-rose-500/20 transition-colors"
+          >
+            Discharge patient
+          </button>
+          <button
+            onClick={() => { setOpen(false); setConfirmed(false); setReason(''); setNotify(true); }}
+            className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 text-sm hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3 pt-1">
+          <span className="text-xs text-slate-500">Are you sure? This cannot be undone.</span>
+          <button
+            onClick={discharge}
+            className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold transition-colors"
+          >
+            Yes, discharge
+          </button>
+          <button
+            onClick={() => setConfirmed(false)}
+            className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 text-sm hover:bg-slate-700 transition-colors"
+          >
+            Back
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main export ────────────────────────────────────────────────────────────────
 
 export default function PatientClient({
-  patientId, slpId, sessions, plan, notes,
+  patientId, slpId, sessions, plan, notes, patientEmail, patientName,
 }: {
   patientId: string;
   slpId: string;
   sessions: Session[];
   plan: TreatmentPlan | null;
   notes: SessionNote[];
+  patientEmail: string;
+  patientName: string;
 }) {
   return (
     <div className="space-y-8">
@@ -400,6 +536,17 @@ export default function PatientClient({
       <section>
         <h2 className="text-sm font-bold text-white mb-3">Clinical Notes</h2>
         <NotesPanel patientId={patientId} slpId={slpId} notes={notes} sessions={sessions} />
+      </section>
+
+      {/* Danger zone */}
+      <section className="pt-4 border-t border-slate-800">
+        <h2 className="text-xs font-mono uppercase tracking-widest text-slate-600 mb-3">Danger Zone</h2>
+        <DischargePanel
+          patientId={patientId}
+          slpId={slpId}
+          patientEmail={patientEmail}
+          patientName={patientName}
+        />
       </section>
     </div>
   );

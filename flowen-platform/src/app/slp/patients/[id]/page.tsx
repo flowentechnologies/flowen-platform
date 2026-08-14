@@ -144,6 +144,8 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
         sessions={sessions}
         plan={plan}
         notes={notes}
+        patientEmail={profile?.email ?? ''}
+        patientName={name}
       />
     </div>
   );

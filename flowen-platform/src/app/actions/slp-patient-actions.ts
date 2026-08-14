@@ -2,6 +2,7 @@
 
 import { createClient as adminClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { sendPatientDischargeNotification } from '@/lib/email';
 
 function db() {
   return adminClient(
@@ -130,4 +131,48 @@ export async function enrolPatient({
 
   revalidatePath('/slp/caseload');
   return { ok: true, patientId };
+}
+
+// ── Discharge patient ──────────────────────────────────────────────────────────
+
+export async function dischargePatient({
+  patientId,
+  slpId,
+  patientEmail,
+  patientName,
+  sendNotification,
+  reason,
+}: {
+  patientId: string;
+  slpId: string;
+  patientEmail: string;
+  patientName: string;
+  sendNotification: boolean;
+  reason?: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  const supabase = db();
+
+  // Remove assignment
+  const { error: assignError } = await supabase
+    .from('slp_assignments')
+    .delete()
+    .eq('slp_user_id', slpId)
+    .eq('patient_user_id', patientId);
+
+  if (assignError) return { ok: false, error: assignError.message };
+
+  // Deactivate treatment plan (non-fatal if none exists)
+  await supabase
+    .from('treatment_plans')
+    .update({ active: false })
+    .eq('slp_user_id', slpId)
+    .eq('patient_user_id', patientId);
+
+  // Notify patient
+  if (sendNotification && patientEmail) {
+    await sendPatientDischargeNotification({ patientEmail, patientName, reason });
+  }
+
+  revalidatePath('/slp/caseload');
+  return { ok: true };
 }
