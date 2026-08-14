@@ -1,17 +1,17 @@
 import { assertAdmin } from '@/lib/admin/guard';
-import { getDoc, IP_DOCS, STATUS_BADGE, TYPE_LABEL } from '@/lib/ip-docs/registry';
+import { getDoc, STATUS_BADGE, TYPE_LABEL } from '@/lib/ip-docs/registry';
 import { CONTENT } from '@/lib/ip-docs/content';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import PrintButton from '@/components/PrintButton';
 
+// Force dynamic — page is auth-gated (assertAdmin uses cookies) and
+// all content is in-memory, so static pre-rendering has no benefit.
+export const dynamic = 'force-dynamic';
+
 interface Props {
   params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams() {
-  return IP_DOCS.map(d => ({ slug: d.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
