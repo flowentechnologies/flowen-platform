@@ -17,8 +17,9 @@ export default async function ClinicianAssignmentsPage() {
 
   const [assignmentsRes, cliniciansRes, patientsRes] = await Promise.all([
     client.from('slp_assignments').select('*').order('assigned_at', { ascending: false }),
-    client.from('profiles').select('id, display_name, email').eq('role', 'clinician'),
-    client.from('profiles').select('id, display_name, email').eq('role', 'pwds'),
+    // Include both legacy 'clinician' role and new 'slp' role (set by SLT beta approval)
+    client.from('profiles').select('id, display_name, email, role').in('role', ['slp', 'clinician']),
+    client.from('profiles').select('id, display_name, email, role').eq('role', 'patient'),
   ]);
 
   const profileMap = new Map<string, { display_name: string | null; email: string | null }>();

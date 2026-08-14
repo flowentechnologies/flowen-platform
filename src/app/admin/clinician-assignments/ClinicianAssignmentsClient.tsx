@@ -100,12 +100,12 @@ export function ClinicianAssignmentsClient({ initialData }: { initialData: Assig
 
         {data.clinicians.length === 0 && (
           <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-3">
-            No users with role=&apos;clinician&apos; found. Users set their role during onboarding.
+            No SLTs found. Approve an SLT beta application to grant portal access and add them here.
           </p>
         )}
         {data.patients.length === 0 && (
           <p className="text-amber-400 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-3">
-            No users with role=&apos;pwds&apos; (person who stutters) found.
+            No patients found (role=&apos;patient&apos;). Patients appear here once they complete onboarding.
           </p>
         )}
 
@@ -115,7 +115,7 @@ export function ClinicianAssignmentsClient({ initialData }: { initialData: Assig
             <SelectUser options={data.clinicians} value={slpId} onChange={setSlpId} placeholder="Select clinician…" />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono uppercase tracking-wide text-slate-500">Patient (PWS)</label>
+            <label className="text-[10px] font-mono uppercase tracking-wide text-slate-500">Patient</label>
             <SelectUser options={data.patients} value={patId} onChange={setPatId} placeholder="Select patient…" />
           </div>
         </div>
