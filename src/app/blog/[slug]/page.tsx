@@ -53,24 +53,24 @@ export default async function ArticlePage({
   }
 
   return (
-    <main className="min-h-screen bg-white text-gray-900">
+    <main className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100">
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         <ArticleJsonLd data={article.jsonLd} />
         <ArticleJsonLd data={article.faqJsonLd} />
 
         <Link
           href={BLOG_BASE_PATH}
-          className="text-sm font-medium text-gray-500 transition hover:text-gray-700"
+          className="text-sm font-medium text-gray-500 dark:text-slate-400 transition hover:text-gray-700 dark:hover:text-slate-200"
         >
           ← All articles
         </Link>
 
         <article className="mt-6">
           <header className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
               {article.title}
             </h1>
-            <time dateTime={article.created_at} className="mt-4 block text-sm text-gray-500">
+            <time dateTime={article.created_at} className="mt-4 block text-sm text-gray-500 dark:text-slate-400">
               {formatDate(article.created_at)}
             </time>
           </header>
@@ -80,7 +80,7 @@ export default async function ArticlePage({
             dangerouslySetInnerHTML={{ __html: article.content_html }}
           />
 
-          <footer className="mt-12 border-t border-gray-100 pt-6">
+          <footer className="mt-12 border-t border-gray-100 dark:border-slate-800 pt-6">
             <TagList keywords={[article.seedKeyword ?? '', ...article.keywords]} />
           </footer>
         </article>

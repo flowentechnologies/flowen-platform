@@ -22,7 +22,7 @@ export function TagList({ keywords }: { keywords: string[] }) {
         <Link
           key={slug}
           href={`${BLOG_BASE_PATH}/tag/${slug}`}
-          className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 transition hover:bg-gray-200"
+          className="rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-gray-600 dark:text-slate-300 transition hover:bg-gray-200 dark:hover:bg-slate-700"
         >
           {label}
         </Link>

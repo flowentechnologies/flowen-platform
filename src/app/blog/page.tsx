@@ -22,17 +22,17 @@ export default async function BlogIndexPage({
   const { items, info } = paginate(articles, parsePage(page));
 
   return (
-    <main className="min-h-screen bg-white text-gray-900">
+    <main className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100">
       <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         <header className="mb-10">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
             {SITE_NAME}
           </h1>
-          <p className="mt-3 text-lg text-gray-600">Latest articles, guides, and updates.</p>
+          <p className="mt-3 text-lg text-gray-600 dark:text-slate-400">Latest articles, guides, and updates.</p>
         </header>
 
         {items.length === 0 ? (
-          <p className="text-gray-500">No articles have been published yet.</p>
+          <p className="text-gray-500 dark:text-slate-400">No articles have been published yet.</p>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((article) => (
