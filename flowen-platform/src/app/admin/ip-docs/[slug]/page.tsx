@@ -28,6 +28,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const CATEGORY_LABEL: Record<string, string> = {
+  regulatory:    'Regulatory & Clinical Safety',
   contracts:     'Contracts',
   ai_models:     'AI Models',
   software:      'Software',
