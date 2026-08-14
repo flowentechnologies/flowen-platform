@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { IP_DOCS, STATUS_BADGE, TYPE_LABEL } from '@/lib/ip-docs/registry';
 
 const CATEGORY_LABELS: Record<string, { emoji: string; label: string }> = {
+  regulatory:    { emoji: '🏥', label: 'Regulatory & Clinical Safety' },
   contracts:     { emoji: '📋', label: 'Contracts' },
   ai_models:     { emoji: '🧠', label: 'AI Models' },
   software:      { emoji: '💻', label: 'Software' },

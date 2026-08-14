@@ -37,9 +37,369 @@ const Field = ({ label }: { label: string }) => (
   </div>
 );
 
+// ── Shared table wrapper (horizontal scroll for wide tables) ──────────────────
+const TblWrap = ({ children }: { children: ReactNode }) => (
+  <div className="overflow-x-auto rounded-xl border border-slate-800 mb-6">
+    <table className="w-full text-xs min-w-[700px]">{children}</table>
+  </div>
+);
+const TH = ({ children, w }: { children: ReactNode; w?: string }) => (
+  <th className={`text-left px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-900/60 border-b border-slate-800 ${w ?? ''}`}>{children}</th>
+);
+const TD = ({ children, mono, muted }: { children: ReactNode; mono?: boolean; muted?: boolean }) => (
+  <td className={`px-3 py-2.5 leading-relaxed align-top border-b border-slate-800/60 ${mono ? 'font-mono' : ''} ${muted ? 'text-slate-500' : 'text-slate-400'}`}>{children}</td>
+);
+const RiskBadge = ({ level }: { level: 'acceptable' | 'investigate' | 'unacceptable' }) => {
+  const map = {
+    acceptable:   'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400',
+    investigate:  'bg-amber-500/10 border border-amber-500/30 text-amber-400',
+    unacceptable: 'bg-rose-500/10 border border-rose-500/30 text-rose-400',
+  };
+  const label = { acceptable: 'Acceptable', investigate: 'Investigate', unacceptable: 'Unacceptable' };
+  return <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${map[level]}`}>{label[level]}</span>;
+};
+
 // ── Document content map ──────────────────────────────────────────────────────
 
 export const CONTENT: Record<string, ReactNode> = {
+
+  // ── Regulatory & Clinical Safety ──────────────────────────────────────────────
+
+  'dcb0129-clinical-safety-case': (
+    <>
+      <Note>
+        DRAFT v1.0 — August 2026. This Clinical Safety Case has been prepared by Flowen Technologies Ltd in accordance with NHS England DCB0129 &quot;Clinical Risk Management by Manufacturers of Health IT Systems.&quot; It must be reviewed and signed off by a named Clinical Safety Officer (CSO) before submission to any NHS or NHS-adjacent organisation. This document does not constitute legal or regulatory advice.
+      </Note>
+
+      {/* ── 1. Document Information ── */}
+      <H>1. Document Information</H>
+      <TblWrap>
+        <tbody>
+          {[
+            ['Document title', 'DCB0129 Clinical Safety Case Report — Flowen Speech Fluency Platform'],
+            ['Document reference', 'FLOWEN-CSC-001'],
+            ['Version', '1.0 (Draft)'],
+            ['Date', 'August 2026'],
+            ['Prepared by', 'Flowen Technologies Ltd'],
+            ['Clinical Safety Officer (CSO)', '[ To be completed — must hold MBBS or equivalent clinical qualification ]'],
+            ['CSO registration number', '[ GMC / HCPC / NMC registration number ]'],
+            ['Document owner', 'Flowen Technologies Ltd, England'],
+            ['Review cycle', 'At each major software version; annually at minimum; on any adverse event'],
+            ['Classification', 'Confidential — share only with named NHS procurement contacts under NDA'],
+          ].map(([label, value], i, arr) => (
+            <tr key={label} className={i < arr.length - 1 ? 'border-b border-slate-800/60' : ''}>
+              <TD mono>{label}</TD>
+              <TD>{value}</TD>
+            </tr>
+          ))}
+        </tbody>
+      </TblWrap>
+
+      {/* ── 2. Purpose and Scope ── */}
+      <H>2. Purpose and Scope</H>
+      <P>This Clinical Safety Case (CSC) documents the clinical risk management activities undertaken by Flowen Technologies Ltd in the design, development, and deployment of the Flowen speech fluency platform, in accordance with NHS England standard DCB0129 Edition 2.1.</P>
+      <P>The purpose of this document is to demonstrate that:</P>
+      <UL>
+        <LI>Potential clinical hazards have been systematically identified</LI>
+        <LI>The clinical risks arising from those hazards have been assessed and mitigated to an acceptable level</LI>
+        <LI>The residual clinical risk of the system is acceptable</LI>
+        <LI>The clinical safety of the system is maintained through ongoing risk management</LI>
+      </UL>
+      <P><Bold>Scope:</Bold> This CSC covers the Flowen web and mobile application (the &quot;System&quot;) including the patient-facing practice interface, the Speech & Language Therapist (SLT) portal, and all backend data processing. It covers use of the System in clinical pathways where the System is used as an adjunct to SLT-led therapy for people who stammer.</P>
+      <P><Bold>Out of scope:</Bold> This CSC does not cover any standalone consumer use of the System without SLT involvement, nor does it cover clinical use outside of fluency therapy for stammering.</P>
+
+      {/* ── 3. System Description ── */}
+      <H>3. System Description</H>
+      <H3>3.1 Overview</H3>
+      <P>Flowen is a digital health platform that supports people who stammer (PWS) in practising fluency-shaping and stuttering-modification techniques between SLT appointments. The System uses a device microphone to capture speech during guided practice exercises, applies a proprietary AI-based disfluency detection model to identify and classify disfluency events (blocks, repetitions, prolongations), and provides real-time biofeedback to the patient.</P>
+      <H3>3.2 Clinical Use Context</H3>
+      <UL>
+        <LI><Bold>Intended users:</Bold> Adults who stammer, enrolled and supervised by a registered Speech & Language Therapist</LI>
+        <LI><Bold>Clinical setting:</Bold> Between-session home practice, under SLT oversight</LI>
+        <LI><Bold>Intended purpose:</Bold> To supplement, not replace, direct SLT therapy; to provide objective practice data to inform SLT clinical decisions</LI>
+        <LI><Bold>Not intended for:</Bold> Diagnosis of stammering; replacement of SLT assessment; use without active SLT supervision</LI>
+      </UL>
+      <H3>3.3 System Architecture</H3>
+      <UL>
+        <LI><Bold>Frontend:</Bold> Next.js 16 web application (React); iOS native app (in development)</LI>
+        <LI><Bold>Backend:</Bold> Supabase (PostgreSQL + Row Level Security); Vercel edge infrastructure</LI>
+        <LI><Bold>AI model:</Bold> Proprietary transformer-based ASR with disfluency tokenisation, hosted server-side</LI>
+        <LI><Bold>Data at rest:</Bold> AES-256 encryption via Supabase; UK/EU region storage</LI>
+        <LI><Bold>Data in transit:</Bold> TLS 1.3 enforced on all connections</LI>
+        <LI><Bold>Access control:</Bold> Role-based (patient / SLT / admin); service role key never exposed client-side</LI>
+      </UL>
+      <H3>3.4 Clinical Data Processed</H3>
+      <UL>
+        <LI>Audio recordings of practice sessions (processed server-side; not permanently stored by default)</LI>
+        <LI>Disfluency event counts per session (blocks, repetitions, prolongations)</LI>
+        <LI>Session duration and completion rate</LI>
+        <LI>SLT-authored treatment plans and clinical notes</LI>
+        <LI>Patient profile data (name, email, HCPC number for SLTs)</LI>
+      </UL>
+
+      {/* ── 4. Clinical Risk Management Approach ── */}
+      <H>4. Clinical Risk Management Approach</H>
+      <P>Flowen Technologies Ltd has adopted a clinical risk management approach aligned with DCB0129 and ISO 14971 (medical device risk management). The following methodology was applied:</P>
+      <UL>
+        <LI><Bold>Hazard identification:</Bold> Structured brainstorming by the development and clinical advisory team; review of analogous digital health systems; review of reported incidents in similar products</LI>
+        <LI><Bold>Risk assessment:</Bold> Each hazard assessed against a 5×5 severity–likelihood matrix (see §5)</LI>
+        <LI><Bold>Risk control:</Bold> Controls applied at design, software, and operational levels</LI>
+        <LI><Bold>Residual risk:</Bold> Assessed post-control; acceptability determined against the risk matrix</LI>
+        <LI><Bold>Review:</Bold> CSC to be reviewed at each major software release, annually, and following any adverse event or near-miss</LI>
+      </UL>
+
+      {/* ── 5. Risk Matrix ── */}
+      <H>5. Risk Assessment Matrix</H>
+      <H3>5.1 Severity Definitions</H3>
+      <TblWrap>
+        <thead>
+          <tr>
+            <TH>Level</TH><TH>Label</TH><TH>Definition</TH>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ['S5', 'Catastrophic', 'Patient death'],
+            ['S4', 'Major', 'Permanent moderate disability or temporary severe disability'],
+            ['S3', 'Significant', 'Temporary moderate disability; psychological harm requiring clinical intervention'],
+            ['S2', 'Minor', 'Temporary low disability; brief distress; minor inconvenience'],
+            ['S1', 'Negligible', 'No injury or discomfort; no clinical impact'],
+          ].map(([lvl, label, def], i, arr) => (
+            <tr key={lvl} className={i < arr.length - 1 ? 'border-b border-slate-800/60' : ''}>
+              <TD mono>{lvl}</TD><TD><Bold>{label}</Bold></TD><TD>{def}</TD>
+            </tr>
+          ))}
+        </tbody>
+      </TblWrap>
+      <H3>5.2 Likelihood Definitions</H3>
+      <TblWrap>
+        <thead>
+          <tr>
+            <TH>Level</TH><TH>Label</TH><TH>Approximate probability per use</TH>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ['L5', 'Very High', '> 1 in 10'],
+            ['L4', 'High', '1 in 10 – 1 in 100'],
+            ['L3', 'Medium', '1 in 100 – 1 in 1,000'],
+            ['L2', 'Low', '1 in 1,000 – 1 in 10,000'],
+            ['L1', 'Very Low', '< 1 in 10,000'],
+          ].map(([lvl, label, prob], i, arr) => (
+            <tr key={lvl} className={i < arr.length - 1 ? 'border-b border-slate-800/60' : ''}>
+              <TD mono>{lvl}</TD><TD><Bold>{label}</Bold></TD><TD>{prob}</TD>
+            </tr>
+          ))}
+        </tbody>
+      </TblWrap>
+      <H3>5.3 Risk Rating</H3>
+      <UL>
+        <LI><Bold>Acceptable:</Bold> S1 (any L); S2/L1–L3; S3/L1–L2; S4/L1</LI>
+        <LI><Bold>Investigate:</Bold> S2/L4–L5; S3/L3–L4; S4/L2–L3; S5/L1–L2</LI>
+        <LI><Bold>Unacceptable:</Bold> S3/L5; S4/L4–L5; S5/L3–L5</LI>
+      </UL>
+      <P>All identified hazards must reach <Bold>Acceptable</Bold> residual risk before the System may be deployed in a clinical pathway. Any hazard rated <Bold>Investigate</Bold> or higher post-control must be escalated to the CSO before deployment.</P>
+
+      {/* ── 6. Hazard Log ── */}
+      <H>6. Hazard Log</H>
+      <P>The following table documents all identified clinical hazards, their initial risk rating (before controls), the risk controls applied, and the residual risk rating. All hazards are rated on the 5×5 matrix defined in §5.</P>
+      <div className="overflow-x-auto rounded-xl border border-slate-800 mb-6">
+        <table className="w-full text-xs" style={{ minWidth: '900px' }}>
+          <thead>
+            <tr className="border-b border-slate-800 bg-slate-900/60">
+              {['ID', 'Hazard', 'Potential Effect on Patient', 'Initial S', 'Initial L', 'Initial Risk', 'Controls Applied', 'Residual S', 'Residual L', 'Residual Risk', 'Status'].map(h => (
+                <th key={h} className="text-left px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              {
+                id: 'H01',
+                hazard: 'AI disfluency detection error (false positive or false negative)',
+                effect: 'Misleading progress data; SLT may make suboptimal plan adjustments based on inaccurate session data',
+                is: 'S3', il: 'L3', ir: 'investigate' as const,
+                controls: 'Model validated on diverse PWS cohort; SLT reviews data with clinical judgement; app clearly labelled adjunct tool; confidence indicators available',
+                rs: 'S2', rl: 'L2', rr: 'acceptable' as const,
+              },
+              {
+                id: 'H02',
+                hazard: 'System unavailability during scheduled practice session',
+                effect: 'Patient unable to complete scheduled practice; minor disruption to therapy routine',
+                is: 'S1', il: 'L3', ir: 'acceptable' as const,
+                controls: 'Vercel 99.9% uptime SLA; SLT inactivity alert surfaces missed sessions; patient advised to practise manually if app unavailable',
+                rs: 'S1', rl: 'L2', rr: 'acceptable' as const,
+              },
+              {
+                id: 'H03',
+                hazard: 'Incorrect patient data displayed to SLT (data integrity failure)',
+                effect: 'SLT makes clinical decision (plan update, discharge) based on wrong patient\'s data or corrupted session records',
+                is: 'S3', il: 'L3', ir: 'investigate' as const,
+                controls: 'Supabase RLS enforces patient-scoped data access; patient name/ID shown in page header; audit logging; automated test suite; SLT cross-checks data with patient verbal report',
+                rs: 'S2', rl: 'L1', rr: 'acceptable' as const,
+              },
+              {
+                id: 'H04',
+                hazard: 'Unauthorised access to patient clinical data',
+                effect: 'Privacy breach; psychological harm to patient; regulatory penalty; erosion of therapeutic trust',
+                is: 'S3', il: 'L3', ir: 'investigate' as const,
+                controls: 'Supabase RLS; service role key server-side only; HTTPS/TLS 1.3; AES-256 at rest; RBAC (patient/SLT/admin roles); GDPR breach notification procedure; penetration testing planned pre-NHS launch',
+                rs: 'S2', rl: 'L1', rr: 'acceptable' as const,
+              },
+              {
+                id: 'H05',
+                hazard: 'Patient over-reliance on app; delays seeking SLT or medical support',
+                effect: 'Clinical deterioration (e.g., increased anxiety, worsening stammering) not addressed due to patient assuming app progress is sufficient',
+                is: 'S3', il: 'L2', ir: 'acceptable' as const,
+                controls: 'Clinical features gated behind SLT enrolment; SLT inactivity alert triggers after 5 days; in-app messaging to SLT; onboarding explicitly positions app as adjunct tool',
+                rs: 'S2', rl: 'L1', rr: 'acceptable' as const,
+              },
+              {
+                id: 'H06',
+                hazard: 'Incorrect treatment plan prescribed (wrong stages or targets set)',
+                effect: 'Patient practises inappropriate exercise intensity or stage; suboptimal or counterproductive therapy outcomes',
+                is: 'S2', il: 'L2', ir: 'acceptable' as const,
+                controls: 'SLT sets plan directly in portal with confirmation step; prescribed stages visible to patient; SLT can update plan at any time; plan changes logged in audit trail',
+                rs: 'S1', rl: 'L1', rr: 'acceptable' as const,
+              },
+              {
+                id: 'H07',
+                hazard: 'Session recording data loss during upload',
+                effect: 'SLT loses visibility of one practice session; incomplete clinical record; potential missed deterioration signal',
+                is: 'S1', il: 'L3', ir: 'acceptable' as const,
+                controls: 'Client-side session buffer; retry logic on failed upload; error notification to patient; single session loss has negligible clinical impact given ongoing data stream',
+                rs: 'S1', rl: 'L1', rr: 'acceptable' as const,
+              },
+              {
+                id: 'H08',
+                hazard: 'Psychological distress caused by feedback presentation',
+                effect: 'Exacerbation of anxiety, shame, or reduced self-efficacy in a clinically vulnerable population (people who stammer); potential avoidance of therapy',
+                is: 'S3', il: 'L3', ir: 'investigate' as const,
+                controls: 'UX designed without shame-based language or gamification; feedback framed as objective data; SLT oversight and debrief recommended in clinical guidance; patient can pause/exit session at any time; UX reviewed by SLT clinical advisor',
+                rs: 'S2', rl: 'L2', rr: 'acceptable' as const,
+              },
+              {
+                id: 'H09',
+                hazard: 'Software regression introduces incorrect biofeedback after update',
+                effect: 'Patients receive incorrect disfluency data for a period; SLT makes plan decisions on faulty data before regression is detected',
+                is: 'S3', il: 'L2', ir: 'acceptable' as const,
+                controls: 'CI/CD automated test suite on every commit; TypeScript strict mode; post-deploy monitoring with Sentry; Vercel instant rollback capability; release notes reviewed before production promotion',
+                rs: 'S2', rl: 'L1', rr: 'acceptable' as const,
+              },
+            ].map(row => (
+              <tr key={row.id} className="border-b border-slate-800/40 last:border-0">
+                <td className="px-3 py-2.5 font-mono text-slate-300 font-bold align-top whitespace-nowrap">{row.id}</td>
+                <td className="px-3 py-2.5 text-slate-300 text-xs align-top max-w-[180px]">{row.hazard}</td>
+                <td className="px-3 py-2.5 text-slate-400 text-xs align-top max-w-[180px]">{row.effect}</td>
+                <td className="px-3 py-2.5 text-slate-400 text-xs align-top font-mono whitespace-nowrap">{row.is}</td>
+                <td className="px-3 py-2.5 text-slate-400 text-xs align-top font-mono whitespace-nowrap">{row.il}</td>
+                <td className="px-3 py-2.5 align-top whitespace-nowrap"><RiskBadge level={row.ir} /></td>
+                <td className="px-3 py-2.5 text-slate-400 text-xs align-top max-w-[200px]">{row.controls}</td>
+                <td className="px-3 py-2.5 text-slate-400 text-xs align-top font-mono whitespace-nowrap">{row.rs}</td>
+                <td className="px-3 py-2.5 text-slate-400 text-xs align-top font-mono whitespace-nowrap">{row.rl}</td>
+                <td className="px-3 py-2.5 align-top whitespace-nowrap"><RiskBadge level={row.rr} /></td>
+                <td className="px-3 py-2.5 align-top"><span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 whitespace-nowrap">Open</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── 7. Clinical Maximum Severity Justification ── */}
+      <H>7. Maximum Severity Justification</H>
+      <P>The maximum initial severity rating applied in this hazard log is <Bold>S3 (Significant)</Bold>. This is justified on the following grounds:</P>
+      <UL>
+        <LI>The System is explicitly an <Bold>adjunct tool</Bold> — the SLT remains the responsible clinical decision-maker at all times</LI>
+        <LI>The System does <Bold>not diagnose</Bold> any condition, does not prescribe medication, and does not administer treatment directly</LI>
+        <LI>Any harm arising from System failure would be <Bold>temporary</Bold> and addressable through normal SLT clinical review</LI>
+        <LI>The patient population (adults who stammer) is not in acute clinical risk — stammering is a chronic communication condition, not a medical emergency</LI>
+        <LI>No scenario has been identified in which System failure could directly cause patient death (S5) or permanent major disability (S4) independent of SLT clinical oversight failure</LI>
+      </UL>
+      <Note>If the scope of clinical use expands beyond SLT-supervised fluency therapy — for example, to paediatric populations, to unsupervised consumer use, or to any diagnostic function — this severity ceiling must be re-evaluated and this CSC revised accordingly.</Note>
+
+      {/* ── 8. Residual Risk Summary ── */}
+      <H>8. Residual Risk Summary</H>
+      <TblWrap>
+        <thead>
+          <tr>
+            <TH>Hazard</TH><TH>Residual Risk Rating</TH><TH>Acceptable?</TH>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ['H01 — AI detection error', 'S2/L2 — Acceptable', '✅'],
+            ['H02 — System unavailability', 'S1/L2 — Acceptable', '✅'],
+            ['H03 — Incorrect data displayed to SLT', 'S2/L1 — Acceptable', '✅'],
+            ['H04 — Unauthorised data access', 'S2/L1 — Acceptable', '✅'],
+            ['H05 — Patient over-reliance', 'S2/L1 — Acceptable', '✅'],
+            ['H06 — Incorrect treatment plan', 'S1/L1 — Acceptable', '✅'],
+            ['H07 — Session data loss', 'S1/L1 — Acceptable', '✅'],
+            ['H08 — Psychological distress from feedback', 'S2/L2 — Acceptable', '✅'],
+            ['H09 — Software regression', 'S2/L1 — Acceptable', '✅'],
+          ].map(([hazard, rating, ok], i, arr) => (
+            <tr key={hazard} className={i < arr.length - 1 ? 'border-b border-slate-800/60' : ''}>
+              <TD>{hazard}</TD><TD>{rating}</TD><TD>{ok}</TD>
+            </tr>
+          ))}
+        </tbody>
+      </TblWrap>
+      <P>All identified hazards have been mitigated to an <Bold>Acceptable</Bold> residual risk level. No hazard remains at <Bold>Investigate</Bold> or <Bold>Unacceptable</Bold> residual risk. The overall residual clinical risk of the System is therefore assessed as <Bold>Acceptable</Bold>.</P>
+
+      {/* ── 9. Ongoing Clinical Risk Management ── */}
+      <H>9. Ongoing Clinical Risk Management</H>
+      <H3>9.1 Review Triggers</H3>
+      <P>This Clinical Safety Case shall be reviewed and updated in the following circumstances:</P>
+      <UL>
+        <LI>At each major software version release (major version increment)</LI>
+        <LI>Following any adverse event or near-miss involving the System</LI>
+        <LI>Following any significant change to the clinical use context or patient population</LI>
+        <LI>Annually as a minimum</LI>
+        <LI>Following any change in relevant regulation or guidance (NHS England DCB0129 revisions)</LI>
+      </UL>
+      <H3>9.2 Adverse Event Reporting</H3>
+      <P>Flowen Technologies Ltd maintains an adverse event log. Any adverse event or near-miss reported by a patient or SLT that may be attributable to the System shall be:</P>
+      <UL>
+        <LI>Logged within 24 hours of notification</LI>
+        <LI>Reviewed by the CSO within 5 working days</LI>
+        <LI>Assessed to determine whether a hazard log update or corrective action is required</LI>
+        <LI>Reported to the MHRA if it meets the threshold for a Serious Incident under UK MDR 2002 (as applicable)</LI>
+      </UL>
+      <H3>9.3 Change Management</H3>
+      <P>All software changes are reviewed for clinical safety impact by the development lead before deployment. Changes that introduce new clinical functionality, modify the AI inference pipeline, or affect data access controls trigger a mandatory CSC review by the CSO.</P>
+
+      {/* ── 10. Limitations and Exclusions ── */}
+      <H>10. Limitations and Exclusions</H>
+      <Warn>
+        The following uses are <Bold>outside the intended clinical scope</Bold> of this Clinical Safety Case. Use of the System in these contexts is not covered by this CSC and is not authorised by Flowen Technologies Ltd for NHS-pathway deployment without a separate risk assessment:
+      </Warn>
+      <UL>
+        <LI>Use with patients under 18 years of age</LI>
+        <LI>Use without active SLT supervision and enrolment</LI>
+        <LI>Use as a diagnostic tool for stammering or any other condition</LI>
+        <LI>Use in any acute clinical setting (A&E, inpatient, surgical)</LI>
+        <LI>Use in conditions other than stammering / fluency disorders</LI>
+        <LI>Use as a substitute for SLT clinical assessment or discharge decision-making</LI>
+      </UL>
+
+      {/* ── 11. CSO Declaration ── */}
+      <H>11. Clinical Safety Officer Declaration</H>
+      <Note>This section must be completed by the appointed Clinical Safety Officer before this document is submitted to any NHS organisation or included in any procurement response. The CSO must hold an appropriate clinical qualification (e.g., MBBS, BDS, or HCPC-registered Allied Health Professional) and must be named on the organisation&apos;s DCB0129 submission.</Note>
+      <P>I, the undersigned Clinical Safety Officer, confirm that:</P>
+      <UL>
+        <LI>I have reviewed this Clinical Safety Case in full</LI>
+        <LI>I am satisfied that the clinical hazard identification process was systematic and thorough</LI>
+        <LI>I am satisfied that the risk controls described are implemented or planned with clear owners</LI>
+        <LI>I am satisfied that the residual clinical risk is acceptable for the intended clinical use described in §2</LI>
+        <LI>I accept clinical safety responsibility for this system on behalf of Flowen Technologies Ltd</LI>
+      </UL>
+      <Field label="CSO name" />
+      <Field label="Clinical qualification" />
+      <Field label="Registration number (GMC/HCPC/NMC)" />
+      <Field label="Signature" />
+      <Field label="Date" />
+      <Field label="Next scheduled review" />
+    </>
+  ),
 
   // ── Contracts ────────────────────────────────────────────────────────────────
 
