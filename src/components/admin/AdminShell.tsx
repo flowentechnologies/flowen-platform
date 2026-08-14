@@ -37,6 +37,7 @@ const NAV: NavSection[] = [
       { label: 'Usage & Costs',   href: '/admin/usage-costs' },
       { label: 'Session Quality', href: '/admin/session-quality' },
       { label: 'Clinician Assignments', href: '/admin/clinician-assignments' },
+      { label: 'SLT Beta Applications', href: '/admin/slp-beta' },
       { label: 'Feature Flags', href: '/admin/feature-flags' },
       { label: 'Waitlist', href: '/admin/waitlist' },
       { label: 'Affiliates', href: '/admin/affiliate' },
