@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { unstable_cache } from 'next/cache';
 import { createClient as adminClient } from '@supabase/supabase-js';
 import { assertSlp } from '@/lib/slp/guard';
 import PatientClient from './PatientClient';
@@ -16,7 +17,10 @@ function db() {
   );
 }
 
-async function fetchPatientData(slpId: string, patientId: string) {
+// Cache per-SLT + per-patient, revalidated on plan/note/discharge mutations.
+// auth (assertSlp / cookies()) runs in the page component above — never inside here.
+const fetchPatientData = unstable_cache(
+  async (slpId: string, patientId: string) => {
   const supabase = db();
 
   // Verify this patient is assigned to this SLT
@@ -56,7 +60,10 @@ async function fetchPatientData(slpId: string, patientId: string) {
     notes:     (notesRes.data ?? []) as SessionNote[],
     programme: progRes.data,
   };
-}
+  },
+  ['slp-patient-data'],
+  { tags: ['slp-patient-sessions'], revalidate: 60 },
+);
 
 function Metric({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
 import { createClient as adminClient } from '@supabase/supabase-js';
 import { assertSlp } from '@/lib/slp/guard';
 
@@ -28,7 +29,10 @@ export interface CaseloadPatient {
   flag: 'ok' | 'inactive' | 'never_started' | 'no_plan';
 }
 
-async function fetchCaseload(slpId: string): Promise<CaseloadPatient[]> {
+// Cache per-SLT, revalidated on enrol/discharge via revalidateTag('slp-caseload').
+// auth (assertSlp / cookies()) runs in the page component above — never inside here.
+const fetchCaseload = unstable_cache(
+  async (slpId: string): Promise<CaseloadPatient[]> => {
   const supabase = db();
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -95,7 +99,10 @@ async function fetchCaseload(slpId: string): Promise<CaseloadPatient[]> {
       flag,
     };
   });
-}
+  },
+  ['slp-caseload'],
+  { tags: ['slp-caseload'], revalidate: 60 },
+);
 
 function FlagBadge({ flag }: { flag: CaseloadPatient['flag'] }) {
   if (flag === 'ok') return (

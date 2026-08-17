@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient as adminClient } from '@supabase/supabase-js';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { sendPatientDischargeNotification } from '@/lib/email';
 
 function db() {
@@ -34,6 +34,7 @@ export async function addSessionNote({
 
   if (error) return { ok: false, error: error.message };
 
+  updateTag('slp-patient-sessions');
   revalidatePath(`/slp/patients/${patientId}`);
   return { ok: true };
 }
@@ -55,6 +56,7 @@ export async function updateTreatmentPlan({
     .eq('id', planId);
 
   if (error) return { ok: false, error: error.message };
+  updateTag('slp-patient-sessions');
   return { ok: true };
 }
 
@@ -129,6 +131,7 @@ export async function enrolPatient({
   if (assignRes.error) return { ok: false, error: assignRes.error.message };
   if (planRes.error)   return { ok: false, error: planRes.error.message };
 
+  updateTag('slp-caseload');
   revalidatePath('/slp/caseload');
   return { ok: true, patientId };
 }
@@ -173,6 +176,8 @@ export async function dischargePatient({
     await sendPatientDischargeNotification({ patientEmail, patientName, reason });
   }
 
+  updateTag('slp-caseload');
+  updateTag('slp-patient-sessions');
   revalidatePath('/slp/caseload');
   return { ok: true };
 }
