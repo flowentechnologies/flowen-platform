@@ -9,7 +9,7 @@ export interface IpDocMeta {
   slug:      string;
   title:     string;
   category:  string;
-  type:      'legal-template' | 'policy' | 'audit-report' | 'checklist' | 'procedure' | 'clinical-safety-case';
+  type:      'legal-template' | 'policy' | 'audit-report' | 'checklist' | 'procedure' | 'clinical-safety-case' | 'regulatory-application';
   status:    'draft' | 'internal-approved' | 'requires-legal-review';
   auditSlug: string | null;  // matches title in ip_audit_items for linking
   version:   string;
@@ -18,7 +18,8 @@ export interface IpDocMeta {
 
 export const IP_DOCS: IpDocMeta[] = [
   // Regulatory & Clinical Safety
-  { slug: 'dcb0129-clinical-safety-case', title: 'DCB0129 Clinical Safety Case Report', category: 'regulatory', type: 'clinical-safety-case', status: 'draft', auditSlug: null, version: '1.0', date: 'August 2026' },
+  { slug: 'dcb0129-clinical-safety-case',  title: 'DCB0129 Clinical Safety Case Report',            category: 'regulatory', type: 'clinical-safety-case',    status: 'draft', auditSlug: null, version: '1.0', date: 'August 2026' },
+  { slug: 'seis-advance-assurance',        title: 'SEIS Advance Assurance Application — HMRC',      category: 'regulatory', type: 'regulatory-application',  status: 'draft', auditSlug: null, version: '1.0', date: 'August 2026' },
   // Contracts
   { slug: 'founder-ip-assignment-deed',    title: 'Founder IP Assignment Deed',                  category: 'contracts',     type: 'legal-template',   status: 'requires-legal-review', auditSlug: 'Founder IP Assignment Deed',               version: '1.0', date: 'August 2026' },
   { slug: 'employment-ip-clause',          title: 'Employment Contracts — IP Clause Addendum',   category: 'contracts',     type: 'legal-template',   status: 'requires-legal-review', auditSlug: 'Employment Contracts — IP Clauses',        version: '1.0', date: 'August 2026' },
@@ -62,5 +63,6 @@ export const TYPE_LABEL: Record<IpDocMeta['type'], string> = {
   'audit-report':         '🔍 Audit Report',
   'checklist':            '✅ Checklist',
   'procedure':            '🔄 Procedure',
-  'clinical-safety-case': '🏥 Clinical Safety Case',
+  'clinical-safety-case':    '🏥 Clinical Safety Case',
+  'regulatory-application':  '📨 Regulatory Application',
 };

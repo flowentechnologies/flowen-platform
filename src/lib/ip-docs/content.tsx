@@ -401,6 +401,386 @@ export const CONTENT: Record<string, ReactNode> = {
     </>
   ),
 
+  // ── SEIS Advance Assurance ───────────────────────────────────────────────────
+
+  'seis-advance-assurance': (
+    <>
+      <Note>
+        Draft for review. Items in <span className="text-slate-200 font-semibold">[square brackets]</span> require your specific details before submission.
+        Review all financial figures with your accountant and confirm company details via Companies House before posting to HMRC.
+        Post by recorded delivery and retain proof of postage. HMRC target response time is 4–6 weeks.
+      </Note>
+
+      {/* ── Letter Header ── */}
+      <div className="border border-slate-800 rounded-xl p-6 mb-8 text-sm space-y-1.5">
+        <div className="flex justify-between items-start gap-4 flex-wrap">
+          <div className="space-y-0.5">
+            <p className="text-slate-200 font-semibold">[Director / Authorised Signatory Name]</p>
+            <p className="text-slate-400">Flowen Technologies Limited</p>
+            <p className="text-slate-400">[Registered Office Address]</p>
+            <p className="text-slate-400">[Town, County, Postcode]</p>
+            <p className="text-slate-500 text-xs mt-1">flowenspeech@outlook.com</p>
+          </div>
+          <div className="space-y-0.5 text-right">
+            <p className="text-slate-200 font-semibold">HMRC</p>
+            <p className="text-slate-400">Venture Capital Reliefs Team</p>
+            <p className="text-slate-400">HMRC</p>
+            <p className="text-slate-400">BX9 1QR</p>
+          </div>
+        </div>
+        <div className="pt-3 border-t border-slate-800 mt-3">
+          <p className="text-slate-500 text-xs">Date: <span className="text-slate-300">[Date of posting]</span></p>
+        </div>
+        <div className="pt-2">
+          <p className="text-slate-200 font-bold text-base">Re: Application for Advance Assurance — Seed Enterprise Investment Scheme (SEIS)</p>
+          <p className="text-slate-400 text-xs mt-1">Company: Flowen Technologies Limited &nbsp;|&nbsp; Co. No.: [XXXXXXXX] &nbsp;|&nbsp; UTR: [XXXXXXXXXX]</p>
+        </div>
+      </div>
+
+      <P>
+        Dear Sir or Madam,
+      </P>
+      <P>
+        We write on behalf of <Bold>Flowen Technologies Limited</Bold> ("the Company") to apply for Advance Assurance under
+        the Seed Enterprise Investment Scheme (SEIS) in accordance with the Income Tax Act 2007 (ITA 2007),
+        Part 5A, as amended by the Finance Act 2023. We respectfully request that HMRC confirms whether
+        the proposed share issue described below is likely to qualify for SEIS income tax relief.
+      </P>
+
+      <H>1. Company Information</H>
+
+      <TblWrap>
+        <thead>
+          <tr>
+            <TH w="w-48">Field</TH>
+            <TH>Details</TH>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ['Full company name',               'Flowen Technologies Limited'],
+            ['Companies House number',           '[XXXXXXXX]'],
+            ['Unique Taxpayer Reference (UTR)',  '[XXXXXXXXXX]'],
+            ['Registered office address',        '[Full registered address including postcode]'],
+            ['Principal place of business',      '[If different from registered office]'],
+            ['Correspondence address',           '[If different from registered office]'],
+            ['Contact person',                   '[Director name] — flowenspeech@outlook.com'],
+            ['Date of incorporation',            '[DD Month YYYY]'],
+            ['Accounting reference date',        '[DD Month] annually'],
+            ['SIC code',                         '62012 — Business and Domestic Software Development'],
+            ['Nature of entity',                 'Private company limited by shares'],
+          ].map(([f, d]) => (
+            <tr key={f}>
+              <TD><span className="text-slate-300 font-medium text-xs">{f}</span></TD>
+              <TD>{d}</TD>
+            </tr>
+          ))}
+        </tbody>
+      </TblWrap>
+
+      <H>2. Description of the Qualifying Trade</H>
+
+      <P>
+        The Company develops and operates <Bold>Flowen</Bold> — an AI-powered speech and language therapy support platform
+        for adults who stutter. The platform comprises:
+      </P>
+      <UL>
+        <LI><Bold>iOS mobile application</Bold> — enables patients to complete evidence-based fluency shaping exercises
+          (diaphragmatic breathing, soft contacts, prolonged speech) with real-time AI detection of blocks,
+          repetitions, and prolongations using a proprietary disfluency-aware automatic speech recognition model.</LI>
+        <LI><Bold>Clinician web portal</Bold> — provides Speech and Language Therapists (SLTs) with caseload management,
+          patient session data, treatment plan configuration, and inactivity alerts to support remote
+          therapeutic oversight.</LI>
+        <LI><Bold>AI model</Bold> — a fine-tuned automatic speech recognition model trained on proprietary
+          disfluent speech datasets to detect and quantify stuttering events.</LI>
+      </UL>
+      <P>
+        The Company's trade is the <Bold>development and commercialisation of proprietary software and AI technology</Bold>.
+        Flowen is licensed to end users on a subscription basis (direct-to-consumer and via NHS/private SLT
+        practices). The Company's qualifying business activity commenced on <Bold>[Date trade first commenced]</Bold>.
+      </P>
+      <P>
+        This trade is a qualifying trade for the purposes of ITA 2007 s.192 and does not fall within any of the
+        excluded activities listed in ITA 2007 s.192(1) and Schedule 7B. In particular, the Company does not carry on
+        any financial activities, property development, legal or accountancy services, or energy generation activities.
+      </P>
+
+      <H>3. Confirmation of SEIS Qualifying Conditions</H>
+      <P>
+        We confirm that, at the time of the proposed share issue and to the best of our knowledge and belief,
+        the Company satisfies each of the following SEIS qualifying conditions:
+      </P>
+
+      <div className="space-y-3 mb-8">
+        {[
+          ['Not listed on a recognised stock exchange',
+           'The Company is a private company limited by shares and is not listed or quoted on any recognised stock exchange, nor does it have any arrangement to become so listed.'],
+          ['No controlling interest in another company',
+           'The Company does not own or control any subsidiary that is not a qualifying subsidiary. The Company has no subsidiaries.'],
+          ['Not under control of another company',
+           'The Company is not a subsidiary of, nor is it under the control of, another company. It operates independently.'],
+          ['UK permanent establishment',
+           'The Company has a permanent establishment in the United Kingdom and carries on its qualifying trade wholly or mainly in the United Kingdom.'],
+          ['Gross assets do not exceed £350,000',
+           'The Company\'s total gross assets at the date of this letter do not exceed £350,000. [FILL IN: Current gross assets: £_______]. This will also be the case at the time of the share issue.'],
+          ['Fewer than 25 full-time equivalent employees',
+           'The Company currently has [FILL IN: __ full-time equivalent employees], which is fewer than 25. This includes all directors who are employed by the Company.'],
+          ['Company age — within 3 years of first commercial sale',
+           'The Company\'s first commercial sale took place on [FILL IN: date]. This is within 3 years of the proposed date of share issue, satisfying the new qualifying business activity condition under ITA 2007 s.257DA as amended by Finance Act 2023.'],
+          ['No previous SEIS investment',
+           'The Company has not previously received any investment under SEIS, and no SEIS compliance statement (SEIS3) has been issued in respect of the Company.'],
+          ['No disqualifying EIS/VCT investment prior to this SEIS issue',
+           '[FILL IN: The Company has not received any EIS or VCT investment prior to this SEIS issue / OR: The Company has previously received EIS/VCT investment as follows: ______.] The Company confirms that any prior EIS/VCT investment does not disqualify the proposed SEIS issue.'],
+          ['Shares are newly issued ordinary shares',
+           'The shares to be issued will be new ordinary shares, carrying no preferential rights to dividends or to assets on a winding-up, and no rights of redemption. They will rank pari passu with all existing ordinary shares.'],
+          ['Minimum three-year holding period will be observed',
+           'The Company will not take any action within the three years following the share issue that would cause the SEIS conditions to be breached, including making a disqualifying arrangement or returning value to investors.'],
+        ].map(([title, body], i) => (
+          <div key={i} className="flex gap-3 p-4 border border-slate-800 rounded-xl bg-slate-900/30">
+            <span className="shrink-0 mt-0.5 text-emerald-400 text-sm font-bold">✓</span>
+            <div>
+              <p className="text-slate-200 text-xs font-semibold mb-1">{title}</p>
+              <p className="text-slate-400 text-xs leading-relaxed">{body}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <H>4. Proposed Share Issue</H>
+
+      <TblWrap>
+        <thead>
+          <tr>
+            <TH w="w-56">Item</TH>
+            <TH>Details</TH>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ['Total amount to be raised under SEIS',  '[£______] (maximum £250,000 under SEIS — Finance Act 2023)'],
+            ['Class of shares',                        'Ordinary shares of [£0.001 / £0.01] nominal value each'],
+            ['Number of new shares to be issued',      '[_______ shares]'],
+            ['Issue price per share',                  '[£_____] per share'],
+            ['Proposed date of share issue',           '[DD Month YYYY — or "on or before [date]"]'],
+            ['Will shares rank equally with existing?','Yes — pari passu in all respects with existing ordinary shares'],
+            ['Pre-emption rights / subscription rights','[None / describe any arrangement]'],
+            ['Post-issue shareholding structure',       '[FILL IN: e.g. Founder A: X%, Founder B: Y%, New investors: Z%]'],
+          ].map(([f, d]) => (
+            <tr key={f}>
+              <TD><span className="text-slate-300 font-medium text-xs">{f}</span></TD>
+              <TD>{d}</TD>
+            </tr>
+          ))}
+        </tbody>
+      </TblWrap>
+
+      <H>5. Use of Investment Proceeds</H>
+
+      <P>
+        The investment will be used wholly for the purposes of the qualifying business activity in accordance
+        with ITA 2007 s.257AC(2). The following is the intended allocation:
+      </P>
+
+      <TblWrap>
+        <thead>
+          <tr>
+            <TH>Purpose</TH>
+            <TH w="w-32">Amount (£)</TH>
+            <TH w="w-16">%</TH>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ['iOS application development — features, accessibility, and App Store submission',   '[£      ]', '[  %]'],
+            ['AI model training, fine-tuning, and infrastructure (GPU compute, Supabase)',        '[£      ]', '[  %]'],
+            ['NHS and private SLT clinical partnership development',                              '[£      ]', '[  %]'],
+            ['Regulatory compliance — DCB0129, GDPR, NHS DSPT',                                  '[£      ]', '[  %]'],
+            ['Marketing and patient acquisition (Google Ads, SLT referral programme)',            '[£      ]', '[  %]'],
+            ['Salaries and working capital',                                                       '[£      ]', '[  %]'],
+            ['Legal, accountancy, and corporate governance',                                       '[£      ]', '[  %]'],
+          ].map(([purpose, amt, pct]) => (
+            <tr key={purpose}>
+              <TD>{purpose}</TD>
+              <TD mono>{amt}</TD>
+              <TD mono muted>{pct}</TD>
+            </tr>
+          ))}
+          <tr>
+            <TD><span className="text-slate-200 font-bold text-xs">TOTAL</span></TD>
+            <TD mono><span className="text-slate-200 font-bold">[£      ]</span></TD>
+            <TD mono><span className="text-slate-200 font-bold">100%</span></TD>
+          </tr>
+        </tbody>
+      </TblWrap>
+
+      <P>
+        The Company confirms that none of the investment proceeds will be used for the acquisition of existing
+        shares, repayment of loans (other than those used to fund a qualifying business activity), or any
+        excluded purpose within the meaning of ITA 2007 Schedule 7B para. 1.
+      </P>
+
+      <H>6. Proposed Investors</H>
+
+      <P>
+        <Bold>Option A (if investors are known):</Bold> The proposed investors are listed below. We confirm
+        that none of them is a connected person within the meaning of ITA 2007 s.257HG (i.e., none is an
+        employee, director, or partner of the Company prior to investment, or an associate of such a person,
+        except as permitted under the business angel provisions).
+      </P>
+
+      <TblWrap>
+        <thead>
+          <tr>
+            <TH>Investor name</TH>
+            <TH>Address</TH>
+            <TH w="w-32">Amount (£)</TH>
+            <TH w="w-24">Connected?</TH>
+          </tr>
+        </thead>
+        <tbody>
+          {[1, 2, 3].map(n => (
+            <tr key={n}>
+              <TD muted>[Name {n}]</TD>
+              <TD muted>[Address]</TD>
+              <TD muted mono>[£     ]</TD>
+              <TD muted>[No / Yes — reason]</TD>
+            </tr>
+          ))}
+        </tbody>
+      </TblWrap>
+
+      <P>
+        <Bold>Option B (if investors are not yet confirmed):</Bold> The specific investors are not yet identified.
+        We request Advance Assurance on the basis of the proposed share issue terms set out in Section 4 above.
+        We will provide investor details to HMRC when submitting the compliance statement (SEIS1 / SEIS3)
+        following the share issue.
+      </P>
+
+      <Warn>
+        Delete whichever of Option A / Option B does not apply before submitting.
+      </Warn>
+
+      <H>7. Previous Investment Schemes and Convertible Instruments</H>
+
+      <P>
+        We confirm the following in relation to previous investment schemes and instruments:
+      </P>
+      <UL>
+        <LI>The Company <Bold>has not</Bold> previously received investment under SEIS.</LI>
+        <LI>The Company <Bold>[has not / has — provide details]</Bold> received investment under EIS or via a Venture Capital Trust prior to the proposed SEIS issue. [If yes: provide dates, amounts, and confirm no disqualification arises.]</LI>
+        <LI>The Company <Bold>[does not have / has — provide details]</Bold> any convertible loan notes outstanding. [If yes: provide terms and confirm that conversion would not breach the SEIS share condition.]</LI>
+        <LI>The Company <Bold>[does not have / has — provide details]</Bold> any outstanding advance subscription agreements (ASAs) or SAFE notes.</LI>
+      </UL>
+
+      <H>8. State Aid and Other Government Funding</H>
+
+      <P>
+        In accordance with HMRC's requirements and UK subsidy control obligations, we disclose the following
+        government funding received or applied for by the Company:
+      </P>
+
+      <TblWrap>
+        <thead>
+          <tr>
+            <TH>Funding source / scheme</TH>
+            <TH>Amount</TH>
+            <TH>Date</TH>
+            <TH>Status</TH>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <TD muted>[e.g. Innovate UK Smart Grant / SBRI / none]</TD>
+            <TD muted mono>[£     ]</TD>
+            <TD muted>[Month YYYY]</TD>
+            <TD muted>[Awarded / Pending / Not applied]</TD>
+          </tr>
+        </tbody>
+      </TblWrap>
+
+      <P>
+        The Company confirms that any government funding received does not constitute de minimis aid that
+        would cause the cumulative SEIS/state-aid limit to be exceeded, and does not otherwise affect
+        SEIS eligibility under the Finance Act 2023 rules.
+      </P>
+
+      <H>9. Declaration</H>
+
+      <P>
+        We confirm that, to the best of our knowledge and belief, the information provided in this letter
+        and its enclosures is accurate and complete. We understand that:
+      </P>
+      <UL>
+        <LI>Advance Assurance is not a guarantee of relief — individual investors must still satisfy the
+            investor-level conditions and submit their own claims (SEIS1).</LI>
+        <LI>Any material change to the facts described herein before the share issue must be notified to
+            HMRC promptly, as it may affect the assurance given.</LI>
+        <LI>Providing false or misleading information may result in penalties under Finance Act 2007 s.97
+            and the withdrawal of any relief granted.</LI>
+        <LI>HMRC may request additional information or documents to process this application.</LI>
+      </UL>
+
+      <div className="mt-6 space-y-3">
+        <Field label="Signed" />
+        <Field label="Name (print)" />
+        <Field label="Capacity (e.g. Director)" />
+        <Field label="On behalf of" />
+        <Field label="Date" />
+      </div>
+
+      <H>10. Enclosures</H>
+      <P>Please find enclosed the following documents in support of this application:</P>
+
+      <div className="space-y-2 mb-8">
+        {[
+          ['☐', 'Latest audited accounts or management accounts (period ending [date])'],
+          ['☐', 'Memorandum and Articles of Association (Companies House filed version)'],
+          ['☐', 'Draft subscription agreement or investment terms sheet'],
+          ['☐', 'Business plan / investor deck (confidential)'],
+          ['☐', 'Current cap table (pre- and post-investment)'],
+          ['☐', 'Copy of most recent filed Confirmation Statement (CS01)'],
+          ['☐', 'Details of any convertible loan notes or ASAs outstanding (if applicable)'],
+        ].map(([tick, text]) => (
+          <div key={text} className="flex gap-3 items-start text-sm">
+            <span className="text-slate-500 shrink-0 font-mono mt-0.5">{tick}</span>
+            <span className="text-slate-400">{text}</span>
+          </div>
+        ))}
+      </div>
+
+      <P>
+        We would be grateful for HMRC's written confirmation at the earliest opportunity. Please direct
+        any queries to the contact named in Section 1 above.
+      </P>
+      <P>Yours faithfully,</P>
+
+      <div className="mt-6 space-y-3">
+        <Field label="Signature" />
+        <Field label="Name" />
+        <Field label="Director, Flowen Technologies Limited" />
+      </div>
+
+      <div className="mt-10 p-5 border border-slate-800 rounded-xl bg-slate-900/20">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-3">Post-Submission Checklist</p>
+        <div className="space-y-1.5 text-xs text-slate-400">
+          {[
+            'Send by Royal Mail Recorded / Special Delivery — retain proof of postage',
+            'Keep a signed copy of this letter on file',
+            'Calendar a 6-week follow-up date if no response received',
+            'Once Advance Assurance received: issue shares and obtain HMRC reference number',
+            'After share issue: submit SEIS1 compliance statement within 2 years of end of tax year of investment',
+            'Provide SEIS3 certificates to each investor for their tax return',
+          ].map((item, i) => (
+            <div key={i} className="flex gap-2">
+              <span className="text-slate-600 shrink-0 font-mono">☐</span>
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  ),
+
   // ── Contracts ────────────────────────────────────────────────────────────────
 
   'founder-ip-assignment-deed': (
