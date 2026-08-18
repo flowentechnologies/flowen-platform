@@ -216,7 +216,7 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
 
 // ── Generate Video Modal ──────────────────────────────────────────────────────
 
-type GenModel = 'seedance-2.0' | 'seedance-2.0-pro' | 'seedance-2.0-fast';
+type GenModel = 'dreamina-seedance-2-0-260128' | 'dreamina-seedance-2-0-pro-260128' | 'dreamina-seedance-2-0-lite-260128';
 type GenRatio = '16:9' | '9:16' | '1:1' | '4:3' | '21:9';
 type GenRes   = '480p' | '720p' | '1080p' | '2k';
 type GenStyle = '' | 'cinematic' | 'anime' | 'realistic' | '3d_render';
@@ -232,12 +232,12 @@ interface GenForm {
   prompt:          string;
   name:            string;
   model:           GenModel;
-  aspect_ratio:    GenRatio;
+  ratio:           GenRatio;
   resolution:      GenRes;
   duration:        number;
   style:           GenStyle;
   negative_prompt: string;
-  audio:           boolean;
+  generate_audio:  boolean;
 }
 
 function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => void }) {
@@ -251,13 +251,13 @@ function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => voi
   const [form, setForm] = useState<GenForm>({
     prompt:          '',
     name:            '',
-    model:           'seedance-2.0',
-    aspect_ratio:    '16:9',
+    model:           'dreamina-seedance-2-0-260128',
+    ratio:           '16:9',
     resolution:      '720p',
     duration:        8,
     style:           '',
     negative_prompt: '',
-    audio:           true,
+    generate_audio:  true,
   });
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -332,10 +332,10 @@ function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => voi
         body:    JSON.stringify({
           prompt:          form.prompt.trim(),
           model:           form.model,
-          aspect_ratio:    form.aspect_ratio,
+          ratio:           form.ratio,
           resolution:      form.resolution,
           duration:        form.duration,
-          audio:           form.audio,
+          generate_audio:  form.generate_audio,
           style:           form.style || undefined,
           negative_prompt: form.negative_prompt.trim() || undefined,
         }),
@@ -376,9 +376,9 @@ function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => voi
   }
 
   const MODELS: { id: GenModel; label: string; note: string }[] = [
-    { id: 'seedance-2.0',      label: 'Standard',    note: 'Balanced quality & speed' },
-    { id: 'seedance-2.0-pro',  label: 'Pro',         note: 'Highest quality, slower' },
-    { id: 'seedance-2.0-fast', label: 'Fast',        note: 'Quick draft, lower quality' },
+    { id: 'dreamina-seedance-2-0-260128',      label: 'Standard', note: 'Balanced quality & speed' },
+    { id: 'dreamina-seedance-2-0-pro-260128',  label: 'Pro',      note: 'Highest quality, slower' },
+    { id: 'dreamina-seedance-2-0-lite-260128', label: 'Lite',     note: 'Quick draft, lower cost' },
   ];
 
   const RATIOS: { id: GenRatio; label: string }[] = [
@@ -554,8 +554,8 @@ function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => voi
                     <div>
                       <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Aspect ratio</label>
                       <select
-                        value={form.aspect_ratio}
-                        onChange={e => field('aspect_ratio', e.target.value as GenRatio)}
+                        value={form.ratio}
+                        onChange={e => field('ratio', e.target.value as GenRatio)}
                         className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-violet-500/60"
                       >
                         {RATIOS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
@@ -611,10 +611,10 @@ function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => voi
                     </div>
                     <button
                       type="button"
-                      onClick={() => field('audio', !form.audio)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.audio ? 'bg-violet-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                      onClick={() => field('generate_audio', !form.generate_audio)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.generate_audio ? 'bg-violet-600' : 'bg-slate-300 dark:bg-slate-700'}`}
                     >
-                      <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${form.audio ? 'translate-x-6' : 'translate-x-1'}`} />
+                      <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${form.generate_audio ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
                   </div>
 
