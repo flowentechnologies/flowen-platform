@@ -107,7 +107,7 @@ function ContactForm() {
         <div className="text-4xl mb-3">✅</div>
         <h3 className="text-slate-900 dark:text-white font-bold text-lg mb-1">Ticket submitted</h3>
         <p className="text-slate-400 text-sm">We'll reply to your email within 24–48 hours. Check your inbox for a confirmation.</p>
-        <button onClick={() => { setSent(false); setSubject(''); setMessage(''); setCategory('general'); }} className="mt-4 text-xs text-slate-500 hover:text-slate-300 underline">
+        <button type="button" onClick={() => { setSent(false); setSubject(''); setMessage(''); setCategory('general'); }} className="mt-4 text-xs text-slate-500 hover:text-slate-300 underline">
           Submit another ticket
         </button>
       </div>

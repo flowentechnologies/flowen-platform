@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useTransition, useRef, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -688,9 +689,8 @@ function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => voi
 function AssetThumb({ asset }: { asset: AssetFile }) {
   if (isImage(asset.mime_type)) {
     return (
-      <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={asset.public_url} alt={asset.name} className="w-full h-full object-cover" />
+      <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 relative">
+        <Image src={asset.public_url} alt={asset.name} fill className="object-cover" sizes="40px" />
       </div>
     );
   }
