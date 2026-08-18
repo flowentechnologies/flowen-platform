@@ -17,11 +17,16 @@ import 'server-only';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-/** Ark model IDs for Seedance 2.0 */
+/**
+ * Ark model IDs for Dreamina Seedance video generation.
+ * Models must be activated in BytePlus Ark Console before use:
+ *   https://console.byteplus.com/ark → Model Management → Video Generation
+ */
 export type SeedanceModel =
-  | 'dreamina-seedance-2-0-260128'       // standard
-  | 'dreamina-seedance-2-0-pro-260128'   // higher quality
-  | 'dreamina-seedance-2-0-lite-260128'; // faster / cheaper
+  | 'dreamina-seedance-2-5-260628'        // Seedance 2.5 — latest, best quality
+  | 'dreamina-seedance-2-0-260128'        // Seedance 2.0 — standard
+  | 'dreamina-seedance-2-0-fast-260128'   // Seedance 2.0 Fast — lower cost
+  | 'dreamina-seedance-2-0-mini-260615';  // Seedance 2.0 Mini — quick drafts
 
 export type SeedanceRatio =
   | '16:9' | '9:16' | '1:1' | '4:3' | '3:4' | '21:9';
@@ -58,6 +63,12 @@ const BASE =
     'https://ark.ap-southeast.bytepluses.com/api/v3')
     .replace(/\/$/, '');
 
+// Correct Ark endpoint paths (from official SDK source):
+//   POST /api/v3/contents/generations/tasks   ← create task
+//   GET  /api/v3/contents/generations/tasks/{id}  ← poll task
+// Note: path is plural "contents/generations", NOT "content_generation"
+const TASK_PATH = '/contents/generations/tasks';
+
 function key(): string {
   const k = process.env.BYTEPLUS_API_KEY;
   if (!k) {
@@ -76,31 +87,33 @@ function authHeaders(): Record<string, string> {
 }
 
 function normaliseStatus(raw: string): SeedanceStatus {
+  // Ark API statuses: "queued" | "running" | "succeeded" | "failed" | "cancelled"
   const s = raw.toLowerCase();
   if (s === 'succeeded' || s === 'success' || s === 'completed') return 'succeeded';
-  if (s === 'failed' || s === 'error')                            return 'failed';
+  if (s === 'failed' || s === 'error' || s === 'cancelled')      return 'failed';
   if (s === 'running' || s === 'processing' || s === 'in_progress') return 'processing';
+  // 'queued' and anything else → pending
   return 'pending';
 }
 
-/** Extract video URL from the several shapes the Ark API returns. */
+/** Extract video URL from the Ark API response.
+ *  Official shape (from SDK): data.content.video_url
+ *  Fallback shapes kept for resilience.
+ */
 function extractVideoUrl(data: Record<string, unknown>): string | undefined {
-  // Shape 1: task_status.content.video_url
-  const ts = data?.task_status as Record<string, unknown> | undefined;
-  if (ts?.content) {
-    const c = ts.content as Record<string, unknown>;
-    if (typeof c.video_url === 'string') return c.video_url;
-    // Shape 1b: task_status.content[0].video_url
-    if (Array.isArray(c) && c[0]?.video_url) return String(c[0].video_url);
+  // Primary: data.content.video_url (official Ark response shape)
+  const content = data?.content as Record<string, unknown> | undefined;
+  if (content && typeof content.video_url === 'string' && content.video_url) {
+    return content.video_url;
   }
 
-  // Shape 2: content[0].video_url
-  const content = data?.content;
-  if (Array.isArray(content) && content[0]?.video_url) {
-    return String(content[0].video_url);
+  // Fallback: content array (older models)
+  if (Array.isArray(data?.content)) {
+    const first = (data.content as Record<string, unknown>[])[0];
+    if (first?.video_url) return String(first.video_url);
   }
 
-  // Shape 3: output.video_url / video_url (fallback)
+  // Fallback: output.video_url / top-level video_url
   const out = data?.output as Record<string, unknown> | undefined;
   return (out?.video_url ?? data?.video_url) as string | undefined;
 }
@@ -137,7 +150,7 @@ export async function createVideoTask(
   }
 
   const body: Record<string, unknown> = {
-    model:          params.model       ?? 'dreamina-seedance-2-0-260128',
+    model:          params.model       ?? 'dreamina-seedance-2-5-260628',
     content:        contentArray,
     ratio:          params.ratio       ?? '16:9',
     duration:       Math.min(15, Math.max(4, params.duration ?? 8)),
@@ -146,7 +159,7 @@ export async function createVideoTask(
     watermark:      params.watermark   ?? false,
   };
 
-  const res = await fetch(`${BASE}/content_generation/tasks`, {
+  const res = await fetch(`${BASE}${TASK_PATH}`, {
     method:  'POST',
     headers: authHeaders(),
     body:    JSON.stringify(body),
@@ -159,11 +172,8 @@ export async function createVideoTask(
 
   const data = await res.json() as Record<string, unknown>;
 
-  const id =
-    data?.id       ??
-    data?.task_id  ??
-    data?.job_id   ??
-    data?.request_id;
+  // Ark create response: { id: string, safety_identifier?: string }
+  const id = data?.id ?? data?.task_id ?? data?.job_id ?? data?.request_id;
 
   if (!id) {
     throw new Error(
@@ -184,7 +194,7 @@ export async function getVideoTask(
   taskId: string,
 ): Promise<SeedanceTaskResult> {
   const res = await fetch(
-    `${BASE}/content_generation/tasks/${encodeURIComponent(taskId)}`,
+    `${BASE}${TASK_PATH}/${encodeURIComponent(taskId)}`,
     {
       headers: { Authorization: `Bearer ${key()}` },
       cache:   'no-store',
