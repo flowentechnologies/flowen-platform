@@ -216,7 +216,13 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
 
 // ── Generate Video Modal ──────────────────────────────────────────────────────
 
-type GenModel = 'dreamina-seedance-2-0-260128' | 'dreamina-seedance-2-0-pro-260128' | 'dreamina-seedance-2-0-lite-260128';
+// Model IDs that are confirmed in the BytePlus Ark models list.
+// Activate in: https://console.byteplus.com/ark → Model Management
+type GenModel =
+  | 'dreamina-seedance-2-0-260128'        // Seedance 2.0 Standard
+  | 'dreamina-seedance-2-0-fast-260128'   // Seedance 2.0 Fast
+  | 'dreamina-seedance-2-0-mini-260615'   // Seedance 2.0 Mini
+  | 'dreamina-seedance-2-5-260628';       // Seedance 2.5 (latest)
 type GenRatio = '16:9' | '9:16' | '1:1' | '4:3' | '21:9';
 type GenRes   = '480p' | '720p' | '1080p' | '2k';
 type GenStyle = '' | 'cinematic' | 'anime' | 'realistic' | '3d_render';
@@ -251,7 +257,7 @@ function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => voi
   const [form, setForm] = useState<GenForm>({
     prompt:          '',
     name:            '',
-    model:           'dreamina-seedance-2-0-260128',
+    model:           'dreamina-seedance-2-5-260628',
     ratio:           '16:9',
     resolution:      '720p',
     duration:        8,
@@ -376,9 +382,10 @@ function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => voi
   }
 
   const MODELS: { id: GenModel; label: string; note: string }[] = [
-    { id: 'dreamina-seedance-2-0-260128',      label: 'Standard', note: 'Balanced quality & speed' },
-    { id: 'dreamina-seedance-2-0-pro-260128',  label: 'Pro',      note: 'Highest quality, slower' },
-    { id: 'dreamina-seedance-2-0-lite-260128', label: 'Lite',     note: 'Quick draft, lower cost' },
+    { id: 'dreamina-seedance-2-5-260628',      label: 'Seedance 2.5',      note: 'Latest — best quality' },
+    { id: 'dreamina-seedance-2-0-260128',      label: 'Seedance 2.0',      note: 'Balanced quality & speed' },
+    { id: 'dreamina-seedance-2-0-fast-260128', label: 'Seedance 2.0 Fast', note: 'Faster, lower cost' },
+    { id: 'dreamina-seedance-2-0-mini-260615', label: 'Seedance 2.0 Mini', note: 'Quick drafts' },
   ];
 
   const RATIOS: { id: GenRatio; label: string }[] = [
