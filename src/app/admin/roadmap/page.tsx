@@ -1,15 +1,7 @@
 import { assertAdmin } from '@/lib/admin/guard';
-import { createClient } from '@supabase/supabase-js';
 import { RoadmapClient } from './RoadmapClient';
 import type { RoadmapMilestone } from '@/app/api/admin/roadmap/route';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb as db } from '@/lib/supabase/admin';
 
 const PHASE_ORDER: Record<string, number> = { launch: 0, nhs_pilot: 1, scale: 2 };
 

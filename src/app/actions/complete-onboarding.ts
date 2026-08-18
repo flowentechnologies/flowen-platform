@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { adminDb } from '@/lib/supabase/admin';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { sendAdminNewUserAlert } from '@/lib/email';
@@ -9,12 +9,6 @@ import { fireEventWorkflows } from '@/lib/workflow-executor';
 const ALLOWED_ROLES = new Set(['pwds', 'clinician', 'researcher', 'parent_carer', 'other']);
 const ALLOWED_COUNTRIES = new Set(['GB', 'IE', 'OTHER']);
 
-function adminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase admin credentials not configured');
-  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
-}
 
 export async function completeOnboarding(opts: {
   displayName: string;
@@ -68,7 +62,7 @@ export async function completeOnboarding(opts: {
     return { error: 'HCPC numbers follow the format TS999999 — please check and try again' };
   }
 
-  const admin = adminClient();
+  const admin = adminDb();
 
   const profileUpdate: Record<string, unknown> = {
     display_name:         opts.displayName.trim(),

@@ -1,15 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { BillingClient, type BillingProps } from './BillingClient';
-
-const adminDb = () =>
-  createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+import { adminDb } from '@/lib/supabase/admin';
 
 async function getBillingData(): Promise<BillingProps | null> {
   const cookieStore = await cookies();

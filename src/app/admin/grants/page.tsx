@@ -1,15 +1,7 @@
 import { assertAdmin } from '@/lib/admin/guard';
-import { createClient } from '@supabase/supabase-js';
 import { GrantsClient } from './GrantsClient';
 import type { Grant } from '@/app/api/admin/grants/route';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb as db } from '@/lib/supabase/admin';
 
 async function fetchGrants(): Promise<Grant[]> {
   const client = db();

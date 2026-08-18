@@ -1,15 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
 import { assertAdmin } from '@/lib/admin/guard';
 import { HazardLogClient } from './HazardLogClient';
 import type { HazardEntry } from '@/app/api/admin/hazard-log/route';
-
-function adminDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb } from '@/lib/supabase/admin';
 
 export default async function HazardLogPage() {
   await assertAdmin();

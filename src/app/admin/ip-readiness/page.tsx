@@ -1,15 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
 import { assertAdmin } from '@/lib/admin/guard';
 import IPReadinessClient from './IPReadinessClient';
 import type { AuditItem, FundingItem } from '@/app/api/admin/ip-readiness/route';
-
-function adminDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb } from '@/lib/supabase/admin';
 
 export default async function IPReadinessPage() {
   await assertAdmin();

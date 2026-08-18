@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { stripe } from '@/lib/stripe';
 import { verifyCronRequest } from '@/lib/cron-auth';
 import type Stripe from 'stripe';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb as db } from '@/lib/supabase/admin';
 
 const PRICE_MATRIX: Record<string, { tier: string; cycle: string }> = {
   ...(process.env.STRIPE_PRICE_FOUNDING_MONTHLY    && { [process.env.STRIPE_PRICE_FOUNDING_MONTHLY]:    { tier: 'founding', cycle: 'monthly'    } }),

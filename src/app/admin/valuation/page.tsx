@@ -1,15 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
 import { assertAdmin } from '@/lib/admin/guard';
 import ValuationClient from './ValuationClient';
 import type { ValuationConfig, ValuationSnapshot, LiveKpis, RoadmapStatus } from '@/app/api/admin/valuation/route';
-
-function adminDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb } from '@/lib/supabase/admin';
 
 export default async function ValuationPage() {
   await assertAdmin();

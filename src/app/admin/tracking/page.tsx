@@ -1,6 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { assertAdmin } from '@/lib/admin/guard';
 import { TrackingClient } from './TrackingClient';
+import { adminDb as db } from '@/lib/supabase/admin';
 
 export interface TrackingRow {
   id: string;
@@ -16,14 +16,6 @@ export interface TrackingRow {
   server_config: Record<string, string>;
   sort_order: number;
   updated_at: string;
-}
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
 }
 
 export default async function TrackingPage() {

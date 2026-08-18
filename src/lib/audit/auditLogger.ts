@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { adminDb } from '@/lib/supabase/admin';
 
 export type AuditSeverity = 'INFO' | 'WARNING' | 'CRITICAL' | 'SECURITY_ALERT';
 export type AuditCategory = 'AUTH_EVENT' | 'CLINICAL_ACCESS' | 'TELEMETRY_INGEST' | 'DATA_EXPORT' | 'ADMIN_ACTION' | 'PAYMENT_EVENT';
@@ -16,13 +16,6 @@ export interface AuditEvent {
   userAgent?: string;
   metadata?: Record<string, unknown>;
   hash?: string;
-}
-
-function adminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 }
 
 async function computeHash(event: Omit<AuditEvent, 'hash'>): Promise<string> {
@@ -45,9 +38,8 @@ export async function logAuditEvent(params: Omit<AuditEvent, 'timestamp' | 'hash
     hash,
   };
 
-  const db = adminClient();
-  if (db) {
-    await db.from('audit_logs').insert({
+  try {
+    await adminDb().from('audit_logs').insert({
       id:          event.id,
       timestamp:   event.timestamp,
       severity:    event.severity,
@@ -63,6 +55,8 @@ export async function logAuditEvent(params: Omit<AuditEvent, 'timestamp' | 'hash
     }).then(({ error }) => {
       if (error) console.error('[AUDIT] DB write failed:', error.message);
     });
+  } catch (err) {
+    console.error('[AUDIT] DB write failed:', (err as Error).message);
   }
 
   console.log(`[AUDIT][${event.severity}][${event.category}]`, event.actorId, event.action);
@@ -70,10 +64,7 @@ export async function logAuditEvent(params: Omit<AuditEvent, 'timestamp' | 'hash
 }
 
 export async function getRecentAuditLogs(limit = 100): Promise<AuditEvent[]> {
-  const db = adminClient();
-  if (!db) return [];
-
-  const { data, error } = await db
+  const { data, error } = await adminDb()
     .from('audit_logs')
     .select('*')
     .order('timestamp', { ascending: false })

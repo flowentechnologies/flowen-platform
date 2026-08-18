@@ -1,16 +1,8 @@
 import { assertAdmin } from '@/lib/admin/guard';
-import { createClient } from '@supabase/supabase-js';
 import { stripe } from '@/lib/stripe';
 import { VentureClient } from './VentureClient';
 import type { VentureData } from '@/app/api/admin/venture/route';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb as db } from '@/lib/supabase/admin';
 
 async function fetchData(): Promise<VentureData> {
   const client       = db();

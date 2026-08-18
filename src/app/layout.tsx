@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { createClient } from '@supabase/supabase-js';
 import CookieConsent from '@/components/CookieConsent';
 import TrackingScripts from '@/components/TrackingScripts';
 import type { TrackingProvider } from '@/components/TrackingScripts';
@@ -8,6 +7,7 @@ import { JsonLd } from '@/components/JsonLd';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import PostHogProvider from '@/components/PostHogProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { adminDb as db } from '@/lib/supabase/admin';
 
 // Inline script evaluated synchronously before first paint — prevents flash of
 // unstyled (wrong-theme) content. Reads localStorage and applies the `dark`
@@ -52,12 +52,7 @@ export const metadata: Metadata = {
 
 async function getTrackingProviders(): Promise<TrackingProvider[]> {
   try {
-    const db = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    );
-    const { data } = await db
+    const { data } = await db()
       .from('tracking_providers')
       .select('provider_key, head_html, body_html, consent_required, enabled')
       .eq('enabled', true);

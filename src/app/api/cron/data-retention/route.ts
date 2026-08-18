@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { verifyCronRequest } from '@/lib/cron-auth';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb as db } from '@/lib/supabase/admin';
 
 const NINETY_DAYS_MS  = 90  * 86_400_000;
 const THIRTY_DAYS_MS  = 30  * 86_400_000;

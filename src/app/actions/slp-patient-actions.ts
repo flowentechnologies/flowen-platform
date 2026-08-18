@@ -1,16 +1,8 @@
 'use server';
 
-import { createClient as adminClient } from '@supabase/supabase-js';
 import { revalidatePath, updateTag } from 'next/cache';
 import { sendPatientDischargeNotification } from '@/lib/email';
-
-function db() {
-  return adminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb as db } from '@/lib/supabase/admin';
 
 // ── Add session note ───────────────────────────────────────────────────────────
 

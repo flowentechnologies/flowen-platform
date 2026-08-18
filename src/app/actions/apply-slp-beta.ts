@@ -1,14 +1,7 @@
 'use server';
 
-import { createClient } from '@supabase/supabase-js';
+import { adminDb as adminClient } from '@/lib/supabase/admin';
 import { sendEmail, FROM, ADMIN_INBOX } from '@/lib/email';
-
-function adminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase admin credentials not configured');
-  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
-}
 
 export interface SlpBetaPayload {
   name: string;

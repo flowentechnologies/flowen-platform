@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
-import { createClient } from '@supabase/supabase-js';
-
-function serviceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb } from '@/lib/supabase/admin';
 
 export interface AdminUserProfile {
   id: string;
@@ -62,7 +54,7 @@ export async function GET(
 
   const { id } = await params;
 
-  const client = serviceClient();
+  const client = adminDb();
 
   const [profileRes, authRes, sessionsRes] = await Promise.all([
     client

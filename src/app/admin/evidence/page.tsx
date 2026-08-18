@@ -1,15 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
 import { assertAdmin } from '@/lib/admin/guard';
 import { EvidenceClient } from './EvidenceClient';
 import type { EvidenceData, ComplianceStatus } from '@/app/api/admin/evidence/route';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb as db } from '@/lib/supabase/admin';
 
 function isMissingTable(error: { code?: string; message?: string }): boolean {
   return error.code === '42P01' || Boolean(error.message?.includes('does not exist'));

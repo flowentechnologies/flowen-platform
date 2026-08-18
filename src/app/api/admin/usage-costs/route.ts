@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin/guard';
+import { adminDb } from '@/lib/supabase/admin';
 
 // ── Cost registry ─────────────────────────────────────────────────────────────
 // Fixed = real subscription prices (GBP, estimated from USD at 0.79)
@@ -283,14 +283,6 @@ export interface UsageCostsData {
 }
 
 // ── DB ────────────────────────────────────────────────────────────────────────
-
-function adminDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
 
 // ── Core fetch ────────────────────────────────────────────────────────────────
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
-import { createClient } from '@supabase/supabase-js';
 import { logAuditEvent } from '@/lib/admin/audit';
+import { adminDb as db } from '@/lib/supabase/admin';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -79,14 +79,6 @@ export interface RoadmapStatus {
 }
 
 // ── DB client ──────────────────────────────────────────────────────────────────
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
 
 // ── GET ────────────────────────────────────────────────────────────────────────
 
