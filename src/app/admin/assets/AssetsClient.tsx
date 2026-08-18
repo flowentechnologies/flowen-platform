@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition, useRef } from 'react';
+import React, { useState, useTransition, useRef, useEffect, useCallback } from 'react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -214,6 +214,468 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
   );
 }
 
+// ── Generate Video Modal ──────────────────────────────────────────────────────
+
+type GenModel = 'seedance-2.0' | 'seedance-2.0-pro' | 'seedance-2.0-fast';
+type GenRatio = '16:9' | '9:16' | '1:1' | '4:3' | '21:9';
+type GenRes   = '480p' | '720p' | '1080p' | '2k';
+type GenStyle = '' | 'cinematic' | 'anime' | 'realistic' | '3d_render';
+
+type GenPhase =
+  | 'idle'
+  | 'submitting'
+  | 'polling'
+  | 'done'
+  | 'error';
+
+interface GenForm {
+  prompt:          string;
+  name:            string;
+  model:           GenModel;
+  aspect_ratio:    GenRatio;
+  resolution:      GenRes;
+  duration:        number;
+  style:           GenStyle;
+  negative_prompt: string;
+  audio:           boolean;
+}
+
+function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => void }) {
+  const [open, setOpen]   = useState(false);
+  const [phase, setPhase] = useState<GenPhase>('idle');
+  const [error, setError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [generatedAsset, setGeneratedAsset] = useState<AssetFile | null>(null);
+
+  const [form, setForm] = useState<GenForm>({
+    prompt:          '',
+    name:            '',
+    model:           'seedance-2.0',
+    aspect_ratio:    '16:9',
+    resolution:      '720p',
+    duration:        8,
+    style:           '',
+    negative_prompt: '',
+    audio:           true,
+  });
+
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function field<K extends keyof GenForm>(k: K, v: GenForm[K]) {
+    setForm(f => ({ ...f, [k]: v }));
+  }
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current)    { clearInterval(pollRef.current);   pollRef.current = null; }
+    if (elapsedRef.current) { clearInterval(elapsedRef.current); elapsedRef.current = null; }
+  }, []);
+
+  useEffect(() => () => stopPolling(), [stopPolling]);
+
+  function closeModal() {
+    stopPolling();
+    setOpen(false);
+    setPhase('idle');
+    setError(null);
+    setElapsed(0);
+    setJobId(null);
+    setGeneratedAsset(null);
+    setForm(f => ({ ...f, prompt: '', name: '' }));
+  }
+
+  async function pollStatus(id: string) {
+    const nameParam = encodeURIComponent(form.name.trim() || form.prompt.slice(0, 60));
+    let res: Response;
+    try {
+      res = await fetch(`/api/admin/seedance/${id}?name=${nameParam}`);
+    } catch {
+      stopPolling();
+      setPhase('error');
+      setError('Network error while polling. The video may still be generating — check Assets later.');
+      return;
+    }
+
+    const data = await res.json() as {
+      status: string;
+      asset?: AssetFile;
+      error?: string;
+    };
+
+    if (data.status === 'succeeded' && data.asset) {
+      stopPolling();
+      setGeneratedAsset(data.asset);
+      onGenerated(data.asset);
+      setPhase('done');
+      return;
+    }
+
+    if (data.status === 'failed') {
+      stopPolling();
+      setPhase('error');
+      setError(data.error ?? 'Generation failed on BytePlus');
+    }
+    // still pending/processing — keep polling
+  }
+
+  async function generate() {
+    if (!form.prompt.trim()) { setError('Prompt is required'); return; }
+    setError(null);
+    setPhase('submitting');
+
+    let res: Response;
+    try {
+      res = await fetch('/api/admin/seedance', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          prompt:          form.prompt.trim(),
+          model:           form.model,
+          aspect_ratio:    form.aspect_ratio,
+          resolution:      form.resolution,
+          duration:        form.duration,
+          audio:           form.audio,
+          style:           form.style || undefined,
+          negative_prompt: form.negative_prompt.trim() || undefined,
+        }),
+      });
+    } catch {
+      setPhase('error');
+      setError('Network error submitting job');
+      return;
+    }
+
+    const data = await res.json() as { jobId?: string; error?: string };
+    if (!res.ok || !data.jobId) {
+      setPhase('error');
+      setError(data.error ?? 'Failed to start generation');
+      return;
+    }
+
+    setJobId(data.jobId);
+    setElapsed(0);
+    setPhase('polling');
+
+    // Poll every 5 s, up to 150 attempts (~12.5 min).
+    let attempts = 0;
+    elapsedRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+    pollRef.current = setInterval(async () => {
+      attempts++;
+      if (attempts > 150) {
+        stopPolling();
+        setPhase('error');
+        setError('Generation timed out after 12 minutes. The video may still complete — check BytePlus console.');
+        return;
+      }
+      await pollStatus(data.jobId!);
+    }, 5000);
+
+    // Poll once immediately so fast generations don't wait 5 s.
+    await pollStatus(data.jobId);
+  }
+
+  const MODELS: { id: GenModel; label: string; note: string }[] = [
+    { id: 'seedance-2.0',      label: 'Standard',    note: 'Balanced quality & speed' },
+    { id: 'seedance-2.0-pro',  label: 'Pro',         note: 'Highest quality, slower' },
+    { id: 'seedance-2.0-fast', label: 'Fast',        note: 'Quick draft, lower quality' },
+  ];
+
+  const RATIOS: { id: GenRatio; label: string }[] = [
+    { id: '16:9',  label: '16:9  Landscape (ads, YouTube)' },
+    { id: '9:16',  label: '9:16  Portrait (Reels, TikTok)' },
+    { id: '1:1',   label: '1:1   Square (Instagram)' },
+    { id: '4:3',   label: '4:3   Classic' },
+    { id: '21:9',  label: '21:9  Cinematic ultra-wide' },
+  ];
+
+  const STYLES: { id: GenStyle; label: string }[] = [
+    { id: '',           label: 'Default (none)' },
+    { id: 'cinematic',  label: 'Cinematic' },
+    { id: 'realistic',  label: 'Realistic' },
+    { id: 'anime',      label: 'Anime' },
+    { id: '3d_render',  label: '3D Render' },
+  ];
+
+  const busy = phase === 'submitting' || phase === 'polling';
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-violet-600 hover:bg-violet-500 text-white transition-colors flex items-center gap-1.5"
+      >
+        <span>✨</span> Generate Video
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-xl shadow-2xl max-h-[90vh] overflow-y-auto">
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900 z-10">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  ✨ Generate Video with Seedance 2.0
+                </h3>
+                <p className="text-[10px] text-slate-500 mt-0.5 font-mono">BytePlus AI · saved to your Assets library</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="text-slate-500 hover:text-slate-900 dark:hover:text-white text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-5">
+
+              {/* Done state */}
+              {phase === 'done' && generatedAsset && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-emerald-400">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Video ready — saved to Assets</span>
+                  </div>
+                  <video
+                    src={generatedAsset.public_url}
+                    controls
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-black"
+                    style={{ maxHeight: 320 }}
+                  />
+                  <p className="text-xs text-slate-500 font-mono truncate">{generatedAsset.public_url}</p>
+                  <div className="flex gap-3">
+                    <a
+                      href={generatedAsset.public_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-white transition-colors"
+                    >
+                      Open ↗
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPhase('idle');
+                        setJobId(null);
+                        setGeneratedAsset(null);
+                        setForm(f => ({ ...f, prompt: '', name: '' }));
+                      }}
+                      className="px-4 py-2 text-sm font-mono font-bold rounded-xl bg-violet-600 hover:bg-violet-500 text-white transition-colors"
+                    >
+                      Generate another
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Polling / submitting state */}
+              {(phase === 'polling' || phase === 'submitting') && (
+                <div className="py-8 flex flex-col items-center gap-4 text-center">
+                  <div className="relative w-14 h-14">
+                    <svg className="animate-spin w-14 h-14 text-violet-500" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                      <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                      {phase === 'submitting' ? 'Submitting to Seedance…' : 'Generating video…'}
+                    </p>
+                    {phase === 'polling' && (
+                      <p className="text-xs text-slate-500 font-mono mt-1">
+                        {elapsed}s elapsed · polling every 5 s · typically 30–120 s
+                      </p>
+                    )}
+                    {jobId && (
+                      <p className="text-[10px] text-slate-600 font-mono mt-1">Job ID: {jobId}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Form — idle or error */}
+              {(phase === 'idle' || phase === 'error') && (
+                <>
+                  {/* Prompt */}
+                  <div>
+                    <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">
+                      Prompt <span className="normal-case text-slate-600">*</span>
+                    </label>
+                    <textarea
+                      value={form.prompt}
+                      onChange={e => field('prompt', e.target.value)}
+                      maxLength={2000}
+                      rows={4}
+                      placeholder="A cinematic close-up of a person speaking confidently into a microphone on stage, warm golden spotlight, shallow depth of field, crowd blurred in background…"
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-violet-500/60 resize-none"
+                    />
+                    <p className="text-[10px] text-slate-600 font-mono mt-1 text-right">{form.prompt.length}/2000</p>
+                  </div>
+
+                  {/* Asset name */}
+                  <div>
+                    <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">
+                      Asset name <span className="normal-case text-slate-600">(optional — defaults to dated label)</span>
+                    </label>
+                    <input
+                      value={form.name}
+                      onChange={e => field('name', e.target.value)}
+                      placeholder="e.g. Hero Ad — Aug 2026"
+                      maxLength={80}
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-violet-500/60"
+                    />
+                  </div>
+
+                  {/* Model */}
+                  <div>
+                    <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Model</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {MODELS.map(m => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => field('model', m.id)}
+                          className={`px-3 py-2.5 rounded-xl border text-left transition-colors ${form.model === m.id ? 'border-violet-500/60 bg-violet-500/10' : 'border-slate-300 dark:border-slate-700 hover:border-slate-500'}`}
+                        >
+                          <p className={`text-xs font-bold ${form.model === m.id ? 'text-violet-400' : 'text-slate-900 dark:text-white'}`}>{m.label}</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">{m.note}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Aspect ratio + duration row */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Aspect ratio</label>
+                      <select
+                        value={form.aspect_ratio}
+                        onChange={e => field('aspect_ratio', e.target.value as GenRatio)}
+                        className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-violet-500/60"
+                      >
+                        {RATIOS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Duration — {form.duration}s</label>
+                      <input
+                        type="range"
+                        min={4} max={15} step={1}
+                        value={form.duration}
+                        onChange={e => field('duration', Number(e.target.value))}
+                        className="w-full accent-violet-500 mt-2"
+                      />
+                      <div className="flex justify-between text-[9px] text-slate-600 font-mono mt-0.5">
+                        <span>4 s</span><span>15 s</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Resolution + style row */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Resolution</label>
+                      <select
+                        value={form.resolution}
+                        onChange={e => field('resolution', e.target.value as GenRes)}
+                        className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-violet-500/60"
+                      >
+                        <option value="480p">480p — fastest</option>
+                        <option value="720p">720p — standard</option>
+                        <option value="1080p">1080p — HD</option>
+                        <option value="2k">2K — highest quality</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">Style</label>
+                      <select
+                        value={form.style}
+                        onChange={e => field('style', e.target.value as GenStyle)}
+                        className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-violet-500/60"
+                      >
+                        {STYLES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Audio toggle */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-slate-900 dark:text-white">Generate audio</p>
+                      <p className="text-[10px] text-slate-500">Include AI-generated audio track</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => field('audio', !form.audio)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.audio ? 'bg-violet-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                    >
+                      <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${form.audio ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+
+                  {/* Negative prompt */}
+                  <div>
+                    <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-1.5">
+                      Negative prompt <span className="normal-case text-slate-600">(optional)</span>
+                    </label>
+                    <input
+                      value={form.negative_prompt}
+                      onChange={e => field('negative_prompt', e.target.value)}
+                      placeholder="blurry, low quality, watermark, text, logo…"
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-violet-500/60"
+                    />
+                  </div>
+
+                  {error && (
+                    <p className="text-xs text-red-400 font-mono bg-red-500/5 border border-red-500/20 rounded-xl px-4 py-3">{error}</p>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            {(phase === 'idle' || phase === 'error') && (
+              <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex gap-3 sticky bottom-0 bg-white dark:bg-slate-900">
+                <button
+                  type="button"
+                  onClick={generate}
+                  disabled={!form.prompt.trim()}
+                  className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 text-white transition-colors"
+                >
+                  ✨ Generate
+                </button>
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+            {phase === 'done' && (
+              <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 sticky bottom-0 bg-white dark:bg-slate-900">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-5 py-2 text-sm font-mono font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ── Asset Thumbnail ───────────────────────────────────────────────────────────
 
 function AssetThumb({ asset }: { asset: AssetFile }) {
@@ -310,6 +772,7 @@ function AssetGrid({ assets: initial }: { assets: AssetFile[] }) {
           ) : null)}
         </div>
         <UploadModal onUploaded={handleUploaded} />
+        <GenerateModal onGenerated={handleUploaded} />
       </div>
 
       {/* Asset list */}
