@@ -91,6 +91,7 @@ const NAV: NavSection[] = [
     section: 'Infrastructure',
     items: [
       { label: 'Assets', href: '/admin/assets' },
+      { label: 'Meta Ads Assets', href: '/admin/assets/meta-ads' },
       { label: 'Workflows', href: '/admin/workflows' },
       { label: 'Cron', href: '/admin/cron' },
       { label: 'System', href: '/admin/system' },
