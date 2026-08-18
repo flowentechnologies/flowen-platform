@@ -11,19 +11,11 @@
  */
 
 import 'server-only';
-import { createClient } from '@supabase/supabase-js';
+import { adminDb } from '@/lib/supabase/admin';
 
 // ── Service-role Supabase client ──────────────────────────────────────────────
-// RLS is bypassed at the Postgres level for the service role, so this client
-// can read auth.users and write to marketing_attribution without policy grants.
-
-function serviceDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+// Singleton from lib/supabase/admin — RLS bypassed, reused across warm instances.
+const serviceDb = adminDb;
 
 export type ConversionType = 'signup' | 'subscription' | 'trial';
 

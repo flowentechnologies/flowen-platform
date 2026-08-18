@@ -1,19 +1,11 @@
 import type { Metadata } from 'next';
-import { createClient } from '@supabase/supabase-js';
 import NpsClient from './NpsClient';
+import { adminDb as db } from '@/lib/supabase/admin';
 
 export const metadata: Metadata = {
   title: 'Share your feedback | Flowen',
   robots: { index: false, follow: false },
 };
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
 
 export default async function NpsPage({
   searchParams,

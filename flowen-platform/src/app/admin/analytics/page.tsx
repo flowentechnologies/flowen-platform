@@ -1,16 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { assertAdmin } from '@/lib/admin/guard';
 import { stripe } from '@/lib/stripe';
 import { AnalyticsClient } from './AnalyticsClient';
 import type { AnalyticsData } from '@/app/api/admin/analytics/route';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
+import { adminDb as db } from '@/lib/supabase/admin';
 
 function monthlyNormalisedPence(price: { unit_amount: number | null; recurring: { interval: string; interval_count: number } | null }): number {
   const amount = price.unit_amount ?? 0;

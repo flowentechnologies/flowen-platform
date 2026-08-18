@@ -1,18 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { unstable_cache } from 'next/cache';
-import { createClient as adminClient } from '@supabase/supabase-js';
 import { assertSlp } from '@/lib/slp/guard';
+import { adminDb as db } from '@/lib/supabase/admin';
 
 export const metadata: Metadata = { title: 'My Caseload — Flowen SLT Portal' };
-
-function db() {
-  return adminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
 
 export interface CaseloadPatient {
   patient_user_id: string;

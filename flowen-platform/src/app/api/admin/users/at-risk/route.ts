@@ -1,14 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin/guard';
-
-function serviceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
+import { adminDb } from '@/lib/supabase/admin';
 
 export interface AtRiskUser {
   id: string;
@@ -22,7 +14,7 @@ export async function GET(): Promise<NextResponse> {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const client = serviceClient();
+  const client = adminDb();
 
   // Fetch onboarded users
   const { data: profiles, error: profilesError } = await client

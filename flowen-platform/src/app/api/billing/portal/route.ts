@@ -1,17 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { getStripeClient } from '@/lib/stripe';
+import { adminDb } from '@/lib/supabase/admin';
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.flowen.digital';
-
-const adminDb = () =>
-  createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
 
 export async function POST() {
   try {

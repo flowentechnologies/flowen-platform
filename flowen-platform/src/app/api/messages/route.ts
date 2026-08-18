@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { adminDb as db } from '@/lib/supabase/admin';
 
 interface Message {
   id: string;
@@ -16,14 +16,6 @@ interface OtherUser {
   id: string;
   display_name: string | null;
   email: string | null;
-}
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
 }
 
 async function getUser() {

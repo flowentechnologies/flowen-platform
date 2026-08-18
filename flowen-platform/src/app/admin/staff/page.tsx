@@ -1,16 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { assertAdmin } from '@/lib/admin/guard';
 import { StaffClient } from './StaffClient';
-
-function adminDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb } from '@/lib/supabase/admin';
 
 export default async function StaffPage() {
   await assertAdmin();

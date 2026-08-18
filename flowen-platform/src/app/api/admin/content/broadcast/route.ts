@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
-import { createClient } from '@supabase/supabase-js';
 import { sendEmail, FROM, buildBroadcastHtml } from '@/lib/email';
+import { adminDb } from '@/lib/supabase/admin';
 
 const MAX_RECIPIENTS = 500;
-
-function adminDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
 
 // ── Segment resolvers ─────────────────────────────────────────────────────────
 

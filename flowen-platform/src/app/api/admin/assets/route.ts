@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
-import { createClient } from '@supabase/supabase-js';
+import { adminDb as db } from '@/lib/supabase/admin';
 
 const BUCKET = 'assets';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
 
 // ── POST — upload (multipart) or JSON actions ──────────────────────────────────
 

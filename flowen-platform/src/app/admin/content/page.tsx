@@ -1,15 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
 import { assertAdmin } from '@/lib/admin/guard';
 import { MASTER_POLICIES } from '@/app/legal/policies';
 import { ContentTabs } from './ContentTabs';
-
-function adminDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb } from '@/lib/supabase/admin';
 
 const LEGAL_DOCS = [
   { key: 'privacyPolicy',      title: 'Privacy Policy & Data Protection Charter' },

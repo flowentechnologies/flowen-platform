@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { logAuditEvent } from '@/lib/admin/audit';
+import { adminDb as db } from '@/lib/supabase/admin';
 
 interface ProfileRow {
   id: string;
@@ -31,12 +31,7 @@ export interface AdminUserRecord {
   last_sign_in_at: string | null;
 }
 
-function serviceClient() {
-  return createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-}
+
 
 export async function GET(request: NextRequest) {
   const adminUser = await requireAdmin();
@@ -50,7 +45,7 @@ export async function GET(request: NextRequest) {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  const admin = serviceClient();
+  const admin = db();
 
   const [profilesRes, authUsersRes] = await Promise.all([
     admin
@@ -107,7 +102,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing action or userId' }, { status: 400 });
   }
 
-  const admin = serviceClient();
+  const admin = db();
 
   if (action === 'toggle_admin') {
     if (userId === adminUser.id) {

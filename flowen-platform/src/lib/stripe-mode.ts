@@ -11,19 +11,11 @@
  */
 
 import 'server-only';
-import { createClient } from '@supabase/supabase-js';
+import { adminDb as db } from '@/lib/supabase/admin';
 
 export type StripeMode = 'live' | 'test';
 
 // ── DB ────────────────────────────────────────────────────────────────────────
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
 
 // ── In-process cache ──────────────────────────────────────────────────────────
 //

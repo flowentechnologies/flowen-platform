@@ -35,8 +35,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
+import { adminDb } from '@/lib/supabase/admin';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -66,22 +66,12 @@ interface AttributionRecord {
 
 // ── Supabase helpers ──────────────────────────────────────────────────────────
 
-function serviceDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+const serviceDb = adminDb;
 
 // Auth Admin client — getUserById() routes through /auth/v1/admin/users/:id,
 // bypassing PostgREST (which does not expose the auth schema).
 function authAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  ).auth.admin;
+  return adminDb().auth.admin;
 }
 
 // ── Shared crypto helpers ─────────────────────────────────────────────────────

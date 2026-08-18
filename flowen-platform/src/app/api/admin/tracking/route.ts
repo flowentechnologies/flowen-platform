@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin/guard';
 import { generateScripts, type ProviderKey } from '@/lib/tracking-scripts';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
+import { adminDb as db } from '@/lib/supabase/admin';
 
 export async function GET(): Promise<NextResponse> {
   const admin = await requireAdmin();

@@ -1,16 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
 import { assertAdmin } from '@/lib/admin/guard';
 import { CronClient } from './CronClient';
+import { adminDb } from '@/lib/supabase/admin';
 
 // ── DB client ─────────────────────────────────────────────────────────────────
-
-function adminDb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

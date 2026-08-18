@@ -1,13 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { sendSlpInactivityDigest } from '@/lib/email';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
+import { adminDb as db } from '@/lib/supabase/admin';
 
 // A patient is flagged inactive after this many days without a session
 const INACTIVITY_DAYS = 5;

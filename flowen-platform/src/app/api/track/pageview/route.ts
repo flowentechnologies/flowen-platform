@@ -1,16 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { adminDb as db } from '@/lib/supabase/admin';
 
 const VS_COOKIE  = '__vs';
 const UTM_COOKIE = '__utm';
-
-function db() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
-}
 
 export async function POST(req: NextRequest) {
   const sessionId = req.cookies.get(VS_COOKIE)?.value;
