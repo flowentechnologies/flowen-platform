@@ -1,12 +1,32 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import sanitizeHtml from 'sanitize-html';
 import { ArticleJsonLd } from '../components/ArticleJsonLd';
 import { TagList } from '../components/TagList';
 import { BLOG_BASE_PATH, SITE_URL } from '../constants';
 import { formatDate } from '../format';
 import { blog } from '../lib/blog-client';
 import '../blog-content.css';
+
+// Allowed HTML tags and attributes for blog content. Prevents XSS if the CMS
+// or blog API ever returns injected markup. Script tags, on* handlers, and
+// javascript: hrefs are stripped regardless of source.
+const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+    'img', 'figure', 'figcaption', 'picture', 'source',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'details', 'summary',
+  ]),
+  allowedAttributes: {
+    ...sanitizeHtml.defaults.allowedAttributes,
+    img:    ['src', 'srcset', 'alt', 'title', 'width', 'height', 'loading', 'class'],
+    source: ['src', 'srcset', 'type', 'media'],
+    a:      ['href', 'name', 'target', 'rel', 'class'],
+    '*':    ['class', 'id'],
+  },
+  allowedSchemes: ['https', 'http', 'mailto'],
+};
 
 // Do not pre-render article pages at build time — the BabyLoveGrowth API
 // rate-limits at 2 req/s and parallel SSG across many articles triggers 429s.
@@ -77,7 +97,7 @@ export default async function ArticlePage({
 
           <div
             className="blog-content"
-            dangerouslySetInnerHTML={{ __html: article.content_html }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content_html, SANITIZE_OPTIONS) }}
           />
 
           <footer className="mt-12 border-t border-gray-100 dark:border-slate-800 pt-6">
