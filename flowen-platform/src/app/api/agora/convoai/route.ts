@@ -85,13 +85,15 @@ export async function POST(req: Request) {
           ],
         },
         tts: {
-          vendor:   'microsoft',
+          // OpenAI TTS — already-available API key, ~$15/1M chars, no extra account needed.
+          // Voices: alloy · echo · fable · onyx · nova · shimmer
+          // nova = warm & natural (good for speech therapy context)
+          vendor: 'openai',
           params: {
-            key:    process.env.AZURE_SPEECH_KEY ?? '',
-            region: process.env.AZURE_SPEECH_REGION ?? 'eastus',
-            voice_name: 'en-US-JennyNeural',
-            rate:   '0',
-            pitch:  '0',
+            api_key: process.env.OPENAI_API_KEY ?? '',
+            model:   'tts-1',          // tts-1-hd for higher quality at 2× cost
+            voice:   'nova',
+            speed:   1.0,
           },
         },
       },
