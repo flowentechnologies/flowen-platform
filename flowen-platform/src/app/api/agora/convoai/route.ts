@@ -53,7 +53,9 @@ export async function POST(req: Request) {
     };
 
     const appId = process.env.AGORA_APP_ID;
-    const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? 'https://api.agora.io';
+    // Default includes the full /api/conversational-ai prefix required by the ConvoAI REST API.
+    // Override with AGORA_CONVOAI_BASE_URL if Agora changes region or version.
+    const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? 'https://api.agora.io/api/conversational-ai';
     if (!appId) return NextResponse.json({ error: 'Agora not configured' }, { status: 503 });
 
     const agentUid = body.agentUid ?? 9999;
@@ -143,7 +145,7 @@ export async function DELETE(req: Request) {
 
     const body = await req.json() as { agentId: string };
     const appId = process.env.AGORA_APP_ID;
-    const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? 'https://api.agora.io';
+    const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? 'https://api.agora.io/api/conversational-ai';
 
     const res = await fetch(
       `${baseUrl}/v1/projects/${appId}/leave/${body.agentId}`,
