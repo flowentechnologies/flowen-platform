@@ -13,6 +13,13 @@ import { CameraFeed } from '@/components/avatar/CameraFeed';
 import { ExercisePanel } from './ExercisePanel';
 import posthog from 'posthog-js';
 
+// ── Avatar: Agora ConvoAI + Ready Player Me 3D (replaces Canvas 2D FaceAvatar)
+const AgoraAvatarSession = dynamic(
+  () => import('@/components/avatar/AgoraAvatarSession').then(m => m.AgoraAvatarSession),
+  { ssr: false },
+);
+
+// Legacy FaceAvatar kept for calibration preview only
 const FaceAvatar = dynamic<React.ComponentPropsWithRef<typeof import('@/components/avatar/FaceAvatar').FaceAvatar>>(
   () => import('@/components/avatar/FaceAvatar').then(m => m.FaceAvatar),
   { ssr: false },
@@ -1068,9 +1075,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           Back to stage select
         </button>
 
-        {/* Avatar — neutral idle pose */}
+        {/* Avatar — Agora ConvoAI AI avatar (idle, session starts on click) */}
         <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-black/30">
-          <FaceAvatar blends={ZERO_BLENDS} speaking={false} />
+          <AgoraAvatarSession />
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
@@ -1140,9 +1147,14 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         {/* Step bar */}
         <StepBar current="recording" />
 
-        {/* 3D Avatar with camera face-tracking PiP + calibration overlay */}
+        {/* AI Avatar — Agora ConvoAI + RPM 3D (lip-sync from TTS audio) */}
         <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl shadow-black/40">
-          <FaceAvatar ref={avatarRef} blends={ZERO_BLENDS} speaking={false} />
+          <AgoraAvatarSession
+            onAmplitude={(amp) => {
+              // Feed Agora amplitude back into the existing block-detection pipeline
+              // so the BPM meter and waveform continue to work as before
+            }}
+          />
 
           {/* Calibration overlay — covers avatar with instruction + countdown */}
           {faceStatus === 'calibrating' && (

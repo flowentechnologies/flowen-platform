@@ -18,6 +18,8 @@
     "@types/three": "^0.185.3",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
+    "agora-rtc-sdk-ng": "^4.24.7",
+    "agora-token": "^2.0.5",
     "babylovegrowth-next-js-blog": "^0.2.2",
     "framer-motion": "^12.43.0",
     "ioredis": "^5.11.1",
