@@ -222,8 +222,8 @@ function UploadModal({ onUploaded }: { onUploaded: (asset: AssetFile) => void })
 type GenModel =
   | 'dreamina-seedance-2-0-260128'        // Seedance 2.0 Standard
   | 'dreamina-seedance-2-0-fast-260128'   // Seedance 2.0 Fast
-  | 'dreamina-seedance-2-0-mini-260615'   // Seedance 2.0 Mini
   | 'dreamina-seedance-2-5-260628';       // Seedance 2.5 (latest)
+// NOTE: dreamina-seedance-2-0-mini-260615 removed — not activated in BytePlus account
 type GenRatio = '16:9' | '9:16' | '1:1' | '4:3' | '21:9';
 type GenRes   = '480p' | '720p' | '1080p' | '2k';
 type GenStyle = '' | 'cinematic' | 'anime' | 'realistic' | '3d_render';
@@ -386,7 +386,6 @@ function GenerateModal({ onGenerated }: { onGenerated: (asset: AssetFile) => voi
     { id: 'dreamina-seedance-2-5-260628',      label: 'Seedance 2.5',      note: 'Latest — best quality' },
     { id: 'dreamina-seedance-2-0-260128',      label: 'Seedance 2.0',      note: 'Balanced quality & speed' },
     { id: 'dreamina-seedance-2-0-fast-260128', label: 'Seedance 2.0 Fast', note: 'Faster, lower cost' },
-    { id: 'dreamina-seedance-2-0-mini-260615', label: 'Seedance 2.0 Mini', note: 'Quick drafts' },
   ];
 
   const RATIOS: { id: GenRatio; label: string }[] = [

@@ -21,6 +21,7 @@
     "agora-rtc-sdk-ng": "^4.24.7",
     "agora-token": "^2.0.5",
     "babylovegrowth-next-js-blog": "^0.2.2",
+    "elevenlabs": "^1.59.0",
     "framer-motion": "^12.43.0",
     "ioredis": "^5.11.1",
     "kafkajs": "^2.2.4",
