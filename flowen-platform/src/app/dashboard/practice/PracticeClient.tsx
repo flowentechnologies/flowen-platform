@@ -11,6 +11,9 @@ import { useFaceTracker, ZERO_EXTRA, ZERO_HEAD_POSE } from '@/lib/hooks/useFaceT
 import type { FaceFrame } from '@/lib/hooks/useFaceTracker';
 import { CameraFeed } from '@/components/avatar/CameraFeed';
 import { ExercisePanel } from './ExercisePanel';
+import { DisfluencyHUD } from '@/components/practice/DisfluencyHUD';
+import { useAudioPipeline } from '@/lib/hooks/useAudioPipeline';
+import { useDisfluencyDetector } from '@/hooks/useDisfluencyDetector';
 import posthog from 'posthog-js';
 
 // ── Avatar: Agora ConvoAI + Ready Player Me 3D (replaces Canvas 2D FaceAvatar)
@@ -311,6 +314,22 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     [],
   );
 
+  // ── Disfluency detector ─────────────────────────────────────────────────────
+  // useAudioPipeline manages its own mic capture at 16kHz; the browser shares
+  // the physical microphone with Agora and SpeechRecognition transparently.
+  const audioPipeline = useAudioPipeline();
+  const disfluency = useDisfluencyDetector(audioPipeline, {
+    minConfidence: 0.68,
+    onEvent: (ev) => {
+      // Feed BLOCK events into the existing block counter so the BPM meter
+      // and session save both reflect rule-engine detections.
+      if (ev.type === 'BLOCK') {
+        blocksRef.current += 1;
+        setBlocks(b => b + 1);
+      }
+    },
+  });
+
   const {
     status:       faceStatus,
     errorMsg:     faceErrorMsg,
@@ -565,6 +584,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     setInterimTranscript('');
     setAudioUrl(null);
     audioChunksRef.current = [];
+    // Start the rule-based disfluency detector (resets baseline for new session)
+    disfluency.resetSession();
+    void audioPipeline.start();
 
     let stream: MediaStream;
     try {
@@ -726,9 +748,10 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     rafRef.current = requestAnimationFrame(tick);
     posthog.capture('practice_session_started', { stage_id: stageId });
     setScreen('recording');
-  }, [stageId]);
+  }, [stageId, audioPipeline, disfluency]);
 
   const stopRecording = useCallback(() => {
+    audioPipeline.stop(); // stop the disfluency detector's audio capture
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
     streamRef.current?.getTracks().forEach(t => t.stop());
@@ -750,7 +773,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     visemeDriverRef.current?.reset();
 
     setScreen('summary');
-  }, [stopCamera]);
+  }, [stopCamera, audioPipeline]);
 
   // ---------------------------------------------------------------------------
   // Save
@@ -1416,6 +1439,16 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
             </div>
           </div>
         )}
+
+        {/* Disfluency HUD — real-time event feed + session counts */}
+        <DisfluencyHUD
+          events={disfluency.events}
+          eventCounts={disfluency.eventCounts}
+          baseline={disfluency.baseline}
+          isCalibrated={disfluency.isCalibrated}
+          rms={audioPipeline.rms}
+          isRecording={audioPipeline.isRecording}
+        />
 
         {/* Stop button */}
         <button
