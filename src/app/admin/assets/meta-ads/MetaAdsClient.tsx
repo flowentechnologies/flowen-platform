@@ -393,7 +393,6 @@ export function MetaAdsClient({ existingAssets }: { existingAssets: AssetFile[] 
               <option value="dreamina-seedance-2-5-260628">Seedance 2.5 — Latest</option>
               <option value="dreamina-seedance-2-0-260128">Seedance 2.0 — Standard</option>
               <option value="dreamina-seedance-2-0-fast-260128">Seedance 2.0 Fast — Lower cost</option>
-              <option value="dreamina-seedance-2-0-mini-260615">Seedance 2.0 Mini — Drafts</option>
             </select>
           </div>
         </div>
