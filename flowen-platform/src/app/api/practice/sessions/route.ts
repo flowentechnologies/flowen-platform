@@ -19,6 +19,8 @@ export async function POST(req: Request) {
   let body: {
     duration_seconds: number;
     total_blocks_detected: number;
+    total_repetitions_detected?: number;
+    total_prolongations_detected?: number;
     stage_id: number;
     transcript?: string;
   };
@@ -28,10 +30,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { duration_seconds, total_blocks_detected, stage_id, transcript } = body;
+  const { duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, stage_id, transcript } = body;
   if (
     typeof duration_seconds !== 'number' || !Number.isFinite(duration_seconds) || duration_seconds < 30 || duration_seconds > 7200 ||
     typeof total_blocks_detected !== 'number' || !Number.isInteger(total_blocks_detected) || total_blocks_detected < 0 ||
+    (total_repetitions_detected !== undefined && (!Number.isInteger(total_repetitions_detected) || total_repetitions_detected < 0)) ||
+    (total_prolongations_detected !== undefined && (!Number.isInteger(total_prolongations_detected) || total_prolongations_detected < 0)) ||
     (stage_id !== undefined && stage_id !== null && (!Number.isInteger(stage_id) || stage_id < 1)) ||
     (transcript !== undefined && typeof transcript !== 'string')
   ) {
@@ -50,8 +54,8 @@ export async function POST(req: Request) {
     brand: 'flowen',
     duration_seconds: body.duration_seconds,
     total_blocks_detected: body.total_blocks_detected,
-    total_repetitions_detected: 0,
-    total_prolongations_detected: 0,
+    total_repetitions_detected:   body.total_repetitions_detected   ?? 0,
+    total_prolongations_detected: body.total_prolongations_detected ?? 0,
     average_latency_ms: null,
     stage_id: body.stage_id,
     transcript: transcriptValue,

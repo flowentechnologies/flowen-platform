@@ -7,6 +7,7 @@ import { PROGRAMME } from '@/lib/programme';
 import { BpmTrendChart, type TrendPoint } from './BpmTrendChart';
 import { WeeklyChart, type WeekBar } from './WeeklyChart';
 import { CalendarHeatmap, type CalDay } from './CalendarHeatmap';
+import { DisfluencyBreakdownChart, type BreakdownPoint } from './DisfluencyBreakdownChart';
 
 export const metadata: Metadata = {
   title: 'Progress | Flowen',
@@ -40,7 +41,7 @@ export default async function AnalyticsPage() {
   const [sessionsRes, progRes, hasPlanRes] = await Promise.all([
     admin
       .from('practice_sessions')
-      .select('id,duration_seconds,total_blocks_detected,created_at')
+      .select('id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true }),
     admin
@@ -74,6 +75,29 @@ export default async function AnalyticsPage() {
     bpm: s.duration_seconds > 0 ? s.total_blocks_detected / (s.duration_seconds / 60) : 0,
     date: s.created_at.slice(0, 10),
   }));
+
+  const breakdownPoints: BreakdownPoint[] = sessions.map((s, i) => ({
+    sessionNum: i + 1,
+    date: s.created_at.slice(0, 10),
+    blocks:        s.total_blocks_detected        ?? 0,
+    prolongations: s.total_prolongations_detected ?? 0,
+    repetitions:   s.total_repetitions_detected   ?? 0,
+  }));
+
+  // ── Disfluency lifetime totals ────────────────────────────────────────────
+
+  const lifetimeTotals = sessions.reduce(
+    (acc, s) => ({
+      blocks:        acc.blocks        + (s.total_blocks_detected        ?? 0),
+      prolongations: acc.prolongations + (s.total_prolongations_detected ?? 0),
+      repetitions:   acc.repetitions   + (s.total_repetitions_detected   ?? 0),
+    }),
+    { blocks: 0, prolongations: 0, repetitions: 0 },
+  );
+
+  const hasDisfluencyData = breakdownPoints.some(
+    p => p.blocks > 0 || p.prolongations > 0 || p.repetitions > 0,
+  );
 
   // ── KPI summary ───────────────────────────────────────────────────────────
 
@@ -262,6 +286,52 @@ export default async function AnalyticsPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Disfluency breakdown */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Disfluency events</p>
+            <p className="text-slate-900 dark:text-white font-semibold text-sm mt-0.5">Breakdown per session</p>
+          </div>
+          {/* Lifetime totals */}
+          <div className="flex items-center gap-5">
+            {[
+              { label: 'Blocks',        value: lifetimeTotals.blocks,        color: 'text-rose-400',   dot: 'bg-rose-500' },
+              { label: 'Prolongations', value: lifetimeTotals.prolongations, color: 'text-violet-400', dot: 'bg-violet-500' },
+              { label: 'Repetitions',   value: lifetimeTotals.repetitions,   color: 'text-amber-400',  dot: 'bg-amber-500' },
+            ].map(item => (
+              <div key={item.label} className="flex flex-col items-end gap-0.5">
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-1.5 h-1.5 rounded-full ${item.dot}`} />
+                  <span className="text-[10px] font-mono text-slate-500">{item.label}</span>
+                </div>
+                <span className={`text-xl font-bold font-mono tabular-nums ${item.color}`}>
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {hasDisfluencyData ? (
+          <>
+            <DisfluencyBreakdownChart points={breakdownPoints} />
+            <p className="text-[10px] font-mono text-slate-600">
+              Detected by the on-device rule engine · lower is better · PROLONG requires 8+ voiced segments to calibrate
+            </p>
+          </>
+        ) : (
+          <div className="py-8 text-center">
+            <p className="text-slate-500 text-xs">
+              No disfluency events recorded yet — events accumulate from session {n + 1} onwards.
+            </p>
+            <p className="text-slate-600 text-[10px] font-mono mt-1">
+              If you practised before the detector was enabled, those sessions will show 0.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Weekly chart + Calendar side by side */}

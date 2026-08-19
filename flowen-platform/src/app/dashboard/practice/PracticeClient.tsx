@@ -814,6 +814,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         body: JSON.stringify({
           duration_seconds: elapsed,
           total_blocks_detected: blocksRef.current,
+          // Disfluency detector counts — rule engine tracks prolongations + repetitions
+          total_repetitions_detected:   disfluency.eventCounts['REP_START'] ?? 0,
+          total_prolongations_detected: disfluency.eventCounts['PROLONG']    ?? 0,
           stage_id: stageId,
           transcript: transcriptSnapshot,
         }),
