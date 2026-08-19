@@ -51,6 +51,27 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[/api/admin/seedance] submit error:', msg);
+
+    // Surface region mismatch / model activation issues clearly
+    if (/ModelNotOpen|model.*not.*open|model.*not.*activated/i.test(msg)) {
+      const base = process.env.BYTEPLUS_API_BASE ?? 'https://ark.ap-southeast.bytepluses.com/api/v3';
+      return NextResponse.json(
+        {
+          error:    'ModelNotOpen — the model is not activated on your account, or BYTEPLUS_API_BASE points to the wrong region.',
+          detail:   msg,
+          fix:      [
+            `1. Run GET /api/admin/seedance-region to detect the correct regional endpoint for your API key.`,
+            `2. Set BYTEPLUS_API_BASE in Vercel to the correct value and redeploy.`,
+            `3. Activate the Seedance model in your console (Model Square → Seedance → Activate).`,
+            `   • International: https://console.byteplus.com/ark`,
+            `   • China:         https://console.volcengine.com/ark`,
+            `Current BYTEPLUS_API_BASE: ${base}`,
+          ],
+        },
+        { status: 422 },
+      );
+    }
+
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
