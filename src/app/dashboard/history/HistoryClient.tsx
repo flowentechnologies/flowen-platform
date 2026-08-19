@@ -276,6 +276,12 @@ export function HistoryClient({ sessions }: Props) {
                     Intensity
                   </th>
                   <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
+                    Prolong
+                  </th>
+                  <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
+                    Reps
+                  </th>
+                  <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
                     Transcript
                   </th>
                 </tr>
@@ -315,6 +321,16 @@ export function HistoryClient({ sessions }: Props) {
                             />
                           </div>
                         </td>
+                        <td className="px-6 py-3 text-xs tabular-nums font-mono text-center">
+                          {s.total_prolongations_detected > 0
+                            ? <span className="text-violet-400 font-semibold">{s.total_prolongations_detected}</span>
+                            : <span className="text-slate-700">—</span>}
+                        </td>
+                        <td className="px-6 py-3 text-xs tabular-nums font-mono text-center">
+                          {s.total_repetitions_detected > 0
+                            ? <span className="text-amber-400 font-semibold">{s.total_repetitions_detected}</span>
+                            : <span className="text-slate-700">—</span>}
+                        </td>
                         <td className="px-6 py-3 text-center">
                           {s.transcript ? (
                             <button
@@ -331,7 +347,7 @@ export function HistoryClient({ sessions }: Props) {
                         </td>
                       </tr>
                       {isExpanded && s.transcript && (
-                        <TranscriptRow key={`${s.id}-transcript`} transcript={s.transcript} colSpan={7} />
+                        <TranscriptRow key={`${s.id}-transcript`} transcript={s.transcript} colSpan={9} />
                       )}
                     </>
                   );
