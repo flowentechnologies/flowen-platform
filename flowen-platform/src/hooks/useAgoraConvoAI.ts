@@ -15,9 +15,12 @@ import { useCallback, useRef, useState } from 'react';
 export type ConvoAIStatus = 'idle' | 'starting' | 'active' | 'stopping' | 'error';
 
 export interface StartAgentOptions {
-  channel:      string;
-  token:        string;
-  systemPrompt?: string;
+  channel:       string;
+  token:         string;
+  systemPrompt?:  string;
+  /** ElevenLabs voice_id for the user's cloned voice (from profiles.voice_clone_id).
+   *  When set, the avatar speaks back in the user's own voice. */
+  voiceCloneId?: string;
 }
 
 export interface UseAgoraConvoAIReturn {
@@ -45,10 +48,11 @@ export function useAgoraConvoAI(): UseAgoraConvoAIReturn {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        channel:     opts.channel,
-        token:       opts.token,
-        agentUid:    9999, // fixed UID for the ConvoAI bot
+        channel:      opts.channel,
+        token:        opts.token,
+        agentUid:     9999, // fixed UID for the ConvoAI bot
         systemPrompt: opts.systemPrompt,
+        voiceCloneId: opts.voiceCloneId,
       }),
     });
 

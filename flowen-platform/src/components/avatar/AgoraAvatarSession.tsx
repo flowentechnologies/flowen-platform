@@ -8,6 +8,12 @@
  *   useAgoraConvoAI → start/stop AI agent
  *   useLipSync      → WebAudio FFT → VisemeBlends
  *   RPMAvatarScene  → Three.js GLB avatar with morph target updates
+ *   VoiceCalibration → 60-second recording UI for ElevenLabs IVC
+ *
+ * First-run flow:
+ *   Profile has no voice_clone_id → show VoiceCalibration prompt
+ *   After clone is saved → avatar speaks back in user's own voice
+ *   User can skip calibration to use the default OpenAI nova voice
  *
  * Usage:
  *   <AgoraAvatarSession
@@ -21,6 +27,8 @@ import { useAgora } from '@/hooks/useAgora';
 import { useAgoraConvoAI } from '@/hooks/useAgoraConvoAI';
 import { useLipSync } from '@/hooks/useLipSync';
 import type { RPMAvatarSceneHandle } from './RPMAvatarScene';
+import { VoiceCalibration } from './VoiceCalibration';
+import { createBrowserClient } from '@supabase/ssr';
 
 // Three.js scene is SSR-unsafe — lazy-load it
 const RPMAvatarScene = dynamic(
@@ -53,6 +61,8 @@ const STATUS_CHIP: Record<string, string> = {
   error:       'bg-red-500/10 text-red-400',
 };
 
+type ProfileState = 'loading' | 'loaded' | 'error';
+
 export function AgoraAvatarSession({
   avatarUrl    = DEFAULT_AVATAR_URL,
   systemPrompt,
@@ -64,11 +74,46 @@ export function AgoraAvatarSession({
   const [statusLabel, setStatusLabel]     = useState('Ready');
   const [statusKey, setStatusKey]         = useState('idle');
 
+  // ── Voice clone state ─────────────────────────────────────────────────────
+  const [profileState, setProfileState]         = useState<ProfileState>('loading');
+  const [voiceCloneId, setVoiceCloneId]         = useState<string | null>(null);
+  const [showCalibration, setShowCalibration]   = useState(false);
+  const [voiceLabel, setVoiceLabel]             = useState('');
+
   const avatarRef = useRef<RPMAvatarSceneHandle | null>(null);
 
   const agora   = useAgora();
   const convoAI = useAgoraConvoAI();
   const { blends, isSpeaking, amplitude } = useLipSync(agora.remoteAudioTrack);
+
+  // ── Fetch profile to get voice_clone_id ───────────────────────────────────
+  useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
+
+    void (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setProfileState('loaded'); return; }
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('voice_clone_id, voice_clone_name')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.voice_clone_id) {
+          setVoiceCloneId(profile.voice_clone_id);
+          setVoiceLabel(profile.voice_clone_name ?? 'Your voice');
+        }
+        setProfileState('loaded');
+      } catch {
+        setProfileState('error');
+      }
+    })();
+  }, []);
 
   // Push amplitude to parent (for waveform display)
   useEffect(() => {
@@ -86,7 +131,7 @@ export function AgoraAvatarSession({
       setStatusLabel('Connecting…');
       setStatusKey('connecting');
     } else if (agora.state === 'connected' && convoAI.status === 'active') {
-      setStatusLabel(isSpeaking ? 'Flowen speaking' : 'Listening…');
+      setStatusLabel(isSpeaking ? 'Avatar speaking' : 'Listening…');
       setStatusKey(isSpeaking ? 'speaking' : 'active');
     } else if (agora.state === 'error') {
       setStatusLabel(agora.error ?? 'Connection error');
@@ -119,8 +164,13 @@ export function AgoraAvatarSession({
       // 2. Join the RTC channel
       await agora.join({ appId, channel, token });
 
-      // 3. Start the ConvoAI agent in the same channel
-      await convoAI.startAgent({ channel, token, systemPrompt });
+      // 3. Start the ConvoAI agent — pass voiceCloneId so it speaks in user's voice
+      await convoAI.startAgent({
+        channel,
+        token,
+        systemPrompt,
+        voiceCloneId: voiceCloneId ?? undefined,
+      });
 
       onSessionStart?.();
     } catch (err) {
@@ -129,7 +179,7 @@ export function AgoraAvatarSession({
       setStatusKey('error');
       setStatusLabel(err instanceof Error ? err.message : 'Failed to start session');
     }
-  }, [agora, convoAI, systemPrompt, onSessionStart]);
+  }, [agora, convoAI, systemPrompt, voiceCloneId, onSessionStart]);
 
   // ── End session ─────────────────────────────────────────────────────────────
   const endSession = useCallback(async () => {
@@ -146,6 +196,27 @@ export function AgoraAvatarSession({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── Voice calibration handlers ─────────────────────────────────────────────
+  const handleCloneComplete = useCallback((newVoiceId: string) => {
+    setVoiceCloneId(newVoiceId);
+    setVoiceLabel('Your voice');
+    setShowCalibration(false);
+  }, []);
+
+  const handleSkipCalibration = useCallback(() => {
+    setShowCalibration(false);
+  }, []);
+
+  // ── Calibration modal ──────────────────────────────────────────────────────
+  if (showCalibration) {
+    return (
+      <VoiceCalibration
+        onComplete={handleCloneComplete}
+        onSkip={handleSkipCalibration}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-4 w-full">
@@ -173,6 +244,17 @@ export function AgoraAvatarSession({
           </span>
         </div>
 
+        {/* Voice clone badge */}
+        {voiceCloneId && (
+          <div className="absolute top-3 right-3">
+            <span className="px-2 py-1 rounded-full text-[10px] font-mono font-bold
+                             bg-violet-500/15 text-violet-300 border border-violet-500/20
+                             backdrop-blur-sm">
+              🎙 {voiceLabel}
+            </span>
+          </div>
+        )}
+
         {/* Amplitude waveform bar */}
         {sessionActive && (
           <div className="absolute bottom-3 left-3 right-3 h-1 bg-slate-800 rounded-full overflow-hidden">
@@ -190,12 +272,16 @@ export function AgoraAvatarSession({
           <button
             type="button"
             onClick={() => void startSession()}
-            disabled={agora.state === 'connecting' || convoAI.status === 'starting'}
+            disabled={
+              profileState === 'loading' ||
+              agora.state === 'connecting' ||
+              convoAI.status === 'starting'
+            }
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400
                        text-slate-950 font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-wait"
           >
             <MicIcon />
-            Start AI Session
+            {profileState === 'loading' ? 'Loading…' : 'Start AI Session'}
           </button>
         ) : (
           <button
@@ -209,6 +295,37 @@ export function AgoraAvatarSession({
           </button>
         )}
       </div>
+
+      {/* ── Voice clone prompt / controls ─────────────────────────────────── */}
+      {profileState === 'loaded' && !sessionActive && (
+        <div className="text-center text-xs text-slate-400">
+          {voiceCloneId ? (
+            <span>
+              Avatar speaks in{' '}
+              <span className="text-violet-400 font-medium">{voiceLabel}</span>
+              {' '}·{' '}
+              <button
+                type="button"
+                onClick={() => setShowCalibration(true)}
+                className="text-slate-400 underline hover:text-slate-200 transition-colors"
+              >
+                Re-calibrate
+              </button>
+            </span>
+          ) : (
+            <span>
+              <button
+                type="button"
+                onClick={() => setShowCalibration(true)}
+                className="text-emerald-400 underline hover:text-emerald-300 transition-colors"
+              >
+                Calibrate your voice
+              </button>
+              {' '}so the avatar sounds exactly like you
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Error display */}
       {(agora.error || convoAI.error) && (

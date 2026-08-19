@@ -47,6 +47,9 @@ export async function POST(req: Request) {
       token: string;
       agentUid?: number;
       systemPrompt?: string;
+      /** ElevenLabs voice_id from the user's voice clone calibration. When present,
+       *  TTS switches from OpenAI nova to ElevenLabs IVC so the avatar sounds like the user. */
+      voiceCloneId?: string;
     };
 
     const appId = process.env.AGORA_APP_ID;
@@ -84,18 +87,29 @@ export async function POST(req: Request) {
             },
           ],
         },
-        tts: {
-          // OpenAI TTS — already-available API key, ~$15/1M chars, no extra account needed.
-          // Voices: alloy · echo · fable · onyx · nova · shimmer
-          // nova = warm & natural (good for speech therapy context)
-          vendor: 'openai',
-          params: {
-            api_key: process.env.OPENAI_API_KEY ?? '',
-            model:   'tts-1',          // tts-1-hd for higher quality at 2× cost
-            voice:   'nova',
-            speed:   1.0,
-          },
-        },
+        tts: body.voiceCloneId
+          // ── User has a cloned voice — speak back in their own voice ──────────
+          ? {
+              vendor: 'elevenlabs',
+              params: {
+                api_key:  process.env.ELEVENLABS_API_KEY ?? '',
+                voice_id: body.voiceCloneId,
+                model_id: 'eleven_turbo_v2_5', // lowest latency, real-time suitable
+                stability:         0.45,
+                similarity_boost:  0.80,
+                use_speaker_boost: true,
+              },
+            }
+          // ── No clone yet — fall back to OpenAI nova ───────────────────────
+          : {
+              vendor: 'openai',
+              params: {
+                api_key: process.env.OPENAI_API_KEY ?? '',
+                model:   'tts-1',
+                voice:   'nova',
+                speed:   1.0,
+              },
+            },
       },
     };
 
