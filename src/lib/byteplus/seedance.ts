@@ -1,16 +1,30 @@
 /**
- * BytePlus Ark — Seedance 2.0 server-side REST client.
+ * BytePlus / VolcEngine Ark — Seedance video generation server-side client.
  *
- * API platform: BytePlus ModelArk (ark.ap-southeast.bytepluses.com)
- * Console:      https://console.byteplus.com
- * Key format:   ark-*
+ * ── Region selection ─────────────────────────────────────────────────────────
+ * Your API key is tied to the console where you created it.  Use the matching
+ * endpoint or all requests will return 401 / ModelNotOpen.
  *
- * Required env vars:
- *   BYTEPLUS_API_KEY   — Ark API key (starts with "ark-"; never NEXT_PUBLIC_)
+ *   International account  →  console.byteplus.com
+ *     BYTEPLUS_API_BASE=https://ark.ap-southeast.bytepluses.com/api/v3
  *
- * Optional env vars:
- *   BYTEPLUS_API_BASE  — override base URL for different regions
- *                        default: https://ark.ap-southeast.bytepluses.com/api/v3
+ *   China account          →  console.volcengine.com
+ *     BYTEPLUS_API_BASE=https://ark.cn-beijing.volces.com/api/v3
+ *
+ * Run GET /api/admin/seedance-region (admin only) to auto-detect which
+ * endpoint your API key authenticates against.
+ *
+ * ── Required env vars ────────────────────────────────────────────────────────
+ *   BYTEPLUS_API_KEY   — Ark API key (server-side only; never NEXT_PUBLIC_)
+ *   BYTEPLUS_API_BASE  — regional base URL (see above; defaults to international)
+ *
+ * ── Model activation ─────────────────────────────────────────────────────────
+ * Models must be activated in your console BEFORE use:
+ *   International: console.byteplus.com/ark  → Model Square → Seedance
+ *   China:         console.volcengine.com/ark → 模型广场 (Model Square) → Seedance
+ *
+ * "ModelNotOpen" error = the model is not activated, OR you're hitting the
+ * wrong regional endpoint.  Fix the endpoint first, then activate the model.
  */
 
 import 'server-only';
@@ -60,6 +74,9 @@ export interface SeedanceTaskResult {
 
 const BASE =
   (process.env.BYTEPLUS_API_BASE ??
+    // Default: international BytePlus endpoint.
+    // If your account is on console.volcengine.com (China), set:
+    //   BYTEPLUS_API_BASE=https://ark.cn-beijing.volces.com/api/v3
     'https://ark.ap-southeast.bytepluses.com/api/v3')
     .replace(/\/$/, '');
 
