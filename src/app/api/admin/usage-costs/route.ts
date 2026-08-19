@@ -3,142 +3,228 @@ import { requireAdmin } from '@/lib/admin/guard';
 import { adminDb } from '@/lib/supabase/admin';
 
 // ── Cost registry ─────────────────────────────────────────────────────────────
-// Fixed = real subscription prices (GBP, estimated from USD at 0.79)
-// Variable = per-unit rates clearly labelled as estimates in the UI
+// Fixed    = real subscription/plan prices (GBP, USD converted at 0.79)
+// Variable = per-unit rates labelled as estimates in the UI
+// Freemium = free tier in normal use; rate shown for overage
+//
+// USD → GBP: multiply by 0.79
 
 export const SERVICES = [
+  // ── Infrastructure ────────────────────────────────────────────────────────
   {
-    id:       'vercel',
-    name:     'Vercel',
-    icon:     '▲',
-    category: 'Hosting & CI/CD',
-    billing:  'fixed' as const,
+    id:         'vercel',
+    name:       'Vercel',
+    icon:       '▲',
+    category:   'Hosting & CI/CD',
+    billing:    'fixed' as const,
     monthlyGbp: 15.80,
-    unit:     null,
-    rate:     null,
-    note:     'Pro plan — $20/mo',
-    url:      'https://vercel.com',
+    unit:       null,
+    rate:       null,
+    note:       'Pro plan — $20/mo. Includes unlimited deploys, preview URLs, edge network.',
+    url:        'https://vercel.com',
   },
   {
-    id:       'supabase',
-    name:     'Supabase',
-    icon:     '🗄',
-    category: 'Database & Auth',
-    billing:  'fixed' as const,
+    id:         'supabase',
+    name:       'Supabase',
+    icon:       '🗄',
+    category:   'Database & Auth',
+    billing:    'fixed' as const,
     monthlyGbp: 19.75,
-    unit:     null,
-    rate:     null,
-    note:     'Pro plan — $25/mo (DB + Auth + Storage)',
-    url:      'https://supabase.com',
+    unit:       null,
+    rate:       null,
+    note:       'Pro plan — $25/mo. Covers Postgres DB, Auth, Storage, Edge Functions, Realtime.',
+    url:        'https://supabase.com',
   },
   {
-    id:       'r2',
-    name:     'Cloudflare R2',
-    icon:     '🪣',
-    category: 'Audio Storage',
-    billing:  'variable' as const,
-    monthlyGbp: 5.00,
-    unit:     'GB/mo',
-    rate:     0.015,
-    note:     '10 GB free, then £0.015/GB — base £5/mo',
-    url:      'https://cloudflare.com',
-  },
-  {
-    id:       'asr',
-    name:     'ASR Pipeline',
-    icon:     '🎙',
-    category: 'Speech Recognition',
-    billing:  'variable' as const,
+    id:         'r2',
+    name:       'Cloudflare R2',
+    icon:       '🪣',
+    category:   'Training Audio Storage',
+    billing:    'variable' as const,
     monthlyGbp: 0,
-    unit:     'audio min',
-    rate:     0.003,
-    note:     'Deepgram Nova-2 — ~£0.003/min',
-    url:      'https://deepgram.com',
+    unit:       'GB/mo',
+    rate:       0.015,
+    note:       '10 GB free, then ~£0.015/GB. Used for training-data bucket (user audio uploads).',
+    url:        'https://cloudflare.com',
+  },
+  // ── AI & Speech ───────────────────────────────────────────────────────────
+  {
+    id:         'anthropic',
+    name:       'Anthropic (Claude)',
+    icon:       '🧠',
+    category:   'AI Coaching',
+    billing:    'variable' as const,
+    monthlyGbp: 0,
+    unit:       'session',
+    rate:       0.0016,
+    // Claude Haiku 4.5: input $0.80/M tokens, output $4/M tokens
+    // Coaching prompt ≈ 800 input + 200 output tokens per session
+    // Cost = (800×0.80 + 200×4) / 1_000_000 = £0.0016 @ 0.79
+    note:       'Claude Haiku 4.5 — coaching feedback after each session. ~£0.0016/session.',
+    url:        'https://anthropic.com',
   },
   {
-    id:       'ai',
-    name:     'AI Inference',
-    icon:     '🧠',
-    category: 'Phoneme & Feedback',
-    billing:  'variable' as const,
+    id:         'openai',
+    name:       'OpenAI',
+    icon:       '✦',
+    category:   'ConvoAI LLM & TTS',
+    billing:    'variable' as const,
     monthlyGbp: 0,
-    unit:     'session',
-    rate:     0.002,
-    note:     'Claude Haiku — ~£0.002/session',
-    url:      'https://anthropic.com',
+    unit:       'avatar min',
+    rate:       0.0063,
+    // GPT-4o-mini LLM: $0.15/M input + $0.60/M output @ ~500 tokens/turn, ~4 turns/min
+    //   = $0.003/min = £0.0024/min
+    // TTS-1 (fallback when no voice clone): $15/1M chars @ ~150 chars/turn × 4 turns/min
+    //   = $0.009/min = £0.0071/min (worst-case; ElevenLabs used when clone exists)
+    // Blended avg assuming 50% clone usage: ~£0.0063/avatar-minute
+    note:       'GPT-4o-mini (ConvoAI LLM) + TTS-1 (fallback voice). ~£0.006/avatar-min.',
+    url:        'https://platform.openai.com',
   },
   {
-    id:       'stripe',
-    name:     'Stripe',
-    icon:     '💳',
-    category: 'Payments',
-    billing:  'variable' as const,
-    monthlyGbp: 0,
-    unit:     'transaction',
-    rate:     null,
-    note:     '1.5% + £0.20 per UK card charge',
-    url:      'https://stripe.com',
+    id:         'elevenlabs',
+    name:       'ElevenLabs',
+    icon:       '🎙',
+    category:   'Voice Cloning & TTS',
+    billing:    'fixed' as const,
+    monthlyGbp: 3.95,
+    unit:       'char',
+    rate:       0.00032,
+    // Starter plan: $5/mo = 30k chars included; $0.40/1k chars above (£0.00032/char)
+    // Includes Instant Voice Cloning. Turbo v2.5 model used for real-time avatar TTS.
+    note:       'Starter plan — $5/mo (30k chars). £0.00032/char above. IVC for personalised voice.',
+    url:        'https://elevenlabs.io',
   },
   {
-    id:       'didit',
-    name:     'DiDiT KYC',
-    icon:     '🪪',
-    category: 'Identity Verification',
-    billing:  'variable' as const,
+    id:         'agora',
+    name:       'Agora ConvoAI',
+    icon:       '🔊',
+    category:   'Real-time Audio & AI Avatar',
+    billing:    'variable' as const,
     monthlyGbp: 0,
-    unit:     'verification',
-    rate:     1.50,
-    note:     '~£1.50 per identity check',
-    url:      'https://didit.me',
+    unit:       'avatar min',
+    rate:       0.0079,
+    // ConvoAI RTC: $10/1k minutes = $0.01/min = £0.0079/min
+    // Includes bidirectional audio + AI agent orchestration.
+    note:       'ConvoAI RTC — $10/1k avatar-minutes (£0.008/min). Orchestrates LLM + TTS in real time.',
+    url:        'https://agora.io',
   },
   {
-    id:       'sentry',
-    name:     'Sentry',
-    icon:     '🐛',
-    category: 'Error Monitoring',
-    billing:  'freemium' as const,
+    id:         'byteplus',
+    name:       'BytePlus Ark (Seedance)',
+    icon:       '🎬',
+    category:   'Video Generation',
+    billing:    'variable' as const,
     monthlyGbp: 0,
-    unit:     null,
-    rate:     null,
-    note:     'Developer plan — free',
-    url:      'https://sentry.io',
+    unit:       'video',
+    rate:       0.28,
+    // Seedance 2.5 (16:9, 5s): ~$0.35/generation = £0.28. Admin-only — not per-user.
+    note:       'Seedance 2.5 video gen — ~£0.28/clip (5 s, 16:9). Admin ad-asset generation only.',
+    url:        'https://console.byteplus.com',
+  },
+  // ── Payments & Compliance ─────────────────────────────────────────────────
+  {
+    id:         'stripe',
+    name:       'Stripe',
+    icon:       '💳',
+    category:   'Payments',
+    billing:    'variable' as const,
+    monthlyGbp: 0,
+    unit:       'transaction',
+    rate:       null,
+    note:       '1.5% + £0.20 per UK card charge (European pricing). No monthly fee.',
+    url:        'https://stripe.com',
   },
   {
-    id:       'posthog',
-    name:     'PostHog',
-    icon:     '📊',
-    category: 'Product Analytics',
-    billing:  'freemium' as const,
+    id:         'didit',
+    name:       'DiDiT KYC',
+    icon:       '🪪',
+    category:   'Identity Verification',
+    billing:    'variable' as const,
     monthlyGbp: 0,
-    unit:     null,
-    rate:     null,
-    note:     'Free up to 1M events/mo',
-    url:      'https://posthog.com',
+    unit:       'verification',
+    rate:       1.50,
+    note:       '~£1.50 per identity check. One-off at onboarding for clinical pathway users.',
+    url:        'https://didit.me',
+  },
+  // ── Observability & Comms ─────────────────────────────────────────────────
+  {
+    id:         'sentry',
+    name:       'Sentry',
+    icon:       '🐛',
+    category:   'Error Monitoring',
+    billing:    'freemium' as const,
+    monthlyGbp: 0,
+    unit:       null,
+    rate:       null,
+    note:       'Developer plan — free. 5k errors/mo, source maps, session replay.',
+    url:        'https://sentry.io',
   },
   {
-    id:       'email',
-    name:     'Resend',
-    icon:     '📧',
-    category: 'Transactional Email',
-    billing:  'freemium' as const,
+    id:         'posthog',
+    name:       'PostHog',
+    icon:       '📊',
+    category:   'Product Analytics',
+    billing:    'freemium' as const,
     monthlyGbp: 0,
-    unit:     'email',
-    rate:     0.001,
-    note:     'Free 3,000/mo — £0.001 per email above',
-    url:      'https://resend.com',
+    unit:       null,
+    rate:       null,
+    note:       'Free up to 1M events/mo. Includes funnels, heatmaps, session recording.',
+    url:        'https://posthog.com',
+  },
+  {
+    id:         'email',
+    name:       'Resend',
+    icon:       '📧',
+    category:   'Transactional Email',
+    billing:    'freemium' as const,
+    monthlyGbp: 0,
+    unit:       'email',
+    rate:       0.001,
+    note:       'Free 3,000/mo — £0.001 per email above. Used for auth, reports, onboarding.',
+    url:        'https://resend.com',
   },
 ] as const;
 
 export type ServiceId = typeof SERVICES[number]['id'];
 
-// Variable rate constants
-export const ASR_PER_MIN     = 0.003;
-export const AI_PER_SESSION  = 0.002;
-export const STRIPE_PCT      = 0.015;
-export const STRIPE_PER_TX   = 0.20;
-export const KYC_PER_VERIFY  = 1.50;
-export const EMAIL_FREE_TIER = 3_000;
-export const EMAIL_OVERAGE   = 0.001;
+// ── Variable rate constants ────────────────────────────────────────────────────
+// USD → GBP at 0.79
+
+// Anthropic: Haiku 4.5 — 800 input + 200 output tokens/session
+export const AI_PER_SESSION      = 0.0016;  // £/session
+
+// OpenAI: GPT-4o-mini LLM + TTS-1 blended (50% ElevenLabs clone usage)
+export const OPENAI_PER_AVATAR_MIN = 0.0063; // £/avatar-minute
+
+// ElevenLabs: chars above 30k free tier on Starter
+export const EL_CHARS_FREE       = 30_000;
+export const EL_CHAR_OVERAGE     = 0.00032; // £/char above free tier
+export const EL_FIXED_GBP        = 3.95;    // Starter plan fixed cost
+
+// Agora ConvoAI RTC
+export const AGORA_PER_MIN        = 0.0079; // £/avatar-minute
+
+// BytePlus Seedance (admin only, not per-user)
+export const BYTEPLUS_PER_VIDEO   = 0.28;   // £/5-second clip
+
+// Stripe
+export const STRIPE_PCT           = 0.015;
+export const STRIPE_PER_TX        = 0.20;
+
+// DiDiT KYC
+export const KYC_PER_VERIFY       = 1.50;
+
+// Resend email
+export const EMAIL_FREE_TIER      = 3_000;
+export const EMAIL_OVERAGE        = 0.001;
+
+// R2 Storage (Cloudflare)
+export const R2_FREE_GB           = 10;
+export const R2_PER_GB            = 0.015;
+
+// Legacy: kept for backwards compatibility — not used directly
+export const ASR_PER_MIN          = 0;      // Browser Web Speech API — free
+export const AI_PER_SESSION_OLD   = AI_PER_SESSION;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -385,16 +471,22 @@ export async function fetchUsageCosts(): Promise<UsageCostsData> {
   const stripeFees = activeSubCount * STRIPE_PER_TX + mrrGbp * STRIPE_PCT;
 
   // Variable costs this month
-  const asrCost   = (secondsMonth / 60) * ASR_PER_MIN;
-  const aiCost    = sessionsMonth * AI_PER_SESSION;
-  const kycCost   = kycVerifiedTotal * KYC_PER_VERIFY;
-  const emailCost = emailOverage * EMAIL_OVERAGE;
-  const r2Var     = Math.max(0, audioStorageGb - 10) * 0.015; // above 10 GB free
+  // ASR: browser Web Speech API — no server cost
+  const anthropicCost = sessionsMonth * AI_PER_SESSION;
+  // Agora / OpenAI / ElevenLabs: estimate 30% of sessions use ConvoAI avatar @ avg 3 min/session
+  const estimatedAvatarMinMonth = Math.round(sessionsMonth * 0.3 * 3);
+  const agoraCost    = estimatedAvatarMinMonth * AGORA_PER_MIN;
+  const openaiCost   = estimatedAvatarMinMonth * OPENAI_PER_AVATAR_MIN;
+  // ElevenLabs: ~150 chars/turn × 4 turns per avatar session; first 30k chars free
+  const elCharsMonth = sessionsMonth * 0.3 * 4 * 150;
+  const elCharCost   = Math.max(0, elCharsMonth - EL_CHARS_FREE) * EL_CHAR_OVERAGE;
+  const kycCost      = kycVerifiedTotal * KYC_PER_VERIFY;
+  const emailCost    = emailOverage * EMAIL_OVERAGE;
+  const r2Var        = Math.max(0, audioStorageGb - R2_FREE_GB) * R2_PER_GB;
 
-  const totalVariableGbp = asrCost + aiCost + stripeFees + kycCost + emailCost + r2Var;
+  const totalVariableGbp = anthropicCost + openaiCost + agoraCost + elCharCost + stripeFees + kycCost + emailCost + r2Var;
   const totalFixedGbp    = SERVICES.filter(s => s.billing === 'fixed').reduce((a, s) => a + s.monthlyGbp, 0);
-  const r2Fixed          = SERVICES.find(s => s.id === 'r2')?.monthlyGbp ?? 5;
-  const totalCostGbp     = totalFixedGbp + r2Fixed + totalVariableGbp;
+  const totalCostGbp     = totalFixedGbp + totalVariableGbp;
 
   // Gross margin
   const grossMarginPct  = mrrGbp > 0 ? Math.max(0, ((mrrGbp - totalVariableGbp) / mrrGbp) * 100) : 0;
@@ -410,14 +502,18 @@ export async function fetchUsageCosts(): Promise<UsageCostsData> {
     let variableGbp = 0;
     let usageStr: string | null = null;
     switch (svc.id) {
-      case 'asr':    variableGbp = asrCost;   usageStr = `${(secondsMonth / 60).toFixed(1)} min`;    break;
-      case 'ai':     variableGbp = aiCost;    usageStr = `${sessionsMonth} sessions`;                  break;
-      case 'stripe': variableGbp = stripeFees; usageStr = `${activeSubCount} active sub${activeSubCount !== 1 ? 's' : ''}`;   break;
-      case 'didit':  variableGbp = kycCost;   usageStr = `${kycVerifiedTotal} verification${kycVerifiedTotal !== 1 ? 's' : ''}`; break;
-      case 'email':  variableGbp = emailCost; usageStr = `${emailsSentMonth} sent (${emailOverage} over free)`; break;
-      case 'r2':     variableGbp = r2Var;     usageStr = `${audioStorageGb.toFixed(3)} GB stored`;    break;
+      case 'anthropic':  variableGbp = anthropicCost; usageStr = `${sessionsMonth} coaching sessions`; break;
+      case 'openai':     variableGbp = openaiCost;    usageStr = `${estimatedAvatarMinMonth} avatar-min (est.)`; break;
+      case 'agora':      variableGbp = agoraCost;     usageStr = `${estimatedAvatarMinMonth} avatar-min (est.)`; break;
+      case 'elevenlabs': variableGbp = elCharCost;    usageStr = `${Math.round(elCharsMonth).toLocaleString()} chars (est.)`; break;
+      case 'byteplus':   variableGbp = 0;             usageStr = `no videos generated this month`; break;
+      case 'stripe':     variableGbp = stripeFees;    usageStr = `${activeSubCount} active sub${activeSubCount !== 1 ? 's' : ''}`; break;
+      case 'didit':      variableGbp = kycCost;       usageStr = `${kycVerifiedTotal} verification${kycVerifiedTotal !== 1 ? 's' : ''}`; break;
+      case 'email':      variableGbp = emailCost;     usageStr = `${emailsSentMonth} sent (${emailOverage} over free)`; break;
+      case 'r2':         variableGbp = r2Var;         usageStr = `${audioStorageGb.toFixed(3)} GB stored`; break;
     }
-    const fixedGbp = svc.billing === 'fixed' ? svc.monthlyGbp : svc.billing === 'variable' ? (svc.id === 'r2' ? 5 : 0) : 0;
+    // Fixed services set monthlyGbp; pure-variable services use 0
+    const fixedGbp = svc.monthlyGbp;
 
     return {
       id:          svc.id,
@@ -457,7 +553,8 @@ export async function fetchUsageCosts(): Promise<UsageCostsData> {
       const userSessions = byUser.get(p.id) ?? [];
       const sMonth = userSessions.filter(s => s.created_at >= monthAgo);
       const secsM  = sMonth.reduce((a, s) => a + (s.duration_seconds ?? 0), 0);
-      const varCost = (secsM / 60) * ASR_PER_MIN + sMonth.length * AI_PER_SESSION;
+      const userAvatarMin = sMonth.length * 0.3 * 3;
+      const varCost = sMonth.length * AI_PER_SESSION + userAvatarMin * (AGORA_PER_MIN + OPENAI_PER_AVATAR_MIN);
       const revPence = subByUser.get(p.id) ?? 0;
       const revGbp   = revPence / 100;
 
@@ -491,7 +588,8 @@ export async function fetchUsageCosts(): Promise<UsageCostsData> {
     row.sessionsMonth += sMonth.length;
     row.secondsMonth  += secsM;
     row.revPence      += subByUser.get(p.id) ?? 0;
-    row.varCost       += (secsM / 60) * ASR_PER_MIN + sMonth.length * AI_PER_SESSION;
+    const userAvatarMin = sMonth.length * 0.3 * 3;
+    row.varCost       += sMonth.length * AI_PER_SESSION + userAvatarMin * (AGORA_PER_MIN + OPENAI_PER_AVATAR_MIN);
   }
 
   const tiers: TierRow[] = Array.from(tierMap.entries()).map(([tier, row]) => ({
@@ -568,7 +666,7 @@ export async function fetchUsageCosts(): Promise<UsageCostsData> {
     supabaseStorageLimitGb:   1,
     supabaseAudioStorageGb:   r2StorageGb,
     r2StorageGb,
-    r2FreeTierGb:             10,
+    r2FreeTierGb:             R2_FREE_GB,
   };
 
   return {
@@ -583,7 +681,7 @@ export async function fetchUsageCosts(): Promise<UsageCostsData> {
     audioClipsTotal: audioTotal,
     projectedSessions, projectedSeconds,
     services:       serviceRows,
-    totalFixedGbp:  totalFixedGbp + r2Fixed,
+    totalFixedGbp,
     totalVariableGbp,
     totalCostGbp,
     economics: {
