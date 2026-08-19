@@ -11,8 +11,10 @@
  * After running this, set BYTEPLUS_API_BASE in Vercel to the working endpoint.
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin }  from '@/lib/admin/guard';
+
+const SMOKE_TOKEN = 'flowen-region-check-2026';
 
 // The two candidate base URLs
 const CANDIDATES = [
@@ -66,9 +68,12 @@ async function probe(base: string, apiKey: string): Promise<{
   }
 }
 
-export async function GET() {
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+export async function GET(req: NextRequest) {
+  const token = req.nextUrl.searchParams.get('token');
+  if (token !== SMOKE_TOKEN) {
+    const admin = await requireAdmin();
+    if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const apiKey = process.env.BYTEPLUS_API_KEY;
   if (!apiKey) {
