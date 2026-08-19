@@ -20,7 +20,7 @@ export default async function PracticePage() {
 
   const admin = adminDb();
 
-  const [recentSessionsRes, countRes, planRes] = await Promise.all([
+  const [recentSessionsRes, countRes, planRes, profileRes] = await Promise.all([
     supabase.from('practice_sessions')
       .select('id,duration_seconds,total_blocks_detected,created_at')
       .eq('user_id', user.id)
@@ -33,6 +33,10 @@ export default async function PracticePage() {
       .select('prescribed_stages,sessions_per_week,minutes_per_session,phase,goals,slp_user_id')
       .eq('patient_user_id', user.id)
       .eq('active', true)
+      .maybeSingle(),
+    admin.from('profiles')
+      .select('consent_data_collection')
+      .eq('id', user.id)
       .maybeSingle(),
   ]);
 
@@ -104,12 +108,15 @@ export default async function PracticePage() {
     }
   }
 
+  const consentDataCollection = profileRes.data?.consent_data_collection ?? false;
+
   return (
     <PracticeClient
       recommendedStage={recommendedStage}
       treatmentPlan={treatmentPlan}
       programmeBanner={programmeBanner}
       sessionsThisWeek={sessionsThisWeek}
+      consentDataCollection={consentDataCollection}
       recentSessions={(recentSessionsRes.data ?? []).map(s => ({
         id: s.id,
         duration_seconds: s.duration_seconds,

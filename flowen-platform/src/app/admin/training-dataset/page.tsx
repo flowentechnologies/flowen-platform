@@ -2,6 +2,7 @@ import { assertAdmin } from '@/lib/admin/guard';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { DatasetWorkflow } from './DatasetWorkflow';
+import { adminDb } from '@/lib/supabase/admin';
 
 export const metadata: Metadata = { title: 'Disfluent Speech Training Dataset — Flowen Admin' };
 
@@ -69,10 +70,45 @@ function StatCard({ label, value, sub, accent = 'text-slate-900 dark:text-white'
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+interface LiveStats {
+  totalSamples: number;
+  totalMinutes: number;
+  consentedUsers: number;
+  byStage: Record<string, { count: number; seconds: number }>;
+}
+
+async function fetchLiveStats(): Promise<LiveStats> {
+  const admin = adminDb();
+  const [samplesRes, consentRes, stageRes] = await Promise.all([
+    admin.from('training_samples').select('duration_seconds', { count: 'exact' }),
+    admin.from('profiles').select('id', { count: 'exact', head: true }).eq('consent_data_collection', true),
+    admin.from('training_samples').select('stage_id, duration_seconds'),
+  ]);
+
+  const samples    = samplesRes.data ?? [];
+  const totalSecs  = samples.reduce((s, r) => s + (r.duration_seconds ?? 0), 0);
+  const byStage    = ((stageRes.data ?? []) as { stage_id: number | null; duration_seconds: number | null }[])
+    .reduce((acc, r) => {
+      const k = String(r.stage_id ?? 'unknown');
+      if (!acc[k]) acc[k] = { count: 0, seconds: 0 };
+      acc[k].count++;
+      acc[k].seconds += r.duration_seconds ?? 0;
+      return acc;
+    }, {} as Record<string, { count: number; seconds: number }>);
+
+  return {
+    totalSamples:   samplesRes.count ?? 0,
+    totalMinutes:   Math.round(totalSecs / 60),
+    consentedUsers: consentRes.count ?? 0,
+    byStage,
+  };
+}
+
 export default async function TrainingDatasetPage() {
   await assertAdmin();
 
   const maxEventClips = Math.max(...EVENT_BREAKDOWN.map(e => e.clips));
+  const live = await fetchLiveStats();
 
   return (
     <div className="space-y-8">
@@ -104,6 +140,60 @@ export default async function TrainingDatasetPage() {
         <StatCard label="Total duration"  value={`${CORPUS.totalHours.toLocaleString('en-GB')} h`} sub="of disfluent speech"  accent="text-violet-400" />
         <StatCard label="Unique speakers" value={CORPUS.uniqueSpeakers.toLocaleString('en-GB')} sub="consented Flowen users" accent="text-sky-400" />
         <StatCard label="Auto-labelled"   value={`${CORPUS.labelledPct}%`} sub={`+ ${CORPUS.humanReviewed}% human QA review`} accent="text-emerald-400" />
+      </div>
+
+      {/* Live collection stats — real data from training_samples table */}
+      <div className="bg-emerald-950/40 border border-emerald-800/40 rounded-2xl p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <h2 className="text-sm font-bold uppercase tracking-widest text-emerald-400">Live Collection</h2>
+          <span className="ml-auto text-[10px] font-mono text-slate-500">training_samples · refreshed on page load</span>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            label="Samples collected"
+            value={live.totalSamples.toLocaleString('en-GB')}
+            sub="audio uploads from users"
+            accent="text-emerald-400"
+          />
+          <StatCard
+            label="Total duration"
+            value={`${live.totalMinutes.toLocaleString('en-GB')} min`}
+            sub={`≈ ${(live.totalMinutes / 60).toFixed(1)} hours`}
+            accent="text-sky-400"
+          />
+          <StatCard
+            label="Consented users"
+            value={live.consentedUsers.toLocaleString('en-GB')}
+            sub="opted into data collection"
+            accent="text-violet-400"
+          />
+          <StatCard
+            label="Stages covered"
+            value={Object.keys(live.byStage).filter(k => k !== 'unknown').length}
+            sub="of 5 programme stages"
+            accent="text-amber-400"
+          />
+        </div>
+        {Object.keys(live.byStage).length > 0 && (
+          <div className="mt-4 pt-4 border-t border-emerald-800/40">
+            <p className="text-xs text-slate-500 uppercase tracking-widest mb-3">By Stage</p>
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(live.byStage)
+                .sort(([a], [b]) => Number(a) - Number(b))
+                .map(([stage, s]) => (
+                  <div key={stage} className="bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest">Stage {stage}</p>
+                    <p className="text-sm font-mono font-bold text-slate-200">{s.count} <span className="text-xs font-normal text-slate-500">samples</span></p>
+                    <p className="text-xs text-slate-500">{Math.round(s.seconds / 60)} min</p>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+        {live.totalSamples === 0 && (
+          <p className="mt-4 text-xs text-slate-500 italic">No samples collected yet. Users need to opt in via Settings → Contribute to AI Training.</p>
+        )}
       </div>
 
       {/* Event type composition */}
