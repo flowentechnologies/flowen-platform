@@ -135,6 +135,7 @@ interface Props {
   treatmentPlan: TreatmentPlanProp | null;
   programmeBanner: ProgrammeBanner | null;
   sessionsThisWeek: number;
+  consentDataCollection: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -285,7 +286,7 @@ function BreathingPacer() {
 // Component
 // ---------------------------------------------------------------------------
 
-export function PracticeClient({ recommendedStage, recentSessions: initialRecentSessions, treatmentPlan, programmeBanner, sessionsThisWeek }: Props) {
+export function PracticeClient({ recommendedStage, recentSessions: initialRecentSessions, treatmentPlan, programmeBanner, sessionsThisWeek, consentDataCollection }: Props) {
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>(initialRecentSessions);
   const [screen, setScreen] = useState<Screen>('select');
   const [stageId, setStageId] = useState<StageId>(
@@ -384,6 +385,11 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   const isSpeakingRef = useRef(false);
   const silenceStartRef = useRef<number | null>(null);
   const blocksRef = useRef(0);
+
+  // Data collection consent — kept in a ref so it's readable in async callbacks
+  // without stale closures. Seeded from the server-side prop (updated at page load).
+  const consentDataCollectionRef = useRef(consentDataCollection);
+  useEffect(() => { consentDataCollectionRef.current = consentDataCollection; }, [consentDataCollection]);
 
   // Caption + recorder refs
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -837,6 +843,36 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           total_blocks_detected: blocksRef.current,
           bpm: Math.round(bpm * 10) / 10,
         }, ...prev].slice(0, 5));
+
+        // Fire-and-forget audio upload for ML training dataset.
+        // Only runs when the user has opted in to data collection.
+        // Does not block the UI or affect the session save flow.
+        if (consentDataCollectionRef.current && audioChunksRef.current.length > 0) {
+          const sessionId   = json.session.id;
+          const chunks      = audioChunksRef.current.slice(); // snapshot
+          const mimeType    = mediaRecorderRef.current?.mimeType || 'audio/webm';
+          const elapsedSnap = elapsed;
+          const txSnap      = transcriptSnapshot ?? '';
+          const disfl       = disfluency.events;
+          const stage       = stageId;
+          void (async () => {
+            try {
+              const blob = new Blob(chunks, { type: mimeType });
+              const fd   = new FormData();
+              fd.append('audio',      blob, 'session.webm');
+              fd.append('duration',   String(elapsedSnap));
+              fd.append('transcript', txSnap);
+              fd.append('disfluency', JSON.stringify(disfl));
+              fd.append('stage_id',   String(stage));
+              await fetch(`/api/practice/sessions/${sessionId}/audio`, {
+                method: 'POST',
+                body: fd,
+              });
+            } catch {
+              // Best-effort — silently swallow upload errors; never surface to user
+            }
+          })();
+        }
       }
       posthog.capture('practice_session_saved', {
         stage_id: stageId,
@@ -859,7 +895,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       setSaveError('Network error — check your connection and try again.');
       setSaving(false);
     }
-  }, [elapsed, stageId, finalTranscript, discardAndReset]);
+  }, [elapsed, stageId, finalTranscript, disfluency.events, discardAndReset]);
 
   // ---------------------------------------------------------------------------
   // Derived

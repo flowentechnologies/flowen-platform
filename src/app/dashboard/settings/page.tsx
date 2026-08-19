@@ -39,15 +39,26 @@ export default function SettingsPage() {
   const [notifMsg,         setNotifMsg]         = useState('');
   const [notifLoaded,      setNotifLoaded]      = useState(false);
 
+  const [dataConsent,      setDataConsent]      = useState(false);
+  const [dataConsentLoaded, setDataConsentLoaded] = useState(false);
+  const [dataConsentSaving, startDataConsentSave] = useTransition();
+  const [dataConsentMsg,   setDataConsentMsg]   = useState('');
+
   React.useEffect(() => {
-    if (nameLoaded) return;
+    if (nameLoaded && dataConsentLoaded) return;
     createClient().auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
-      const { data } = await createClient().from('profiles').select('display_name').eq('id', user.id).single();
+      const { data } = await createClient()
+        .from('profiles')
+        .select('display_name, consent_data_collection')
+        .eq('id', user.id)
+        .single();
       setDisplayName(data?.display_name ?? '');
+      setDataConsent(data?.consent_data_collection ?? false);
       setNameLoaded(true);
+      setDataConsentLoaded(true);
     });
-  }, [nameLoaded]);
+  }, [nameLoaded, dataConsentLoaded]);
 
   useEffect(() => {
     if (notifLoaded) return;
@@ -98,6 +109,29 @@ export default function SettingsPage() {
       } catch {
         setNotifMsg('Failed to save.');
       }
+    });
+  };
+
+  const handleDataConsentToggle = (next: boolean) => {
+    setDataConsent(next);
+    setDataConsentMsg('');
+    startDataConsentSave(async () => {
+      const sb = createClient();
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      await sb.from('profiles').update({
+        consent_data_collection:         next,
+        consent_data_collection_at:      next ? new Date().toISOString() : null,
+        consent_data_collection_version: next ? '2026-08-01' : null,
+      }).eq('id', user.id);
+      // Audit log
+      await sb.from('consent_audit_log').insert({
+        user_id:          user.id,
+        event_type:       next ? 'data_collection_consent_given' : 'data_collection_consent_withdrawn',
+        consent_version:  '2026-08-01',
+      });
+      posthog.capture('settings_updated', { settings_section: 'data_collection', consent: next });
+      setDataConsentMsg(next ? 'Thank you — your sessions will now contribute to training.' : 'Preference saved. No further audio will be collected.');
     });
   };
 
@@ -252,6 +286,33 @@ export default function SettingsPage() {
             </button>
             {notifMsg && <span className="text-xs text-slate-400">{notifMsg}</span>}
           </div>
+        </div>
+      </Section>
+
+      {/* AI Training Data */}
+      <Section title="Contribute to AI Training" description="Help improve Flowen's speech recognition for people who stutter. Your practice recordings will be used to fine-tune our ASR model. You can withdraw at any time — this does not affect existing data already contributed.">
+        <div className="space-y-4">
+          <div className="flex items-start gap-4">
+            <div className="flex-1">
+              <p className="text-sm text-slate-900 dark:text-white font-medium">Share my voice recordings</p>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Audio from your practice sessions will be stored securely and used only to train Flowen&apos;s disfluency-aware ASR model.
+                Recordings are never sold or shared externally. See our{' '}
+                <a href="/legal" className="underline decoration-slate-600 hover:text-slate-300">Privacy Policy</a> for full details.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleDataConsentToggle(!dataConsent)}
+              disabled={dataConsentSaving || !dataConsentLoaded}
+              aria-pressed={dataConsent}
+              aria-label="Share voice recordings for AI training"
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none disabled:opacity-40 ${dataConsent ? 'bg-emerald-500' : 'bg-slate-700'}`}
+            >
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${dataConsent ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
+          </div>
+          {dataConsentMsg && <p className="text-xs text-emerald-400">{dataConsentMsg}</p>}
         </div>
       </Section>
 
