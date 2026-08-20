@@ -1,35 +1,61 @@
 /**
  * Flowen Mobile — Root Application Component
  *
- * React Native (Expo bare workflow) app wrapper.
- * Manages auth state, syncs the user profile via Supabase Realtime,
- * and renders the session-gated navigation stack.
+ * Expo bare-workflow app. Manages Supabase auth state, syncs the user
+ * profile via Realtime, and routes to the correct screen.
  *
- * Dependencies (add to flowen-mobile/package.json):
- *   expo ~52.x, react-native ~0.76.x,
- *   @react-navigation/native, @react-navigation/native-stack,
- *   expo-secure-store, expo-status-bar, react-native-safe-area-context,
- *   react-native-screens, @supabase/supabase-js
+ * Screen routing:
+ *   no session            → LoginScreen
+ *   session, no profile   → loading
+ *   profile.id_verified   → SessionScreen
+ *   !profile.id_verified  → VerifyIdentityScreen
  */
 
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import * as SecureStore from 'expo-secure-store';
+import { createClient, type Session } from '@supabase/supabase-js';
 
-import { createClient } from '@supabase/supabase-js';
-import { useAudioPipeline, type AudioPipelineState } from './src/lib/audio/AudioPipeline';
+import { useAudioPipeline }        from './src/lib/audio/AudioPipeline';
+import { LoginScreen }             from './src/screens/LoginScreen';
+import { VerifyIdentityScreen }    from './src/screens/VerifyIdentityScreen';
+import { SessionScreen }           from './src/screens/SessionScreen';
+
+// ── Supabase client ───────────────────────────────────────────────────────────
+//
+// ExpoSecureStoreAdapter persists the Supabase session in the device keychain
+// (iOS Keychain / Android Keystore), keeping tokens off disk and out of
+// AsyncStorage.
+
+const ExpoSecureStoreAdapter = {
+  getItem:    (key: string) => SecureStore.getItemAsync(key),
+  setItem:    (key: string, value: string) => SecureStore.setItemAsync(key, value),
+  removeItem: (key: string) => SecureStore.deleteItemAsync(key),
+};
+
+export const supabase = createClient(
+  process.env.EXPO_PUBLIC_SUPABASE_URL!,
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      storage:          ExpoSecureStoreAdapter,
+      autoRefreshToken: true,
+      persistSession:   true,
+      detectSessionInUrl: false,
+    },
+  },
+);
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface UserProfile {
+export interface UserProfile {
   id:           string;
   tier:         string;
   id_verified:  boolean;
@@ -38,24 +64,7 @@ interface UserProfile {
 
 type AppScreen = 'loading' | 'login' | 'verify-identity' | 'session';
 
-// ── Supabase client ───────────────────────────────────────────────────────────
-
-// Module-level singleton — createClient is lightweight and safe to call once.
-// Use EXPO_PUBLIC_ prefix so Expo's bundler inlines the values at build time.
-const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
-);
-
 // ── Profile sync via Supabase Realtime ────────────────────────────────────────
-//
-// Previously this used a custom WebSocket (wss://api.flowen.digital/ws/profile)
-// that did not exist, and passed the user ID as a query-string parameter
-// (`?uid=…`) — exposing it in network logs, proxies, and server access logs.
-//
-// Replacement: Supabase Realtime postgres_changes subscription on the profiles
-// row, authenticated via the Supabase JWT (never in the URL).  An initial fetch
-// hydrates the profile immediately; subsequent DB writes push updates in real time.
 
 function useProfileSync(userId: string | null) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -66,7 +75,6 @@ function useProfileSync(userId: string | null) {
       return;
     }
 
-    // Hydrate synchronously with the current row before the channel opens.
     supabase
       .from('profiles')
       .select('id, tier, id_verified, pacer_bpm')
@@ -76,33 +84,22 @@ function useProfileSync(userId: string | null) {
         if (data) setProfile(data as UserProfile);
       });
 
-    // Subscribe to UPDATE events on this user's profiles row.
-    // The channel name is local-only; the filter is evaluated server-side.
     const channel = supabase
       .channel(`profile_sync:${userId}`)
       .on(
         'postgres_changes',
-        {
-          event:  'UPDATE',
-          schema: 'public',
-          table:  'profiles',
-          filter: `id=eq.${userId}`,
-        },
-        (payload) => {
-          setProfile(payload.new as UserProfile);
-        },
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
+        (payload) => setProfile(payload.new as UserProfile),
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [userId]);
 
   return profile;
 }
 
-// ── Screens ───────────────────────────────────────────────────────────────────
+// ── Loading screen ────────────────────────────────────────────────────────────
 
 function LoadingScreen() {
   return (
@@ -113,86 +110,7 @@ function LoadingScreen() {
   );
 }
 
-function LoginScreen({ onLogin }: { onLogin: (id: string) => void }) {
-  return (
-    <View style={styles.centre}>
-      <Text style={styles.title}>FLOWEN</Text>
-      <Text style={styles.subtitle}>Neural Biofeedback Speech Therapy</Text>
-      <TouchableOpacity style={styles.button} onPress={() => onLogin('demo-user-id')}>
-        <Text style={styles.buttonText}>Sign In</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-function VerifyIdentityScreen() {
-  return (
-    <View style={styles.centre}>
-      <Text style={styles.title}>Identity Verification</Text>
-      <Text style={styles.bodyText}>
-        Complete your KYC verification to access your therapy sessions.
-      </Text>
-    </View>
-  );
-}
-
-function SessionScreen({ pipeline }: { pipeline: AudioPipelineState }) {
-  const orbSize = 160;
-  // Map RMS [0, 0.3] → scale [1, 1.6] for the orb visual
-  const scale   = 1 + Math.min(pipeline.rms / 0.3, 1) * 0.6;
-
-  return (
-    <View style={styles.sessionContainer}>
-      <Text style={styles.title}>Flowen Session</Text>
-
-      {/* Pacer orb — simplified native equivalent of the web PacerOrb */}
-      <View style={[styles.orbContainer, { width: orbSize, height: orbSize }]}>
-        <View
-          style={[
-            styles.orb,
-            {
-              width:  orbSize * scale,
-              height: orbSize * scale,
-              borderRadius: orbSize * scale / 2,
-              opacity: 0.5 + pipeline.rms * 1.5,
-            },
-          ]}
-        />
-        <View style={[styles.orbCore, { width: orbSize * 0.35, height: orbSize * 0.35, borderRadius: orbSize * 0.175 }]} />
-      </View>
-
-      {/* Volume meter */}
-      <View style={styles.meterTrack}>
-        <View
-          style={[
-            styles.meterFill,
-            { height: `${Math.max(0, (pipeline.decibelLevel + 60) / 60 * 100)}%` },
-          ]}
-        />
-      </View>
-
-      <Text style={styles.dbLabel}>{Math.round(pipeline.decibelLevel)} dBFS</Text>
-      <Text style={[styles.vadLabel, pipeline.isVoiceActive && styles.vadActive]}>
-        {pipeline.isVoiceActive ? 'Voice Detected' : 'Listening…'}
-      </Text>
-
-      {pipeline.error && (
-        <Text style={styles.errorText}>{pipeline.error}</Text>
-      )}
-
-      <TouchableOpacity
-        style={[styles.button, pipeline.isRecording && styles.buttonStop]}
-        onPress={pipeline.isRecording ? pipeline.stop : pipeline.start}
-      >
-        <Text style={styles.buttonText}>
-          {pipeline.isRecording ? 'Stop Session' : 'Start Session'}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-// ── Root component ────────────────────────────────────────────────────────────
+// ── Root ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [screen,  setScreen]  = useState<AppScreen>('loading');
@@ -201,34 +119,52 @@ export default function App() {
   const profile  = useProfileSync(userId);
   const pipeline = useAudioPipeline();
 
-  // Auth + profile-gate routing
+  // Bootstrap: restore session from SecureStore on first mount
   useEffect(() => {
-    if (!userId) {
-      setScreen('login');
-      return;
-    }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const uid = session?.user?.id ?? null;
+      setUserId(uid);
+      if (!uid) setScreen('login');
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event: string, session: Session | null) => {
+        const uid = session?.user?.id ?? null;
+        setUserId(uid);
+        if (!uid) {
+          setScreen('login');
+        }
+      },
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Profile-gate routing
+  useEffect(() => {
+    if (!userId) return; // auth effect handles login redirect
     if (!profile) {
       setScreen('loading');
       return;
     }
-    if (!profile.id_verified) {
-      setScreen('verify-identity');
-      return;
-    }
-    setScreen('session');
+    setScreen(profile.id_verified ? 'session' : 'verify-identity');
   }, [userId, profile]);
 
-  const handleLogin = (id: string) => {
-    setUserId(id);
-    setScreen('loading');
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUserId(null);
+    setScreen('login');
   };
 
   const renderScreen = () => {
     switch (screen) {
       case 'loading':          return <LoadingScreen />;
-      case 'login':            return <LoginScreen onLogin={handleLogin} />;
-      case 'verify-identity':  return <VerifyIdentityScreen />;
-      case 'session':          return <SessionScreen pipeline={pipeline} />;
+      case 'login':            return <LoginScreen supabase={supabase} />;
+      case 'verify-identity':  return <VerifyIdentityScreen onSignOut={handleSignOut} />;
+      case 'session':
+        return profile
+          ? <SessionScreen pipeline={pipeline} profile={profile} onSignOut={handleSignOut} />
+          : <LoadingScreen />;
     }
   };
 
@@ -243,54 +179,7 @@ export default function App() {
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root:             { flex: 1, backgroundColor: '#020617' },
-  centre:           { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  sessionContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16 },
-  title:            { fontSize: 28, fontWeight: '800', color: '#ffffff', letterSpacing: 2 },
-  subtitle:         { fontSize: 14, color: '#94a3b8', marginTop: 8, textAlign: 'center' },
-  loadingText:      { fontSize: 14, color: '#64748b', marginTop: 16 },
-  bodyText:         { fontSize: 15, color: '#94a3b8', textAlign: 'center', lineHeight: 22, marginTop: 12 },
-  dbLabel:          { fontSize: 13, color: '#64748b', fontVariant: ['tabular-nums'] },
-  vadLabel:         { fontSize: 15, color: '#475569', fontWeight: '600' },
-  vadActive:        { color: '#22d3ee' },
-  errorText:        { fontSize: 12, color: '#ef4444', textAlign: 'center' },
-  button: {
-    backgroundColor: '#3b82f6',
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 14,
-    marginTop: 8,
-  },
-  buttonStop:       { backgroundColor: '#ef4444' },
-  buttonText:       { color: '#ffffff', fontSize: 15, fontWeight: '700' },
-  orbContainer:     { alignItems: 'center', justifyContent: 'center', marginVertical: 16 },
-  orb: {
-    position:        'absolute',
-    backgroundColor: '#2563eb',
-    shadowColor:     '#3b82f6',
-    shadowRadius:    30,
-    shadowOpacity:   0.6,
-    shadowOffset:    { width: 0, height: 0 },
-    elevation:       10,
-  },
-  orbCore: {
-    backgroundColor: '#bfdbfe',
-    shadowColor:     '#93c5fd',
-    shadowRadius:    10,
-    shadowOpacity:   0.9,
-    shadowOffset:    { width: 0, height: 0 },
-  },
-  meterTrack: {
-    width:           20,
-    height:          160,
-    backgroundColor: '#1e293b',
-    borderRadius:    4,
-    overflow:        'hidden',
-    justifyContent:  'flex-end',
-  },
-  meterFill: {
-    width:           '100%',
-    backgroundColor: '#22d3ee',
-    borderRadius:    4,
-  },
+  root:        { flex: 1, backgroundColor: '#020617' },
+  centre:      { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  loadingText: { fontSize: 14, color: '#64748b', marginTop: 16 },
 });

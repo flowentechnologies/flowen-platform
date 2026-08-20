@@ -1,0 +1,75 @@
+apply plugin: "com.android.application"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
+
+/**
+ * React Native configuration block.
+ * See https://reactnative.dev/docs/next/new-architecture-library-android
+ */
+react {
+    // autolinkLibrariesWithDeps is set by expo prebuild; keep the default here.
+}
+
+android {
+    ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion rootProject.ext.compileSdkVersion
+
+    namespace "com.flowen.app"
+
+    defaultConfig {
+        applicationId   "com.flowen.app"
+        minSdkVersion   rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode     1
+        versionName     "1.0"
+
+        // FlowenAudio C++ Oboe engine
+        externalNativeBuild {
+            cmake {
+                cppFlags "-O2 -frtti -fexceptions -DANDROID"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+    }
+
+    buildFeatures {
+        // Required for Oboe prefab package (find_package(oboe) in CMakeLists)
+        prefab = true
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.22.1"
+        }
+    }
+
+    signingConfigs {
+        debug {
+            storeFile     file('debug.keystore')
+            storePassword 'android'
+            keyAlias      'androiddebugkey'
+            keyPassword   'android'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            minifyEnabled   true
+            proguardFiles   getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+}
+
+dependencies {
+    // React Native + Expo modules (resolved via autolinking)
+    implementation("com.facebook.react:react-android")
+    implementation("com.facebook.react:hermes-android")
+
+    // Google Oboe for low-latency audio
+    implementation 'com.google.oboe:oboe:1.9.3'
+}
