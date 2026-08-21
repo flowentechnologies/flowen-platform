@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import posthog from 'posthog-js';
+import { createClient } from '@/lib/supabase/client';
 
 interface Message {
   id: string;
@@ -31,31 +32,78 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [connected, setConnected] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Initial fetch via API (uses service role — handles assignment check + marks read)
   const fetchMessages = useCallback(async (initial = false) => {
     const res = await fetch(`/api/messages?with=${slpId}`);
     if (!res.ok) return;
     const data = (await res.json()) as MessagesResponse;
-    setMessages(prev => {
-      if (!initial && prev.length === data.messages.length && prev.at(-1)?.id === data.messages.at(-1)?.id) return prev;
-      return data.messages;
-    });
+    setMessages(data.messages);
     if (initial) setLoading(false);
   }, [slpId]);
 
-  // Initial load
   useEffect(() => {
     fetchMessages(true).catch(console.error);
   }, [fetchMessages]);
 
-  // Poll every 15 seconds
+  // Supabase Realtime — subscribe to new messages and read receipts
   useEffect(() => {
-    const id = setInterval(() => {
-      fetchMessages(false).catch(console.error);
-    }, 15000);
-    return () => clearInterval(id);
-  }, [fetchMessages]);
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel(`slp_messages:${myId}:${slpId}`)
+      // New incoming messages (from SLP → me)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'slp_messages',
+          filter: `to_user_id=eq.${myId}`,
+        },
+        (payload) => {
+          const msg = payload.new as Message;
+          // Only care about this conversation
+          if (msg.from_user_id !== slpId) return;
+          setMessages(prev => {
+            if (prev.some(m => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
+          // Mark the incoming message as read immediately
+          supabase
+            .from('slp_messages')
+            .update({ read_at: new Date().toISOString() })
+            .eq('id', msg.id)
+            .then(() => {});
+        },
+      )
+      // Read receipts — SLP reads my message (UPDATE sets read_at on my sent messages)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'slp_messages',
+          filter: `from_user_id=eq.${myId}`,
+        },
+        (payload) => {
+          const updated = payload.new as Message;
+          if (!updated.read_at) return;
+          setMessages(prev =>
+            prev.map(m => (m.id === updated.id ? { ...m, read_at: updated.read_at } : m)),
+          );
+        },
+      )
+      .subscribe((status) => {
+        setConnected(status === 'SUBSCRIBED');
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [myId, slpId]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -75,7 +123,10 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
       });
       if (res.ok) {
         const data = (await res.json()) as SendResponse;
-        setMessages(prev => [...prev, data.message]);
+        setMessages(prev => {
+          if (prev.some(m => m.id === data.message.id)) return prev;
+          return [...prev, data.message];
+        });
         setContent('');
         posthog.capture('message_sent', { recipient_type: 'clinician' });
       } else {
@@ -106,9 +157,15 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
-        <p className="text-slate-900 dark:text-white font-semibold text-sm">{slpName}</p>
-        <p className="text-slate-500 text-xs mt-0.5">Your speech-language pathologist</p>
+      <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <p className="text-slate-900 dark:text-white font-semibold text-sm">{slpName}</p>
+          <p className="text-slate-500 text-xs mt-0.5">Your speech-language pathologist</p>
+        </div>
+        <span
+          title={connected ? 'Live updates active' : 'Connecting…'}
+          className={`w-2 h-2 rounded-full transition-colors ${connected ? 'bg-emerald-400' : 'bg-slate-400 animate-pulse'}`}
+        />
       </div>
 
       {/* Messages scroll area */}
@@ -153,22 +210,22 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
           <p className="text-rose-400 text-xs px-1" role="alert">{sendError}</p>
         )}
         <div className="flex gap-3 items-end">
-        <textarea
-          rows={2}
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          onKeyDown={handleKeyDown}
-          maxLength={2000}
-          placeholder="Type a message… (Enter to send)"
-          className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500 transition-colors"
-        />
-        <button
-          onClick={() => send().catch(console.error)}
-          disabled={sending || !content.trim()}
-          className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-        >
-          {sending ? 'Sending…' : 'Send'}
-        </button>
+          <textarea
+            rows={2}
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            onKeyDown={handleKeyDown}
+            maxLength={2000}
+            placeholder="Type a message… (Enter to send)"
+            className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500 transition-colors"
+          />
+          <button
+            onClick={() => send().catch(console.error)}
+            disabled={sending || !content.trim()}
+            className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          >
+            {sending ? 'Sending…' : 'Send'}
+          </button>
         </div>
       </div>
     </div>
