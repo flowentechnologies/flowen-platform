@@ -4,6 +4,27 @@ import { adminDb as db } from '@/lib/supabase/admin';
 
 export type LiveRange = '1h' | '6h' | '24h' | '7d' | '30d' | '90d' | '6m' | '12m';
 export type BucketType = 'time' | 'date' | 'week' | 'month';
+export type PathSection = 'marketing' | 'app';
+
+// ── Path classifier ────────────────────────────────────────────────────────────
+//
+// 'app' = authenticated product surfaces (dashboard, portal, admin, onboarding)
+// 'marketing' = everything else (landing page, /pricing, /blog, /auth/*, etc.)
+//
+// Kept as a plain function so it can be used on both landing_page (session-level)
+// and path (page-view-level) without duplication.
+
+export function classifyPath(path: string | null | undefined): PathSection {
+  if (!path) return 'marketing';
+  const p = path.toLowerCase();
+  if (
+    p.startsWith('/dashboard') ||
+    p.startsWith('/portal')    ||
+    p.startsWith('/admin')     ||
+    p.startsWith('/onboarding')
+  ) return 'app';
+  return 'marketing';
+}
 
 // ── Geo coordinate lookups ─────────────────────────────────────────────────────
 
@@ -147,9 +168,9 @@ export async function GET(req: NextRequest) {
       .select('id', { count: 'exact', head: true })
       .gte('last_seen_at', fiveMinAgo),
 
-    // All sessions in range (for series, bounce, duration, countries, channels)
+    // All sessions in range (for series, bounce, duration, countries, channels, segments)
     client.from('visitor_sessions')
-      .select('created_at, last_seen_at, page_view_count, country, city, converted, utm_source, utm_medium')
+      .select('created_at, last_seen_at, page_view_count, country, city, converted, utm_source, utm_medium, landing_page, user_id')
       .gte('created_at', startISO)
       .order('created_at', { ascending: true })
       .limit(20_000),
@@ -249,7 +270,7 @@ export async function GET(req: NextRequest) {
     .slice(0, 8)
     .map(([channel, count]) => ({ channel, count }));
 
-  // ── Top pages ─────────────────────────────────────────────────────────────
+  // ── Top pages (with section tag) ─────────────────────────────────────────
 
   const pageCounts: Record<string, number> = {};
   for (const pv of pvRows) {
@@ -259,7 +280,49 @@ export async function GET(req: NextRequest) {
   const top_pages = Object.entries(pageCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
-    .map(([path, views]) => ({ path, views }));
+    .map(([path, views]) => ({ path, views, section: classifyPath(path) }));
+
+  // ── Visitor segment breakdown ─────────────────────────────────────────────
+  //
+  // Classifies every session by its first landing page.  Metric definitions:
+  //   marketing_sessions — landed on a public-facing page (/, /pricing, …)
+  //   app_sessions       — landed directly on /dashboard, /portal, etc.
+  //   authenticated      — sessions with a user_id (logged-in users, any section)
+  //   converted          — sessions that resulted in a signup (converted=true)
+  //
+  // These four numbers form the acquisition funnel:
+  //   total → marketing → converted (signup) → retained (re-enter app as user)
+
+  const marketingSessions = sessions.filter(s => classifyPath(s.landing_page) === 'marketing');
+  const appSessions       = sessions.filter(s => classifyPath(s.landing_page) === 'app');
+
+  const marketingBounced  = marketingSessions.filter(s => (s.page_view_count ?? 1) <= 1).length;
+  const marketingDurations = marketingSessions
+    .map(s => new Date(s.last_seen_at).getTime() - new Date(s.created_at).getTime())
+    .filter(d => d > 1000 && d < 3_600_000);
+
+  const marketingPVs = pvRows.filter(pv => classifyPath(pv.path) === 'marketing');
+  const appPVs       = pvRows.filter(pv => classifyPath(pv.path) === 'app');
+
+  const segment_breakdown = {
+    marketing: {
+      sessions:             marketingSessions.length,
+      pageviews:            marketingPVs.length,
+      conversions:          marketingSessions.filter(s => s.converted).length,
+      bounce_rate:          marketingSessions.length > 0
+        ? Math.round((marketingBounced / marketingSessions.length) * 1000) / 10
+        : 0,
+      avg_duration_seconds: marketingDurations.length
+        ? Math.round(marketingDurations.reduce((a, b) => a + b, 0) / marketingDurations.length / 1000)
+        : 0,
+    },
+    app: {
+      sessions:  appSessions.length,
+      pageviews: appPVs.length,
+      // app sessions that have a user_id are authenticated product users
+      authenticated: appSessions.filter(s => s.user_id).length,
+    },
+  };
 
   // ── Hourly heatmap  [0=Sun…6=Sat][0…23] ──────────────────────────────────
 
@@ -322,6 +385,7 @@ export async function GET(req: NextRequest) {
     visitor_locations,
     heatmap,
     recent_events,
+    segment_breakdown,
     as_of:               now.toISOString(),
     range,
   });
