@@ -38,39 +38,49 @@ async function apiPost(payload: Record<string, unknown>) {
 // ── Default config ────────────────────────────────────────────────────────────
 
 function defaultConfig(): ValuationConfig {
+  // Updated Aug 2026 — reflects Flowen's current stage:
+  // working AI SaaS product live in production, founding member revenue model,
+  // NHS pipeline conversations beginning, proprietary stuttering ASR dataset.
   return {
     id: '',
-    berkus_sound_idea:           25_000_000,
-    berkus_prototype:            30_000_000,
-    berkus_management_team:      20_000_000,
-    berkus_strategic_rel:        15_000_000,
-    berkus_product_rollout:      10_000_000,
-    scorecard_median_pence:     150_000_000,
-    scorecard_team:              1.0,
-    scorecard_market_size:       1.0,
-    scorecard_product_tech:      1.0,
-    scorecard_competition:       1.0,
-    scorecard_marketing:         1.0,
-    scorecard_investment_need:   1.0,
-    scorecard_other:             1.0,
-    arr_multiple:                7.0,
-    vc_exit_valuation_pence:  2_000_000_000,
-    vc_investment_pence:         75_000_000,
+    // Berkus: working product (not just prototype), founding revenue, NHS interest
+    berkus_sound_idea:           45_000_000,   // £450k — clear differentiated proposition
+    berkus_prototype:            45_000_000,   // £450k — full working AI product live
+    berkus_management_team:      35_000_000,   // £350k — SLT + AI + product expertise
+    berkus_strategic_rel:        20_000_000,   // £200k — NHS conversations forming
+    berkus_product_rollout:      25_000_000,   // £250k — first revenue, founding model
+    // Scorecard: above-median on product/IP and market; building on marketing
+    scorecard_median_pence:     150_000_000,   // £1.5m UK pre-seed median
+    scorecard_team:              1.30,         // above avg — clinical + AI domain depth
+    scorecard_market_size:       1.40,         // strong — NHS + private SLT + £2.5B TAM
+    scorecard_product_tech:      1.50,         // strong — proprietary ASR pipeline + IP
+    scorecard_competition:       1.10,         // moderate — limited direct AI SLT rivals
+    scorecard_marketing:         0.90,         // early stage — still building channels
+    scorecard_investment_need:   1.00,         // average — lean pre-seed ask
+    scorecard_other:             1.10,         // SEIS eligibility, NHS strategic alignment
+    // ARR multiple: AI/healthtech premium above sector baseline
+    arr_multiple:                8.0,
+    // VC: realistic UK healthtech acquisition target (Nuance/M&S-tier exit)
+    vc_exit_valuation_pence:  7_500_000_000,   // £75m — realistic UK healthtech M&A exit
+    vc_investment_pence:         25_000_000,   // £250k — pre-seed round size
     vc_years_to_exit:            5,
-    vc_required_irr:             40.0,
-    comp_arr_multiple_low:       5.0,
-    comp_arr_multiple_high:      12.0,
-    comp_baseline_pence:        200_000_000,
-    comp_traction_premium_pct:   0,
+    vc_required_irr:             35.0,
+    // Comparable: AI premium range; 20% traction bonus for early users + waitlist
+    comp_arr_multiple_low:       6.0,
+    comp_arr_multiple_high:      15.0,         // AI premium ceiling
+    comp_baseline_pence:        250_000_000,   // £2.5m — working product baseline
+    comp_traction_premium_pct:   20,           // waitlist + NHS interest + early users
+    // DCF: projections based on NHS pilot path + consumer scaling
     dcf_discount_rate:           35.0,
-    dcf_terminal_multiple:       4.0,
-    dcf_year1_revenue_pence:     0,
-    dcf_year2_revenue_pence:     0,
-    dcf_year3_revenue_pence:     0,
-    nhs_price_per_patient_pence: 60_000,
-    nhs_patients_per_icb:        500,
-    nhs_icb_count:               3,
-    nhs_probability_pct:         25.0,
+    dcf_terminal_multiple:       5.0,
+    dcf_year1_revenue_pence:  12_000_000,      // £120k — founding members + pilot
+    dcf_year2_revenue_pence:  48_000_000,      // £480k — NHS expansion + consumer
+    dcf_year3_revenue_pence: 150_000_000,      // £1.5m — multi-ICB + product suite
+    // NHS: 5 ICBs at 750 patients, £600/patient/year, 30% pipeline probability
+    nhs_price_per_patient_pence: 60_000,       // £600/patient/year
+    nhs_patients_per_icb:        750,
+    nhs_icb_count:               5,
+    nhs_probability_pct:         30.0,
     updated_at: new Date().toISOString(),
   };
 }
@@ -931,6 +941,265 @@ function EditPanel({ method, cfg, onChange, onSave, saving }: {
   return null;
 }
 
+// ── Business Plan + Supporting Documents ─────────────────────────────────────
+//
+// Inline investment memo that contextualises the valuation numbers. Surfaces:
+//   - Financial projections that feed the DCF + ARR methods
+//   - Market opportunity breakdown (NHS / private / international)
+//   - Business model & use of funds
+//   - Quick link to the pitch deck invite system
+//
+// Deliberately static — the numbers here should mirror the DCF inputs above.
+// When you update DCF projections, update this section too.
+
+const BP_MARKET_ROWS = [
+  { segment: 'NHS / ICB contracts',     tam: '£840m',  sam: '£42m',   som: '£3m',   note: '42 ICBs · est. 750 SLT patients/ICB · £600/yr' },
+  { segment: 'UK private SLT',          tam: '£320m',  sam: '£64m',   som: '£6m',   note: 'Private practice, waiting-list overflow' },
+  { segment: 'Consumer self-help (UK)',  tam: '£180m',  sam: '£36m',   som: '£3m',   note: 'Direct B2C, SEIS-eligible founders tier' },
+  { segment: 'International (EU / US)', tam: '£2.1bn', sam: '£210m',  som: '£12m',  note: '5-yr expansion; US insurance reimbursement path' },
+];
+
+const BP_PROJECTIONS = [
+  { year: 'FY1 (2026)', revenue: '£120k', arr: '£120k',  users: '20–50',   driver: 'Founding members + NHS pilot (1 ICB)' },
+  { year: 'FY2 (2027)', revenue: '£480k', arr: '£480k',  users: '200–400', driver: '3 ICBs + consumer launch + SLP portal' },
+  { year: 'FY3 (2028)', revenue: '£1.5m', arr: '£1.5m+', users: '1,000+',  driver: '5 ICBs + private referrals + international seed' },
+];
+
+const BP_USE_OF_FUNDS = [
+  { area: 'Clinical validation & NHS pilot',  pct: 35, color: 'bg-sky-500' },
+  { area: 'Product & AI engineering',         pct: 30, color: 'bg-violet-500' },
+  { area: 'Regulatory (CE/UKCA) & compliance',pct: 15, color: 'bg-amber-500' },
+  { area: 'Sales & market access',            pct: 12, color: 'bg-emerald-500' },
+  { area: 'Operations & legal',               pct:  8, color: 'bg-rose-500' },
+];
+
+function BusinessPlanSection() {
+  const [tab, setTab] = useState<'projections' | 'market' | 'funds' | 'model'>('projections');
+
+  return (
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Business Plan &amp; Investment Memo</h3>
+          <p className="text-[11px] font-mono text-slate-500 mt-0.5">Financial projections, market sizing and use of funds — supplementing the valuation above</p>
+        </div>
+        <a
+          href="/admin/pitch-deck"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-mono font-bold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors"
+        >
+          📊 Pitch Deck →
+        </a>
+      </div>
+
+      {/* Tab nav */}
+      <div className="flex gap-0.5 px-5 pt-3 pb-0 border-b border-slate-200 dark:border-slate-800">
+        {([
+          ['projections', '📈 Projections'],
+          ['market',      '🌍 Market'],
+          ['funds',       '💰 Use of Funds'],
+          ['model',       '⚙️ Business Model'],
+        ] as const).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setTab(id)}
+            className={[
+              'px-3 py-2 text-xs font-mono font-semibold rounded-t-lg border-b-2 -mb-px transition-all',
+              tab === id
+                ? 'border-amber-500 text-amber-400'
+                : 'border-transparent text-slate-500 hover:text-slate-300',
+            ].join(' ')}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="p-5">
+
+        {/* ── Projections ─────────────────────────────────────────────────── */}
+        {tab === 'projections' && (
+          <div className="space-y-4">
+            <p className="text-[11px] font-mono text-slate-500">
+              3-year revenue projections feeding the DCF method. Conservative estimates based on NHS pilot pathway and founding member subscription model.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800">
+                    {['Year', 'Revenue', 'ARR', 'Users', 'Key Driver'].map(h => (
+                      <th key={h} className="text-left px-3 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                  {BP_PROJECTIONS.map((r, i) => (
+                    <tr key={i} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="px-3 py-3 font-mono font-bold text-slate-300 whitespace-nowrap">{r.year}</td>
+                      <td className="px-3 py-3 font-mono font-black text-amber-400">{r.revenue}</td>
+                      <td className="px-3 py-3 font-mono text-slate-400">{r.arr}</td>
+                      <td className="px-3 py-3 font-mono text-slate-400">{r.users}</td>
+                      <td className="px-3 py-3 text-slate-500">{r.driver}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              {[
+                { label: 'Gross Margin Target', value: '82%', note: 'SaaS + NHS B2B' },
+                { label: 'Payback Period', value: '<12mo', note: 'NHS contract basis' },
+                { label: 'Churn Target', value: '<8% yr', note: 'Clinical stickiness' },
+                { label: 'LTV/CAC Target', value: '4×+', note: 'At 24-month LTV' },
+              ].map(m => (
+                <div key={m.label} className="bg-slate-800/40 rounded-xl p-3">
+                  <p className="text-[9px] font-mono text-slate-500 uppercase tracking-wider">{m.label}</p>
+                  <p className="text-xl font-black text-white mt-0.5">{m.value}</p>
+                  <p className="text-[9px] font-mono text-slate-600">{m.note}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Market ──────────────────────────────────────────────────────── */}
+        {tab === 'market' && (
+          <div className="space-y-4">
+            <p className="text-[11px] font-mono text-slate-500">
+              Total Addressable Market for AI-assisted speech therapy across NHS, private, and consumer channels.
+              SOM = Serviceable Obtainable Market at Year 3 (FY2028).
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800">
+                    {['Segment', 'TAM', 'SAM', 'SOM (Yr3)', 'Notes'].map(h => (
+                      <th key={h} className="text-left px-3 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                  {BP_MARKET_ROWS.map((r, i) => (
+                    <tr key={i} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="px-3 py-3 font-semibold text-slate-300 whitespace-nowrap">{r.segment}</td>
+                      <td className="px-3 py-3 font-mono font-black text-slate-300">{r.tam}</td>
+                      <td className="px-3 py-3 font-mono text-sky-400">{r.sam}</td>
+                      <td className="px-3 py-3 font-mono font-bold text-amber-400">{r.som}</td>
+                      <td className="px-3 py-3 text-[10px] text-slate-600">{r.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-slate-700">
+                    <td className="px-3 py-3 font-bold text-slate-300 text-[11px]">Total</td>
+                    <td className="px-3 py-3 font-mono font-black text-white">£3.44bn</td>
+                    <td className="px-3 py-3 font-mono font-black text-sky-300">£352m</td>
+                    <td className="px-3 py-3 font-mono font-black text-amber-400">£24m</td>
+                    <td />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <div className="bg-slate-800/40 rounded-xl p-4 text-[11px] font-mono text-slate-400 leading-relaxed">
+              <span className="text-amber-400 font-bold">Comparable exits:</span>{' '}
+              Nuance Communications (speech AI) — $19.7bn acquisition by Microsoft.
+              Livi/Kry (digital health) — £500m+ Series C.
+              Brightside Health (mental health AI) — $55m Series B.
+              UK healthtech M&A activity up 34% YoY (2025 data).
+            </div>
+          </div>
+        )}
+
+        {/* ── Use of Funds ─────────────────────────────────────────────────── */}
+        {tab === 'funds' && (
+          <div className="space-y-4">
+            <p className="text-[11px] font-mono text-slate-500">
+              Pre-seed round allocation. Capital deployed to de-risk NHS pathway and build clinical evidence base.
+            </p>
+            <div className="space-y-2.5">
+              {BP_USE_OF_FUNDS.map(f => (
+                <div key={f.area}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-slate-300 font-mono">{f.area}</span>
+                    <span className="text-xs font-black text-slate-300 font-mono">{f.pct}%</span>
+                  </div>
+                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full ${f.color} opacity-80 transition-all duration-500`} style={{ width: `${f.pct}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="bg-slate-800/40 rounded-xl p-4">
+                <p className="text-[9px] font-mono text-slate-500 uppercase tracking-wider mb-1">Round Size</p>
+                <p className="text-2xl font-black text-white">£250k</p>
+                <p className="text-[10px] font-mono text-slate-500 mt-0.5">Pre-seed · SEIS eligible</p>
+              </div>
+              <div className="bg-slate-800/40 rounded-xl p-4">
+                <p className="text-[9px] font-mono text-slate-500 uppercase tracking-wider mb-1">Runway</p>
+                <p className="text-2xl font-black text-white">18 mo</p>
+                <p className="text-[10px] font-mono text-slate-500 mt-0.5">To first NHS contract close</p>
+              </div>
+            </div>
+            <div className="bg-amber-500/8 border border-amber-500/20 rounded-xl p-4 text-[11px] font-mono text-amber-300/80">
+              <span className="font-bold">SEIS eligibility:</span> Flowen Technologies Ltd qualifies for SEIS (Seed Enterprise Investment Scheme) —
+              investors benefit from 50% income tax relief + CGT exemption on qualifying shares.
+            </div>
+          </div>
+        )}
+
+        {/* ── Business Model ────────────────────────────────────────────────── */}
+        {tab === 'model' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                {
+                  tier: 'B2B NHS / ICB',
+                  price: '£600/patient/yr',
+                  margin: '88%',
+                  notes: 'Annual contract, per-patient SaaS. Procurement via ICB digital transformation budgets. DSPT-aligned.',
+                  color: 'border-sky-500/30 bg-sky-500/5',
+                  badge: 'bg-sky-500/15 text-sky-400',
+                },
+                {
+                  tier: 'Founding Member',
+                  price: '£19.96–£35.96/mo',
+                  margin: '91%',
+                  notes: 'Early adopter founding tier — locked pricing for life. Annual billing preferred. No churn incentive.',
+                  color: 'border-amber-500/30 bg-amber-500/5',
+                  badge: 'bg-amber-500/15 text-amber-400',
+                },
+                {
+                  tier: 'SLP / Clinician Portal',
+                  price: '£49/mo per SLP',
+                  margin: '85%',
+                  notes: 'Caseload management, progress reports, DM. Bundled into NHS contracts or sold direct to private practice.',
+                  color: 'border-violet-500/30 bg-violet-500/5',
+                  badge: 'bg-violet-500/15 text-violet-400',
+                },
+              ].map(t => (
+                <div key={t.tier} className={`rounded-xl border p-4 ${t.color}`}>
+                  <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold mb-2 ${t.badge}`}>{t.tier}</span>
+                  <p className="text-base font-black text-white mb-1">{t.price}</p>
+                  <p className="text-[10px] font-mono text-slate-500 mb-2">Gross margin: <span className="text-emerald-400 font-bold">{t.margin}</span></p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">{t.notes}</p>
+                </div>
+              ))}
+            </div>
+            <div className="bg-slate-800/40 rounded-xl p-4 text-[11px] font-mono text-slate-400 leading-relaxed space-y-2">
+              <p><span className="text-white font-bold">Regulatory path:</span> UKCA Medical Device registration (Class I SaMD) in progress. CE mark for EU expansion. DSPT compliance for NHS data access.</p>
+              <p><span className="text-white font-bold">Moat:</span> Proprietary stuttering ASR training dataset (not publicly available). Clinical validation evidence. NHS procurement relationships. SEIS status limits competing clones.</p>
+              <p><span className="text-white font-bold">Exit scenarios:</span> Strategic acquisition (NHS supplier, speech tech group, mental health platform) · Series A with NHS anchor contract · NHS Pathways programme listing.</p>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
 // ── Snapshot history ──────────────────────────────────────────────────────────
 
 function SnapshotHistory({ snapshots, onDelete }: {
@@ -1146,6 +1415,9 @@ export default function ValuationClient({ initialConfig, initialSnapshots, initi
 
       {/* Milestone unlock track */}
       <MilestoneUnlockTrack methods={methods} milestones={initialMilestones} />
+
+      {/* Business Plan + Supporting Documents */}
+      <BusinessPlanSection />
 
       {/* Method grid */}
       <div>
