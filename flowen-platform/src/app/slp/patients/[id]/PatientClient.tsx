@@ -1,8 +1,68 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { addSessionNote, updateTreatmentPlan, dischargePatient } from '@/app/actions/slp-patient-actions';
+
+// ── Download progress report ──────────────────────────────────────────────────
+
+function DownloadReportButton({ patientId, patientName }: { patientId: string; patientName: string }) {
+  const [busy, setBusy]   = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const download = useCallback(async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/reports/patient/${patientId}`);
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || `HTTP ${res.status}`);
+      }
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `flowen-progress-${patientName.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Download failed');
+    } finally {
+      setBusy(false);
+    }
+  }, [patientId, patientName]);
+
+  return (
+    <div className="flex items-center gap-3">
+      <button
+        onClick={download}
+        disabled={busy}
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {busy ? (
+          <>
+            <svg className="animate-spin h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+            Generating…
+          </>
+        ) : (
+          <>
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3"/>
+            </svg>
+            Download Progress Report
+          </>
+        )}
+      </button>
+      {error && <span className="text-xs text-red-400">{error}</span>}
+    </div>
+  );
+}
 
 export interface Session {
   id: string;
@@ -505,6 +565,11 @@ export default function PatientClient({
 }) {
   return (
     <div className="space-y-8">
+      {/* Report download */}
+      <div className="flex justify-end">
+        <DownloadReportButton patientId={patientId} patientName={patientName} />
+      </div>
+
       {/* Session activity chart */}
       <section>
         <h2 className="text-sm font-bold text-white mb-3">Session Activity — Last 30 Days</h2>
