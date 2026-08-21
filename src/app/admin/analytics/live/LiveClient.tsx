@@ -64,6 +64,90 @@ const FLAGS: Record<string, string> = {
 
 const HEATMAP_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+// ── Simplified world coastlines ───────────────────────────────────────────────
+// Each sub-array is a continuous pen stroke [lat, lng][].
+// Pen lifts between sub-arrays. Coverage: all major landmasses + key islands.
+const COASTLINES: [number, number][][] = [
+  // North America — west coast + Alaska
+  [[54,-167],[56,-160],[58,-154],[57,-152],[54,-130],[52,-128],
+   [48,-124],[44,-124],[40,-124],[36,-122],[32,-117],[28,-115],
+   [24,-111],[20,-105],[16,-92],[10,-85],[8,-77]],
+  // North America — Caribbean → east coast → Canada → Arctic
+  [[8,-77],[9,-80],[10,-75],[11,-65],[18,-68],[20,-70],[22,-74],
+   [25,-80],[26,-80],[28,-80],[30,-81],[32,-81],[34,-78],[36,-76],
+   [38,-75],[40,-74],[42,-71],[44,-66],[46,-60],[47,-53],[48,-52],
+   [52,-55],[54,-57],[58,-63],[60,-65],[60,-70],[58,-76],[55,-80],
+   [58,-86],[60,-95],[60,-110],[60,-125],[62,-138],[66,-142],
+   [68,-142],[71,-140],[71,-156],[70,-140],[70,-110],[70,-80]],
+  // Greenland
+  [[60,-44],[62,-40],[66,-36],[70,-24],[74,-20],[76,-18],[80,-16],
+   [82,-24],[84,-36],[82,-50],[80,-56],[76,-70],[72,-57],[70,-52],
+   [68,-54],[66,-52],[64,-52],[62,-46],[60,-44]],
+  // South America
+  [[8,-77],[8,-76],[10,-75],[10,-63],[8,-62],[6,-58],[4,-52],
+   [2,-50],[0,-50],[-3,-40],[-8,-35],[-12,-38],[-16,-38],[-20,-40],
+   [-24,-44],[-28,-48],[-32,-52],[-34,-53],[-38,-57],[-42,-62],
+   [-46,-65],[-50,-68],[-54,-68],[-56,-68],[-55,-65],[-52,-57],
+   [-48,-55],[-44,-50],[-38,-54],[-34,-56],[-28,-49],[-22,-43],
+   [-18,-40],[-14,-38],[-8,-35],[-4,-36],[0,-50],[4,-52],[8,-60],
+   [8,-62],[8,-77]],
+  // Europe — Atlantic coast + Scandinavia
+  [[36,-6],[38,-10],[42,-9],[44,-8],[44,-2],[46,-2],[47,1],
+   [48,-5],[50,-4],[51,-2],[52,2],[53,5],[55,8],[56,9],[57,10],
+   [58,8],[60,5],[62,5],[64,10],[66,14],[68,16],[70,20],[70,28]],
+  // Europe — Baltic + Eastern Europe + Turkey
+  [[70,28],[68,34],[66,32],[64,26],[62,22],[60,24],[56,22],[54,18],
+   [54,14],[52,14],[50,14],[48,16],[46,14],[44,14],[44,18],[42,18],
+   [40,18],[38,16],[36,12],[36,10],[37,10],[36,10],[36,-6]],
+  // Italian peninsula (boot)
+  [[44,8],[44,14],[42,14],[40,16],[38,16],[38,14],[40,12],[42,10],[44,8]],
+  // Great Britain
+  [[50,-5],[52,-5],[54,-3],[55,-2],[57,-2],[58,-4],[58,-6],[57,-6],
+   [55,-6],[53,-4],[51,-3],[50,-5]],
+  // Ireland
+  [[52,-10],[54,-10],[55,-8],[54,-6],[52,-6],[51,-8],[52,-10]],
+  // Iceland
+  [[63,-24],[65,-18],[66,-14],[66,-22],[64,-24],[63,-24]],
+  // Africa — full outline
+  [[37,10],[36,4],[34,8],[32,12],[30,32],[22,37],[14,42],[10,42],
+   [4,42],[2,42],[-2,40],[-8,40],[-12,38],[-16,36],[-20,35],
+   [-24,34],[-28,32],[-32,28],[-34,24],[-34,18],[-30,16],[-26,15],
+   [-22,14],[-18,12],[-14,12],[-10,14],[-6,10],[-2,10],
+   [4,2],[5,-2],[4,-8],[4,-4],[5,-2],[6,2],[8,2],[10,2],
+   [14,16],[18,15],[20,14],[24,15],[28,16],[30,10],[32,12],
+   [34,8],[36,4],[37,10]],
+  // Asia — Black Sea → Central Asia → India western approach
+  [[70,28],[68,38],[60,50],[54,60],[44,50],[40,50],[38,44],
+   [36,40],[34,36],[30,32],[22,37],[14,42]],
+  // Arabian Peninsula
+  [[14,42],[12,44],[22,60],[24,58],[22,56],[20,58],[14,50],[12,44]],
+  // Indian subcontinent
+  [[28,72],[24,68],[20,68],[16,74],[12,78],[8,76],[8,80],[10,80],
+   [14,80],[18,84],[22,88],[24,90],[28,92],[28,72]],
+  // Southeast Asia mainland + East Asian coast
+  [[26,100],[22,100],[20,106],[16,108],[14,108],[10,104],[6,100],
+   [2,104],[0,104],[-2,108],[-4,108],[-6,107],[-8,115],[-8,120],
+   [-4,120],[0,108],[4,104],[8,100],[10,100],[14,100],[18,104],
+   [22,108],[24,112],[28,122],[32,122],[36,122],[40,122],[44,130],
+   [46,134],[48,140],[50,140],[54,134],[58,140],[60,152],[62,158],
+   [64,164],[66,168],[68,170]],
+  // Japan (Honshu)
+  [[34,130],[35,133],[36,136],[37,137],[38,140],[40,140],[42,141],
+   [44,143],[44,141],[42,140],[40,138],[37,137],[36,136],[34,130]],
+  // Australia
+  [[-14,128],[-14,132],[-12,136],[-14,140],[-14,144],[-16,136],
+   [-18,130],[-20,120],[-22,114],[-26,114],[-30,114],[-32,115],
+   [-34,116],[-36,140],[-38,145],[-38,148],[-36,150],[-34,151],
+   [-32,152],[-28,153],[-22,150],[-16,146],[-14,144],[-12,136],
+   [-14,128]],
+  // New Zealand
+  [[-34,172],[-36,174],[-38,176],[-40,176],[-42,172],[-40,172],
+   [-38,176],[-36,174],[-34,172]],
+  // Antarctica (northern fringe)
+  [[-68,-90],[-70,-60],[-72,-30],[-70,0],[-68,30],[-70,60],
+   [-70,90],[-72,120],[-70,150],[-68,180],[-70,-150],[-68,-90]],
+];
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmtNum(n: number): string {
@@ -96,13 +180,15 @@ function shortPath(path: string): string {
 const GLOBE_SIZE = 360;
 
 function Globe({ locations }: { locations: VisitorLocation[] }) {
-  const canvasRef      = useRef<HTMLCanvasElement>(null);
-  const rotRef         = useRef(0.4);          // start showing Atlantic / Europe
-  const draggingRef    = useRef(false);
-  const dragStartRef   = useRef({ x: 0, rot: 0 });
-  const frameRef       = useRef<number>(0);
-  const locationsRef   = useRef<VisitorLocation[]>(locations);
-  const pingTimerRef   = useRef<Map<string, number>>(new Map());
+  const canvasRef    = useRef<HTMLCanvasElement>(null);
+  const rotRef       = useRef(0.4);        // start showing Atlantic / Europe
+  const zoomRef      = useRef(1.0);
+  const draggingRef  = useRef(false);
+  const dragStartRef = useRef({ x: 0, rot: 0 });
+  const pinchRef     = useRef<number | null>(null);
+  const frameRef     = useRef<number>(0);
+  const locationsRef = useRef<VisitorLocation[]>(locations);
+  const pingRef      = useRef<Map<string, number>>(new Map());
 
   // Keep locations ref current without re-running canvas setup
   useEffect(() => { locationsRef.current = locations; }, [locations]);
@@ -138,169 +224,176 @@ function Globe({ locations }: { locations: VisitorLocation[] }) {
       return [x * c + z * s, y, -x * s + z * c];
     }
 
-    function proj([x, y, z]: [number, number, number], cx: number, cy: number, R: number) {
-      return { sx: cx + x * R, sy: cy - y * R, vis: z >= -0.05 };
+    // Draw a polyline on the sphere surface — lifts pen at sphere edge
+    function strokePolyline(pts: [number, number][], rot: number, cx: number, cy: number, R: number) {
+      let down = false;
+      ctx.beginPath();
+      for (const [lat, lng] of pts) {
+        const [x, y, z] = rotY(llToXYZ(lat, lng), rot);
+        if (z >= 0) {
+          const sx = cx + x * R, sy = cy - y * R;
+          if (!down) { ctx.moveTo(sx, sy); down = true; }
+          else        ctx.lineTo(sx, sy);
+        } else {
+          if (down) { ctx.stroke(); ctx.beginPath(); down = false; }
+        }
+      }
+      if (down) ctx.stroke();
     }
 
     // ── Draw ──────────────────────────────────────────────────────────────
 
     function draw() {
-      const S  = GLOBE_SIZE;
-      const cx = S / 2;
-      const cy = S / 2;
-      const R  = S * 0.42;
-      const rot = rotRef.current;
-      const now = performance.now();
+      const S    = GLOBE_SIZE;
+      const cx   = S / 2, cy = S / 2;
+      const baseR = S * 0.42;
+      const R    = baseR * zoomRef.current;
+      const rot  = rotRef.current;
+      const now  = performance.now();
+      const zoomed = R > S * 0.47; // beyond canvas edge
 
       ctx.clearRect(0, 0, S, S);
 
-      // Outer glow / atmosphere
-      const atm = ctx.createRadialGradient(cx, cy, R * 0.82, cx, cy, R * 1.18);
-      atm.addColorStop(0, 'rgba(16,185,129,0.09)');
-      atm.addColorStop(0.6, 'rgba(16,185,129,0.03)');
-      atm.addColorStop(1, 'transparent');
-      ctx.fillStyle = atm;
-      ctx.beginPath();
-      ctx.arc(cx, cy, R * 1.18, 0, Math.PI * 2);
-      ctx.fill();
+      // Background — sphere circle or full canvas when zoomed in
+      if (zoomed) {
+        // Fill canvas with deep ocean gradient
+        const bg = ctx.createRadialGradient(cx - R * 0.28, cy - R * 0.22, 0, cx, cy, R);
+        bg.addColorStop(0, '#0f2540');
+        bg.addColorStop(1, '#040c1c');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, S, S);
+      } else {
+        // Outer glow
+        const atm = ctx.createRadialGradient(cx, cy, R * 0.82, cx, cy, R * 1.18);
+        atm.addColorStop(0, 'rgba(16,185,129,0.09)');
+        atm.addColorStop(1, 'transparent');
+        ctx.fillStyle = atm;
+        ctx.beginPath(); ctx.arc(cx, cy, R * 1.18, 0, Math.PI * 2); ctx.fill();
 
-      // Sphere base
-      const bg = ctx.createRadialGradient(cx - R * 0.28, cy - R * 0.22, R * 0.02, cx, cy, R);
-      bg.addColorStop(0, '#0f2540');
-      bg.addColorStop(1, '#040c1c');
-      ctx.fillStyle = bg;
-      ctx.beginPath();
-      ctx.arc(cx, cy, R, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Grid lines — clip to sphere
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, R - 0.5, 0, Math.PI * 2);
-      ctx.clip();
-
-      ctx.strokeStyle = 'rgba(71,85,105,0.25)';
-      ctx.lineWidth   = 0.6;
-
-      // Latitude rings
-      for (let lat = -75; lat <= 75; lat += 15) {
-        const pts: { sx: number; sy: number; vis: boolean }[] = [];
-        for (let lng = -180; lng <= 180; lng += 3) {
-          pts.push(proj(rotY(llToXYZ(lat, lng), rot), cx, cy, R));
-        }
-        let drawing = false;
-        ctx.beginPath();
-        for (const p of pts) {
-          if (p.vis) {
-            if (!drawing) { ctx.moveTo(p.sx, p.sy); drawing = true; }
-            else ctx.lineTo(p.sx, p.sy);
-          } else {
-            if (drawing) { ctx.stroke(); ctx.beginPath(); drawing = false; }
-          }
-        }
-        if (drawing) ctx.stroke();
+        // Sphere base
+        const bg = ctx.createRadialGradient(cx - R * 0.28, cy - R * 0.22, R * 0.02, cx, cy, R);
+        bg.addColorStop(0, '#0f2540');
+        bg.addColorStop(1, '#040c1c');
+        ctx.fillStyle = bg;
+        ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
       }
 
-      // Longitude meridians
-      for (let lng = -180; lng < 180; lng += 15) {
-        const pts: { sx: number; sy: number; vis: boolean }[] = [];
-        for (let lat = -87; lat <= 87; lat += 3) {
-          pts.push(proj(rotY(llToXYZ(lat, lng), rot), cx, cy, R));
+      // Clip to sphere (or canvas boundary when zoomed beyond it)
+      ctx.save();
+      ctx.beginPath();
+      if (zoomed) {
+        ctx.rect(0, 0, S, S);
+      } else {
+        ctx.arc(cx, cy, R - 0.5, 0, Math.PI * 2);
+      }
+      ctx.clip();
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(71,85,105,0.2)';
+      ctx.lineWidth   = 0.5;
+      for (let lat = -75; lat <= 75; lat += 30) {
+        let first = true; ctx.beginPath();
+        for (let lng = -180; lng <= 180; lng += 4) {
+          const [x, y, z] = rotY(llToXYZ(lat, lng), rot);
+          if (z >= 0) {
+            const sx = cx + x * R, sy = cy - y * R;
+            if (first) { ctx.moveTo(sx, sy); first = false; } else ctx.lineTo(sx, sy);
+          } else if (!first) { ctx.stroke(); ctx.beginPath(); first = true; }
         }
-        let drawing = false;
-        ctx.beginPath();
-        for (const p of pts) {
-          if (p.vis) {
-            if (!drawing) { ctx.moveTo(p.sx, p.sy); drawing = true; }
-            else ctx.lineTo(p.sx, p.sy);
-          } else {
-            if (drawing) { ctx.stroke(); ctx.beginPath(); drawing = false; }
-          }
+        if (!first) ctx.stroke();
+      }
+      for (let lng = -180; lng < 180; lng += 30) {
+        let first = true; ctx.beginPath();
+        for (let lat = -87; lat <= 87; lat += 4) {
+          const [x, y, z] = rotY(llToXYZ(lat, lng), rot);
+          if (z >= 0) {
+            const sx = cx + x * R, sy = cy - y * R;
+            if (first) { ctx.moveTo(sx, sy); first = false; } else ctx.lineTo(sx, sy);
+          } else if (!first) { ctx.stroke(); ctx.beginPath(); first = true; }
         }
-        if (drawing) ctx.stroke();
+        if (!first) ctx.stroke();
+      }
+
+      // ── Continent coastlines ──────────────────────────────────────────
+      ctx.strokeStyle = 'rgba(148,163,184,0.65)';
+      ctx.lineWidth   = R > 200 ? 1.4 : 1.1;
+      for (const seg of COASTLINES) {
+        strokePolyline(seg, rot, cx, cy, R);
       }
 
       ctx.restore();
 
-      // Visitor dots
+      // Visitor dots (drawn outside clip so rings aren't clipped)
       for (const loc of locationsRef.current) {
         const [x3, y3, z3] = rotY(llToXYZ(loc.lat, loc.lng), rot);
-        if (z3 < -0.08) continue; // fully behind sphere
+        if (z3 < -0.08) continue;
+        const fade = Math.min(1, (z3 + 0.08) / 0.2);
+        const sx   = cx + x3 * R, sy = cy - y3 * R;
 
-        const fade = Math.min(1, (z3 + 0.08) / 0.2); // soft edge fade
-        const p    = proj([x3, y3, z3], cx, cy, R);
+        // Skip if off-canvas when zoomed in
+        if (zoomed && (sx < -10 || sx > S + 10 || sy < -10 || sy > S + 10)) continue;
 
         if (loc.live) {
-          const key     = `${Math.round(loc.lat * 2)}:${Math.round(loc.lng * 2)}`;
-          if (!pingTimerRef.current.has(key)) pingTimerRef.current.set(key, now);
-          const elapsed = (now - (pingTimerRef.current.get(key) ?? now)) % 2200;
-          const t       = elapsed / 2200;
+          const key = `${Math.round(loc.lat * 2)}:${Math.round(loc.lng * 2)}`;
+          if (!pingRef.current.has(key)) pingRef.current.set(key, now);
+          const t = ((now - (pingRef.current.get(key) ?? now)) % 2200) / 2200;
 
-          // Expanding ring
-          ctx.beginPath();
-          ctx.arc(p.sx, p.sy, 3 + t * 13, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(52,211,153,${(1 - t) * 0.6 * fade})`;
-          ctx.lineWidth   = 1.5;
-          ctx.stroke();
+          ctx.beginPath(); ctx.arc(sx, sy, 3 + t * 13, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(52,211,153,${(1-t)*0.65*fade})`;
+          ctx.lineWidth   = 1.5; ctx.stroke();
 
-          // Second trailing ring
           if (t > 0.2) {
             const t2 = (t - 0.2) / 0.8;
-            ctx.beginPath();
-            ctx.arc(p.sx, p.sy, 3 + t2 * 13, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(16,185,129,${(1 - t2) * 0.25 * fade})`;
-            ctx.lineWidth   = 1;
-            ctx.stroke();
+            ctx.beginPath(); ctx.arc(sx, sy, 3 + t2 * 13, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(16,185,129,${(1-t2)*0.25*fade})`;
+            ctx.lineWidth   = 1; ctx.stroke();
           }
 
-          // Core
-          ctx.beginPath();
-          ctx.arc(p.sx, p.sy, 3, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(52,211,153,${0.95 * fade})`;
-          ctx.fill();
-
-          // Bright centre
-          ctx.beginPath();
-          ctx.arc(p.sx, p.sy, 1.2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(220,255,240,${0.9 * fade})`;
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(52,211,153,${0.95*fade})`; ctx.fill();
+          ctx.beginPath(); ctx.arc(sx, sy, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(220,255,240,${0.9*fade})`; ctx.fill();
         } else {
-          const radius = Math.min(1.5 + Math.log1p(loc.count) * 0.6, 5);
-          ctx.beginPath();
-          ctx.arc(p.sx, p.sy, radius, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(96,165,250,${0.5 * fade})`;
-          ctx.fill();
+          const r = Math.min(1.5 + Math.log1p(loc.count) * 0.6, 5);
+          ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(96,165,250,${0.5*fade})`; ctx.fill();
         }
       }
 
-      // Sphere rim
-      ctx.beginPath();
-      ctx.arc(cx, cy, R, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(148,163,184,0.22)';
-      ctx.lineWidth   = 1;
-      ctx.stroke();
+      // Rim + specular — only when fully visible
+      if (!zoomed) {
+        ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(148,163,184,0.22)'; ctx.lineWidth = 1; ctx.stroke();
 
-      // Specular highlight
-      const hl = ctx.createRadialGradient(cx - R * 0.32, cy - R * 0.36, 0, cx - R * 0.1, cy - R * 0.14, R * 0.52);
-      hl.addColorStop(0, 'rgba(255,255,255,0.08)');
-      hl.addColorStop(1, 'transparent');
-      ctx.fillStyle = hl;
-      ctx.beginPath();
-      ctx.arc(cx, cy, R, 0, Math.PI * 2);
-      ctx.fill();
+        const hl = ctx.createRadialGradient(cx-R*0.32, cy-R*0.36, 0, cx-R*0.1, cy-R*0.14, R*0.52);
+        hl.addColorStop(0, 'rgba(255,255,255,0.08)'); hl.addColorStop(1, 'transparent');
+        ctx.fillStyle = hl;
+        ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+      }
     }
 
     function frame() {
-      if (!draggingRef.current) rotRef.current += 0.0035;
+      if (!draggingRef.current && pinchRef.current === null) rotRef.current += 0.0035;
       draw();
       frameRef.current = requestAnimationFrame(frame);
     }
 
+    // Scroll-wheel zoom
+    function onWheel(e: WheelEvent) {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+      zoomRef.current = Math.max(0.5, Math.min(5.0, zoomRef.current * factor));
+    }
+    canvas.addEventListener('wheel', onWheel, { passive: false });
+
     frame();
-    return () => cancelAnimationFrame(frameRef.current);
+    return () => {
+      cancelAnimationFrame(frameRef.current);
+      canvas.removeEventListener('wheel', onWheel);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Pointer events ────────────────────────────────────────────────────────
+  // ── Pointer / touch events ────────────────────────────────────────────────
 
   function onDown(clientX: number) {
     draggingRef.current = true;
@@ -312,6 +405,34 @@ function Globe({ locations }: { locations: VisitorLocation[] }) {
   }
   function onUp() { draggingRef.current = false; }
 
+  function onTouchStart(e: React.TouchEvent) {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchRef.current  = Math.hypot(dx, dy);
+      draggingRef.current = false;
+    } else {
+      pinchRef.current = null;
+      onDown(e.touches[0].clientX);
+    }
+  }
+  function onTouchMove(e: React.TouchEvent) {
+    e.preventDefault();
+    if (e.touches.length === 2 && pinchRef.current !== null) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const d  = Math.hypot(dx, dy);
+      zoomRef.current = Math.max(0.5, Math.min(5.0, zoomRef.current * d / pinchRef.current));
+      pinchRef.current = d;
+    } else if (e.touches.length === 1 && pinchRef.current === null) {
+      onMove(e.touches[0].clientX);
+    }
+  }
+  function onTouchEnd() {
+    if (pinchRef.current !== null) pinchRef.current = null;
+    else onUp();
+  }
+
   return (
     <canvas
       ref={canvasRef}
@@ -321,9 +442,9 @@ function Globe({ locations }: { locations: VisitorLocation[] }) {
       onMouseMove={e => onMove(e.clientX)}
       onMouseUp={onUp}
       onMouseLeave={onUp}
-      onTouchStart={e => onDown(e.touches[0].clientX)}
-      onTouchMove={e => { e.preventDefault(); onMove(e.touches[0].clientX); }}
-      onTouchEnd={onUp}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     />
   );
 }
@@ -757,10 +878,10 @@ export default function LiveClient() {
               <div className="flex flex-col items-center gap-3">
                 <Globe locations={data.visitor_locations} />
                 <p className="text-[10px] text-slate-600 text-center">
-                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1 align-middle" />live visitor
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1 align-middle" />live
                   &nbsp;·&nbsp;
                   <span className="inline-block w-2 h-2 rounded-full bg-blue-400/60 mr-1 align-middle" />{rangeLabel} visitor
-                  &nbsp;·&nbsp;drag to rotate
+                  &nbsp;·&nbsp;drag to rotate&nbsp;·&nbsp;scroll/pinch to zoom
                 </p>
               </div>
             ) : (

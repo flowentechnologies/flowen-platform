@@ -20,8 +20,11 @@ export default function PricingSection() {
   const router = useRouter();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
+  const [checkoutError, setCheckoutError] = React.useState<string | null>(null);
+
   const handleFoundingSeat = async () => {
     setCheckoutLoading(true);
+    setCheckoutError(null);
     pixelInitiateCheckout({
       content_ids: ['founding_member'],
       num_items: 1,
@@ -34,10 +37,24 @@ export default function PricingSection() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ interval: cycle }),
       });
-      const { url, error } = await res.json();
-      if (error || !url) { setCheckoutLoading(false); return; }
-      window.location.href = url;
+
+      // Unauthenticated — send to login and come back
+      if (res.status === 401) {
+        router.push('/auth/login?next=/pricing');
+        return;
+      }
+
+      const body = await res.json() as { url?: string; error?: string };
+
+      if (!res.ok || !body.url) {
+        setCheckoutError(body.error ?? 'Checkout failed — please try again.');
+        setCheckoutLoading(false);
+        return;
+      }
+
+      window.location.href = body.url;
     } catch {
+      setCheckoutError('Could not connect to checkout. Please try again.');
       setCheckoutLoading(false);
     }
   };
@@ -108,8 +125,13 @@ export default function PricingSection() {
             disabled={checkoutLoading}
             className="w-full py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {checkoutLoading ? 'Redirecting…' : 'Secure Founding Seat'}
+            {checkoutLoading ? 'Redirecting to checkout…' : 'Secure Founding Seat'}
           </button>
+          {checkoutError && (
+            <p className="mt-2 text-xs text-red-400 bg-red-900/20 border border-red-700/30 rounded-lg px-3 py-2 text-center">
+              {checkoutError}
+            </p>
+          )}
         </div>
 
         <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 flex flex-col justify-between">

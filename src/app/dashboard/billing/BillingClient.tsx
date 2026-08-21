@@ -37,9 +37,12 @@ function formatDate(iso: string): string {
 
 function intervalLabel(interval: string): string {
   switch (interval) {
-    case 'annual':  return 'Annual';
-    case 'monthly': return 'Monthly';
-    default:        return interval.charAt(0).toUpperCase() + interval.slice(1);
+    case 'monthly':    return 'Monthly';
+    case 'quarterly':  return 'Quarterly';
+    case 'six_months': return '6-Monthly';
+    case 'yearly':
+    case 'annual':     return 'Annual';
+    default:           return interval.charAt(0).toUpperCase() + interval.slice(1);
   }
 }
 
