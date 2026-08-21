@@ -21,7 +21,7 @@ export async function GET() {
     const [profileRes, sessionsRes, planRes] = await Promise.all([
       admin.from('profiles').select('display_name, email').eq('id', user.id).single(),
       admin.from('practice_sessions')
-        .select('created_at, duration_seconds, total_blocks_detected')
+        .select('created_at, duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, average_latency_ms')
         .eq('user_id', user.id)
         .order('created_at', { ascending: true })
         // Cap at 500 rows — more than any patient could realistically accumulate and
@@ -34,23 +34,34 @@ export async function GET() {
         .maybeSingle(),
     ]);
 
-    let slpName: string | null = null;
+    let slpName: string | null  = null;
+    let slpEmail: string | null = null;
     if (planRes.data?.slp_user_id) {
       const { data: slp } = await admin.from('profiles').select('display_name, email').eq('id', planRes.data.slp_user_id).single();
-      slpName = slp?.display_name ?? slp?.email ?? null;
+      slpName  = slp?.display_name ?? slp?.email ?? null;
+      slpEmail = slp?.email ?? null;
     }
+
+    // Report period: first session → today
+    const sessions = sessionsRes.data ?? [];
+    const reportPeriod = sessions.length > 0
+      ? `${new Date(sessions[0].created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} – ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+      : '';
 
     const pdf = await generateReport({
       patientName:       profileRes.data?.display_name ?? user.email?.split('@')[0] ?? 'Me',
       patientEmail:      profileRes.data?.email ?? user.email ?? '',
       clinicianName:     slpName,
+      clinicianEmail:    slpEmail,
       reportDate:        new Date().toLocaleDateString('en-GB', { dateStyle: 'long' }),
+      reportPeriod,
       phase:             planRes.data?.phase ?? null,
       prescribedStages:  planRes.data?.prescribed_stages ?? [],
       sessionsPerWeek:   planRes.data?.sessions_per_week ?? null,
       minutesPerSession: planRes.data?.minutes_per_session ?? null,
       goals:             planRes.data?.goals ?? null,
-      sessions:          sessionsRes.data ?? [],
+      sessions,
+      notes:             [],   // clinical notes are not included in patient self-download
     });
 
     return new Response(pdf.buffer as ArrayBuffer, {
