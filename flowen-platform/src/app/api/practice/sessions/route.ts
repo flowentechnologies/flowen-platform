@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
   const { duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, stage_id, transcript } = body;
   if (
-    typeof duration_seconds !== 'number' || !Number.isFinite(duration_seconds) || duration_seconds < 30 || duration_seconds > 7200 ||
+    typeof duration_seconds !== 'number' || !Number.isFinite(duration_seconds) || duration_seconds < 5 || duration_seconds > 7200 ||
     typeof total_blocks_detected !== 'number' || !Number.isInteger(total_blocks_detected) || total_blocks_detected < 0 ||
     (total_repetitions_detected !== undefined && (!Number.isInteger(total_repetitions_detected) || total_repetitions_detected < 0)) ||
     (total_prolongations_detected !== undefined && (!Number.isInteger(total_prolongations_detected) || total_prolongations_detected < 0)) ||
