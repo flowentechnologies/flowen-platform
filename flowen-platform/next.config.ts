@@ -62,6 +62,34 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // The investor pitch deck is a standalone HTML page served via a
+        // token-gated API route.  It intentionally loads Tailwind CSS,
+        // Google Fonts, and FontAwesome from public CDNs — allow them here.
+        // This rule is placed LAST so its CSP key overrides the catch-all
+        // above for this path (Next.js applies all matching rules in order;
+        // duplicate header keys from later rules win).
+        source: '/api/pitch/:token*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              `default-src 'self'`,
+              `script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com`,
+              `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com`,
+              `font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com`,
+              `img-src 'self' data: blob: https:`,
+              `connect-src 'self'`,
+              `media-src 'self' blob:`,
+              `object-src 'none'`,
+              `base-uri 'self'`,
+            ].join('; '),
+          },
+          // Confidential — never cached or indexed
+          { key: 'Cache-Control', value: 'private, no-store' },
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+        ],
+      },
     ];
   },
 
