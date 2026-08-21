@@ -4,19 +4,30 @@ export interface ReportSession {
   created_at: string;
   duration_seconds: number;
   total_blocks_detected: number;
+  total_repetitions_detected?: number;
+  total_prolongations_detected?: number;
+  average_latency_ms?: number;
+}
+
+export interface ReportNote {
+  note: string;
+  created_at: string;
 }
 
 export interface ReportData {
   patientName: string;
   patientEmail: string;
   clinicianName: string | null;
+  clinicianEmail: string | null;
   reportDate: string;
+  reportPeriod: string;        // e.g. "1 Jun 2026 – 21 Aug 2026"
   phase: string | null;
   prescribedStages: number[];
   sessionsPerWeek: number | null;
   minutesPerSession: number | null;
   goals: string | null;
   sessions: ReportSession[];
+  notes: ReportNote[];         // clinical notes from SLP
 }
 
 const STAGE_NAMES: Record<number, string> = {
@@ -65,18 +76,21 @@ export function generateReport(data: ReportData): Promise<Buffer> {
 
     // ── Header ───────────────────────────────────────────────────────────────
     doc.fontSize(22).font('Helvetica-Bold').fillColor(DARK).text('Flowen', 60, 60);
-    doc.fontSize(10).font('Helvetica').fillColor(MID).text('Speech Therapy Progress Report', 60, 86);
+    doc.fontSize(10).font('Helvetica').fillColor(MID).text('Speech & Language Therapy Progress Report', 60, 86);
     doc.fontSize(9).fillColor(MID).text(`Generated: ${data.reportDate}`, { align: 'right' });
+    if (data.reportPeriod) {
+      doc.fontSize(8).fillColor(MID).text(`Period: ${data.reportPeriod}`, { align: 'right' });
+    }
     doc.moveTo(60, 110).lineTo(doc.page.width - 60, 110).strokeColor('#e2e8f0').stroke();
 
     // ── Patient info ─────────────────────────────────────────────────────────
     doc.y = 122;
     doc.fontSize(13).font('Helvetica-Bold').fillColor(DARK).text(data.patientName);
     doc.fontSize(9).font('Helvetica').fillColor(MID).text(data.patientEmail);
-    if (data.clinicianName) doc.text(`Clinician: ${data.clinicianName}`);
+    if (data.clinicianName) doc.text(`Responsible Clinician: ${data.clinicianName}${data.clinicianEmail ? ` (${data.clinicianEmail})` : ''}`);
     if (data.phase) {
       doc.moveDown(0.3);
-      doc.fontSize(9).font('Helvetica-Bold').fillColor(ACC).text(`Phase: ${data.phase}`);
+      doc.fontSize(9).font('Helvetica-Bold').fillColor(ACC).text(`Treatment Phase: ${data.phase}`);
     }
 
     // ── Treatment plan box ───────────────────────────────────────────────────
@@ -151,9 +165,9 @@ export function generateReport(data: ReportData): Promise<Buffer> {
     doc.fontSize(9).font('Helvetica-Bold').fillColor(DARK).text('Session History');
     doc.moveDown(0.3);
 
-    const cols = [120, 70, 60, 70];
-    const headers = ['Date', 'Duration', 'Blocks', 'Blk/min'];
-    const tableX = 60;
+    const cols    = [100, 60, 55, 55, 55, 60];
+    const headers = ['Date', 'Duration', 'Blocks', 'Reps', 'Prolong.', 'Blk/min'];
+    const tableX  = 60;
     let rowY = doc.y;
 
     // Header row
@@ -164,7 +178,7 @@ export function generateReport(data: ReportData): Promise<Buffer> {
     });
     rowY += 18;
 
-    const displaySessions = [...data.sessions].reverse().slice(0, 30);
+    const displaySessions = [...data.sessions].reverse().slice(0, 40);
     displaySessions.forEach((s, idx) => {
       if (rowY > doc.page.height - 80) { doc.addPage(); rowY = 60; }
       const bg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
@@ -173,16 +187,40 @@ export function generateReport(data: ReportData): Promise<Buffer> {
         new Date(s.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }),
         `${Math.floor(s.duration_seconds / 60)}m ${s.duration_seconds % 60}s`,
         String(s.total_blocks_detected),
+        String(s.total_repetitions_detected ?? '—'),
+        String(s.total_prolongations_detected ?? '—'),
         bpm(s).toFixed(1),
       ];
       vals.forEach((v, i) => {
         const x = tableX + cols.slice(0, i).reduce((a, b) => a + b, 0);
-        const color = i === 3 ? (bpm(s) < 2 ? ACC : bpm(s) <= 5 ? AMB : RED) : DARK;
-        doc.fontSize(8).font(i === 3 ? 'Helvetica-Bold' : 'Helvetica').fillColor(color)
+        const bpmVal = bpm(s);
+        const color = i === 5 ? (bpmVal < 2 ? ACC : bpmVal <= 5 ? AMB : RED) : DARK;
+        doc.fontSize(8).font(i === 5 ? 'Helvetica-Bold' : 'Helvetica').fillColor(color)
           .text(v, x + 6, rowY + 4, { width: cols[i] - 8 });
       });
       rowY += 16;
     });
+
+    // ── Clinical notes ───────────────────────────────────────────────────────
+    if (data.notes.length > 0) {
+      if (rowY > doc.page.height - 120) { doc.addPage(); rowY = 60; }
+      else { rowY += 20; }
+      doc.y = rowY;
+      doc.fontSize(9).font('Helvetica-Bold').fillColor(DARK).text('Clinical Notes');
+      doc.moveDown(0.4);
+
+      for (const note of data.notes) {
+        if (doc.y > doc.page.height - 80) doc.addPage();
+        const noteDate = new Date(note.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        doc.fontSize(7).font('Helvetica-Bold').fillColor(MID).text(noteDate, 60, doc.y);
+        doc.moveDown(0.1);
+        doc.fontSize(8).font('Helvetica').fillColor(DARK).text(note.note, 60, doc.y, { width: W });
+        doc.moveDown(0.6);
+        // Divider between notes
+        doc.moveTo(60, doc.y).lineTo(60 + W, doc.y).strokeColor('#e2e8f0').stroke();
+        doc.moveDown(0.4);
+      }
+    }
 
     // ── Footer ───────────────────────────────────────────────────────────────
     const footerY = doc.page.height - 50;
