@@ -57,12 +57,28 @@ export async function GET(
     // the duration of the disk read, which can delay concurrent requests sharing
     // the same Fluid Compute instance.
     const html = await readFile(join(process.cwd(), 'public', 'deck.html'), 'utf8');
+    // The deck uses Tailwind CDN, Google Fonts, and FontAwesome — set a
+    // permissive CSP scoped to this route only.  This overrides the site-wide
+    // restrictive CSP set in next.config.ts for all other routes.
+    const deckCSP = [
+      `default-src 'self'`,
+      `script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com`,
+      `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com`,
+      `font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com`,
+      `img-src 'self' data: blob: https:`,
+      `connect-src 'self'`,
+      `media-src 'self' blob:`,
+      `object-src 'none'`,
+      `base-uri 'self'`,
+    ].join('; ');
+
     return new NextResponse(html, {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'private, no-store',
         'X-Robots-Tag': 'noindex, nofollow',
+        'Content-Security-Policy': deckCSP,
       },
     });
   } catch {
