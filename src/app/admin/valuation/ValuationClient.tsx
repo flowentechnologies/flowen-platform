@@ -52,7 +52,7 @@ function defaultConfig(): ValuationConfig {
     // Scorecard: above-median on product/IP and market; building on marketing
     scorecard_median_pence:     150_000_000,   // £1.5m UK pre-seed median
     scorecard_team:              1.30,         // above avg — clinical + AI domain depth
-    scorecard_market_size:       1.40,         // strong — NHS + private SLT + £2.5B TAM
+    scorecard_market_size:       1.60,         // strong — global TAM £8.8bn incl. Vocali spinoff (tier 3/4)
     scorecard_product_tech:      1.50,         // strong — proprietary ASR pipeline + IP
     scorecard_competition:       1.10,         // moderate — limited direct AI SLT rivals
     scorecard_marketing:         0.90,         // early stage — still building channels
@@ -60,8 +60,8 @@ function defaultConfig(): ValuationConfig {
     scorecard_other:             1.10,         // SEIS eligibility, NHS strategic alignment
     // ARR multiple: AI/healthtech premium above sector baseline
     arr_multiple:                8.0,
-    // VC: realistic UK healthtech acquisition target (Nuance/M&S-tier exit)
-    vc_exit_valuation_pence:  7_500_000_000,   // £75m — realistic UK healthtech M&A exit
+    // VC: UK + EU foothold exit; 20% UK + Tier 1 international beachhead by yr 5
+    vc_exit_valuation_pence: 15_000_000_000,   // £150m — UK anchor + EU expansion; Vocali upside excluded
     vc_investment_pence:         25_000_000,   // £250k — pre-seed round size
     vc_years_to_exit:            5,
     vc_required_irr:             35.0,
@@ -952,17 +952,70 @@ function EditPanel({ method, cfg, onChange, onSave, saving }: {
 // Deliberately static — the numbers here should mirror the DCF inputs above.
 // When you update DCF projections, update this section too.
 
-const BP_MARKET_ROWS = [
-  { segment: 'NHS / ICB contracts',     tam: '£840m',  sam: '£42m',   som: '£3m',   note: '42 ICBs · est. 750 SLT patients/ICB · £600/yr' },
-  { segment: 'UK private SLT',          tam: '£320m',  sam: '£64m',   som: '£6m',   note: 'Private practice, waiting-list overflow' },
-  { segment: 'Consumer self-help (UK)',  tam: '£180m',  sam: '£36m',   som: '£3m',   note: 'Direct B2C, SEIS-eligible founders tier' },
-  { segment: 'International (EU / US)', tam: '£2.1bn', sam: '£210m',  som: '£12m',  note: '5-yr expansion; US insurance reimbursement path' },
+// Two-brand global strategy:
+//   Flowen  — premium AI SLT platform, Tier 1 & 2 markets (UK, EU, US, AU, Japan, ME)
+//   Vocali  — stripped-down, affordable spinoff built for Tier 3 & 4 markets (India,
+//             LatAm, Africa, SE Asia) at a fraction of the cost (~£1–3/mo)
+//
+// Long-run target: 20% UK market → 20% global market share across all tiers.
+// SOM (Yr3) = conservative near-term capture. SOM (Mature) = 20% of SAM at scale.
+
+const BP_MARKET_ROWS: Array<{
+  segment: string; brand: string; tam: string; sam: string; som: string; somMature: string; note: string;
+}> = [
+  {
+    segment: 'UK NHS / ICB',
+    brand: 'Flowen',
+    tam: '£840m',
+    sam: '£42m',
+    som: '£3m',
+    somMature: '£168m',
+    note: '42 ICBs · 750 SLT patients/ICB · £600/yr · 20% target',
+  },
+  {
+    segment: 'UK Private + Consumer',
+    brand: 'Flowen',
+    tam: '£500m',
+    sam: '£100m',
+    som: '£9m',
+    somMature: '£100m',
+    note: 'Private SLT practice, self-pay B2C, waiting-list overflow',
+  },
+  {
+    segment: 'Tier 1 International (US / EU / AU)',
+    brand: 'Flowen',
+    tam: '£4.5bn',
+    sam: '£450m',
+    som: '£15m',
+    somMature: '£900m',
+    note: 'US insurance reimbursement, EU CE mark, AU Medicare path; 20% share target',
+  },
+  {
+    segment: 'Tier 2 International (Japan / ME / S. Korea)',
+    brand: 'Flowen',
+    tam: '£1.2bn',
+    sam: '£120m',
+    som: '£5m',
+    somMature: '£240m',
+    note: 'Premium markets, partnership distribution; 20% target',
+  },
+  {
+    segment: 'Tier 3/4 — Vocali spinoff (India / LatAm / Africa / SE Asia)',
+    brand: 'Vocali',
+    tam: '£1.8bn',
+    sam: '£180m',
+    som: '£5m',
+    somMature: '£360m',
+    note: '~65m people who stutter in these regions · £1–3/mo · volume play · 20% target',
+  },
 ];
 
 const BP_PROJECTIONS = [
-  { year: 'FY1 (2026)', revenue: '£120k', arr: '£120k',  users: '20–50',   driver: 'Founding members + NHS pilot (1 ICB)' },
-  { year: 'FY2 (2027)', revenue: '£480k', arr: '£480k',  users: '200–400', driver: '3 ICBs + consumer launch + SLP portal' },
-  { year: 'FY3 (2028)', revenue: '£1.5m', arr: '£1.5m+', users: '1,000+',  driver: '5 ICBs + private referrals + international seed' },
+  { year: 'FY1 (2026)', revenue: '£120k', arr: '£120k',  users: '20–50',    brand: 'Flowen',         driver: 'Founding members + NHS pilot (1 ICB)' },
+  { year: 'FY2 (2027)', revenue: '£480k', arr: '£480k',  users: '200–400',  brand: 'Flowen',         driver: '3 ICBs + consumer launch + SLP portal' },
+  { year: 'FY3 (2028)', revenue: '£1.5m', arr: '£1.5m+', users: '1,000+',   brand: 'Flowen',         driver: '5 ICBs + private referrals + EU/US seed partnerships' },
+  { year: 'FY4 (2029)', revenue: '£4.5m', arr: '£4.5m+', users: '5,000+',   brand: 'Flowen + Vocali','driver': 'Tier 1 intl expansion + Vocali beta (Tier 3/4) + 10% UK market' },
+  { year: 'FY5 (2030)', revenue: '£12m',  arr: '£12m+',  users: '20,000+',  brand: 'Flowen + Vocali','driver': '20% UK target + Tier 1 foothold + Vocali scale in Tier 3/4 markets' },
 ];
 
 const BP_USE_OF_FUNDS = [
@@ -1022,24 +1075,31 @@ function BusinessPlanSection() {
         {tab === 'projections' && (
           <div className="space-y-4">
             <p className="text-[11px] font-mono text-slate-500">
-              3-year revenue projections feeding the DCF method. Conservative estimates based on NHS pilot pathway and founding member subscription model.
+              5-year revenue plan: NHS pilot → 20% UK capture → global Tier 1/2 expansion (Flowen) → Tier 3/4 volume play (Vocali spinoff).
+              FY1–3 feed the DCF method. FY4–5 represent the international scale thesis.
             </p>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800">
-                    {['Year', 'Revenue', 'ARR', 'Users', 'Key Driver'].map(h => (
+                    {['Year', 'Revenue', 'Users', 'Brand', 'Key Driver'].map(h => (
                       <th key={h} className="text-left px-3 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {BP_PROJECTIONS.map((r, i) => (
-                    <tr key={i} className="hover:bg-slate-800/30 transition-colors">
+                    <tr key={i} className={`hover:bg-slate-800/30 transition-colors ${i >= 3 ? 'opacity-80' : ''}`}>
                       <td className="px-3 py-3 font-mono font-bold text-slate-300 whitespace-nowrap">{r.year}</td>
                       <td className="px-3 py-3 font-mono font-black text-amber-400">{r.revenue}</td>
-                      <td className="px-3 py-3 font-mono text-slate-400">{r.arr}</td>
                       <td className="px-3 py-3 font-mono text-slate-400">{r.users}</td>
+                      <td className="px-3 py-3">
+                        {r.brand === 'Flowen' ? (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-sky-500/15 text-sky-400 border border-sky-500/25">Flowen</span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-violet-500/15 text-violet-400 border border-violet-500/25">F + Vocali</span>
+                        )}
+                      </td>
                       <td className="px-3 py-3 text-slate-500">{r.driver}</td>
                     </tr>
                   ))}
@@ -1048,8 +1108,8 @@ function BusinessPlanSection() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
               {[
-                { label: 'Gross Margin Target', value: '82%', note: 'SaaS + NHS B2B' },
-                { label: 'Payback Period', value: '<12mo', note: 'NHS contract basis' },
+                { label: 'Flowen Gross Margin', value: '85%+', note: 'SaaS + NHS B2B' },
+                { label: 'Vocali Gross Margin', value: '70%+', note: 'Volume at lower price' },
                 { label: 'Churn Target', value: '<8% yr', note: 'Clinical stickiness' },
                 { label: 'LTV/CAC Target', value: '4×+', note: 'At 24-month LTV' },
               ].map(m => (
@@ -1066,47 +1126,67 @@ function BusinessPlanSection() {
         {/* ── Market ──────────────────────────────────────────────────────── */}
         {tab === 'market' && (
           <div className="space-y-4">
-            <p className="text-[11px] font-mono text-slate-500">
-              Total Addressable Market for AI-assisted speech therapy across NHS, private, and consumer channels.
-              SOM = Serviceable Obtainable Market at Year 3 (FY2028).
-            </p>
+            <div className="flex flex-wrap gap-2 items-start justify-between">
+              <p className="text-[11px] font-mono text-slate-500 max-w-xl">
+                Two-brand global strategy targeting 20% market share across all tiers.
+                <strong className="text-sky-400"> Flowen</strong> = premium platform (Tier 1/2).
+                <strong className="text-violet-400"> Vocali</strong> = stripped-down, affordable spinoff for Tier 3/4 countries.
+                SOM (Yr3) = near-term. SOM (Mature 20%) = long-run target.
+              </p>
+              <div className="flex gap-1.5 shrink-0">
+                <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-sky-500/15 text-sky-400 border border-sky-500/25">Flowen</span>
+                <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-violet-500/15 text-violet-400 border border-violet-500/25">Vocali spinoff</span>
+              </div>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800">
-                    {['Segment', 'TAM', 'SAM', 'SOM (Yr3)', 'Notes'].map(h => (
-                      <th key={h} className="text-left px-3 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500">{h}</th>
+                    {['Segment', 'Brand', 'TAM', 'SAM', 'SOM (Yr3)', 'SOM (20% Mature)', 'Notes'].map(h => (
+                      <th key={h} className="text-left px-3 py-2.5 text-[10px] font-mono font-bold uppercase tracking-wide text-slate-500 whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {BP_MARKET_ROWS.map((r, i) => (
                     <tr key={i} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="px-3 py-3 font-semibold text-slate-300 whitespace-nowrap">{r.segment}</td>
-                      <td className="px-3 py-3 font-mono font-black text-slate-300">{r.tam}</td>
-                      <td className="px-3 py-3 font-mono text-sky-400">{r.sam}</td>
-                      <td className="px-3 py-3 font-mono font-bold text-amber-400">{r.som}</td>
+                      <td className="px-3 py-3 font-semibold text-slate-300">{r.segment}</td>
+                      <td className="px-3 py-3">
+                        {r.brand === 'Flowen' ? (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-sky-500/15 text-sky-400 border border-sky-500/25">Flowen</span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-violet-500/15 text-violet-400 border border-violet-500/25">Vocali</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-3 font-mono font-black text-slate-300 whitespace-nowrap">{r.tam}</td>
+                      <td className="px-3 py-3 font-mono text-sky-400 whitespace-nowrap">{r.sam}</td>
+                      <td className="px-3 py-3 font-mono font-bold text-amber-400 whitespace-nowrap">{r.som}</td>
+                      <td className="px-3 py-3 font-mono font-bold text-emerald-400 whitespace-nowrap">{r.somMature}</td>
                       <td className="px-3 py-3 text-[10px] text-slate-600">{r.note}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr className="border-t-2 border-slate-700">
-                    <td className="px-3 py-3 font-bold text-slate-300 text-[11px]">Total</td>
-                    <td className="px-3 py-3 font-mono font-black text-white">£3.44bn</td>
-                    <td className="px-3 py-3 font-mono font-black text-sky-300">£352m</td>
-                    <td className="px-3 py-3 font-mono font-black text-amber-400">£24m</td>
+                    <td className="px-3 py-3 font-bold text-slate-300 text-[11px]" colSpan={2}>Total (Flowen + Vocali)</td>
+                    <td className="px-3 py-3 font-mono font-black text-white">£8.84bn</td>
+                    <td className="px-3 py-3 font-mono font-black text-sky-300">£892m</td>
+                    <td className="px-3 py-3 font-mono font-black text-amber-400">£37m</td>
+                    <td className="px-3 py-3 font-mono font-black text-emerald-400">£1.77bn</td>
                     <td />
                   </tr>
                 </tfoot>
               </table>
             </div>
-            <div className="bg-slate-800/40 rounded-xl p-4 text-[11px] font-mono text-slate-400 leading-relaxed">
-              <span className="text-amber-400 font-bold">Comparable exits:</span>{' '}
-              Nuance Communications (speech AI) — $19.7bn acquisition by Microsoft.
+            <div className="bg-slate-800/40 rounded-xl p-4 text-[11px] font-mono text-slate-400 leading-relaxed space-y-2">
+              <p><span className="text-amber-400 font-bold">Market context:</span>{' '}
+              ~70 million people worldwide who stutter. UK: ~700k. US: ~3.3m. India + LatAm + Africa: ~40m+.
+              Global digital speech therapy CAGR ~18% (2025–2030). AI-native models command 3–5× premium on traditional SaaS multiples.</p>
+              <p><span className="text-amber-400 font-bold">Comparable exits:</span>{' '}
+              Nuance Communications (speech AI) — $19.7bn Microsoft acquisition.
               Livi/Kry (digital health) — £500m+ Series C.
               Brightside Health (mental health AI) — $55m Series B.
-              UK healthtech M&A activity up 34% YoY (2025 data).
+              UK healthtech M&amp;A activity up 34% YoY (2025 data).</p>
             </div>
           </div>
         )}
@@ -1152,45 +1232,73 @@ function BusinessPlanSection() {
         {/* ── Business Model ────────────────────────────────────────────────── */}
         {tab === 'model' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[
-                {
-                  tier: 'B2B NHS / ICB',
-                  price: '£600/patient/yr',
-                  margin: '88%',
-                  notes: 'Annual contract, per-patient SaaS. Procurement via ICB digital transformation budgets. DSPT-aligned.',
-                  color: 'border-sky-500/30 bg-sky-500/5',
-                  badge: 'bg-sky-500/15 text-sky-400',
-                },
-                {
-                  tier: 'Founding Member',
-                  price: '£19.96–£35.96/mo',
-                  margin: '91%',
-                  notes: 'Early adopter founding tier — locked pricing for life. Annual billing preferred. No churn incentive.',
-                  color: 'border-amber-500/30 bg-amber-500/5',
-                  badge: 'bg-amber-500/15 text-amber-400',
-                },
-                {
-                  tier: 'SLP / Clinician Portal',
-                  price: '£49/mo per SLP',
-                  margin: '85%',
-                  notes: 'Caseload management, progress reports, DM. Bundled into NHS contracts or sold direct to private practice.',
-                  color: 'border-violet-500/30 bg-violet-500/5',
-                  badge: 'bg-violet-500/15 text-violet-400',
-                },
-              ].map(t => (
-                <div key={t.tier} className={`rounded-xl border p-4 ${t.color}`}>
-                  <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold mb-2 ${t.badge}`}>{t.tier}</span>
-                  <p className="text-base font-black text-white mb-1">{t.price}</p>
-                  <p className="text-[10px] font-mono text-slate-500 mb-2">Gross margin: <span className="text-emerald-400 font-bold">{t.margin}</span></p>
-                  <p className="text-[11px] text-slate-500 leading-relaxed">{t.notes}</p>
-                </div>
-              ))}
+            {/* Flowen tiers */}
+            <div>
+              <p className="text-[9px] font-mono font-bold text-sky-400 uppercase tracking-widest mb-2">Flowen — Premium (Tier 1 &amp; 2 markets)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  {
+                    tier: 'B2B NHS / ICB',
+                    price: '£600/patient/yr',
+                    margin: '88%',
+                    notes: 'Annual contract, per-patient SaaS. Procurement via ICB digital transformation budgets. DSPT-aligned.',
+                    color: 'border-sky-500/30 bg-sky-500/5',
+                    badge: 'bg-sky-500/15 text-sky-400',
+                  },
+                  {
+                    tier: 'Founding Member',
+                    price: '£19.96–£35.96/mo',
+                    margin: '91%',
+                    notes: 'Early adopter founding tier — locked pricing for life. Annual billing preferred. No churn incentive.',
+                    color: 'border-amber-500/30 bg-amber-500/5',
+                    badge: 'bg-amber-500/15 text-amber-400',
+                  },
+                  {
+                    tier: 'SLP / Clinician Portal',
+                    price: '£49/mo per SLP',
+                    margin: '85%',
+                    notes: 'Caseload management, progress reports, DM. Bundled into NHS contracts or sold direct to private practice.',
+                    color: 'border-violet-500/30 bg-violet-500/5',
+                    badge: 'bg-violet-500/15 text-violet-400',
+                  },
+                ].map(t => (
+                  <div key={t.tier} className={`rounded-xl border p-4 ${t.color}`}>
+                    <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold mb-2 ${t.badge}`}>{t.tier}</span>
+                    <p className="text-base font-black text-white mb-1">{t.price}</p>
+                    <p className="text-[10px] font-mono text-slate-500 mb-2">Gross margin: <span className="text-emerald-400 font-bold">{t.margin}</span></p>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">{t.notes}</p>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Vocali tier */}
+            <div>
+              <p className="text-[9px] font-mono font-bold text-violet-400 uppercase tracking-widest mb-2">Vocali — Accessible Spinoff (Tier 3 &amp; 4 markets)</p>
+              <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <span className="inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold mb-2 bg-violet-500/20 text-violet-300">Vocali Basic</span>
+                    <p className="text-base font-black text-white mb-1">£1–3/mo</p>
+                    <p className="text-[10px] font-mono text-slate-500 mb-2">Gross margin: <span className="text-emerald-400 font-bold">70%+</span></p>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                      Stripped-down version of Flowen — core fluency exercises, progress tracking. No SLP portal, reduced AI inference load. Built for volume.
+                    </p>
+                  </div>
+                  <div className="sm:col-span-2 space-y-2.5 text-[11px] font-mono text-slate-400">
+                    <p><span className="text-violet-300 font-bold">Target markets:</span> India, Brazil, Nigeria, Indonesia, Pakistan, Bangladesh — combined ~65m people who stutter, 95%+ unserved by digital SLT.</p>
+                    <p><span className="text-violet-300 font-bold">Pricing rationale:</span> At £2/mo avg × 20% of SAM (180m) = £36m ARR potential. Significantly lower COGS due to stripped API usage + lighter AI pipeline.</p>
+                    <p><span className="text-violet-300 font-bold">Distribution:</span> Partner with local telcos, NGO health programmes, school systems. Freemium entry tier, convert to paid via mobile carrier billing.</p>
+                    <p><span className="text-violet-300 font-bold">Relationship to Flowen:</span> Separate brand, shared AI core. Vocali acts as a funnel for Flowen in markets that grow into Tier 2 pricing. Separate entity for potential independent fundraise or acquisition.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-slate-800/40 rounded-xl p-4 text-[11px] font-mono text-slate-400 leading-relaxed space-y-2">
-              <p><span className="text-white font-bold">Regulatory path:</span> UKCA Medical Device registration (Class I SaMD) in progress. CE mark for EU expansion. DSPT compliance for NHS data access.</p>
-              <p><span className="text-white font-bold">Moat:</span> Proprietary stuttering ASR training dataset (not publicly available). Clinical validation evidence. NHS procurement relationships. SEIS status limits competing clones.</p>
-              <p><span className="text-white font-bold">Exit scenarios:</span> Strategic acquisition (NHS supplier, speech tech group, mental health platform) · Series A with NHS anchor contract · NHS Pathways programme listing.</p>
+              <p><span className="text-white font-bold">Regulatory path:</span> UKCA Medical Device registration (Class I SaMD) in progress. CE mark for EU. DSPT compliance for NHS data access. Vocali markets: lighter regulatory burden (wellness category in most Tier 3/4 jurisdictions).</p>
+              <p><span className="text-white font-bold">Moat:</span> Proprietary stuttering ASR dataset. Clinical validation evidence. NHS procurement relationships. Two-brand model (Flowen + Vocali) covers full global income spectrum — hard to replicate without clinical heritage.</p>
+              <p><span className="text-white font-bold">Exit scenarios:</span> NHS-anchored Series A → Tier 1 strategic acquisition (speech tech, mental health, NHS digital supplier). Vocali: independent raise or bundle into Flowen exit. Long-run: 20% global market share = £350m+ revenue potential.</p>
             </div>
           </div>
         )}
