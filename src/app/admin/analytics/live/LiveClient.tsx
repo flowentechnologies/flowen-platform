@@ -3,6 +3,10 @@
 import React, {
   useState, useEffect, useCallback, useRef, useMemo,
 } from 'react';
+import { geoOrthographic, geoPath, geoGraticule } from 'd3-geo';
+import { feature as topoFeature } from 'topojson-client';
+import type { Topology, GeometryCollection } from 'topojson-specification';
+import type { FeatureCollection, Geometry } from 'geojson';
 import type { LiveRange, BucketType } from '@/app/api/admin/analytics/live/route';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -64,89 +68,19 @@ const FLAGS: Record<string, string> = {
 
 const HEATMAP_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-// ── Simplified world coastlines ───────────────────────────────────────────────
-// Each sub-array is a continuous pen stroke [lat, lng][].
-// Pen lifts between sub-arrays. Coverage: all major landmasses + key islands.
-const COASTLINES: [number, number][][] = [
-  // North America — west coast + Alaska
-  [[54,-167],[56,-160],[58,-154],[57,-152],[54,-130],[52,-128],
-   [48,-124],[44,-124],[40,-124],[36,-122],[32,-117],[28,-115],
-   [24,-111],[20,-105],[16,-92],[10,-85],[8,-77]],
-  // North America — Caribbean → east coast → Canada → Arctic
-  [[8,-77],[9,-80],[10,-75],[11,-65],[18,-68],[20,-70],[22,-74],
-   [25,-80],[26,-80],[28,-80],[30,-81],[32,-81],[34,-78],[36,-76],
-   [38,-75],[40,-74],[42,-71],[44,-66],[46,-60],[47,-53],[48,-52],
-   [52,-55],[54,-57],[58,-63],[60,-65],[60,-70],[58,-76],[55,-80],
-   [58,-86],[60,-95],[60,-110],[60,-125],[62,-138],[66,-142],
-   [68,-142],[71,-140],[71,-156],[70,-140],[70,-110],[70,-80]],
-  // Greenland
-  [[60,-44],[62,-40],[66,-36],[70,-24],[74,-20],[76,-18],[80,-16],
-   [82,-24],[84,-36],[82,-50],[80,-56],[76,-70],[72,-57],[70,-52],
-   [68,-54],[66,-52],[64,-52],[62,-46],[60,-44]],
-  // South America
-  [[8,-77],[8,-76],[10,-75],[10,-63],[8,-62],[6,-58],[4,-52],
-   [2,-50],[0,-50],[-3,-40],[-8,-35],[-12,-38],[-16,-38],[-20,-40],
-   [-24,-44],[-28,-48],[-32,-52],[-34,-53],[-38,-57],[-42,-62],
-   [-46,-65],[-50,-68],[-54,-68],[-56,-68],[-55,-65],[-52,-57],
-   [-48,-55],[-44,-50],[-38,-54],[-34,-56],[-28,-49],[-22,-43],
-   [-18,-40],[-14,-38],[-8,-35],[-4,-36],[0,-50],[4,-52],[8,-60],
-   [8,-62],[8,-77]],
-  // Europe — Atlantic coast + Scandinavia
-  [[36,-6],[38,-10],[42,-9],[44,-8],[44,-2],[46,-2],[47,1],
-   [48,-5],[50,-4],[51,-2],[52,2],[53,5],[55,8],[56,9],[57,10],
-   [58,8],[60,5],[62,5],[64,10],[66,14],[68,16],[70,20],[70,28]],
-  // Europe — Baltic + Eastern Europe + Turkey
-  [[70,28],[68,34],[66,32],[64,26],[62,22],[60,24],[56,22],[54,18],
-   [54,14],[52,14],[50,14],[48,16],[46,14],[44,14],[44,18],[42,18],
-   [40,18],[38,16],[36,12],[36,10],[37,10],[36,10],[36,-6]],
-  // Italian peninsula (boot)
-  [[44,8],[44,14],[42,14],[40,16],[38,16],[38,14],[40,12],[42,10],[44,8]],
-  // Great Britain
-  [[50,-5],[52,-5],[54,-3],[55,-2],[57,-2],[58,-4],[58,-6],[57,-6],
-   [55,-6],[53,-4],[51,-3],[50,-5]],
-  // Ireland
-  [[52,-10],[54,-10],[55,-8],[54,-6],[52,-6],[51,-8],[52,-10]],
-  // Iceland
-  [[63,-24],[65,-18],[66,-14],[66,-22],[64,-24],[63,-24]],
-  // Africa — full outline
-  [[37,10],[36,4],[34,8],[32,12],[30,32],[22,37],[14,42],[10,42],
-   [4,42],[2,42],[-2,40],[-8,40],[-12,38],[-16,36],[-20,35],
-   [-24,34],[-28,32],[-32,28],[-34,24],[-34,18],[-30,16],[-26,15],
-   [-22,14],[-18,12],[-14,12],[-10,14],[-6,10],[-2,10],
-   [4,2],[5,-2],[4,-8],[4,-4],[5,-2],[6,2],[8,2],[10,2],
-   [14,16],[18,15],[20,14],[24,15],[28,16],[30,10],[32,12],
-   [34,8],[36,4],[37,10]],
-  // Asia — Black Sea → Central Asia → India western approach
-  [[70,28],[68,38],[60,50],[54,60],[44,50],[40,50],[38,44],
-   [36,40],[34,36],[30,32],[22,37],[14,42]],
-  // Arabian Peninsula
-  [[14,42],[12,44],[22,60],[24,58],[22,56],[20,58],[14,50],[12,44]],
-  // Indian subcontinent
-  [[28,72],[24,68],[20,68],[16,74],[12,78],[8,76],[8,80],[10,80],
-   [14,80],[18,84],[22,88],[24,90],[28,92],[28,72]],
-  // Southeast Asia mainland + East Asian coast
-  [[26,100],[22,100],[20,106],[16,108],[14,108],[10,104],[6,100],
-   [2,104],[0,104],[-2,108],[-4,108],[-6,107],[-8,115],[-8,120],
-   [-4,120],[0,108],[4,104],[8,100],[10,100],[14,100],[18,104],
-   [22,108],[24,112],[28,122],[32,122],[36,122],[40,122],[44,130],
-   [46,134],[48,140],[50,140],[54,134],[58,140],[60,152],[62,158],
-   [64,164],[66,168],[68,170]],
-  // Japan (Honshu)
-  [[34,130],[35,133],[36,136],[37,137],[38,140],[40,140],[42,141],
-   [44,143],[44,141],[42,140],[40,138],[37,137],[36,136],[34,130]],
-  // Australia
-  [[-14,128],[-14,132],[-12,136],[-14,140],[-14,144],[-16,136],
-   [-18,130],[-20,120],[-22,114],[-26,114],[-30,114],[-32,115],
-   [-34,116],[-36,140],[-38,145],[-38,148],[-36,150],[-34,151],
-   [-32,152],[-28,153],[-22,150],[-16,146],[-14,144],[-12,136],
-   [-14,128]],
-  // New Zealand
-  [[-34,172],[-36,174],[-38,176],[-40,176],[-42,172],[-40,172],
-   [-38,176],[-36,174],[-34,172]],
-  // Antarctica (northern fringe)
-  [[-68,-90],[-70,-60],[-72,-30],[-70,0],[-68,30],[-70,60],
-   [-70,90],[-72,120],[-70,150],[-68,180],[-70,-150],[-68,-90]],
-];
+// ── World atlas (Natural Earth 110m) ─────────────────────────────────────────
+// Loaded as a static import — bundled at build time, zero runtime fetch.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const _atlas = require('world-atlas/countries-110m.json') as Topology;
+const WORLD_COUNTRIES = topoFeature(
+  _atlas,
+  _atlas.objects.countries as GeometryCollection,
+) as FeatureCollection<Geometry>;
+const WORLD_LAND = topoFeature(
+  _atlas,
+  _atlas.objects.land as GeometryCollection,
+) as FeatureCollection<Geometry>;
+
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -175,205 +109,167 @@ function shortPath(path: string): string {
   return path.length > 30 ? path.slice(0, 28) + '…' : path;
 }
 
-// ── 3D Globe ──────────────────────────────────────────────────────────────────
+// ── 3D Globe (D3 geo orthographic — proper sphere clipping, world-atlas GeoJSON)
+//
+// Why D3 instead of hand-rolled math:
+//   The old strokePolyline() lifted the pen when z < 0, leaving disconnected
+//   segments at the sphere boundary ("jigsaw"). D3's geoOrthographic uses great-
+//   circle interpolation to close paths exactly at the limb — no jigsaw, and all
+//   177 countries from Natural Earth 110m are rendered filled + bordered.
 
 const GLOBE_SIZE = 360;
 
+// Graticule — built once, reused every frame
+const _graticule = geoGraticule().step([30, 30])();
+
 function Globe({ locations }: { locations: VisitorLocation[] }) {
   const canvasRef    = useRef<HTMLCanvasElement>(null);
-  const rotRef       = useRef(0.4);        // start showing Atlantic / Europe
+  // D3 rotation: [lambda, phi] in degrees — lambda = E/W spin, phi = N/S tilt
+  const rotLamRef    = useRef(23);    // ~23° → Atlantic at centre on load
+  const rotPhiRef    = useRef(-10);   // slight N-tilt to show Europe/USA well
   const zoomRef      = useRef(1.0);
   const draggingRef  = useRef(false);
-  const dragStartRef = useRef({ x: 0, rot: 0 });
+  const dragStartRef = useRef({ x: 0, y: 0, lam: 23, phi: -10 });
   const pinchRef     = useRef<number | null>(null);
   const frameRef     = useRef<number>(0);
   const locationsRef = useRef<VisitorLocation[]>(locations);
   const pingRef      = useRef<Map<string, number>>(new Map());
 
-  // Keep locations ref current without re-running canvas setup
   useEffect(() => { locationsRef.current = locations; }, [locations]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // HiDPI
-    const dpr  = Math.min(window.devicePixelRatio || 1, 2);
-    const SIZE = GLOBE_SIZE;
-    canvas.width        = SIZE * dpr;
-    canvas.height       = SIZE * dpr;
-    canvas.style.width  = `${SIZE}px`;
-    canvas.style.height = `${SIZE}px`;
+    // HiDPI canvas
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const S   = GLOBE_SIZE;
+    canvas.width        = S * dpr;
+    canvas.height       = S * dpr;
+    canvas.style.width  = `${S}px`;
+    canvas.style.height = `${S}px`;
     const ctx = canvas.getContext('2d')!;
     ctx.scale(dpr, dpr);
 
-    // ── 3D math ────────────────────────────────────────────────────────────
+    const cx = S / 2, cy = S / 2;
+    const BASE_R = S * 0.42; // base sphere radius
 
-    function llToXYZ(lat: number, lng: number): [number, number, number] {
-      const phi   = (90 - lat)  * Math.PI / 180;
-      const theta = (lng + 180) * Math.PI / 180;
-      return [
-        -Math.sin(phi) * Math.cos(theta),
-         Math.cos(phi),
-         Math.sin(phi) * Math.sin(theta),
-      ];
-    }
-
-    function rotY([x, y, z]: [number, number, number], a: number): [number, number, number] {
-      const c = Math.cos(a), s = Math.sin(a);
-      return [x * c + z * s, y, -x * s + z * c];
-    }
-
-    // Draw a polyline on the sphere surface — lifts pen at sphere edge
-    function strokePolyline(pts: [number, number][], rot: number, cx: number, cy: number, R: number) {
-      let down = false;
-      ctx.beginPath();
-      for (const [lat, lng] of pts) {
-        const [x, y, z] = rotY(llToXYZ(lat, lng), rot);
-        if (z >= 0) {
-          const sx = cx + x * R, sy = cy - y * R;
-          if (!down) { ctx.moveTo(sx, sy); down = true; }
-          else        ctx.lineTo(sx, sy);
-        } else {
-          if (down) { ctx.stroke(); ctx.beginPath(); down = false; }
-        }
-      }
-      if (down) ctx.stroke();
-    }
-
-    // ── Draw ──────────────────────────────────────────────────────────────
+    // ── Draw ───────────────────────────────────────────────────────────────
 
     function draw() {
-      const S    = GLOBE_SIZE;
-      const cx   = S / 2, cy = S / 2;
-      const baseR = S * 0.42;
-      const R    = baseR * zoomRef.current;
-      const rot  = rotRef.current;
-      const now  = performance.now();
-      const zoomed = R > S * 0.47; // beyond canvas edge
+      const now = performance.now();
+      const R   = BASE_R * zoomRef.current;
+
+      // Rebuild projection every frame (cheap — it's just a closure)
+      const projection = geoOrthographic()
+        .scale(R)
+        .translate([cx, cy])
+        .rotate([rotLamRef.current, rotPhiRef.current])
+        .clipAngle(90); // proper great-circle clipping at the sphere limb
+
+      const path = geoPath(projection, ctx);
 
       ctx.clearRect(0, 0, S, S);
 
-      // Background — sphere circle or full canvas when zoomed in
-      if (zoomed) {
-        // Fill canvas with deep ocean gradient
-        const bg = ctx.createRadialGradient(cx - R * 0.28, cy - R * 0.22, 0, cx, cy, R);
-        bg.addColorStop(0, '#0f2540');
-        bg.addColorStop(1, '#040c1c');
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, S, S);
-      } else {
-        // Outer glow
-        const atm = ctx.createRadialGradient(cx, cy, R * 0.82, cx, cy, R * 1.18);
-        atm.addColorStop(0, 'rgba(16,185,129,0.09)');
-        atm.addColorStop(1, 'transparent');
-        ctx.fillStyle = atm;
-        ctx.beginPath(); ctx.arc(cx, cy, R * 1.18, 0, Math.PI * 2); ctx.fill();
+      // ── Atmosphere glow ──────────────────────────────────────────────
+      const atm = ctx.createRadialGradient(cx, cy, R * 0.82, cx, cy, R * 1.18);
+      atm.addColorStop(0, 'rgba(16,185,129,0.09)');
+      atm.addColorStop(1, 'transparent');
+      ctx.fillStyle = atm;
+      ctx.beginPath(); path({ type: 'Sphere' }); ctx.fill();
 
-        // Sphere base
-        const bg = ctx.createRadialGradient(cx - R * 0.28, cy - R * 0.22, R * 0.02, cx, cy, R);
-        bg.addColorStop(0, '#0f2540');
-        bg.addColorStop(1, '#040c1c');
-        ctx.fillStyle = bg;
-        ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
-      }
+      // ── Ocean sphere ─────────────────────────────────────────────────
+      const ocean = ctx.createRadialGradient(
+        cx - R * 0.28, cy - R * 0.22, R * 0.02, cx, cy, R,
+      );
+      ocean.addColorStop(0, '#0d2035');
+      ocean.addColorStop(1, '#040c1c');
+      ctx.fillStyle = ocean;
+      ctx.beginPath(); path({ type: 'Sphere' }); ctx.fill();
 
-      // Clip to sphere (or canvas boundary when zoomed beyond it)
-      ctx.save();
+      // ── Graticule (grid) ─────────────────────────────────────────────
       ctx.beginPath();
-      if (zoomed) {
-        ctx.rect(0, 0, S, S);
-      } else {
-        ctx.arc(cx, cy, R - 0.5, 0, Math.PI * 2);
-      }
-      ctx.clip();
-
-      // Grid lines
-      ctx.strokeStyle = 'rgba(71,85,105,0.2)';
+      path(_graticule);
+      ctx.strokeStyle = 'rgba(71,85,105,0.18)';
       ctx.lineWidth   = 0.5;
-      for (let lat = -75; lat <= 75; lat += 30) {
-        let first = true; ctx.beginPath();
-        for (let lng = -180; lng <= 180; lng += 4) {
-          const [x, y, z] = rotY(llToXYZ(lat, lng), rot);
-          if (z >= 0) {
-            const sx = cx + x * R, sy = cy - y * R;
-            if (first) { ctx.moveTo(sx, sy); first = false; } else ctx.lineTo(sx, sy);
-          } else if (!first) { ctx.stroke(); ctx.beginPath(); first = true; }
-        }
-        if (!first) ctx.stroke();
-      }
-      for (let lng = -180; lng < 180; lng += 30) {
-        let first = true; ctx.beginPath();
-        for (let lat = -87; lat <= 87; lat += 4) {
-          const [x, y, z] = rotY(llToXYZ(lat, lng), rot);
-          if (z >= 0) {
-            const sx = cx + x * R, sy = cy - y * R;
-            if (first) { ctx.moveTo(sx, sy); first = false; } else ctx.lineTo(sx, sy);
-          } else if (!first) { ctx.stroke(); ctx.beginPath(); first = true; }
-        }
-        if (!first) ctx.stroke();
-      }
+      ctx.stroke();
 
-      // ── Continent coastlines ──────────────────────────────────────────
-      ctx.strokeStyle = 'rgba(148,163,184,0.65)';
-      ctx.lineWidth   = R > 200 ? 1.4 : 1.1;
-      for (const seg of COASTLINES) {
-        strokePolyline(seg, rot, cx, cy, R);
-      }
+      // ── Land fill (all countries, one batch fill) ─────────────────────
+      ctx.beginPath();
+      WORLD_LAND.features.forEach(f => path(f));
+      ctx.fillStyle = '#14304d'; // navy land — clearly distinct from ocean
+      ctx.fill();
 
-      ctx.restore();
+      // ── Country borders ───────────────────────────────────────────────
+      ctx.beginPath();
+      WORLD_COUNTRIES.features.forEach(f => path(f));
+      ctx.strokeStyle = 'rgba(100,160,220,0.35)';
+      ctx.lineWidth   = 0.55;
+      ctx.stroke();
 
-      // Visitor dots (drawn outside clip so rings aren't clipped)
+      // ── Sphere rim + specular ─────────────────────────────────────────
+      ctx.beginPath(); path({ type: 'Sphere' });
+      ctx.strokeStyle = 'rgba(148,163,184,0.22)';
+      ctx.lineWidth   = 1;
+      ctx.stroke();
+
+      const hl = ctx.createRadialGradient(
+        cx - R * 0.32, cy - R * 0.36, 0,
+        cx - R * 0.1,  cy - R * 0.14, R * 0.52,
+      );
+      hl.addColorStop(0, 'rgba(255,255,255,0.07)');
+      hl.addColorStop(1, 'transparent');
+      ctx.fillStyle = hl;
+      ctx.beginPath(); path({ type: 'Sphere' }); ctx.fill();
+
+      // ── Visitor dots ─────────────────────────────────────────────────
+      // D3 returns null for points behind the sphere (clipAngle clipping)
       for (const loc of locationsRef.current) {
-        const [x3, y3, z3] = rotY(llToXYZ(loc.lat, loc.lng), rot);
-        if (z3 < -0.08) continue;
-        const fade = Math.min(1, (z3 + 0.08) / 0.2);
-        const sx   = cx + x3 * R, sy = cy - y3 * R;
+        const pt = projection([loc.lng, loc.lat]);
+        if (!pt) continue;
+        const [sx, sy] = pt;
 
-        // Skip if off-canvas when zoomed in
-        if (zoomed && (sx < -10 || sx > S + 10 || sy < -10 || sy > S + 10)) continue;
+        // Edge-fade: compute dot product with view direction
+        const DEG = Math.PI / 180;
+        const cLam = -rotLamRef.current * DEG;
+        const cPhi = -rotPhiRef.current * DEG;
+        const dot = Math.sin(cPhi) * Math.sin(loc.lat * DEG)
+                  + Math.cos(cPhi) * Math.cos(loc.lat * DEG) * Math.cos(loc.lng * DEG - cLam);
+        const fade = Math.min(1, Math.max(0, (dot + 0.05) / 0.18));
 
         if (loc.live) {
           const key = `${Math.round(loc.lat * 2)}:${Math.round(loc.lng * 2)}`;
           if (!pingRef.current.has(key)) pingRef.current.set(key, now);
           const t = ((now - (pingRef.current.get(key) ?? now)) % 2200) / 2200;
 
-          ctx.beginPath(); ctx.arc(sx, sy, 3 + t * 13, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(52,211,153,${(1-t)*0.65*fade})`;
+          ctx.beginPath(); ctx.arc(sx, sy, 3 + t * 14, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(52,211,153,${(1 - t) * 0.6 * fade})`;
           ctx.lineWidth   = 1.5; ctx.stroke();
 
           if (t > 0.2) {
             const t2 = (t - 0.2) / 0.8;
-            ctx.beginPath(); ctx.arc(sx, sy, 3 + t2 * 13, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(16,185,129,${(1-t2)*0.25*fade})`;
+            ctx.beginPath(); ctx.arc(sx, sy, 3 + t2 * 14, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(16,185,129,${(1 - t2) * 0.22 * fade})`;
             ctx.lineWidth   = 1; ctx.stroke();
           }
 
           ctx.beginPath(); ctx.arc(sx, sy, 3, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(52,211,153,${0.95*fade})`; ctx.fill();
+          ctx.fillStyle = `rgba(52,211,153,${0.95 * fade})`; ctx.fill();
           ctx.beginPath(); ctx.arc(sx, sy, 1.2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(220,255,240,${0.9*fade})`; ctx.fill();
+          ctx.fillStyle = `rgba(220,255,240,${0.9 * fade})`; ctx.fill();
         } else {
-          const r = Math.min(1.5 + Math.log1p(loc.count) * 0.6, 5);
+          const r = Math.min(1.5 + Math.log1p(loc.count) * 0.6, 5.5);
           ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(96,165,250,${0.5*fade})`; ctx.fill();
+          ctx.fillStyle = `rgba(96,165,250,${0.55 * fade})`; ctx.fill();
         }
-      }
-
-      // Rim + specular — only when fully visible
-      if (!zoomed) {
-        ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(148,163,184,0.22)'; ctx.lineWidth = 1; ctx.stroke();
-
-        const hl = ctx.createRadialGradient(cx-R*0.32, cy-R*0.36, 0, cx-R*0.1, cy-R*0.14, R*0.52);
-        hl.addColorStop(0, 'rgba(255,255,255,0.08)'); hl.addColorStop(1, 'transparent');
-        ctx.fillStyle = hl;
-        ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
       }
     }
 
     function frame() {
-      if (!draggingRef.current && pinchRef.current === null) rotRef.current += 0.0035;
+      // Auto-spin: increment lambda (D3 longitude rotation) when idle
+      if (!draggingRef.current && pinchRef.current === null) {
+        rotLamRef.current += 0.2; // 0.2 °/frame ≈ 12 °/s at 60 fps
+      }
       draw();
       frameRef.current = requestAnimationFrame(frame);
     }
@@ -382,7 +278,7 @@ function Globe({ locations }: { locations: VisitorLocation[] }) {
     function onWheel(e: WheelEvent) {
       e.preventDefault();
       const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
-      zoomRef.current = Math.max(0.5, Math.min(5.0, zoomRef.current * factor));
+      zoomRef.current = Math.max(0.5, Math.min(6.0, zoomRef.current * factor));
     }
     canvas.addEventListener('wheel', onWheel, { passive: false });
 
@@ -395,13 +291,22 @@ function Globe({ locations }: { locations: VisitorLocation[] }) {
 
   // ── Pointer / touch events ────────────────────────────────────────────────
 
-  function onDown(clientX: number) {
+  function onDown(clientX: number, clientY: number) {
     draggingRef.current = true;
-    dragStartRef.current = { x: clientX, rot: rotRef.current };
+    dragStartRef.current = {
+      x: clientX, y: clientY,
+      lam: rotLamRef.current, phi: rotPhiRef.current,
+    };
   }
-  function onMove(clientX: number) {
+  function onMove(clientX: number, clientY: number) {
     if (!draggingRef.current) return;
-    rotRef.current = dragStartRef.current.rot + (clientX - dragStartRef.current.x) * 0.008;
+    // Drag sensitivity: 0.45 °/px — zoom-independent feel
+    rotLamRef.current = dragStartRef.current.lam
+      + (clientX - dragStartRef.current.x) * 0.45;
+    rotPhiRef.current = Math.max(-80, Math.min(80,
+      dragStartRef.current.phi
+      - (clientY - dragStartRef.current.y) * 0.45,
+    ));
   }
   function onUp() { draggingRef.current = false; }
 
@@ -409,11 +314,11 @@ function Globe({ locations }: { locations: VisitorLocation[] }) {
     if (e.touches.length === 2) {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
-      pinchRef.current  = Math.hypot(dx, dy);
+      pinchRef.current    = Math.hypot(dx, dy);
       draggingRef.current = false;
     } else {
       pinchRef.current = null;
-      onDown(e.touches[0].clientX);
+      onDown(e.touches[0].clientX, e.touches[0].clientY);
     }
   }
   function onTouchMove(e: React.TouchEvent) {
@@ -422,10 +327,12 @@ function Globe({ locations }: { locations: VisitorLocation[] }) {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const d  = Math.hypot(dx, dy);
-      zoomRef.current = Math.max(0.5, Math.min(5.0, zoomRef.current * d / pinchRef.current));
+      zoomRef.current = Math.max(0.5, Math.min(6.0,
+        zoomRef.current * d / pinchRef.current,
+      ));
       pinchRef.current = d;
     } else if (e.touches.length === 1 && pinchRef.current === null) {
-      onMove(e.touches[0].clientX);
+      onMove(e.touches[0].clientX, e.touches[0].clientY);
     }
   }
   function onTouchEnd() {
@@ -437,9 +344,9 @@ function Globe({ locations }: { locations: VisitorLocation[] }) {
     <canvas
       ref={canvasRef}
       style={{ width: GLOBE_SIZE, height: GLOBE_SIZE }}
-      className="block mx-auto cursor-grab active:cursor-grabbing select-none"
-      onMouseDown={e => onDown(e.clientX)}
-      onMouseMove={e => onMove(e.clientX)}
+      className="block mx-auto cursor-grab active:cursor-grabbing select-none touch-none"
+      onMouseDown={e  => onDown(e.clientX, e.clientY)}
+      onMouseMove={e  => onMove(e.clientX, e.clientY)}
       onMouseUp={onUp}
       onMouseLeave={onUp}
       onTouchStart={onTouchStart}
