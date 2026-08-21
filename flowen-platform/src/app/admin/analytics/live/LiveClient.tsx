@@ -7,7 +7,7 @@ import { geoOrthographic, geoPath, geoGraticule } from 'd3-geo';
 import { feature as topoFeature } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { FeatureCollection, Geometry } from 'geojson';
-import type { LiveRange, BucketType } from '@/app/api/admin/analytics/live/route';
+import type { LiveRange, BucketType, PathSection } from '@/app/api/admin/analytics/live/route';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -17,6 +17,21 @@ interface VisitorLocation {
   country: string;
   city?: string;
   count: number;
+}
+
+interface SegmentBreakdown {
+  marketing: {
+    sessions: number;
+    pageviews: number;
+    conversions: number;
+    bounce_rate: number;
+    avg_duration_seconds: number;
+  };
+  app: {
+    sessions: number;
+    pageviews: number;
+    authenticated: number;
+  };
 }
 
 interface LiveData {
@@ -31,10 +46,11 @@ interface LiveData {
   bucket_type: BucketType;
   top_countries: { country: string; count: number; lat: number; lng: number }[];
   top_channels: { channel: string; count: number }[];
-  top_pages: { path: string; views: number }[];
+  top_pages: { path: string; views: number; section: PathSection }[];
   visitor_locations: VisitorLocation[];
   heatmap: number[][];
   recent_events: { path: string; city?: string; country?: string; ts: string }[];
+  segment_breakdown: SegmentBreakdown;
   as_of: string;
   range: LiveRange;
 }
@@ -592,6 +608,139 @@ function EventFeed({ events }: { events: LiveData['recent_events'] }) {
   );
 }
 
+// ── Visitor Funnel ────────────────────────────────────────────────────────────
+//
+// Shows the acquisition funnel across four stages:
+//   1. All visitors      (total sessions in range)
+//   2. Marketing         (landed on public pages — the addressable audience)
+//   3. Signed up         (marketing sessions that converted to registered user)
+//   4. Active in app     (returned and used the product as logged-in user)
+//
+// Drop-off % between each stage makes acquisition gaps immediately visible.
+
+function pct(num: number, den: number): string {
+  if (!den) return '—';
+  return `${Math.round((num / den) * 100)}%`;
+}
+
+function FunnelCard({ breakdown, total }: { breakdown: SegmentBreakdown; total: number }) {
+  const stages = [
+    {
+      label: 'All Visitors',
+      count: total,
+      color: 'text-slate-300',
+      bar: 'bg-slate-500',
+      icon: '👥',
+      sub: 'total sessions',
+    },
+    {
+      label: 'Marketing',
+      count: breakdown.marketing.sessions,
+      color: 'text-sky-300',
+      bar: 'bg-sky-500',
+      icon: '🌐',
+      sub: `${pct(breakdown.marketing.sessions, total)} of visitors`,
+    },
+    {
+      label: 'Signed Up',
+      count: breakdown.marketing.conversions,
+      color: 'text-emerald-300',
+      bar: 'bg-emerald-500',
+      icon: '✅',
+      sub: `${pct(breakdown.marketing.conversions, breakdown.marketing.sessions)} of marketing`,
+    },
+    {
+      label: 'App Users',
+      count: breakdown.app.authenticated,
+      color: 'text-violet-300',
+      bar: 'bg-violet-500',
+      icon: '⚙️',
+      sub: `${pct(breakdown.app.authenticated, breakdown.marketing.conversions)} of signups`,
+    },
+  ];
+
+  const maxCount = Math.max(total, 1);
+
+  return (
+    <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <SectionTitle>Acquisition Funnel</SectionTitle>
+        <div className="flex items-center gap-3 text-[10px] text-slate-600 font-mono">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-500 inline-block" /> Marketing</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-violet-500 inline-block" /> App</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        {stages.map((s, i) => (
+          <div key={i} className="flex flex-col gap-1">
+            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">{s.icon} {s.label}</span>
+            <span className={`text-2xl font-bold font-mono tabular-nums leading-none ${s.color}`}>
+              {s.count.toLocaleString()}
+            </span>
+            <span className="text-[10px] text-slate-600">{s.sub}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Stacked funnel bars */}
+      <div className="space-y-1.5">
+        {stages.map((s, i) => {
+          const w = maxCount > 0 ? (s.count / maxCount) * 100 : 0;
+          return (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-[9px] text-slate-600 font-mono w-20 shrink-0 text-right">{s.label}</span>
+              <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${s.bar}`}
+                  style={{ width: `${w}%`, opacity: 0.8 }}
+                />
+              </div>
+              <span className="text-[9px] text-slate-500 font-mono w-10 text-right tabular-nums">
+                {s.count.toLocaleString()}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Per-segment KPIs */}
+      <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-800">
+        <div className="space-y-1">
+          <p className="text-[9px] font-mono uppercase tracking-wider text-sky-600">Marketing metrics</p>
+          <div className="flex justify-between text-xs font-mono">
+            <span className="text-slate-500">Bounce rate</span>
+            <span className="text-slate-300">{breakdown.marketing.bounce_rate}%</span>
+          </div>
+          <div className="flex justify-between text-xs font-mono">
+            <span className="text-slate-500">Avg session</span>
+            <span className="text-slate-300">{fmtDuration(breakdown.marketing.avg_duration_seconds)}</span>
+          </div>
+          <div className="flex justify-between text-xs font-mono">
+            <span className="text-slate-500">Pageviews</span>
+            <span className="text-slate-300">{fmtNum(breakdown.marketing.pageviews)}</span>
+          </div>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[9px] font-mono uppercase tracking-wider text-violet-600">App metrics</p>
+          <div className="flex justify-between text-xs font-mono">
+            <span className="text-slate-500">Sessions</span>
+            <span className="text-slate-300">{breakdown.app.sessions.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between text-xs font-mono">
+            <span className="text-slate-500">Authenticated</span>
+            <span className="text-slate-300">{breakdown.app.authenticated.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between text-xs font-mono">
+            <span className="text-slate-500">Pageviews</span>
+            <span className="text-slate-300">{fmtNum(breakdown.app.pageviews)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Loading Skeleton ──────────────────────────────────────────────────────────
 
 function Skeleton() {
@@ -747,6 +896,9 @@ export default function LiveClient() {
         />
       </div>
 
+      {/* ── Acquisition Funnel ─────────────────────────────────────────── */}
+      <FunnelCard breakdown={data.segment_breakdown} total={data.range_visitors} />
+
       {/* ── Globe + Feed ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Globe panel */}
@@ -869,11 +1021,29 @@ export default function LiveClient() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Top Pages */}
         <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800 rounded-2xl p-5">
-          <SectionTitle>Top Pages — {rangeLabel}</SectionTitle>
+          <div className="flex items-center justify-between mb-3">
+            <SectionTitle>Top Pages — {rangeLabel}</SectionTitle>
+            <div className="flex items-center gap-2 text-[9px] font-mono">
+              <span className="px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 border border-sky-500/20">mktg</span>
+              <span className="px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-400 border border-violet-500/20">app</span>
+            </div>
+          </div>
           {data.top_pages.length === 0
             ? <p className="text-slate-600 text-xs">No data</p>
             : data.top_pages.map(p => (
-                <BarRow key={p.path} label={shortPath(p.path)} value={p.views} max={maxPage} />
+                <div key={p.path} className="flex items-center gap-1.5">
+                  <span className={[
+                    'shrink-0 px-1 py-px rounded text-[8px] font-mono font-bold leading-tight',
+                    p.section === 'app'
+                      ? 'bg-violet-500/15 text-violet-400 border border-violet-500/20'
+                      : 'bg-sky-500/15 text-sky-400 border border-sky-500/20',
+                  ].join(' ')}>
+                    {p.section === 'app' ? 'app' : 'mktg'}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <BarRow label={shortPath(p.path)} value={p.views} max={maxPage} />
+                  </div>
+                </div>
               ))
           }
         </div>
