@@ -5,6 +5,7 @@ import { PostHogProvider as PHProvider, usePostHog } from 'posthog-js/react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { pixelCompleteRegistration } from '@/lib/pixel';
 
 
 function PageViewTracker() {
@@ -51,7 +52,25 @@ function AuthIdentityTracker() {
       if (event === 'SIGNED_OUT') {
         resetIdentity();
       } else if (event === 'SIGNED_IN' && session?.user) {
+        // Detect new signup: no prior identity on this device AND account
+        // created within the last 10 minutes (guards against false fires when
+        // an existing user logs in on a fresh device or clears localStorage).
+        const isNewSignup =
+          !localStorage.getItem(IDENTIFIED_USER_ID_KEY) &&
+          !!session.user.created_at &&
+          Date.now() - new Date(session.user.created_at).getTime() < 10 * 60 * 1000;
+
         identifyUser(session.user);
+
+        if (isNewSignup) {
+          // Browser-side signup events — complement the server-side Meta CAPI
+          // webhook which fires automatically via the DB trigger.
+          pixelCompleteRegistration({ content_name: 'flowen_signup' });
+          posthog.capture('user_signed_up', {
+            email: session.user.email,
+            user_id: session.user.id,
+          });
+        }
       }
     });
 
