@@ -3,64 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flowen — Pitch Deck Canvas & Interactive Product Showcase</title>
-  
-  <!-- Fonts -->
+  <title>Flowen — Investor Pitch Canvas // Confidential</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- FontAwesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
     :root {
-      --bg-navy: #0C0E1A;
-      --card-navy: #14172E;
-      --card-navy-hi: #1D2142;
-      --amber: #E2703A;
-      --amber-hi: #F08553;
-      --gold: #D9A441;
-      --teal: #2FBBA3;
-      --teal-hi: #3FD2B7;
-      --paper: #F5F3EE;
-      --lavender: #A6A3BE;
-      --lavender-dim: #6E6C88;
-      --border-line: rgba(245, 243, 238, 0.08);
-      --border-gold: rgba(226, 112, 58, 0.35);
-      --border-teal: rgba(47, 187, 163, 0.35);
+      --bg-navy:       #0C0E1A;
+      --card-navy:     #14172E;
+      --card-hi:       #1D2142;
+      --amber:         #E2703A;
+      --amber-hi:      #F08553;
+      --gold:          #D9A441;
+      --teal:          #2FBBA3;
+      --teal-hi:       #3FD2B7;
+      --violet:        #8B5CF6;
+      --violet-hi:     #A78BFA;
+      --paper:         #F5F3EE;
+      --lavender:      #A6A3BE;
+      --lavender-dim:  #6E6C88;
+      --border:        rgba(245,243,238,0.08);
+      --border-gold:   rgba(226,112,58,0.35);
+      --border-teal:   rgba(47,187,163,0.35);
+      --border-violet: rgba(139,92,246,0.35);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       background-color: var(--bg-navy);
-      background-image: 
-        radial-gradient(circle at 15% 10%, rgba(226, 112, 58, 0.09) 0%, transparent 45%),
-        radial-gradient(circle at 85% 85%, rgba(47, 187, 163, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(20, 23, 46, 0.5) 0%, transparent 100%);
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(226,112,58,0.09) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(47,187,163,0.08) 0%, transparent 50%),
+        radial-gradient(circle at 55% 40%, rgba(139,92,246,0.05) 0%, transparent 40%);
       background-attachment: fixed;
       color: var(--paper);
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', system-ui, sans-serif;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
-
-    .font-serif-fraunces { font-family: 'Fraunces', serif; }
-    .font-mono-ibm { font-family: 'IBM Plex Mono', monospace; }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    .ff { font-family: 'Fraunces', serif; }
+    .fm { font-family: 'IBM Plex Mono', monospace; }
+    ::-webkit-scrollbar { width: 7px; }
     ::-webkit-scrollbar-track { background: var(--bg-navy); }
-    ::-webkit-scrollbar-thumb { background: var(--card-navy-hi); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--card-hi); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--teal); }
 
     .slide-card {
       background: var(--card-navy);
-      border: 1px solid var(--border-line);
+      border: 1px solid var(--border);
       border-radius: 14px;
       padding: 24px;
       display: flex;
@@ -68,1311 +59,990 @@
       justify-content: space-between;
       position: relative;
       overflow: hidden;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.22s cubic-bezier(0.16,1,0.3,1);
     }
+    .slide-card:hover { border-color: var(--border-teal); transform: translateY(-3px); box-shadow: 0 12px 30px -10px rgba(0,0,0,0.5), 0 0 15px rgba(47,187,163,0.15); }
+    .card-hero { background: linear-gradient(135deg, rgba(226,112,58,0.12) 0%, var(--card-navy) 100%); border-color: var(--border-gold); }
+    .card-data { background: linear-gradient(135deg, rgba(139,92,246,0.10) 0%, var(--card-navy) 100%); border-color: var(--border-violet); }
+    .card-vocali { background: linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(47,187,163,0.06) 100%); border-color: var(--border-violet); }
+    .card-ask { background: linear-gradient(135deg, rgba(47,187,163,0.12) 0%, var(--card-navy) 100%); border-color: var(--border-teal); }
 
-    .slide-card:hover {
-      border-color: var(--border-teal);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5), 0 0 15px rgba(47, 187, 163, 0.15);
-    }
+    .pill { font-family:'IBM Plex Mono',monospace; font-size:11px; padding:5px 11px; border-radius:6px; background:var(--bg-navy); border:1px solid var(--border); color:var(--paper); display:inline-flex; align-items:center; gap:6px; }
+    .pill.gold { border-color:rgba(226,112,58,0.4); color:var(--amber); }
+    .pill.teal { border-color:rgba(47,187,163,0.4); color:var(--teal); }
+    .pill.violet { border-color:rgba(139,92,246,0.4); color:var(--violet-hi); }
 
-    .card-hero {
-      background: linear-gradient(135deg, rgba(226,112,58,0.12) 0%, var(--card-navy) 100%);
-      border-color: var(--border-gold);
-    }
+    .phone-mockup { border:3px solid #2A2D50; background:#080912; border-radius:28px; box-shadow:0 20px 40px rgba(0,0,0,0.6); position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; }
+    .phone-notch { width:80px; height:12px; background:#14172E; border-radius:0 0 8px 8px; margin:0 auto; }
+    .glass { background:rgba(12,14,26,0.93); backdrop-filter:blur(14px); }
 
-    .card-ask {
-      background: linear-gradient(135deg, rgba(47,187,163,0.12) 0%, var(--card-navy) 100%);
-      border-color: var(--border-teal);
-    }
+    input[type=range] { -webkit-appearance:none; background:var(--card-hi); border-radius:8px; height:8px; width:100%; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; height:20px; width:20px; border-radius:50%; background:var(--teal); cursor:pointer; box-shadow:0 0 10px rgba(47,187,163,0.5); }
 
-    .pill {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      padding: 6px 12px;
-      border-radius: 6px;
-      background: var(--bg-navy);
-      border: 1px solid var(--border-line);
-      color: var(--paper);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-    }
+    .slide-num { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
+    .hook-title { font-family:'Fraunces',serif; color:var(--paper); line-height:1.25; }
+    .sub-text { color:var(--lavender); line-height:1.65; }
+    .stat-hero { font-family:'Fraunces',serif; }
 
-    .pill.gold { border-color: rgba(226, 112, 58, 0.4); color: var(--amber); }
-    .pill.teal { border-color: rgba(47, 187, 163, 0.4); color: var(--teal); }
+    @keyframes pulseRing {
+      0%,100% { opacity:0.6; transform:scale(1); }
+      50% { opacity:1; transform:scale(1.06); }
+    }
+    .pulse-ring { animation: pulseRing 2.4s ease-in-out infinite; }
 
-    .phone-mockup {
-      border: 3px solid #2A2D50;
-      background: #080912;
-      border-radius: 28px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+    /* Data pipeline animation */
+    @keyframes flow {
+      0% { stroke-dashoffset: 200; }
+      100% { stroke-dashoffset: 0; }
     }
-
-    .phone-notch {
-      width: 80px;
-      height: 12px;
-      background: #14172E;
-      border-radius: 0 0 8px 8px;
-      margin: 0 auto;
-    }
-
-    .glass-backdrop {
-      background: rgba(12, 14, 26, 0.92);
-      backdrop-filter: blur(14px);
-    }
-
-    /* Range Input Customization */
-    input[type=range] {
-      -webkit-appearance: none;
-      background: var(--card-navy-hi);
-      border-radius: 8px;
-      height: 8px;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 20px;
-      width: 20px;
-      border-radius: 50%;
-      background: var(--teal);
-      cursor: pointer;
-      box-shadow: 0 0 10px rgba(47, 187, 163, 0.5);
-    }
+    .flow-path { stroke-dasharray: 200; animation: flow 3s linear infinite; }
   </style>
 </head>
-<body class="p-4 md:p-8 flex flex-col justify-between">
+<body class="p-4 md:p-8">
 
-  <div class="canvas-container max-w-7xl mx-auto w-full">
+  <div class="max-w-7xl mx-auto w-full">
 
-    <!-- HEADER & TOOLBAR -->
-    <header class="deck-header flex flex-col md:flex-row justify-between items-start md:items-center pb-6 mb-8 border-b border-[var(--border-teal)] gap-4">
-      <div class="brand flex items-center gap-4">
-        <!-- Exact Flowen Dual Ribbon Wave Logo SVG -->
-        <div class="p-2 rounded-xl bg-[var(--card-navy)] border border-[var(--border-teal)] shadow-lg flex items-center justify-center">
-          <svg width="48" height="28" viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- HEADER -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 mb-8 border-b border-[var(--border-teal)] gap-4">
+      <div class="flex items-center gap-4">
+        <div class="p-2 rounded-xl bg-[var(--card-navy)] border border-[var(--border-teal)] shadow-lg">
+          <svg width="48" height="28" viewBox="0 0 120 70" fill="none">
             <defs>
-              <linearGradient id="flowenWaveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <linearGradient id="wg" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="#E2703A"/>
                 <stop offset="35%" stop-color="#D9A441"/>
                 <stop offset="100%" stop-color="#2FBBA3"/>
               </linearGradient>
             </defs>
-            <!-- Top Wave Track -->
-            <path d="M 8,32 C 22,20 34,48 50,22 C 66,-2 80,50 96,24 C 104,12 110,18 114,20" 
-                  stroke="url(#flowenWaveGrad)" stroke-width="7" stroke-linecap="round" fill="none"/>
-            <!-- Parallel Bottom Wave Track -->
-            <path d="M 8,46 C 22,34 34,62 50,36 C 66,12 80,64 96,38 C 104,26 110,32 114,34" 
-                  stroke="url(#flowenWaveGrad)" stroke-width="7" stroke-linecap="round" fill="none"/>
+            <path d="M 8,32 C 22,20 34,48 50,22 C 66,-2 80,50 96,24 C 104,12 110,18 114,20" stroke="url(#wg)" stroke-width="7" stroke-linecap="round" fill="none"/>
+            <path d="M 8,46 C 22,34 34,62 50,36 C 66,12 80,64 96,38 C 104,26 110,32 114,34" stroke="url(#wg)" stroke-width="7" stroke-linecap="round" fill="none"/>
           </svg>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="font-serif-fraunces text-3xl font-semibold text-[var(--paper)] tracking-tight">Flowen</h1>
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-[var(--teal)]/20 text-[var(--teal)] font-mono-ibm border border-[var(--teal)]/40 font-semibold">v2.6 Enterprise</span>
+            <h1 class="ff text-3xl font-semibold text-[var(--paper)] tracking-tight">Flowen</h1>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-[var(--violet)]/20 text-[var(--violet-hi)] fm border border-[var(--border-violet)] font-semibold">DEEP TECH</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-[var(--teal)]/20 text-[var(--teal)] fm border border-[var(--border-teal)] font-semibold">DATA PROCESSING</span>
           </div>
-          <p class="text-xs text-[var(--lavender)] font-mono-ibm mt-0.5">Retraining the brain to speak freely // AI Speech Coordination</p>
+          <p class="text-xs text-[var(--lavender)] fm mt-0.5">Proprietary Disfluent ASR Pipeline · Two-Brand Global Speech Platform</p>
         </div>
       </div>
 
-      <!-- Action & Navigation Controls -->
       <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end">
-        <button id="soundToggleBtn" onclick="toggleAudio()" class="px-3 py-2 rounded-lg bg-[var(--card-navy)] border border-[var(--border-line)] hover:border-[var(--teal)] text-xs font-mono-ibm text-[var(--lavender)] hover:text-[var(--paper)] transition flex items-center gap-2">
+        <button id="soundToggleBtn" onclick="toggleAudio()" class="px-3 py-2 rounded-lg bg-[var(--card-navy)] border border-[var(--border)] hover:border-[var(--teal)] text-xs fm text-[var(--lavender)] hover:text-[var(--paper)] transition flex items-center gap-2">
           <i class="fa-solid fa-volume-xmark text-[var(--amber)]" id="soundIcon"></i>
           <span id="soundText">Mute Sound</span>
         </button>
-
-        <button onclick="openLandingPageModal()" class="px-3 py-2 rounded-lg bg-[var(--card-navy)] border border-[var(--border-teal)] text-[var(--teal)] hover:bg-[var(--teal)] hover:text-[var(--bg-navy)] text-xs font-mono-ibm transition flex items-center gap-2 shadow-md">
-          <i class="fa-solid fa-globe"></i> Live Web Showcase
+        <button onclick="openLandingModal()" class="px-3 py-2 rounded-lg bg-[var(--card-navy)] border border-[var(--border-teal)] text-[var(--teal)] hover:bg-[var(--teal)] hover:text-[var(--bg-navy)] text-xs fm transition flex items-center gap-2">
+          <i class="fa-solid fa-globe"></i> Product Showcase
         </button>
-
-        <button onclick="openPresentationModal(0)" class="px-4 py-2 rounded-lg bg-[var(--amber)] hover:bg-[var(--amber-hi)] text-[var(--bg-navy)] font-semibold text-xs font-mono-ibm transition flex items-center gap-2 shadow-lg hover:scale-105">
+        <button onclick="openPres(0)" class="px-4 py-2 rounded-lg bg-[var(--amber)] hover:bg-[var(--amber-hi)] text-[var(--bg-navy)] font-semibold text-xs fm transition flex items-center gap-2 hover:scale-105">
           <i class="fa-solid fa-play"></i> Present Deck
         </button>
-
-        <button onclick="exportDeckSummary()" class="px-3 py-2 rounded-lg bg-[var(--card-navy)] border border-[var(--border-line)] hover:border-[var(--teal)] text-xs font-mono-ibm text-[var(--paper)] transition flex items-center gap-2" title="Export Deck Summary">
+        <button onclick="exportSummary()" class="px-3 py-2 rounded-lg bg-[var(--card-navy)] border border-[var(--border)] hover:border-[var(--teal)] text-xs fm text-[var(--paper)] transition flex items-center gap-2" title="Export Summary">
           <i class="fa-solid fa-download"></i>
         </button>
       </div>
     </header>
 
-    <!-- BACKRONYM & Tagline Highlight Banner -->
+    <!-- BACKRONYM BANNER -->
     <div class="mb-8 p-4 rounded-xl bg-[var(--card-navy)] border border-[var(--border-gold)] flex flex-col md:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <span class="px-2.5 py-1 rounded bg-[var(--amber)]/20 text-[var(--amber)] font-mono-ibm text-xs font-bold uppercase tracking-wider">THE BACKRONYM</span>
-        <div class="font-mono-ibm text-xs md:text-sm text-[var(--paper)]">
-          <strong class="text-[var(--amber)] font-bold">F</strong>luency &amp; 
-          <strong class="text-[var(--amber)] font-bold">L</strong>anguage 
-          <strong class="text-[var(--amber)] font-bold">O</strong>ptimization 
-          <strong class="text-[var(--teal)] font-bold">W</strong>ith 
-          <strong class="text-[var(--teal)] font-bold">E</strong>mpathic 
-          <strong class="text-[var(--teal)] font-bold">N</strong>eurofeedback
+        <span class="px-2.5 py-1 rounded bg-[var(--amber)]/20 text-[var(--amber)] fm text-xs font-bold uppercase tracking-wider">BACKRONYM</span>
+        <div class="fm text-xs md:text-sm text-[var(--paper)]">
+          <strong class="text-[var(--amber)]">F</strong>luency &amp;
+          <strong class="text-[var(--amber)]">L</strong>anguage
+          <strong class="text-[var(--amber)]">O</strong>ptimization
+          <strong class="text-[var(--teal)]">W</strong>ith
+          <strong class="text-[var(--teal)]">E</strong>mpathic
+          <strong class="text-[var(--teal)]">N</strong>eurofeedback
         </div>
       </div>
-      <div class="text-xs text-[var(--lavender)] font-serif-fraunces italic border-t md:border-t-0 md:border-l border-[var(--border-line)] pt-2 md:pt-0 md:pl-4">
-        "Every word gets there."
+      <div class="flex flex-wrap gap-3 items-center">
+        <span class="fm text-[10px] px-2.5 py-1 rounded bg-[var(--violet)]/15 text-[var(--violet-hi)] border border-[var(--border-violet)]"><i class="fa-solid fa-database mr-1"></i> 100k+ Disfluent Audio Clips</span>
+        <span class="fm text-[10px] px-2.5 py-1 rounded bg-[var(--amber)]/10 text-[var(--amber)] border border-[var(--border-gold)]">80M Global PWS · 20% Target Capture</span>
+        <span class="ff italic text-xs text-[var(--lavender)] border-l border-[var(--border)] pl-4">"Every word gets there."</span>
       </div>
     </div>
 
-    <!-- FILTER BAR & METRICS SUMMARY -->
+    <!-- FILTER BAR -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
       <div class="flex flex-wrap gap-2 items-center" id="filterPills">
-        <span class="text-xs font-mono-ibm text-[var(--lavender-dim)] mr-2">Category Filter:</span>
-        <button onclick="filterCategory('all')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-mono-ibm bg-[var(--teal)] text-[var(--bg-navy)] font-semibold border border-[var(--teal)] transition">All (11)</button>
-        <button onclick="filterCategory('tech')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-mono-ibm bg-[var(--card-navy)] text-[var(--lavender)] border border-[var(--border-line)] hover:border-[var(--teal)] transition">Tech &amp; Moat</button>
-        <button onclick="filterCategory('product')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-mono-ibm bg-[var(--card-navy)] text-[var(--lavender)] border border-[var(--border-line)] hover:border-[var(--teal)] transition">Product &amp; Features</button>
-        <button onclick="filterCategory('market')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-mono-ibm bg-[var(--card-navy)] text-[var(--lavender)] border border-[var(--border-line)] hover:border-[var(--teal)] transition">Market &amp; Econ</button>
-        <button onclick="filterCategory('team')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-mono-ibm bg-[var(--card-navy)] text-[var(--lavender)] border border-[var(--border-line)] hover:border-[var(--teal)] transition">Team &amp; Ask</button>
+        <span class="text-xs fm text-[var(--lavender-dim)] mr-1">Filter:</span>
+        <button onclick="filterCat('all')" class="filter-btn px-3 py-1.5 rounded-full text-xs fm bg-[var(--teal)] text-[var(--bg-navy)] font-semibold border border-[var(--teal)]">All (13)</button>
+        <button onclick="filterCat('deep-tech')" class="filter-btn px-3 py-1.5 rounded-full text-xs fm bg-[var(--card-navy)] text-[var(--lavender)] border border-[var(--border)] hover:border-[var(--violet)]">Deep Tech</button>
+        <button onclick="filterCat('product')" class="filter-btn px-3 py-1.5 rounded-full text-xs fm bg-[var(--card-navy)] text-[var(--lavender)] border border-[var(--border)] hover:border-[var(--teal)]">Product</button>
+        <button onclick="filterCat('market')" class="filter-btn px-3 py-1.5 rounded-full text-xs fm bg-[var(--card-navy)] text-[var(--lavender)] border border-[var(--border)] hover:border-[var(--teal)]">Market</button>
+        <button onclick="filterCat('vocali')" class="filter-btn px-3 py-1.5 rounded-full text-xs fm bg-[var(--card-navy)] text-[var(--lavender)] border border-[var(--border)] hover:border-[var(--violet)]">Vocali</button>
+        <button onclick="filterCat('team')" class="filter-btn px-3 py-1.5 rounded-full text-xs fm bg-[var(--card-navy)] text-[var(--lavender)] border border-[var(--border)] hover:border-[var(--teal)]">Team &amp; Ask</button>
       </div>
-
-      <div class="meta-tag flex items-center gap-2 font-mono-ibm text-xs text-[var(--teal)] bg-[var(--teal)]/10 px-3 py-1.5 rounded-md border border-[var(--teal)]/30">
+      <div class="fm flex items-center gap-2 text-xs text-[var(--teal)] bg-[var(--teal)]/10 px-3 py-1.5 rounded-md border border-[var(--teal)]/30">
         <span class="w-2 h-2 rounded-full bg-[var(--teal)] animate-pulse"></span>
-        11-SLIDE INVESTOR CANVAS // CONFIDENTIAL
+        13-SLIDE INVESTOR CANVAS // CONFIDENTIAL
       </div>
     </div>
 
-    <!-- SLIDE GRID CANVAS -->
-    <div class="deck-grid grid grid-cols-12 gap-5" id="slideGrid">
+    <!-- SLIDE GRID -->
+    <div class="grid grid-cols-12 gap-5" id="slideGrid">
 
-      <!-- SLIDE 1: THE VISION & BACKRONYM -->
-      <div class="slide-card col-span-12 card-hero p-8" data-category="tech" data-index="0">
+      <!-- 01: VISION -->
+      <div class="slide-card card-hero col-span-12 p-8" data-cat="deep-tech" data-idx="0">
         <div class="flex justify-between items-start mb-4">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--teal)] uppercase tracking-widest font-semibold">01 // THE VISION &amp; BACKRONYM</span>
+          <span class="slide-num">01 // THE VISION</span>
           <div class="flex gap-2">
-            <button onclick="quickEditSlide(0)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs p-1"><i class="fa-solid fa-pen-to-square"></i></button>
-            <button onclick="openPresentationModal(0)" class="text-[var(--lavender-dim)] hover:text-[var(--teal)] text-xs p-1"><i class="fa-solid fa-expand"></i></button>
+            <button onclick="quickEdit(0)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button onclick="openPres(0)" class="text-[var(--lavender-dim)] hover:text-[var(--teal)] text-xs p-1"><i class="fa-solid fa-expand"></i></button>
           </div>
         </div>
-        <h2 class="hook-title font-serif-fraunces text-2xl md:text-4xl text-[var(--paper)] leading-tight mb-4" id="title-0">
-          80 Million people stammer.<br>We built <em class="italic text-[var(--amber)]">FLOWEN</em> — the first sub-150ms real-time practice engine for their voice.
+        <h2 class="hook-title text-2xl md:text-4xl mb-4" id="title-0">
+          80 Million people stammer.<br>We built <em class="italic text-[var(--amber)]">FLOWEN</em> — a deep-tech data processing engine that turns disfluent speech into the world's most valuable clinical dataset.
         </h2>
-        <p class="text-xs md:text-sm text-[var(--lavender)] max-w-3xl mb-4 font-mono-ibm">
-          FLOWEN = <strong class="text-[var(--amber)]">F</strong>luency &amp; <strong class="text-[var(--amber)]">L</strong>anguage <strong class="text-[var(--amber)]">O</strong>ptimization <strong class="text-[var(--teal)]">W</strong>ith <strong class="text-[var(--teal)]">E</strong>mpathic <strong class="text-[var(--teal)]">N</strong>neurofeedback.
+        <p class="sub-text text-xs md:text-sm max-w-3xl mb-4 fm">
+          FLOWEN = Fluency &amp; Language Optimization With Empathic Neurofeedback. The first phoneme-level disfluent ASR pipeline — processing speech blocks as structured data, not errors to discard.
         </p>
-        <div class="pill-group flex flex-wrap gap-2 mt-2">
+        <div class="flex flex-wrap gap-2 mt-2">
           <span class="pill gold"><i class="fa-solid fa-user-shield"></i> LIVED EXPERIENCE FOUNDER</span>
+          <span class="pill violet"><i class="fa-solid fa-database"></i> DATA PROCESSING ENGINE</span>
           <span class="pill teal"><i class="fa-solid fa-wave-square"></i> PROPRIETARY DISFLUENT ASR</span>
-          <span class="pill"><i class="fa-solid fa-microchip"></i> AI SPEECH COORDINATION</span>
+          <span class="pill"><i class="fa-solid fa-microchip"></i> NOT JUST A HEALTH APP</span>
         </div>
       </div>
 
-      <!-- SLIDE 2: THE PROBLEM -->
-      <div class="slide-card col-span-12 md:col-span-6" data-category="market" data-index="1">
+      <!-- 02: PROBLEM -->
+      <div class="slide-card col-span-12 md:col-span-6" data-cat="market" data-idx="1">
         <div class="flex justify-between items-start mb-2">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--teal)] uppercase tracking-widest">02 // THE PROBLEM</span>
-          <button onclick="quickEditSlide(1)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+          <span class="slide-num">02 // THE PROBLEM</span>
+          <button onclick="quickEdit(1)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
         <div>
-          <h2 class="hook-title font-serif-fraunces text-2xl text-[var(--paper)] mb-3" id="title-1">
-            18-Month Waits.<br><span class="text-[var(--amber)]">£200/Hour Therapy.</span><br>Zero Practice Tools.
+          <h2 class="hook-title text-2xl text-[var(--paper)] mb-3" id="title-1">
+            18-Month NHS Waits.<br><span class="text-[var(--amber)]">£200/Hour Private Therapy.</span><br>92% Dropout. Zero Daily Tools.
           </h2>
-          <p class="sub-text text-xs md:text-sm text-[var(--lavender)] leading-relaxed" id="body-1">
-            Clinical SALT queues are oversubscribed. Existing speech apps rely on static breathing tricks that fail catastrophically during high-pressure real-world speech blocks.
+          <p class="sub-text text-xs md:text-sm leading-relaxed" id="body-1">
+            Clinical SALT queues are critically oversubscribed. Existing apps use static breathing tricks that catastrophically fail during real-world high-pressure speech blocks. 80 million people globally have no effective daily practice tool. Standard AI (Google, Whisper, Siri) treats disfluency as noise and times out — it was never designed for it.
           </p>
         </div>
-        <div class="mt-4 pt-3 border-t border-[var(--border-line)] flex justify-between items-center text-xs text-[var(--lavender-dim)] font-mono-ibm">
-          <span>NHS SALT Wait: 18 Months</span>
-          <span class="text-rose-400">92% Dropout Rate</span>
+        <div class="mt-4 pt-3 border-t border-[var(--border)] grid grid-cols-3 gap-3 text-center text-xs fm">
+          <div><p class="text-rose-400 font-bold text-lg">18mo</p><p class="text-[var(--lavender-dim)]">NHS SALT wait</p></div>
+          <div><p class="text-amber-400 font-bold text-lg">92%</p><p class="text-[var(--lavender-dim)]">dropout rate</p></div>
+          <div><p class="text-violet-400 font-bold text-lg">80M</p><p class="text-[var(--lavender-dim)]">people globally</p></div>
         </div>
       </div>
 
-      <!-- SLIDE 3: PRODUCT FEATURES & APPS -->
-      <div class="slide-card col-span-12 md:col-span-6" data-category="product" data-index="2">
-        <div class="flex justify-between items-start mb-2">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--teal)] uppercase tracking-widest">03 // APP SHOWCASE &amp; COMPLIANCE</span>
-          <button onclick="openLandingPageModal()" class="text-[var(--teal)] hover:underline text-xs font-mono-ibm"><i class="fa-solid fa-desktop"></i> View App Visualizer</button>
+      <!-- 03: DEEP TECH MOAT -->
+      <div class="slide-card card-data col-span-12 md:col-span-6" data-cat="deep-tech" data-idx="2">
+        <div class="flex justify-between items-start mb-1">
+          <span class="slide-num" style="color:var(--violet-hi)">03 // DEEP TECH &amp; DATA PROCESSING</span>
+          <button onclick="quickEdit(2)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
         <div>
-          <h2 class="hook-title font-serif-fraunces text-2xl text-[var(--paper)] mb-3" id="title-2">
+          <div class="stat-hero text-5xl font-semibold text-[var(--violet-hi)] my-2" id="stat-2">&lt; 150ms</div>
+          <h3 class="hook-title text-lg text-[var(--paper)] mb-2" id="title-2">Phoneme-Level Disfluency Pipeline</h3>
+          <p class="sub-text text-xs leading-relaxed" id="body-2">
+            This is not a health app with an AI wrapper. Flowen is a <strong class="text-[var(--paper)]">data processing company</strong> built on a proprietary phoneme-level pipeline that processes speech blocks as structured training signals. Google and Apple ASR discard disfluencies — our model is trained on them. That inversion is the moat.
+          </p>
+        </div>
+        <div class="mt-4 space-y-1.5 text-[10px] fm text-[var(--lavender-dim)]">
+          <p><span class="text-[var(--violet-hi)]">●</span> Phoneme-level block detection (not word-level like standard ASR)</p>
+          <p><span class="text-[var(--violet-hi)]">●</span> 100k+ proprietary disfluent clips — growing with each session</p>
+          <p><span class="text-[var(--violet-hi)]">●</span> No public dataset exists for this — we built it from scratch</p>
+          <p><span class="text-[var(--amber)]">●</span> Exit precedent: Nuance acquired $19.7bn — for the DATA, not the product</p>
+        </div>
+      </div>
+
+      <!-- 04: PRODUCT & COMPLIANCE -->
+      <div class="slide-card col-span-12 md:col-span-4" data-cat="product" data-idx="3">
+        <div class="flex justify-between items-start mb-2">
+          <span class="slide-num">04 // PRODUCT &amp; COMPLIANCE</span>
+          <button onclick="openLandingModal()" class="text-[var(--teal)] hover:underline text-xs fm"><i class="fa-solid fa-desktop"></i></button>
+        </div>
+        <div>
+          <h2 class="hook-title text-xl text-[var(--paper)] mb-2" id="title-3">
             3D Viseme Guide.<br><span class="text-[var(--teal)]">NHS #WaitlistHero.</span><br>Full Clinical Safety.
           </h2>
-          <p class="sub-text text-xs md:text-sm text-[var(--lavender)] leading-relaxed" id="body-2">
-            Features continuous mouth-shape animation, breathing cues, and active daily coordination for children, parents, and working adults.
+          <p class="sub-text text-xs leading-relaxed" id="body-3">
+            Continuous mouth-shape animation, breathing biofeedback, and real-time block coaching — built to NHS clinical safety standards from day one.
           </p>
         </div>
-        <div class="mt-4 pt-3 border-t border-[var(--border-line)] flex flex-wrap gap-2 text-[10px] font-mono-ibm">
+        <div class="mt-4 flex flex-wrap gap-1.5 text-[9px] fm">
           <span class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ DTAC Aligned</span>
           <span class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ DCB0129 Clinical Safety</span>
-          <span class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ UK GDPR Secured</span>
+          <span class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ UK GDPR</span>
           <span class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">✓ WCAG 2.1 AA</span>
         </div>
       </div>
 
-      <!-- SLIDE 4: THE HOW IT WORKS WORKFLOW -->
-      <div class="slide-card col-span-12 md:col-span-8" data-category="product" data-index="3">
+      <!-- 05: PRACTICE METHODOLOGY -->
+      <div class="slide-card col-span-12 md:col-span-8" data-cat="product" data-idx="4">
         <div class="flex justify-between items-start mb-2">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--teal)] uppercase tracking-widest">04 // METHODOLOGY &amp; PRACTICE LADDER</span>
-          <button onclick="quickEditSlide(3)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+          <span class="slide-num">05 // METHODOLOGY &amp; PRACTICE LADDER</span>
+          <button onclick="quickEdit(4)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
-        <div>
-          <h2 class="hook-title font-serif-fraunces text-2xl text-[var(--paper)] mb-3" id="title-3">
-            7-Stage Practice Ladder: <em class="italic text-[var(--teal)]">From Block to Flow.</em>
-          </h2>
-          <div class="grid grid-cols-5 gap-2 my-3 font-mono-ibm text-[11px] text-center">
-            <div class="p-2 rounded bg-[var(--bg-navy)] border border-[var(--border-teal)] text-[var(--paper)]">
-              <span class="text-[var(--teal)] font-bold block">01</span>Words
-            </div>
-            <div class="p-2 rounded bg-[var(--bg-navy)] border border-[var(--border-teal)] text-[var(--paper)]">
-              <span class="text-[var(--teal)] font-bold block">02</span>Phrases
-            </div>
-            <div class="p-2 rounded bg-[var(--bg-navy)] border border-[var(--border-teal)] text-[var(--paper)]">
-              <span class="text-[var(--teal)] font-bold block">03</span>Sentences
-            </div>
-            <div class="p-2 rounded bg-[var(--bg-navy)] border border-[var(--border-teal)] text-[var(--paper)]">
-              <span class="text-[var(--teal)] font-bold block">04</span>Paragraphs
-            </div>
-            <div class="p-2 rounded bg-[var(--bg-navy)] border border-[var(--border-gold)] text-[var(--amber)] font-semibold">
-              <span class="text-[var(--amber)] font-bold block">05</span>Conversation
-            </div>
-          </div>
+        <h2 class="hook-title text-2xl text-[var(--paper)] mb-3" id="title-4">
+          7-Stage Practice Ladder: <em class="italic text-[var(--teal)]">From Block to Flow.</em>
+        </h2>
+        <div class="grid grid-cols-5 gap-2 my-3 fm text-[11px] text-center">
+          <div class="p-2 rounded bg-[var(--bg-navy)] border border-[var(--border-teal)]"><span class="text-[var(--teal)] font-bold block">01</span>Words</div>
+          <div class="p-2 rounded bg-[var(--bg-navy)] border border-[var(--border-teal)]"><span class="text-[var(--teal)] font-bold block">02</span>Phrases</div>
+          <div class="p-2 rounded bg-[var(--bg-navy)] border border-[var(--border-teal)]"><span class="text-[var(--teal)] font-bold block">03</span>Sentences</div>
+          <div class="p-2 rounded bg-[var(--bg-navy)] border border-[var(--border-teal)]"><span class="text-[var(--teal)] font-bold block">04</span>Paragraphs</div>
+          <div class="p-2 rounded bg-[var(--bg-navy)] border border-[var(--border-gold)] text-[var(--amber)] font-semibold"><span class="text-[var(--amber)] font-bold block">05</span>Conversation</div>
         </div>
-        <p class="sub-text text-xs text-[var(--lavender)] leading-relaxed" id="body-3">
-          Combines Fluency Shaping (diaphragmatic onset) &amp; Stammering Modification (pull-outs) into continuous visual biofeedback loops.
+        <p class="sub-text text-xs leading-relaxed" id="body-4">
+          Combines Fluency Shaping (diaphragmatic onset) &amp; Stammering Modification (pull-outs) into continuous visual biofeedback loops. Every session generates phoneme-level block data that feeds back into the ASR training pipeline.
         </p>
       </div>
 
-      <!-- SLIDE 5: THE MOAT -->
-      <div class="slide-card col-span-12 md:col-span-4" data-category="tech" data-index="4">
-        <div class="flex justify-between items-start mb-1">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--teal)] uppercase tracking-widest">05 // THE TECH MOAT</span>
-          <button onclick="quickEditSlide(4)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
-        </div>
-        <div>
-          <div class="stat-hero font-serif-fraunces text-5xl font-semibold text-[var(--amber)] my-2" id="stat-4">&lt; 150ms</div>
-          <h3 class="hook-title font-serif-fraunces text-lg text-[var(--paper)] mb-2" id="title-4">Biofeedback Latency</h3>
-          <p class="sub-text text-xs text-[var(--lavender)] leading-relaxed" id="body-4">
-            Standard speech models timeout during disfluent blocks. Flowen owns fine-tuned disfluent speech models that turn vocal blocks into training signals.
-          </p>
-        </div>
-        <div class="mt-4">
-          <span class="pill gold text-[10px]"><i class="fa-solid fa-database"></i> 100k+ Disfluent Audio Clips</span>
-        </div>
-      </div>
-
-      <!-- SLIDE 6: MARKET TAM -->
-      <div class="slide-card col-span-12 md:col-span-4" data-category="market" data-index="5">
-        <div class="flex justify-between items-start mb-1">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--teal)] uppercase tracking-widest">06 // MARKET TAM</span>
-          <button onclick="quickEditSlide(5)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
-        </div>
-        <div>
-          <div class="stat-hero font-serif-fraunces text-5xl font-semibold text-[var(--amber)] my-2" id="stat-5">$2.4B</div>
-          <h3 class="hook-title font-serif-fraunces text-lg text-[var(--paper)] mb-2" id="title-5">Direct Speech TAM</h3>
-          <p class="sub-text text-xs text-[var(--lavender)] leading-relaxed" id="body-5">
-            Operating within a $65.1B global digital therapeutics sector with zero dominant AI category leaders for disfluency.
-          </p>
-        </div>
-        <div class="mt-4">
-          <span class="pill teal text-[10px]"><i class="fa-solid fa-chart-line"></i> 18.4% Market CAGR</span>
-        </div>
-      </div>
-
-      <!-- SLIDE 7: UNIT ECONOMICS -->
-      <div class="slide-card col-span-12 md:col-span-4" data-category="market" data-index="6">
-        <div class="flex justify-between items-start mb-1">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--teal)] uppercase tracking-widest">07 // ECONOMICS</span>
-          <button onclick="quickEditSlide(6)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
-        </div>
-        <div>
-          <div class="stat-hero font-serif-fraunces text-5xl font-semibold text-[var(--teal)] my-2" id="stat-6">£19.96</div>
-          <h3 class="hook-title font-serif-fraunces text-lg text-[var(--paper)] mb-2" id="title-6">/Mo Founding Pre-Pay</h3>
-          <p class="sub-text text-xs text-[var(--lavender)] leading-relaxed" id="body-6">
-            Replaces £5,000/yr private clinical sessions. Monetizes waitlists immediately via escrow seats and founding pre-orders.
-          </p>
-        </div>
-        <div class="mt-4">
-          <span class="pill text-[10px]"><i class="fa-solid fa-piggy-bank"></i> 95% Savings vs Therapy</span>
-        </div>
-      </div>
-
-      <!-- SLIDE 8: DISTRIBUTION FLYWHEEL -->
-      <div class="slide-card col-span-12 md:col-span-4" data-category="market" data-index="7">
-        <div class="flex justify-between items-start mb-1">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--teal)] uppercase tracking-widest">08 // DISTRIBUTION</span>
-          <button onclick="quickEditSlide(7)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
-        </div>
-        <div>
-          <h3 class="hook-title font-serif-fraunces text-lg text-[var(--paper)] mb-2" id="title-7">3-Pronged Distribution</h3>
-          <p class="sub-text text-xs text-[var(--lavender)] leading-relaxed" id="body-7">
-            Direct user pull $\rightarrow$ Clinician telemetry portals $\rightarrow$ NHS ICB Block Pledges to eliminate clinical waiting lists.
-          </p>
-        </div>
-        <div class="mt-4 flex flex-col gap-1 text-[10px] font-mono-ibm text-[var(--lavender-dim)]">
-          <span>• D2C Grassroots Advocacy</span>
-          <span>• Free SLP Portal Access</span>
-          <span>• NHS Block Pledges</span>
-        </div>
-      </div>
-
-      <!-- SLIDE 9: EXECUTION ROADMAP -->
-      <div class="slide-card col-span-12 md:col-span-6" data-category="tech" data-index="8">
+      <!-- 06: DATA FLYWHEEL -->
+      <div class="slide-card card-data col-span-12 md:col-span-5" data-cat="deep-tech" data-idx="5">
         <div class="flex justify-between items-start mb-2">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--teal)] uppercase tracking-widest">09 // EXECUTION SPEED</span>
-          <button onclick="quickEditSlide(8)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+          <span class="slide-num" style="color:var(--violet-hi)">06 // THE DATA FLYWHEEL</span>
+          <button onclick="quickEdit(5)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
-        <div>
-          <h2 class="hook-title font-serif-fraunces text-2xl text-[var(--paper)] mb-3" id="title-8">
-            Q3 '26 ➔ Q2 '27 Roadmap.
-          </h2>
-          <p class="sub-text text-xs md:text-sm text-[var(--lavender)] leading-relaxed" id="body-8">
-            Compressed 4-quarter plan from pre-pay locks to native iOS/Android deployment and NHS clinical block trials.
-          </p>
+        <h3 class="hook-title text-xl text-[var(--paper)] mb-3" id="title-5">Each Session = New Training Data.<br><span class="text-[var(--violet-hi)]">The Model Gets Better With Scale.</span></h3>
+        <p class="sub-text text-xs leading-relaxed mb-4" id="body-5">
+          Every user practice session generates annotated phoneme-level disfluency data. This feeds directly back into the ASR fine-tuning pipeline. As users grow, the model improves — creating a compounding data moat no competitor can replicate without years of clinical partnerships.
+        </p>
+        <!-- Flywheel diagram -->
+        <div class="relative flex items-center justify-center py-2">
+          <svg viewBox="0 0 280 120" class="w-full max-w-xs" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8B5CF6"/></marker>
+            </defs>
+            <rect x="10" y="40" width="70" height="36" rx="8" fill="#1D2142" stroke="#8B5CF6" stroke-width="1.5"/>
+            <text x="45" y="54" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#A78BFA">User</text>
+            <text x="45" y="67" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#A78BFA">Session</text>
+            <path d="M80,58 L105,58" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4,3" class="flow-path"/>
+            <rect x="105" y="40" width="70" height="36" rx="8" fill="#1D2142" stroke="#2FBBA3" stroke-width="1.5"/>
+            <text x="140" y="54" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#2FBBA3">Block</text>
+            <text x="140" y="67" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#2FBBA3">Data</text>
+            <path d="M175,58 L200,58" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4,3" class="flow-path"/>
+            <rect x="200" y="40" width="70" height="36" rx="8" fill="#1D2142" stroke="#E2703A" stroke-width="1.5"/>
+            <text x="235" y="54" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#E2703A">ASR</text>
+            <text x="235" y="67" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#E2703A">Improves</text>
+            <path d="M235,76 Q235,100 140,100 Q45,100 45,76" stroke="#8B5CF6" stroke-width="1.5" marker-end="url(#arr)" stroke-dasharray="4,3" class="flow-path"/>
+          </svg>
         </div>
-        <div class="mt-4 flex justify-between text-xs font-mono-ibm border-t border-[var(--border-line)] pt-3">
-          <div><span class="text-[var(--teal)] block font-bold">Q3: Pre-Pay</span>Done</div>
-          <div><span class="text-[var(--amber)] block font-bold">Q4: Native Apps</span>Active</div>
-          <div><span class="text-[var(--paper)] block font-bold">Q2 '27: NHS Pledges</span>Upcoming</div>
+        <div class="mt-2 flex gap-2 flex-wrap">
+          <span class="pill violet text-[9px]"><i class="fa-solid fa-arrows-rotate"></i> Compounding data advantage</span>
+          <span class="pill gold text-[9px]"><i class="fa-solid fa-lock"></i> Irreplicable without clinical access</span>
         </div>
       </div>
 
-      <!-- SLIDE 10: FOUNDER OBSESSION -->
-      <div class="slide-card col-span-12 md:col-span-6" data-category="team" data-index="9">
+      <!-- 07: TWO-BRAND GLOBAL MARKET -->
+      <div class="slide-card col-span-12 md:col-span-7" data-cat="market" data-idx="6">
         <div class="flex justify-between items-start mb-2">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--teal)] uppercase tracking-widest">10 // FOUNDER OBSESSION</span>
-          <button onclick="quickEditSlide(9)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+          <span class="slide-num">07 // TWO-BRAND GLOBAL MARKET</span>
+          <button onclick="quickEdit(6)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+        </div>
+        <h2 class="hook-title text-2xl text-[var(--paper)] mb-2" id="title-6">
+          £8.84bn Combined TAM.<br><span class="text-[var(--amber)]">80M People. 20% Controlled.</span><br><span class="text-[var(--lavender)]">80% Still Untapped.</span>
+        </h2>
+        <p class="sub-text text-xs mb-3" id="body-6">
+          20% is what we capture and control. The remaining 80% of total market stays available for further expansion — this isn't a ceiling, it's the beach-head thesis.
+        </p>
+        <div class="grid grid-cols-1 gap-1.5 text-[10px] fm">
+          <div class="flex justify-between items-center p-2 rounded-lg bg-[var(--bg-navy)] border border-sky-500/25">
+            <span class="text-sky-400 font-bold">Flowen — Tier 1/2</span>
+            <span class="text-[var(--paper)]">UK · EU · US · AU · Japan · ME</span>
+            <span class="text-[var(--amber)] font-bold">TAM £7.04bn</span>
+          </div>
+          <div class="flex justify-between items-center p-2 rounded-lg bg-[var(--bg-navy)] border border-[var(--border-violet)]">
+            <span class="text-[var(--violet-hi)] font-bold">Vocali — Tier 3/4</span>
+            <span class="text-[var(--paper)]">India · LatAm · Africa · SE Asia</span>
+            <span class="text-[var(--amber)] font-bold">TAM £1.8bn</span>
+          </div>
+        </div>
+        <div class="mt-3 grid grid-cols-3 gap-3 text-center text-xs fm">
+          <div class="bg-[var(--bg-navy)] rounded-lg p-2.5">
+            <p class="text-2xl font-black text-[var(--amber)] ff">£8.84bn</p>
+            <p class="text-[var(--lavender-dim)]">Combined TAM</p>
+          </div>
+          <div class="bg-[var(--bg-navy)] rounded-lg p-2.5">
+            <p class="text-2xl font-black text-[var(--teal)] ff">20%</p>
+            <p class="text-[var(--lavender-dim)]">Target capture</p>
+          </div>
+          <div class="bg-[var(--bg-navy)] rounded-lg p-2.5">
+            <p class="text-2xl font-black text-[var(--paper)] ff">80M+</p>
+            <p class="text-[var(--lavender-dim)]">People globally</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 08: DISTRIBUTION & ORGANIC TRACTION -->
+      <div class="slide-card col-span-12 md:col-span-5" data-cat="market" data-idx="7">
+        <div class="flex justify-between items-start mb-1">
+          <span class="slide-num">08 // DISTRIBUTION &amp; ORGANIC TRACTION</span>
+          <button onclick="quickEdit(7)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
         <div>
-          <h2 class="hook-title font-serif-fraunces text-2xl text-[var(--paper)] mb-3" id="title-9">
-            Lived Experience.<br><span class="text-[var(--amber)]">Relentless Shipping.</span>
-          </h2>
-          <p class="sub-text text-xs md:text-sm text-[var(--lavender)] leading-relaxed" id="body-9">
-            Building since 18 months of age onset stammering. An obsessed founder iterating regardless of outcome to rebuild category expectations.
+          <div class="stat-hero text-5xl font-semibold text-[var(--teal)] my-2" id="stat-7">10,000</div>
+          <h3 class="hook-title text-lg text-[var(--paper)] mb-2" id="title-7">Year 1 Sign-Ups. Zero Paid CAC.</h3>
+          <p class="sub-text text-xs leading-relaxed" id="body-7">
+            Through organic personal relationships with PWS communities, stammering support groups, and clinicians — 10,000 sign-ups are achievable in Year 1 without any paid acquisition. This validates demand before marketing spend begins.
           </p>
         </div>
-        <div class="mt-4 pt-3 border-t border-[var(--border-line)] flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-[var(--amber)]/20 border border-[var(--amber)] flex items-center justify-center text-[var(--amber)] font-mono-ibm text-xs font-bold">FL</div>
+        <div class="mt-4 flex flex-col gap-1.5 text-[10px] fm text-[var(--lavender-dim)]">
+          <span class="text-[var(--amber)]">● Founder's direct PWS community contacts (UK + global)</span>
+          <span class="text-[var(--teal)]">● SLT clinician network — free SLP portal = clinical pull</span>
+          <span class="text-[var(--paper)]">● NHS ICB block pledges — waiting-list relief angle</span>
+          <span class="text-[var(--lavender)]">● Word-of-mouth: stuttering communities are tight-knit &amp; high advocacy</span>
+        </div>
+      </div>
+
+      <!-- 09: UNIT ECONOMICS & EXIT MULTIPLES -->
+      <div class="slide-card col-span-12 md:col-span-7" data-cat="market" data-idx="8">
+        <div class="flex justify-between items-start mb-1">
+          <span class="slide-num">09 // UNIT ECONOMICS &amp; EXIT MULTIPLES</span>
+          <button onclick="quickEdit(8)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+        </div>
+        <h3 class="hook-title text-xl text-[var(--paper)] mb-2" id="title-8">Deep Tech Commands 30×+ Exit Multiples.<br><span class="text-[var(--amber)]">Not SaaS. Not Health. Data Processing.</span></h3>
+        <p class="sub-text text-xs mb-3 leading-relaxed" id="body-8">
+          The valuation premium comes from the proprietary dataset and pipeline — the same reason Microsoft paid $19.7bn for Nuance (~35× ARR). Flowen's acquirers are buying the data moat, not a subscription business.
+        </p>
+        <div class="grid grid-cols-2 gap-3 text-[10px] fm">
+          <div class="bg-[var(--bg-navy)] rounded-lg p-3 border border-[var(--border)]">
+            <p class="text-[var(--lavender-dim)] mb-1">Flowen Target Multiple</p>
+            <p class="text-3xl font-black text-[var(--amber)] ff">30–40×</p>
+            <p class="text-[var(--lavender-dim)] mt-1">ARR at exit (deep tech premium)</p>
+          </div>
+          <div class="bg-[var(--bg-navy)] rounded-lg p-3 border border-[var(--border)]">
+            <p class="text-[var(--lavender-dim)] mb-1">Comparable Exits</p>
+            <p class="text-[var(--paper)] font-bold">Nuance → Microsoft</p>
+            <p class="text-[var(--teal)]">$19.7bn · ~35× ARR</p>
+            <p class="text-[var(--paper)] font-bold mt-1">Speechify Series A</p>
+            <p class="text-[var(--teal)]">$175m · ~35× ARR</p>
+          </div>
+        </div>
+        <div class="mt-3 grid grid-cols-3 gap-2 text-[10px] fm text-center">
+          <div><p class="text-[var(--teal)] font-bold">85–91%</p><p class="text-[var(--lavender-dim)]">Gross margin</p></div>
+          <div><p class="text-[var(--teal)] font-bold">£19.96/mo</p><p class="text-[var(--lavender-dim)]">Founding tier</p></div>
+          <div><p class="text-[var(--teal)] font-bold">95%</p><p class="text-[var(--lavender-dim)]">Savings vs therapy</p></div>
+        </div>
+      </div>
+
+      <!-- 10: VOCALI GLOBAL ACCESS -->
+      <div class="slide-card card-vocali col-span-12 md:col-span-5" data-cat="vocali" data-idx="9">
+        <div class="flex justify-between items-start mb-1">
+          <span class="slide-num" style="color:var(--violet-hi)">10 // VOCALI — THE GLOBAL ACCESS PLAY</span>
+          <button onclick="quickEdit(9)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+        </div>
+        <div>
+          <div class="stat-hero text-5xl font-semibold text-[var(--violet-hi)] my-2" id="stat-9">65M+</div>
+          <h3 class="hook-title text-lg text-[var(--paper)] mb-2" id="title-9">PWS in Tier 3/4.<br><span class="text-[var(--violet-hi)]">£1–3/mo. Massive Volume.</span></h3>
+          <p class="sub-text text-xs leading-relaxed" id="body-9">
+            Vocali is a stripped-down spinoff of Flowen built for low-income, extremely high-population markets. India alone has 28M+ people who stutter. Sub-Saharan Africa 12M+. LatAm 8M+. Vocali is the user-count play — more active users than Flowen even at lower ARPU.
+          </p>
+        </div>
+        <div class="mt-4 space-y-1.5 text-[10px] fm">
+          <div class="flex justify-between"><span class="text-[var(--lavender-dim)]">India</span><span class="text-[var(--paper)]">28M+ PWS · mobile-first · carrier billing</span></div>
+          <div class="flex justify-between"><span class="text-[var(--lavender-dim)]">Sub-Saharan Africa</span><span class="text-[var(--paper)]">12M+ PWS · NGO &amp; school distribution</span></div>
+          <div class="flex justify-between"><span class="text-[var(--lavender-dim)]">LatAm + SE Asia</span><span class="text-[var(--paper)]">25M+ PWS · telco partnerships</span></div>
+          <div class="flex justify-between mt-1 pt-1 border-t border-[var(--border)]"><span class="text-[var(--violet-hi)] font-bold">20% target =</span><span class="text-[var(--amber)] font-bold">13M+ active Vocali users</span></div>
+        </div>
+      </div>
+
+      <!-- 11: EXECUTION ROADMAP -->
+      <div class="slide-card col-span-12 md:col-span-7" data-cat="product" data-idx="10">
+        <div class="flex justify-between items-start mb-2">
+          <span class="slide-num">11 // EXECUTION ROADMAP</span>
+          <button onclick="quickEdit(10)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+        </div>
+        <h2 class="hook-title text-2xl text-[var(--paper)] mb-3" id="title-10">
+          5-Year Path: UK Anchor → Global → Vocali Scale.
+        </h2>
+        <p class="sub-text text-xs mb-4" id="body-10">Compressed execution: NHS beachhead → Tier 1 international → Vocali launch in Tier 3/4 → 20% UK + global penetration.</p>
+        <div class="grid grid-cols-5 gap-2 text-[10px] fm text-center">
+          <div class="p-2 rounded-lg bg-[var(--bg-navy)] border border-[var(--border-teal)]">
+            <p class="text-[var(--teal)] font-bold">FY1</p>
+            <p class="text-[var(--paper)]">£120k</p>
+            <p class="text-[var(--lavender-dim)]">10K users NHS pilot</p>
+          </div>
+          <div class="p-2 rounded-lg bg-[var(--bg-navy)] border border-[var(--border-teal)]">
+            <p class="text-[var(--teal)] font-bold">FY2</p>
+            <p class="text-[var(--paper)]">£480k</p>
+            <p class="text-[var(--lavender-dim)]">3 ICBs + SLP portal</p>
+          </div>
+          <div class="p-2 rounded-lg bg-[var(--bg-navy)] border border-[var(--border-gold)]">
+            <p class="text-[var(--amber)] font-bold">FY3</p>
+            <p class="text-[var(--paper)]">£1.5m</p>
+            <p class="text-[var(--lavender-dim)]">5 ICBs + EU seed</p>
+          </div>
+          <div class="p-2 rounded-lg bg-[var(--bg-navy)] border border-[var(--border-violet)]">
+            <p class="text-[var(--violet-hi)] font-bold">FY4</p>
+            <p class="text-[var(--paper)]">£4.5m</p>
+            <p class="text-[var(--lavender-dim)]">Tier 1 + Vocali beta</p>
+          </div>
+          <div class="p-2 rounded-lg bg-[var(--bg-navy)] border border-[var(--border-violet)]">
+            <p class="text-[var(--violet-hi)] font-bold">FY5</p>
+            <p class="text-[var(--paper)]">£12m</p>
+            <p class="text-[var(--lavender-dim)]">20% UK + global scale</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12: FOUNDER OBSESSION -->
+      <div class="slide-card col-span-12 md:col-span-5" data-cat="team" data-idx="11">
+        <div class="flex justify-between items-start mb-2">
+          <span class="slide-num">12 // FOUNDER OBSESSION</span>
+          <button onclick="quickEdit(11)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+        </div>
+        <div>
+          <h2 class="hook-title text-2xl text-[var(--paper)] mb-3" id="title-11">
+            Lived Experience.<br><span class="text-[var(--amber)]">Relentless Shipping.</span><br>Deep Tech From Day 1.
+          </h2>
+          <p class="sub-text text-xs md:text-sm leading-relaxed" id="body-11">
+            Stuttering onset at 18 months. 30+ years of lived experience driving product depth no outside team can replicate. Built the proprietary ASR pipeline, the clinical safety framework, and the founding member model independently — shipping continuously regardless of outcome.
+          </p>
+        </div>
+        <div class="mt-4 pt-3 border-t border-[var(--border)] flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-[var(--amber)]/20 border border-[var(--amber)] flex items-center justify-center text-[var(--amber)] fm text-xs font-bold pulse-ring">FL</div>
           <div class="text-xs">
             <p class="text-[var(--paper)] font-semibold">Founder &amp; Chief Architect</p>
-            <p class="text-[var(--lavender-dim)] font-mono-ibm">London, United Kingdom</p>
+            <p class="text-[var(--lavender-dim)] fm">London, United Kingdom</p>
+          </div>
+          <div class="ml-auto flex flex-col gap-1 text-[9px] fm">
+            <span class="px-2 py-0.5 rounded bg-[var(--violet)]/15 text-[var(--violet-hi)] border border-[var(--border-violet)]">Deep Tech</span>
+            <span class="px-2 py-0.5 rounded bg-[var(--amber)]/15 text-[var(--amber)] border border-[var(--border-gold)]">PWS Community</span>
           </div>
         </div>
       </div>
 
-      <!-- SLIDE 11: THE PARTNER ASK -->
-      <div class="slide-card col-span-12 card-ask" data-category="team" data-index="10">
+      <!-- 13: THE PARTNER ASK -->
+      <div class="slide-card card-ask col-span-12" data-cat="team" data-idx="12">
         <div class="flex justify-between items-start mb-2">
-          <span class="slide-num font-mono-ibm text-xs text-[var(--amber)] uppercase tracking-widest font-semibold">11 // THE PARTNER ASK</span>
-          <button onclick="quickEditSlide(10)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
+          <span class="slide-num" style="color:var(--amber)">13 // THE PARTNER ASK</span>
+          <button onclick="quickEdit(12)" class="text-[var(--lavender-dim)] hover:text-[var(--amber)] text-xs"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <h2 class="hook-title font-serif-fraunces text-2xl md:text-3xl text-[var(--paper)] mb-2" id="title-10">
-              Pre-Seed / Seed Bridge.<br><span class="text-[var(--teal)]">Let's Find Out.</span>
+          <div class="flex-1">
+            <h2 class="hook-title text-2xl md:text-3xl text-[var(--paper)] mb-2" id="title-12">
+              £250k Pre-Seed. SEIS Eligible.<br><span class="text-[var(--teal)]">Deep Tech Premium. 30× Exit Target.</span>
             </h2>
-            <p class="sub-text text-xs md:text-sm text-[var(--lavender)] max-w-xl leading-relaxed" id="body-10">
-              Seeking capital with high health-tech &amp; distribution density to scale disfluent speech models &amp; expand clinical NHS block pledges.
+            <p class="sub-text text-xs md:text-sm max-w-2xl leading-relaxed" id="body-12">
+              Seeking capital with health-tech, deep-tech, and global distribution density. Capital deploys to: clinical validation (35%), ASR pipeline &amp; data infrastructure (30%), regulatory UKCA/CE (15%), market access (12%), operations (8%). SEIS: 50% income tax relief + CGT exemption for qualifying investors. Exit thesis: proprietary dataset + pipeline commands 30–40× ARR from strategic acquirer (NHS digital supplier, speech tech group, or global mental health platform).
             </p>
+            <div class="mt-3 flex flex-wrap gap-2 text-[10px] fm">
+              <span class="px-2.5 py-1 rounded bg-[var(--violet)]/15 text-[var(--violet-hi)] border border-[var(--border-violet)]">Data Processing Company</span>
+              <span class="px-2.5 py-1 rounded bg-[var(--amber)]/15 text-[var(--amber)] border border-[var(--border-gold)]">£250k Pre-Seed Round</span>
+              <span class="px-2.5 py-1 rounded bg-[var(--teal)]/15 text-[var(--teal)] border border-[var(--border-teal)]">SEIS Eligible · 50% Tax Relief</span>
+              <span class="px-2.5 py-1 rounded bg-[var(--bg-navy)] text-[var(--paper)] border border-[var(--border)]">30–40× Exit Multiple Target</span>
+              <span class="px-2.5 py-1 rounded bg-[var(--bg-navy)] text-[var(--paper)] border border-[var(--border)]">Flowen + Vocali Dual Brand</span>
+            </div>
           </div>
-          <div class="pill-group flex flex-col md:flex-row gap-3">
+          <div class="flex flex-col gap-3 shrink-0">
             <a href="mailto:founder@flowen.app" class="pill gold hover:scale-105 transition text-sm py-2 px-4"><i class="fa-solid fa-envelope"></i> founder@flowen.app</a>
-            <a href="https://flowen.app" target="_blank" class="pill teal hover:scale-105 transition text-sm py-2 px-4"><i class="fa-solid fa-globe"></i> flowen.app</a>
+            <a href="https://flowen.digital" target="_blank" class="pill teal hover:scale-105 transition text-sm py-2 px-4"><i class="fa-solid fa-globe"></i> flowen.digital</a>
+            <span class="pill violet text-sm py-2 px-4"><i class="fa-solid fa-chart-line"></i> £8.84bn Combined TAM</span>
           </div>
         </div>
       </div>
 
-    </div>
+    </div><!-- /grid -->
 
-    <!-- INTERACTIVE SIMULATORS & WORKFLOW SECTION -->
-    <div id="simulatorsSection" class="mt-12 bg-[var(--card-navy)] border border-[var(--border-teal)] rounded-2xl p-6 md:p-8 transition-all">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-[var(--border-line)] gap-4">
+    <!-- INTERACTIVE SIMULATORS -->
+    <div class="mt-12 bg-[var(--card-navy)] border border-[var(--border-teal)] rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-[var(--border)] gap-4">
         <div>
-          <span class="text-xs font-mono-ibm text-[var(--teal)] uppercase tracking-widest">LIVE INTERACTIVE ENGINE DEMOS</span>
-          <h2 class="font-serif-fraunces text-2xl text-[var(--paper)]">Speech Telemetry, Workflow &amp; Economics</h2>
+          <span class="text-xs fm text-[var(--teal)] uppercase tracking-widest">LIVE INTERACTIVE ENGINE DEMOS</span>
+          <h2 class="ff text-2xl text-[var(--paper)]">ASR Pipeline · Practice Ladder · TAM/ARR Calculator</h2>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button onclick="switchSimTab('asr')" id="tabBtn-asr" class="px-3 py-1.5 rounded-lg text-xs font-mono-ibm bg-[var(--teal)] text-[var(--bg-navy)] font-semibold">ASR Latency Demo</button>
-          <button onclick="switchSimTab('workflow')" id="tabBtn-workflow" class="px-3 py-1.5 rounded-lg text-xs font-mono-ibm bg-[var(--card-navy-hi)] text-[var(--lavender)] border border-[var(--border-line)]">7-Stage Practice Ladder</button>
-          <button onclick="switchSimTab('econ')" id="tabBtn-econ" class="px-3 py-1.5 rounded-lg text-xs font-mono-ibm bg-[var(--card-navy-hi)] text-[var(--lavender)] border border-[var(--border-line)]">TAM &amp; ARR Projections</button>
+          <button onclick="switchTab('asr')" id="tabBtn-asr" class="px-3 py-1.5 rounded-lg text-xs fm bg-[var(--teal)] text-[var(--bg-navy)] font-semibold">ASR Latency Demo</button>
+          <button onclick="switchTab('workflow')" id="tabBtn-workflow" class="px-3 py-1.5 rounded-lg text-xs fm bg-[var(--card-hi)] text-[var(--lavender)] border border-[var(--border)]">Practice Ladder</button>
+          <button onclick="switchTab('econ')" id="tabBtn-econ" class="px-3 py-1.5 rounded-lg text-xs fm bg-[var(--card-hi)] text-[var(--lavender)] border border-[var(--border)]">TAM &amp; ARR Calculator</button>
         </div>
       </div>
 
-      <!-- SIMULATOR 1: ASR LATENCY COMPARISON -->
+      <!-- ASR SIMULATOR -->
       <div id="simTab-asr" class="mt-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-4">
-            <h3 class="font-serif-fraunces text-lg text-[var(--paper)]">Disfluent Voice Audio Telemetry Simulator</h3>
+            <h3 class="ff text-lg text-[var(--paper)]">Disfluent Voice Telemetry Simulator</h3>
             <p class="text-xs text-[var(--lavender)] leading-relaxed">
-              Standard speech engines (Google, Siri, Whisper) timeout during vocal blocks or stammers. Flowen's real-time engine operates with sub-150ms feedback latency to prevent speech freeze.
+              Standard ASR engines (Google, Siri, Whisper) timeout or return empty during vocal blocks — they were built for fluent speech. Flowen's phoneme-level pipeline processes blocks as data, providing sub-150ms biofeedback rather than silence.
             </p>
-            
             <div class="flex flex-wrap gap-3 pt-2">
-              <button id="triggerSpeechBlockBtn" onclick="simulateSpeechBlock()" class="px-4 py-2.5 rounded-lg bg-[var(--teal)] text-[var(--bg-navy)] font-semibold text-xs font-mono-ibm hover:bg-[var(--teal)]/90 transition flex items-center gap-2">
-                <i class="fa-solid fa-microphone"></i> Simulate Speech Block (Stammer)
+              <button id="triggerBlockBtn" onclick="simBlock()" class="px-4 py-2.5 rounded-lg bg-[var(--teal)] text-[var(--bg-navy)] font-semibold text-xs fm hover:bg-[var(--teal-hi)] transition flex items-center gap-2">
+                <i class="fa-solid fa-microphone"></i> Simulate Speech Block
               </button>
-              <button onclick="resetSpeechSim()" class="px-3 py-2 rounded-lg bg-[var(--card-navy-hi)] text-[var(--lavender)] text-xs font-mono-ibm hover:text-[var(--paper)]">Reset</button>
+              <button onclick="resetSim()" class="px-3 py-2 rounded-lg bg-[var(--card-hi)] text-[var(--lavender)] text-xs fm hover:text-[var(--paper)]">Reset</button>
             </div>
-
-            <div class="p-4 rounded-xl bg-[var(--bg-navy)] border border-[var(--border-line)] space-y-3 font-mono-ibm text-xs">
-              <div class="flex justify-between items-center">
-                <span class="text-[var(--lavender-dim)]">Detected Audio Latency:</span>
-                <span id="liveLatencyVal" class="text-[var(--teal)] font-bold">112 ms</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-[var(--lavender-dim)]">Standard ASR Status:</span>
-                <span id="stdAsrStatus" class="text-amber-400">Listening...</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-[var(--lavender-dim)]">Flowen Viseme Telemetry:</span>
-                <span id="flowenAsrStatus" class="text-[var(--teal)]">Active Visual Guide</span>
-              </div>
+            <div class="p-4 rounded-xl bg-[var(--bg-navy)] border border-[var(--border)] space-y-3 fm text-xs">
+              <div class="flex justify-between"><span class="text-[var(--lavender-dim)]">Detected Latency:</span><span id="latVal" class="text-[var(--teal)] font-bold">112 ms</span></div>
+              <div class="flex justify-between"><span class="text-[var(--lavender-dim)]">Standard ASR:</span><span id="stdStatus" class="text-amber-400">Listening...</span></div>
+              <div class="flex justify-between"><span class="text-[var(--lavender-dim)]">Flowen Pipeline:</span><span id="flowenStatus" class="text-[var(--teal)]">Active Visual Guide</span></div>
+              <div class="flex justify-between"><span class="text-[var(--lavender-dim)]">Block as data signal:</span><span id="dataStatus" class="text-[var(--violet-hi)]">Recording phoneme pattern</span></div>
             </div>
           </div>
-
-          <!-- Waveform Canvas -->
-          <div class="bg-[var(--bg-navy)] border border-[var(--border-line)] rounded-xl p-4 flex flex-col justify-between h-64 relative overflow-hidden">
-            <div class="flex justify-between items-center text-xs font-mono-ibm z-10">
-              <span class="text-[var(--lavender)]"><i class="fa-solid fa-wave-square text-[var(--teal)]"></i> Real-Time Spectrum Feed</span>
-              <span id="blockIndicator" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px]">FLUENT PATTERN</span>
+          <div class="bg-[var(--bg-navy)] border border-[var(--border)] rounded-xl p-4 flex flex-col justify-between h-64 relative overflow-hidden">
+            <div class="flex justify-between items-center text-xs fm z-10">
+              <span class="text-[var(--lavender)]"><i class="fa-solid fa-wave-square text-[var(--teal)]"></i> Real-Time Spectrum</span>
+              <span id="blockInd" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px]">FLUENT PATTERN</span>
             </div>
-            
-            <canvas id="waveformCanvas" class="w-full h-36 my-auto"></canvas>
-
-            <div class="flex justify-between text-[10px] font-mono-ibm text-[var(--lavender-dim)] z-10 border-t border-[var(--border-line)] pt-2">
-              <span>0ms (Vocal Onset)</span>
-              <span>150ms Threshold</span>
-              <span>3000ms Timeout</span>
+            <canvas id="waveCanvas" class="w-full h-36 my-auto"></canvas>
+            <div class="flex justify-between text-[10px] fm text-[var(--lavender-dim)] z-10 border-t border-[var(--border)] pt-2">
+              <span>0ms (Vocal Onset)</span><span>150ms Threshold</span><span>3000ms Timeout</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SIMULATOR 2: 7-STAGE PRACTICE WORKFLOW -->
+      <!-- WORKFLOW SIMULATOR -->
       <div id="simTab-workflow" class="mt-6 hidden">
         <div class="space-y-6">
           <div>
-            <h3 class="font-serif-fraunces text-lg text-[var(--paper)] mb-1">Flowen Retraining Workflow Ladder</h3>
-            <p class="text-xs text-[var(--lavender)]">Select a level to view technique drills, biofeedback markers, and clinical rationale.</p>
+            <h3 class="ff text-lg text-[var(--paper)] mb-1">Flowen Retraining Workflow Ladder</h3>
+            <p class="text-xs text-[var(--lavender)]">Select a stage to see biofeedback markers and clinical rationale.</p>
           </div>
-
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Stage Picker List -->
-            <div class="space-y-2 font-mono-ibm text-xs">
-              <button onclick="selectLadderStep(1)" id="ladderBtn-1" class="w-full text-left p-3 rounded-xl bg-[var(--teal)]/20 border border-[var(--teal)] text-[var(--teal)] font-bold flex justify-between items-center">
-                <span>01 // Single Words</span>
-                <i class="fa-solid fa-chevron-right text-xs"></i>
-              </button>
-              <button onclick="selectLadderStep(2)" id="ladderBtn-2" class="w-full text-left p-3 rounded-xl bg-[var(--bg-navy)] border border-[var(--border-line)] text-[var(--paper)] flex justify-between items-center hover:border-[var(--teal)]">
-                <span>02 // Phrases &amp; Chunks</span>
-                <i class="fa-solid fa-chevron-right text-xs text-[var(--lavender-dim)]"></i>
-              </button>
-              <button onclick="selectLadderStep(3)" id="ladderBtn-3" class="w-full text-left p-3 rounded-xl bg-[var(--bg-navy)] border border-[var(--border-line)] text-[var(--paper)] flex justify-between items-center hover:border-[var(--teal)]">
-                <span>03 // Sentences &amp; Pacing</span>
-                <i class="fa-solid fa-chevron-right text-xs text-[var(--lavender-dim)]"></i>
-              </button>
-              <button onclick="selectLadderStep(4)" id="ladderBtn-4" class="w-full text-left p-3 rounded-xl bg-[var(--bg-navy)] border border-[var(--border-line)] text-[var(--paper)] flex justify-between items-center hover:border-[var(--teal)]">
-                <span>04 // Paragraph Endurance</span>
-                <i class="fa-solid fa-chevron-right text-xs text-[var(--lavender-dim)]"></i>
-              </button>
-              <button onclick="selectLadderStep(5)" id="ladderBtn-5" class="w-full text-left p-3 rounded-xl bg-[var(--bg-navy)] border border-[var(--border-line)] text-[var(--paper)] flex justify-between items-center hover:border-[var(--teal)]">
-                <span>05 // Live Unscripted Conversation</span>
-                <i class="fa-solid fa-chevron-right text-xs text-[var(--lavender-dim)]"></i>
-              </button>
+            <div class="space-y-2 fm text-xs">
+              <button onclick="selectStep(1)" id="stepBtn-1" class="w-full text-left p-3 rounded-xl bg-[var(--teal)]/20 border border-[var(--teal)] text-[var(--teal)] font-bold flex justify-between items-center"><span>01 // Single Words</span><i class="fa-solid fa-chevron-right text-xs"></i></button>
+              <button onclick="selectStep(2)" id="stepBtn-2" class="w-full text-left p-3 rounded-xl bg-[var(--bg-navy)] border border-[var(--border)] text-[var(--paper)] flex justify-between items-center hover:border-[var(--teal)]"><span>02 // Phrases &amp; Chunks</span><i class="fa-solid fa-chevron-right text-xs text-[var(--lavender-dim)]"></i></button>
+              <button onclick="selectStep(3)" id="stepBtn-3" class="w-full text-left p-3 rounded-xl bg-[var(--bg-navy)] border border-[var(--border)] text-[var(--paper)] flex justify-between items-center hover:border-[var(--teal)]"><span>03 // Sentences &amp; Pacing</span><i class="fa-solid fa-chevron-right text-xs text-[var(--lavender-dim)]"></i></button>
+              <button onclick="selectStep(4)" id="stepBtn-4" class="w-full text-left p-3 rounded-xl bg-[var(--bg-navy)] border border-[var(--border)] text-[var(--paper)] flex justify-between items-center hover:border-[var(--teal)]"><span>04 // Paragraph Endurance</span><i class="fa-solid fa-chevron-right text-xs text-[var(--lavender-dim)]"></i></button>
+              <button onclick="selectStep(5)" id="stepBtn-5" class="w-full text-left p-3 rounded-xl bg-[var(--bg-navy)] border border-[var(--border)] text-[var(--paper)] flex justify-between items-center hover:border-[var(--teal)]"><span>05 // Live Conversation</span><i class="fa-solid fa-chevron-right text-xs text-[var(--lavender-dim)]"></i></button>
             </div>
-
-            <!-- Detailed Stage Breakdown Card -->
-            <div class="md:col-span-2 bg-[var(--bg-navy)] border border-[var(--border-teal)] rounded-xl p-6 flex flex-col justify-between" id="ladderDetailCard">
+            <div class="md:col-span-2 bg-[var(--bg-navy)] border border-[var(--border-teal)] rounded-xl p-6 flex flex-col justify-between" id="stepDetail">
               <div>
-                <span class="text-xs font-mono-ibm text-[var(--teal)] uppercase tracking-wider" id="ladderStepNum">STAGE 01 OF 05</span>
-                <h4 class="font-serif-fraunces text-2xl text-[var(--paper)] my-2" id="ladderStepTitle">Single Word Repetition</h4>
-                <p class="text-xs md:text-sm text-[var(--lavender)] leading-relaxed mb-4" id="ladderStepDesc">
-                  Focuses on easy diaphragmatic onset and gentle vocal cord vibration before consonant release. Your 3D viseme guide models lip and jaw positioning prior to vocalization.
-                </p>
-                <div class="p-3 rounded-lg bg-[var(--card-navy)] border border-[var(--border-line)] font-mono-ibm text-xs text-[var(--paper)] space-y-2">
-                  <div class="text-[var(--amber)] font-bold"><i class="fa-solid fa-bullseye"></i> Targeted Biofeedback Marker:</div>
-                  <div id="ladderStepMarker" class="text-[var(--lavender)]">Diaphragmatic onset sync within 120ms of breath release.</div>
+                <span class="text-xs fm text-[var(--teal)] uppercase tracking-wider" id="stepNum">STAGE 01 OF 05</span>
+                <h4 class="ff text-2xl text-[var(--paper)] my-2" id="stepTitle">Single Word Repetition</h4>
+                <p class="text-xs text-[var(--lavender)] leading-relaxed mb-4" id="stepDesc">Focuses on easy diaphragmatic onset and gentle vocal cord vibration before consonant release. Your 3D viseme guide models lip and jaw positioning prior to vocalization.</p>
+                <div class="p-3 rounded-lg bg-[var(--card-navy)] border border-[var(--border)] fm text-xs space-y-2">
+                  <div class="text-[var(--amber)] font-bold"><i class="fa-solid fa-bullseye"></i> Biofeedback Marker:</div>
+                  <div id="stepMarker" class="text-[var(--lavender)]">Diaphragmatic onset sync within 120ms of breath release.</div>
                 </div>
               </div>
-
-              <div class="mt-6 pt-4 border-t border-[var(--border-line)] flex justify-between items-center text-xs font-mono-ibm text-[var(--lavender-dim)]">
+              <div class="mt-6 pt-4 border-t border-[var(--border)] flex justify-between items-center text-xs fm text-[var(--lavender-dim)]">
                 <span>Clinical Technique: Fluency Shaping</span>
-                <span class="text-[var(--teal)]"><i class="fa-solid fa-circle-check"></i> Sub-150ms Telemetry</span>
+                <span class="text-[var(--violet-hi)]"><i class="fa-solid fa-database"></i> Block data → training pipeline</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SIMULATOR 3: TAM & ARR CALCULATOR -->
+      <!-- ECONOMICS CALCULATOR -->
       <div id="simTab-econ" class="mt-6 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="space-y-5">
-            <h3 class="font-serif-fraunces text-lg text-[var(--paper)]">Unit Economics &amp; ARR Projection Calculator</h3>
-            
+            <h3 class="ff text-lg text-[var(--paper)]">ARR Projection Calculator — Flowen + Vocali</h3>
             <div>
-              <div class="flex justify-between text-xs font-mono-ibm mb-2">
-                <span class="text-[var(--lavender)]">Active Monthly Users (Founding &amp; Subscriptions):</span>
-                <span class="text-[var(--amber)] font-bold" id="userCountVal">10,000 Users</span>
-              </div>
-              <input type="range" id="userSlider" min="1000" max="100000" step="1000" value="10000" oninput="updateEconCalc()" class="w-full">
+              <div class="flex justify-between text-xs fm mb-2"><span class="text-[var(--lavender)]">Flowen Active Users (Tier 1/2):</span><span class="text-[var(--amber)] font-bold" id="flowenUsers">10,000 Users</span></div>
+              <input type="range" id="flowenSlider" min="1000" max="100000" step="1000" value="10000" oninput="updateEcon()">
             </div>
-
             <div>
-              <div class="flex justify-between text-xs font-mono-ibm mb-2">
-                <span class="text-[var(--lavender)]">Monthly Price per User (£):</span>
-                <span class="text-[var(--teal)] font-bold" id="priceVal">£19.96 / mo</span>
-              </div>
-              <input type="range" id="priceSlider" min="9" max="49" step="1" value="20" oninput="updateEconCalc()" class="w-full">
+              <div class="flex justify-between text-xs fm mb-2"><span class="text-[var(--lavender)]">Flowen Monthly Price (£):</span><span class="text-[var(--teal)] font-bold" id="flowenPrice">£19.96/mo</span></div>
+              <input type="range" id="priceSlider" min="9" max="49" step="1" value="20" oninput="updateEcon()">
             </div>
-
             <div>
-              <div class="flex justify-between text-xs font-mono-ibm mb-2">
-                <span class="text-[var(--lavender)]">NHS Clinical Licensing Partners:</span>
-                <span class="text-[var(--paper)] font-bold" id="nhsCountVal">5 ICB Trusts</span>
-              </div>
-              <input type="range" id="nhsSlider" min="0" max="40" step="1" value="5" oninput="updateEconCalc()" class="w-full">
+              <div class="flex justify-between text-xs fm mb-2"><span class="text-[var(--lavender)]">Vocali Users (Tier 3/4 — high volume, low price):</span><span class="text-[var(--violet-hi)] font-bold" id="vocaliUsers">50,000 Users</span></div>
+              <input type="range" id="vocaliSlider" min="0" max="500000" step="5000" value="50000" oninput="updateEcon()">
+            </div>
+            <div>
+              <div class="flex justify-between text-xs fm mb-2"><span class="text-[var(--lavender)]">NHS ICB Partners:</span><span class="text-[var(--paper)] font-bold" id="nhsCount">5 ICBs</span></div>
+              <input type="range" id="nhsSlider" min="0" max="42" step="1" value="5" oninput="updateEcon()">
             </div>
           </div>
-
-          <!-- Dynamic Results Box -->
           <div class="bg-[var(--bg-navy)] border border-[var(--border-teal)] rounded-xl p-6 flex flex-col justify-between space-y-4">
             <div>
-              <span class="text-xs font-mono-ibm text-[var(--teal)]">PROJECTED ANNUAL REVENUE (ARR)</span>
-              <div class="font-serif-fraunces text-4xl text-[var(--paper)] font-bold mt-1" id="projectedArrVal">£2.62 M</div>
+              <span class="text-xs fm text-[var(--teal)]">COMBINED PROJECTED ARR</span>
+              <div class="ff text-4xl text-[var(--paper)] font-bold mt-1" id="totalArr">£2.62M</div>
             </div>
-
-            <div class="grid grid-cols-2 gap-4 border-t border-b border-[var(--border-line)] py-4 font-mono-ibm text-xs">
-              <div>
-                <span class="text-[var(--lavender-dim)] block">User Savings vs Therapy:</span>
-                <span class="text-emerald-400 font-bold" id="userSavingsVal">£4,760 / yr</span>
-              </div>
-              <div>
-                <span class="text-[var(--lavender-dim)] block">Gross Margin Target:</span>
-                <span class="text-[var(--teal)] font-bold">86.5%</span>
-              </div>
+            <div class="space-y-2 text-xs fm border-t border-[var(--border)] pt-4">
+              <div class="flex justify-between"><span class="text-[var(--lavender-dim)]">Flowen ARR</span><span class="text-[var(--teal)] font-bold" id="flowenArr">£2.40M</span></div>
+              <div class="flex justify-between"><span class="text-[var(--lavender-dim)]">Vocali ARR</span><span class="text-[var(--violet-hi)] font-bold" id="vocaliArr">£0.09M</span></div>
+              <div class="flex justify-between"><span class="text-[var(--lavender-dim)]">NHS Contract ARR</span><span class="text-[var(--amber)] font-bold" id="nhsArr">£0.23M</span></div>
             </div>
-
-            <p class="text-[11px] text-[var(--lavender-dim)] leading-relaxed italic">
-              *Calculated based on replacing typical private speech therapy costs (£200/hr, ~25 sessions/yr) with continuous Flowen mobile practice.
-            </p>
+            <div class="grid grid-cols-2 gap-3 text-xs fm border-t border-[var(--border)] pt-4">
+              <div><span class="text-[var(--lavender-dim)] block">Exit at 30× ARR</span><span class="text-[var(--amber)] font-bold text-xl ff" id="exit30x">£78.6M</span></div>
+              <div><span class="text-[var(--lavender-dim)] block">Exit at 40× ARR</span><span class="text-[var(--amber)] font-bold text-xl ff" id="exit40x">£104.8M</span></div>
+            </div>
+            <p class="text-[10px] text-[var(--lavender-dim)] italic">Vocali at £1.80/mo avg. NHS at £45k/ICB/yr. Deep tech exit multiple 30–40× (Nuance precedent).</p>
           </div>
         </div>
       </div>
-
     </div>
 
     <!-- FOOTER -->
-    <footer class="footer-bar mt-12 text-center font-mono-ibm text-xs text-[var(--lavender-dim)] tracking-wider py-6 border-t border-[var(--border-line)] flex flex-col md:flex-row justify-between items-center gap-4">
-      <div>FLOWEN TECHNOLOGIES LTD // LONDON, UK</div>
+    <footer class="mt-12 text-center fm text-xs text-[var(--lavender-dim)] py-6 border-t border-[var(--border)] flex flex-col md:flex-row justify-between items-center gap-4">
+      <div>FLOWEN TECHNOLOGIES LTD // LONDON, UK // FLOWEN + VOCALI DUAL BRAND</div>
       <div class="flex gap-4">
-        <a href="#" onclick="window.scrollTo({top:0, behavior:'smooth'})" class="hover:text-[var(--teal)] transition"><i class="fa-solid fa-arrow-up"></i> Back to Top</a>
-        <span>CONFIDENTIAL PITCH CANVAS</span>
+        <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="hover:text-[var(--teal)] transition"><i class="fa-solid fa-arrow-up"></i> Top</a>
+        <span>CONFIDENTIAL // NOT FOR DISTRIBUTION</span>
       </div>
     </footer>
 
-  </div>
+  </div><!-- /container -->
 
-  <!-- FULLSCREEN LANDING PAGE & PRODUCT SHOWCASE MODAL -->
-  <div id="landingPageModal" class="fixed inset-0 glass-backdrop z-50 hidden overflow-y-auto p-4 md:p-8">
+  <!-- PRODUCT SHOWCASE MODAL -->
+  <div id="landingModal" class="fixed inset-0 glass z-50 hidden overflow-y-auto p-4 md:p-8">
     <div class="max-w-6xl mx-auto bg-[var(--bg-navy)] border border-[var(--border-teal)] rounded-2xl shadow-2xl p-6 md:p-10 relative">
-      
-      <!-- Close & Banner Header -->
-      <div class="flex justify-between items-center border-b border-[var(--border-line)] pb-4 mb-6">
+      <div class="flex justify-between items-center border-b border-[var(--border)] pb-4 mb-6">
         <div class="flex items-center gap-3">
-          <!-- Flowen Logo -->
-          <svg width="36" height="20" viewBox="0 0 120 70" fill="none">
-            <path d="M 8,32 C 22,20 34,48 50,22 C 66,-2 80,50 96,24 C 104,12 110,18 114,20" stroke="url(#flowenWaveGrad)" stroke-width="8" stroke-linecap="round"/>
-            <path d="M 8,46 C 22,34 34,62 50,36 C 66,12 80,64 96,38 C 104,26 110,32 114,34" stroke="url(#flowenWaveGrad)" stroke-width="8" stroke-linecap="round"/>
-          </svg>
-          <span class="font-serif-fraunces text-xl font-bold text-[var(--paper)]">Flowen Product Showcase</span>
+          <svg width="36" height="20" viewBox="0 0 120 70" fill="none"><path d="M 8,32 C 22,20 34,48 50,22 C 66,-2 80,50 96,24 C 104,12 110,18 114,20" stroke="url(#wg)" stroke-width="8" stroke-linecap="round"/><path d="M 8,46 C 22,34 34,62 50,36 C 66,12 80,64 96,38 C 104,26 110,32 114,34" stroke="url(#wg)" stroke-width="8" stroke-linecap="round"/></svg>
+          <span class="ff text-xl font-bold text-[var(--paper)]">Flowen Product Showcase</span>
         </div>
-        <button onclick="closeLandingPageModal()" class="w-8 h-8 rounded-full bg-[var(--card-navy)] hover:bg-rose-500/20 text-[var(--lavender)] hover:text-rose-400 flex items-center justify-center transition">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <button onclick="closeLandingModal()" class="w-8 h-8 rounded-full bg-[var(--card-navy)] hover:bg-rose-500/20 text-[var(--lavender)] hover:text-rose-400 flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
-
-      <!-- DESKTOP BANNER PREVIEW -->
       <div class="p-6 rounded-xl bg-[#0B0D18] border border-[var(--border-gold)] mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-4">
-          <svg width="60" height="36" viewBox="0 0 120 70" fill="none">
-            <path d="M 8,32 C 22,20 34,48 50,22 C 66,-2 80,50 96,24 C 104,12 110,18 114,20" stroke="url(#flowenWaveGrad)" stroke-width="9" stroke-linecap="round"/>
-            <path d="M 8,46 C 22,34 34,62 50,36 C 66,12 80,64 96,38 C 104,26 110,32 114,34" stroke="url(#flowenWaveGrad)" stroke-width="9" stroke-linecap="round"/>
-          </svg>
+          <svg width="60" height="36" viewBox="0 0 120 70" fill="none"><path d="M 8,32 C 22,20 34,48 50,22 C 66,-2 80,50 96,24 C 104,12 110,18 114,20" stroke="url(#wg)" stroke-width="9" stroke-linecap="round"/><path d="M 8,46 C 22,34 34,62 50,36 C 66,12 80,64 96,38 C 104,26 110,32 114,34" stroke="url(#wg)" stroke-width="9" stroke-linecap="round"/></svg>
           <div>
-            <h3 class="font-serif-fraunces text-2xl text-[var(--paper)] font-semibold">Every word gets there.</h3>
-            <p class="text-xs text-[var(--lavender)] font-mono-ibm">AI Speech Coordination for School &amp; Work</p>
+            <h3 class="ff text-2xl text-[var(--paper)] font-semibold">Every word gets there.</h3>
+            <p class="text-xs text-[var(--lavender)] fm">AI Speech Coordination · Deep Tech Data Processing</p>
           </div>
         </div>
-        <div class="flex flex-wrap gap-2 text-[10px] font-mono-ibm text-[var(--teal)]">
+        <div class="flex flex-wrap gap-2 text-[10px] fm text-[var(--teal)]">
           <span class="px-2.5 py-1 rounded bg-[var(--card-navy)] border border-[var(--border-teal)]">DTAC Aligned</span>
           <span class="px-2.5 py-1 rounded bg-[var(--card-navy)] border border-[var(--border-teal)]">DCB0129 Clinical Safety</span>
-          <span class="px-2.5 py-1 rounded bg-[var(--card-navy)] border border-[var(--border-teal)]">UK GDPR Secured</span>
-          <span class="px-2.5 py-1 rounded bg-[var(--card-navy)] border border-[var(--border-teal)]">WCAG 2.1 AA</span>
+          <span class="px-2.5 py-1 rounded bg-[var(--card-navy)] border border-[var(--border-teal)]">UK GDPR</span>
+          <span class="px-2.5 py-1 rounded bg-[var(--card-navy)] border border-[var(--border-violet)]">Proprietary ASR Pipeline</span>
         </div>
       </div>
-
-      <!-- PHONE SCREEN MOCKUPS GRID -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        
-        <!-- MOCKUP 1: Practice Talking -->
         <div class="phone-mockup p-5 h-96 text-center">
           <div class="phone-notch"></div>
           <div class="my-auto space-y-4">
-            <div class="w-12 h-12 mx-auto rounded-full bg-[var(--teal)]/10 border border-[var(--teal)]/30 flex items-center justify-center text-[var(--teal)]">
-              <i class="fa-solid fa-microphone-lines text-xl animate-pulse"></i>
-            </div>
-            <p class="font-serif-fraunces text-xl text-[var(--paper)] font-semibold px-2">
-              Practice Talking:<br><span class="text-[var(--teal)]">Like learning to ride a bike!</span>
-            </p>
+            <div class="w-12 h-12 mx-auto rounded-full bg-[var(--teal)]/10 border border-[var(--teal)]/30 flex items-center justify-center text-[var(--teal)]"><i class="fa-solid fa-microphone-lines text-xl animate-pulse"></i></div>
+            <p class="ff text-xl text-[var(--paper)] font-semibold px-2">Practice Talking:<br><span class="text-[var(--teal)]">Like learning to ride a bike!</span></p>
           </div>
-          <div class="text-[10px] font-mono-ibm text-[var(--lavender-dim)] pb-2">Sub-150ms Speech Engine</div>
+          <div class="text-[10px] fm text-[var(--lavender-dim)] pb-2">Sub-150ms · Phoneme-Level ASR</div>
         </div>
-
-        <!-- MOCKUP 2: Visual Guide -->
         <div class="phone-mockup p-5 h-96 text-center">
           <div class="phone-notch"></div>
           <div class="my-auto space-y-3">
             <div class="w-20 h-20 mx-auto rounded-full bg-[var(--card-navy)] border-2 border-[var(--teal)] flex items-center justify-center">
-              <!-- 3D Viseme lips representation -->
-              <svg width="44" height="28" viewBox="0 0 100 60" fill="none">
-                <path d="M 10 30 Q 50 10 90 30 Q 50 50 10 30 Z" fill="#E2703A" opacity="0.8"/>
-                <path d="M 20 30 Q 50 20 80 30 Q 50 40 20 30 Z" fill="#14172E"/>
-              </svg>
+              <svg width="44" height="28" viewBox="0 0 100 60" fill="none"><path d="M 10 30 Q 50 10 90 30 Q 50 50 10 30 Z" fill="#E2703A" opacity="0.8"/><path d="M 20 30 Q 50 20 80 30 Q 50 40 20 30 Z" fill="#14172E"/></svg>
             </div>
-            <p class="font-serif-fraunces text-lg text-[var(--paper)] font-semibold">
-              Your listening visual guide
-            </p>
-            <p class="text-xs text-[var(--teal)] font-mono-ibm">Breathing cues &amp; viseme sync</p>
+            <p class="ff text-lg text-[var(--paper)] font-semibold">Visual biofeedback guide</p>
+            <p class="text-xs text-[var(--teal)] fm">Breathing cues · Viseme sync</p>
           </div>
-          <div class="text-[10px] font-mono-ibm text-[var(--lavender-dim)] pb-2">Autonomous 24/7 Coach</div>
+          <div class="text-[10px] fm text-[var(--lavender-dim)] pb-2">Autonomous 24/7 Coach</div>
         </div>
-
-        <!-- MOCKUP 3: #WaitlistHero -->
         <div class="phone-mockup p-5 h-96 text-center">
           <div class="phone-notch"></div>
           <div class="my-auto p-4 rounded-xl bg-[var(--card-navy)] border border-[var(--border-gold)] space-y-3">
-            <span class="text-xs px-2 py-0.5 rounded bg-[var(--amber)]/20 text-[var(--amber)] font-mono-ibm font-bold">#WaitlistHero</span>
-            <p class="text-xs font-semibold text-[var(--paper)]">Don't just wait months, start today!</p>
-            <div class="pt-2 border-t border-[var(--border-line)] flex justify-center items-center gap-1 text-[11px] font-bold text-sky-400">
-              <i class="fa-solid fa-hospital"></i> NHS ICB Partner
-            </div>
+            <span class="text-xs px-2 py-0.5 rounded bg-[var(--amber)]/20 text-[var(--amber)] fm font-bold">#WaitlistHero</span>
+            <p class="text-xs font-semibold text-[var(--paper)]">Don't wait 18 months. Start training today.</p>
+            <div class="pt-2 border-t border-[var(--border)] flex justify-center items-center gap-1 text-[11px] font-bold text-sky-400"><i class="fa-solid fa-hospital"></i> NHS ICB Partner</div>
           </div>
-          <div class="text-[10px] font-mono-ibm text-[var(--lavender-dim)] pb-2">Flowen Public Block Trial</div>
+          <div class="text-[10px] fm text-[var(--lavender-dim)] pb-2">Flowen Public Block Trial</div>
         </div>
-
       </div>
-
-      <!-- AUDIENCE TARGET CARDS (Adults, Parents, Clinical) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="p-4 rounded-xl bg-[var(--card-navy)] border border-[var(--border-line)] flex items-center gap-4">
-          <span class="px-2.5 py-1 rounded-full bg-[var(--teal)]/20 text-[var(--teal)] font-mono-ibm text-xs font-bold">Adults</span>
-          <p class="text-xs text-[var(--paper)]">Focus: Workplace Confidence &amp; Presentations</p>
+        <div class="p-4 rounded-xl bg-[var(--card-navy)] border border-[var(--border)] flex items-center gap-4">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--teal)]/20 text-[var(--teal)] fm text-xs font-bold">Adults</span>
+          <p class="text-xs text-[var(--paper)]">Workplace confidence, presentations, phone calls. Replaces £5,000/yr private therapy at £20/mo.</p>
         </div>
-
-        <div class="p-4 rounded-xl bg-[var(--card-navy)] border border-[var(--border-line)] flex items-center gap-4">
-          <span class="px-2.5 py-1 rounded-full bg-[var(--amber)]/20 text-[var(--amber)] font-mono-ibm text-xs font-bold">Parents</span>
-          <p class="text-xs text-[var(--paper)]">Prevent school avoidance during SALT waits. Active daily training.</p>
+        <div class="p-4 rounded-xl bg-[var(--card-navy)] border border-[var(--border)] flex items-center gap-4">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--violet)]/20 text-[var(--violet-hi)] fm text-xs font-bold">Vocali</span>
+          <p class="text-xs text-[var(--paper)]">Tier 3/4 markets: India, LatAm, Africa, SE Asia. £1–3/mo. 65M+ reachable users. High volume play.</p>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- FULLSCREEN PRESENTATION MODAL -->
-  <div id="presentationModal" class="fixed inset-0 glass-backdrop z-50 hidden flex flex-col justify-between p-4 md:p-8">
-    
-    <!-- Top Bar -->
-    <div class="flex justify-between items-center border-b border-[var(--border-line)] pb-4 max-w-6xl mx-auto w-full">
+  <!-- PRESENTATION MODAL -->
+  <div id="presModal" class="fixed inset-0 glass z-50 hidden flex flex-col justify-between p-4 md:p-8">
+    <div class="flex justify-between items-center border-b border-[var(--border)] pb-4 max-w-6xl mx-auto w-full">
       <div class="flex items-center gap-3">
-        <!-- Logo -->
-        <svg width="32" height="18" viewBox="0 0 120 70" fill="none">
-          <path d="M 8,32 C 22,20 34,48 50,22 C 66,-2 80,50 96,24 C 104,12 110,18 114,20" stroke="url(#flowenWaveGrad)" stroke-width="8" stroke-linecap="round"/>
-          <path d="M 8,46 C 22,34 34,62 50,36 C 66,12 80,64 96,38 C 104,26 110,32 114,34" stroke="url(#flowenWaveGrad)" stroke-width="8" stroke-linecap="round"/>
-        </svg>
-        <span class="font-serif-fraunces text-xl text-[var(--paper)]">Flowen Presentation Deck</span>
+        <svg width="32" height="18" viewBox="0 0 120 70" fill="none"><path d="M 8,32 C 22,20 34,48 50,22 C 66,-2 80,50 96,24 C 104,12 110,18 114,20" stroke="url(#wg)" stroke-width="8" stroke-linecap="round"/><path d="M 8,46 C 22,34 34,62 50,36 C 66,12 80,64 96,38 C 104,26 110,32 114,34" stroke="url(#wg)" stroke-width="8" stroke-linecap="round"/></svg>
+        <span class="ff text-xl text-[var(--paper)]">Flowen Investor Deck</span>
       </div>
-
-      <div class="flex items-center gap-4 font-mono-ibm text-xs">
-        <span id="presTimer" class="text-[var(--amber)] bg-[var(--card-navy)] px-3 py-1 rounded border border-[var(--border-line)]"><i class="fa-solid fa-clock"></i> 00:00</span>
-        <span id="slideCounter" class="text-[var(--teal)]">Slide 1 / 11</span>
-        <button onclick="closePresentationModal()" class="w-8 h-8 rounded-full bg-[var(--card-navy)] hover:bg-rose-500/20 hover:text-rose-400 text-[var(--lavender)] flex items-center justify-center transition">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+      <div class="flex items-center gap-4 fm text-xs">
+        <span id="presTimer" class="text-[var(--amber)] bg-[var(--card-navy)] px-3 py-1 rounded border border-[var(--border)]"><i class="fa-solid fa-clock"></i> 00:00</span>
+        <span id="slideCounter" class="text-[var(--teal)]">Slide 1 / 13</span>
+        <button onclick="closePres()" class="w-8 h-8 rounded-full bg-[var(--card-navy)] hover:bg-rose-500/20 hover:text-rose-400 text-[var(--lavender)] flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
-
-    <!-- Main Slide Body -->
     <div class="max-w-4xl mx-auto w-full my-auto py-8 text-center flex flex-col items-center justify-center">
-      <span id="presSlideNum" class="font-mono-ibm text-sm text-[var(--teal)] tracking-widest uppercase mb-4">01 // THE VISION</span>
-      
-      <div id="presSlideContent" class="space-y-6">
-        <h2 id="presHookTitle" class="font-serif-fraunces text-3xl md:text-5xl text-[var(--paper)] leading-tight max-w-3xl mx-auto">
-          <!-- Dynamically populated -->
-        </h2>
-        <p id="presSubText" class="text-base md:text-lg text-[var(--lavender)] max-w-2xl mx-auto leading-relaxed">
-          <!-- Dynamically populated -->
-        </p>
-        <div id="presStatContainer" class="stat-hero font-serif-fraunces text-7xl font-bold text-[var(--amber)] hidden">
-          <!-- Optional hero stat -->
-        </div>
-        <div id="presPillGroup" class="flex flex-wrap justify-center gap-3 pt-4">
-          <!-- Dynamically populated -->
-        </div>
+      <span id="presNum" class="fm text-sm text-[var(--teal)] tracking-widest uppercase mb-4"></span>
+      <div class="space-y-6">
+        <h2 id="presTitle" class="ff text-3xl md:text-5xl text-[var(--paper)] leading-tight max-w-3xl mx-auto"></h2>
+        <p id="presBody" class="text-base md:text-lg text-[var(--lavender)] max-w-2xl mx-auto leading-relaxed"></p>
+        <div id="presStat" class="stat-hero text-7xl font-bold text-[var(--amber)] hidden"></div>
+        <div id="presPills" class="flex flex-wrap justify-center gap-3 pt-4"></div>
       </div>
     </div>
-
-    <!-- Bottom Controls & Speaker Notes Bar -->
     <div class="max-w-4xl mx-auto w-full flex flex-col gap-4">
-      <!-- Speaker Notes Collapsible -->
-      <div id="speakerNotesBox" class="bg-[var(--card-navy)] border border-[var(--border-gold)]/40 rounded-xl p-4 text-xs font-mono-ibm text-[var(--lavender)] hidden">
-        <span class="text-[var(--amber)] font-bold block mb-1"><i class="fa-regular fa-note-sticky"></i> FOUNDER SPEAKER NOTES:</span>
-        <p id="speakerNotesText">Emphasize the 150ms real-time latency threshold. Most speech therapy tools fail during actual blocks; our disfluent ASR model captures blocks directly to provide immediate visual feedback.</p>
+      <div id="notesBox" class="bg-[var(--card-navy)] border border-[var(--border-gold)]/40 rounded-xl p-4 text-xs fm text-[var(--lavender)] hidden">
+        <span class="text-[var(--amber)] font-bold block mb-1"><i class="fa-regular fa-note-sticky"></i> SPEAKER NOTES:</span>
+        <p id="notesText"></p>
       </div>
-
-      <div class="flex justify-between items-center border-t border-[var(--border-line)] pt-4">
-        <button onclick="toggleSpeakerNotes()" class="px-3 py-1.5 rounded bg-[var(--card-navy)] text-xs font-mono-ibm text-[var(--lavender)] hover:text-[var(--paper)]">
-          <i class="fa-solid fa-note-sticky text-[var(--amber)]"></i> Speaker Notes
-        </button>
-
+      <div class="flex justify-between items-center border-t border-[var(--border)] pt-4">
+        <button onclick="toggleNotes()" class="px-3 py-1.5 rounded bg-[var(--card-navy)] text-xs fm text-[var(--lavender)] hover:text-[var(--paper)]"><i class="fa-solid fa-note-sticky text-[var(--amber)]"></i> Notes</button>
         <div class="flex items-center gap-3">
-          <button onclick="prevSlide()" class="px-4 py-2 rounded-lg bg-[var(--card-navy)] hover:bg-[var(--card-navy-hi)] text-[var(--paper)] font-mono-ibm text-xs border border-[var(--border-line)] transition">
-            <i class="fa-solid fa-chevron-left"></i> Prev
-          </button>
-          <button onclick="nextSlide()" class="px-5 py-2 rounded-lg bg-[var(--amber)] hover:bg-[var(--amber-hi)] text-[var(--bg-navy)] font-bold font-mono-ibm text-xs transition">
-            Next <i class="fa-solid fa-chevron-right"></i>
-          </button>
+          <button onclick="prevSlide()" class="px-4 py-2 rounded-lg bg-[var(--card-navy)] hover:bg-[var(--card-hi)] text-[var(--paper)] fm text-xs border border-[var(--border)]"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+          <button onclick="nextSlide()" class="px-5 py-2 rounded-lg bg-[var(--amber)] hover:bg-[var(--amber-hi)] text-[var(--bg-navy)] font-bold fm text-xs">Next <i class="fa-solid fa-chevron-right"></i></button>
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- QUICK EDIT SLIDE MODAL -->
-  <div id="editSlideModal" class="fixed inset-0 glass-backdrop z-50 hidden flex items-center justify-center p-4">
+  <!-- QUICK EDIT MODAL -->
+  <div id="editModal" class="fixed inset-0 glass z-50 hidden flex items-center justify-center p-4">
     <div class="bg-[var(--card-navy)] border border-[var(--border-teal)] rounded-2xl p-6 max-w-lg w-full space-y-4">
-      <div class="flex justify-between items-center border-b border-[var(--border-line)] pb-3">
-        <h3 class="font-serif-fraunces text-lg text-[var(--paper)]" id="editModalHeader">Edit Slide Content</h3>
-        <button onclick="closeEditModal()" class="text-[var(--lavender)] hover:text-[var(--paper)]"><i class="fa-solid fa-xmark"></i></button>
+      <div class="flex justify-between items-center border-b border-[var(--border)] pb-3">
+        <h3 class="ff text-lg text-[var(--paper)]" id="editHeader">Edit Slide</h3>
+        <button onclick="closeEdit()" class="text-[var(--lavender)] hover:text-[var(--paper)]"><i class="fa-solid fa-xmark"></i></button>
       </div>
-
-      <div class="space-y-3 font-mono-ibm text-xs">
+      <div class="space-y-3 fm text-xs">
         <div>
-          <label class="text-[var(--lavender)] block mb-1">Hook / Main Title (HTML Supported):</label>
-          <textarea id="editModalTitle" rows="3" class="w-full bg-[var(--bg-navy)] border border-[var(--border-line)] rounded-lg p-2.5 text-[var(--paper)] focus:border-[var(--teal)] outline-none"></textarea>
+          <label class="text-[var(--lavender)] block mb-1">Hook / Title (HTML ok):</label>
+          <textarea id="editTitle" rows="3" class="w-full bg-[var(--bg-navy)] border border-[var(--border)] rounded-lg p-2.5 text-[var(--paper)] focus:border-[var(--teal)] outline-none"></textarea>
         </div>
-
         <div>
-          <label class="text-[var(--lavender)] block mb-1">Body / Subtext Description:</label>
-          <textarea id="editModalBody" rows="3" class="w-full bg-[var(--bg-navy)] border border-[var(--border-line)] rounded-lg p-2.5 text-[var(--paper)] focus:border-[var(--teal)] outline-none"></textarea>
+          <label class="text-[var(--lavender)] block mb-1">Body / Subtext:</label>
+          <textarea id="editBody" rows="3" class="w-full bg-[var(--bg-navy)] border border-[var(--border)] rounded-lg p-2.5 text-[var(--paper)] focus:border-[var(--teal)] outline-none"></textarea>
         </div>
-
-        <div id="editStatGroup">
-          <label class="text-[var(--lavender)] block mb-1">Hero Metric Stat (Optional):</label>
-          <input type="text" id="editModalStat" class="w-full bg-[var(--bg-navy)] border border-[var(--border-line)] rounded-lg p-2 text-[var(--amber)] focus:border-[var(--teal)] outline-none">
+        <div>
+          <label class="text-[var(--lavender)] block mb-1">Hero Stat (optional):</label>
+          <input type="text" id="editStat" class="w-full bg-[var(--bg-navy)] border border-[var(--border)] rounded-lg p-2 text-[var(--amber)] focus:border-[var(--teal)] outline-none">
         </div>
       </div>
-
       <div class="flex justify-end gap-2 pt-2">
-        <button onclick="closeEditModal()" class="px-4 py-2 rounded-lg bg-[var(--bg-navy)] text-[var(--lavender)] text-xs font-mono-ibm">Cancel</button>
-        <button onclick="saveSlideEdits()" class="px-4 py-2 rounded-lg bg-[var(--teal)] text-[var(--bg-navy)] font-semibold text-xs font-mono-ibm">Save Changes</button>
+        <button onclick="closeEdit()" class="px-4 py-2 rounded-lg bg-[var(--bg-navy)] text-[var(--lavender)] text-xs fm">Cancel</button>
+        <button onclick="saveEdit()" class="px-4 py-2 rounded-lg bg-[var(--teal)] text-[var(--bg-navy)] font-semibold text-xs fm">Save</button>
       </div>
     </div>
   </div>
 
   <script>
-    // SLIDE DATA MODEL WITH BACKRONYM & FEATURE EXPANSIONS
-    const slidesData = [
-      {
-        num: "01 // THE VISION & BACKRONYM",
-        title: "80 Million people stammer.<br>We built <em class=\"italic text-[var(--amber)]\">FLOWEN</em> — the first sub-150ms practice engine for their voice.",
-        body: "FLOWEN = Fluency & Language Optimization With Empathic Neurofeedback. Proprietary disfluent ASR engine designed specifically for stammering and speech block recovery.",
-        stat: "",
-        category: "tech",
-        pills: [
-          { text: "LIVED EXPERIENCE FOUNDER", class: "gold", icon: "fa-user-shield" },
-          { text: "PROPRIETARY DISFLUENT ASR", class: "teal", icon: "fa-wave-square" },
-          { text: "AI SPEECH COORDINATION", class: "", icon: "fa-microchip" }
-        ],
-        notes: "Open strong with market size (80M globally) and explain the backronym: Fluency & Language Optimization With Empathic Neurofeedback."
-      },
-      {
-        num: "02 // THE PROBLEM",
-        title: "18-Month Waits.<br><span class=\"text-[var(--amber)]\">£200/Hour Therapy.</span><br>Zero Practice Tools.",
-        body: "Clinical SALT care is severely oversubscribed. Existing speech apps rely on static breathing tricks that fail catastrophically during high-pressure real-world speech blocks.",
-        stat: "",
-        category: "market",
-        pills: [],
-        notes: "Emphasize therapist scarcity and high drop-out rate (92%) due to lack of daily home practice tooling."
-      },
-      {
-        num: "03 // APP SHOWCASE & COMPLIANCE",
-        title: "3D Viseme Guide.<br><span class=\"text-[var(--teal)]\">NHS #WaitlistHero.</span><br>Full Clinical Safety.",
-        body: "Features 3D mouth-shape guidance, breathing cues, and active daily training for workplace presentations and parents supporting children.",
-        stat: "",
-        category: "product",
-        pills: [
-          { text: "DTAC ALIGNED", class: "teal", icon: "fa-check" },
-          { text: "DCB0129 SAFETY", class: "teal", icon: "fa-shield-halved" },
-          { text: "UK GDPR SECURED", class: "", icon: "fa-lock" }
-        ],
-        notes: "Demonstrate clinical safety clearances and NHS partnership alignment for waitlist relief."
-      },
-      {
-        num: "04 // METHODOLOGY & PRACTICE LADDER",
-        title: "7-Stage Practice Ladder: <em class=\"italic text-[var(--teal)]\">From Block to Flow.</em>",
-        body: "Stepwise skill transfer from Single Words to Phrases, Sentences, Paragraphs, and Live Unscripted Conversation.",
-        stat: "",
-        category: "product",
-        pills: [],
-        notes: "Explain how our dual-engine fuses clinical speech pathology techniques directly inside a mobile visualizer."
-      },
-      {
-        num: "05 // THE TECH MOAT",
-        title: "Time-Out Failures vs Flowen Engine",
-        body: "Google & Apple speech models crash on disfluencies. We own fine-tuned disfluent speech models turning vocal blocks into structured data.",
-        stat: "< 150ms",
-        category: "tech",
-        pills: [{ text: "100k+ Disfluent Audio Clips", class: "gold", icon: "fa-database" }],
-        notes: "Major AI models reject disfluency as background noise. Flowen treats blocks as high-value training data."
-      },
-      {
-        num: "06 // MARKET TAM",
-        title: "Direct Speech TAM",
-        body: "Positioned within a $65.1B global digital therapeutics market with zero dominant AI category leaders for disfluent speech.",
-        stat: "$2.4B",
-        category: "market",
-        pills: [{ text: "18.4% Market CAGR", class: "teal", icon: "fa-chart-line" }],
-        notes: "Focus on global speech therapy spend and adjacency into broader vocal fitness / public speaking."
-      },
-      {
-        num: "07 // ECONOMICS",
-        title: "/Mo Founding Pre-Pay",
-        body: "Replaces £5,000/yr private clinical sessions. Instant waitlist monetization via escrow community seats and pre-order locks.",
-        stat: "£19.96",
-        category: "market",
-        pills: [{ text: "95% Cost Savings vs Therapy", class: "", icon: "fa-piggy-bank" }],
-        notes: "Pre-pay model validates direct willingness-to-pay before full public app store rollout."
-      },
-      {
-        num: "08 // DISTRIBUTION FLYWHEEL",
-        title: "Bypassing Gatekeepers via <em class=\"italic text-[var(--amber)]\">3-Pronged Owned Channels.</em>",
-        body: "Direct user pull creates clinical provider demand, leading to integrated NHS ICB commissioning contracts.",
-        stat: "",
-        category: "market",
-        pills: [
-          { text: "D2C Grassroots Advocacy", class: "gold", icon: "fa-bullhorn" },
-          { text: "Free SLP Telemetry Portal", class: "teal", icon: "fa-stethoscope" },
-          { text: "NHS ICB Public Block Pledges", class: "", icon: "fa-building-columns" }
-        ],
-        notes: "Self-sustaining distribution flywheel that drastically reduces user acquisition costs (CAC)."
-      },
-      {
-        num: "09 // EXECUTION SPEED",
-        title: "Q3 '26 ➔ Q2 '27 Roadmap",
-        body: "4-Quarter compressed execution from pre-pay locks to native iOS/Android deployment and NHS clinical block trials.",
-        stat: "",
-        category: "tech",
-        pills: [],
-        notes: "Demonstrate fast shipping velocity with clear quarter-by-quarter deliverables."
-      },
-      {
-        num: "10 // FOUNDER OBSESSION",
-        title: "Lived Experience.<br><span class=\"text-[var(--amber)]\">Relentless Shipping.</span>",
-        body: "Building since 18 months of age onset disfluency. An obsessed founder iterating regardless of outcome to fundamentally rebuild the category.",
-        stat: "",
-        category: "team",
-        pills: [],
-        notes: "Personal founder story drives unfair founder-market fit and deep community trust."
-      },
-      {
-        num: "11 // THE PARTNER ASK",
-        title: "Pre-Seed / Seed Bridge.<br><span class=\"text-[var(--teal)]\">Let's Find Out.</span>",
-        body: "Seeking high network density capital to scale proprietary disfluent ASR models & accelerate clinical NHS block deployment.",
-        stat: "",
-        category: "team",
-        pills: [
-          { text: "founder@flowen.app", class: "gold", icon: "fa-envelope" },
-          { text: "flowen.app", class: "teal", icon: "fa-globe" }
-        ],
-        notes: "Clear fundraising call to action with direct founder contact channels."
-      }
+    const SLIDES = [
+      { num:"01 // THE VISION", title:"80 Million people stammer.<br>We built <em class='italic text-[var(--amber)]'>FLOWEN</em> — a deep-tech data processing engine that turns disfluent speech into the world's most valuable clinical dataset.", body:"FLOWEN = Fluency & Language Optimization With Empathic Neurofeedback. Proprietary phoneme-level disfluent ASR pipeline. Not a health app. A data processing company.", stat:"", pills:[{t:"LIVED EXPERIENCE FOUNDER",c:"gold",i:"fa-user-shield"},{t:"DATA PROCESSING ENGINE",c:"violet",i:"fa-database"},{t:"PROPRIETARY DISFLUENT ASR",c:"teal",i:"fa-wave-square"}], notes:"Open with the scale: 80M globally, then flip the narrative — this is a data company that happens to solve a health problem, not a health app that uses AI." },
+      { num:"02 // THE PROBLEM", title:"18-Month NHS Waits.<br><span class='text-[var(--amber)]'>£200/Hour Private Therapy.</span><br>92% Dropout. Zero Daily Tools.", body:"80 million people globally stutter. NHS SALT queues are critically oversubscribed. Standard AI times out during blocks. No daily practice tool exists that works.", stat:"", pills:[], notes:"Emphasis: the problem isn't just availability, it's that standard AI was never built for disfluent speech. That's the technical gap Flowen fills." },
+      { num:"03 // DEEP TECH & DATA PROCESSING", title:"Phoneme-Level Disfluency Pipeline", body:"Not a health app with an AI wrapper. Flowen processes speech blocks as structured phoneme-level data — the inversion of every standard ASR system. Google discards blocks. We're trained on them. This is the moat.", stat:"<150ms", pills:[{t:"100k+ Disfluent Clips",c:"violet",i:"fa-database"},{t:"No public dataset exists",c:"gold",i:"fa-lock"}], notes:"Microsoft bought Nuance for $19.7bn for the DATA, not the product. Flowen's exit story is identical: the proprietary dataset is the acquirable asset." },
+      { num:"04 // PRODUCT & COMPLIANCE", title:"3D Viseme Guide.<br><span class='text-[var(--teal)]'>NHS #WaitlistHero.</span><br>Full Clinical Safety.", body:"Continuous mouth-shape animation, breathing biofeedback, and real-time block coaching. Built to NHS clinical safety standards from day one.", stat:"", pills:[{t:"DTAC ALIGNED",c:"teal",i:"fa-check"},{t:"DCB0129 SAFETY",c:"teal",i:"fa-shield-halved"},{t:"UK GDPR",c:"",i:"fa-lock"}], notes:"Product compliance is table-stakes for NHS procurement. We have the certifications aligned before commercialisation." },
+      { num:"05 // PRACTICE LADDER", title:"7-Stage Practice Ladder: <em class='italic text-[var(--teal)]'>From Block to Flow.</em>", body:"Stepwise skill transfer: Words → Phrases → Sentences → Paragraphs → Live Conversation. Every stage generates annotated phoneme block data feeding the training pipeline.", stat:"", pills:[], notes:"Clinical technique fused with data engineering: each drill is a controlled acoustic event that generates high-quality training signal." },
+      { num:"06 // THE DATA FLYWHEEL", title:"Each Session = New Training Data.<br><span class='text-[var(--violet-hi)]'>Model Gets Better With Scale.</span>", body:"Every user session generates annotated phoneme-level disfluency data. This feeds back into ASR fine-tuning. The more users, the better the model — compounding data moat no competitor can replicate.", stat:"", pills:[{t:"Compounding data advantage",c:"violet",i:"fa-arrows-rotate"},{t:"Irreplicable without clinical access",c:"gold",i:"fa-lock"}], notes:"This is the network-effects flywheel for a data company, not a SaaS. Each user makes the product better for all users." },
+      { num:"07 // TWO-BRAND GLOBAL MARKET", title:"£8.84bn Combined TAM.<br><span class='text-[var(--amber)]'>80M People. 20% Controlled.</span><br><span class='text-[var(--lavender)]'>80% Still Untapped.</span>", body:"Flowen: premium AI SLT for Tier 1/2 markets (UK, EU, US, AU, Japan, ME). Vocali: stripped-down affordable spinoff for Tier 3/4 (India, LatAm, Africa, SE Asia). 20% is what we capture and control — 80% of total market remains as further expansion runway.", stat:"", pills:[{t:"Flowen: TAM £7.04bn",c:"teal",i:"fa-globe"},{t:"Vocali: TAM £1.8bn",c:"violet",i:"fa-earth-africa"}], notes:"The 80% untapped is deliberate framing for investors — this is not a ceiling, it's a beach-head. Even capturing 20% of global PWS market is a category-defining position." },
+      { num:"08 // DISTRIBUTION & ORGANIC TRACTION", title:"10,000 Year 1 Sign-Ups. Zero Paid CAC.", body:"Through organic personal relationships with PWS communities, stammering support groups, SLTs, and clinicians — 10,000 sign-ups are achievable in Year 1 without any paid acquisition. The stuttering community is tight-knit with high advocacy density.", stat:"10K", pills:[{t:"PWS community contacts",c:"gold",i:"fa-users"},{t:"Free SLP portal pull",c:"teal",i:"fa-stethoscope"},{t:"NHS waiting list angle",c:"",i:"fa-building-columns"}], notes:"This de-risks the Year 1 growth assumption completely. No CAC budget needed to hit 10K users — validates product-market fit before marketing spend begins." },
+      { num:"09 // UNIT ECONOMICS & EXIT MULTIPLES", title:"Deep Tech Commands 30×+ Exit Multiples.<br><span class='text-[var(--amber)]'>Not SaaS. Data Processing.</span>", body:"Nuance acquired at ~35× ARR ($19.7bn). Speechify Series A at ~35× ARR ($175m). Data processing + proprietary clinical datasets command a structural premium over standard SaaS multiples. Flowen's acquirers buy the dataset, not the subscription.", stat:"30–40×", pills:[{t:"Nuance: $19.7bn ~35× ARR",c:"gold",i:"fa-landmark"},{t:"Target: 30–40× exit",c:"amber",i:"fa-chart-line"}], notes:"Frame this carefully: the 30× multiple isn't speculation, it's supported by precedent in speech AI M&A. The data asset is the valuation driver." },
+      { num:"10 // VOCALI — GLOBAL ACCESS PLAY", title:"65M+ PWS in Tier 3/4.<br><span class='text-[var(--violet-hi)]'>£1–3/mo. 13M+ Active Users at 20%.</span>", body:"Vocali is a stripped-down spinoff built for high-population, low-income markets. India: 28M+ PWS. Africa: 12M+. LatAm + SE Asia: 25M+. Low ARPU, massive user volume — more active users than Flowen even at lower revenue. Distribution via carrier billing, NGOs, school systems.", stat:"65M+", pills:[{t:"India 28M+ PWS",c:"violet",i:"fa-earth-asia"},{t:"Africa 12M+ PWS",c:"violet",i:"fa-earth-africa"},{t:"£1–3/mo volume play",c:"",i:"fa-users"}], notes:"Vocali's story is user count, not ARPU. This is the global accessibility play — and it opens the door to a separate spinoff fundraise or bundled into Flowen's exit." },
+      { num:"11 // EXECUTION ROADMAP", title:"5-Year Path: UK Anchor → Global → Vocali Scale.", body:"FY1: £120k, 10K users, NHS pilot. FY2: £480k, 3 ICBs + SLP portal. FY3: £1.5m, 5 ICBs + EU/US seed. FY4: £4.5m, Tier 1 intl + Vocali beta. FY5: £12m, 20% UK + global scale.", stat:"", pills:[], notes:"Compressed execution: each phase de-risks the next. NHS contract is the anchor that funds Tier 1 international expansion." },
+      { num:"12 // FOUNDER OBSESSION", title:"Lived Experience.<br><span class='text-[var(--amber)]'>Relentless Shipping.</span><br>Deep Tech From Day 1.", body:"Stuttering onset at 18 months. 30+ years of lived experience. Built the proprietary ASR pipeline, clinical safety framework, and founding member model independently. Shipping continuously. Founder-market fit unmatched in this category.", stat:"", pills:[{t:"PWS since age 2",c:"gold",i:"fa-user-shield"},{t:"Deep tech architect",c:"violet",i:"fa-microchip"}], notes:"The unfair advantage: no outside team will build this with the same depth of lived insight and community trust. It creates both product intuition and organic distribution." },
+      { num:"13 // THE PARTNER ASK", title:"£250k Pre-Seed. SEIS Eligible.<br><span class='text-[var(--teal)]'>Deep Tech Premium. 30× Exit Target.</span>", body:"Seeking capital with health-tech, deep-tech, and global distribution density. Use of funds: clinical validation 35%, ASR pipeline & data infrastructure 30%, regulatory 15%, market access 12%, operations 8%. SEIS: 50% income tax relief + CGT exemption. Exit thesis: proprietary dataset + pipeline at 30–40× ARR from strategic acquirer (NHS digital, speech tech, global mental health group).", stat:"£250k", pills:[{t:"SEIS · 50% Tax Relief",c:"teal",i:"fa-shield-halved"},{t:"£8.84bn Combined TAM",c:"gold",i:"fa-globe"},{t:"30–40× Exit Target",c:"violet",i:"fa-chart-line"}], notes:"Close on the full vision: Flowen + Vocali = the complete global speech platform. We own the data, the clinical relationships, and the community. Capital unlocks the clinical evidence that unlocks NHS contracts that funds everything else." }
     ];
 
-    let currentSlideIdx = 0;
-    let currentEditIdx = null;
-    let audioMuted = false;
-    let timerInterval = null;
-    let timerSeconds = 0;
-    let audioCtx = null;
+    let curSlide = 0, editIdx = null, muted = false, timerInt = null, timerSecs = 0, audioCtx = null;
 
-    function playBeep(freq = 440, duration = 0.08) {
-      if (audioMuted) return;
+    function beep(freq=440, dur=0.08) {
+      if (muted) return;
       try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
+        if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+        if (audioCtx.state==='suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.type='sine'; osc.frequency.value=freq;
         gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch (e) {
-        console.log("Audio not initialized");
-      }
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+dur);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime+dur);
+      } catch(e){}
     }
 
     function toggleAudio() {
-      audioMuted = !audioMuted;
-      const soundIcon = document.getElementById('soundIcon');
-      const soundText = document.getElementById('soundText');
-      if (audioMuted) {
-        soundIcon.className = "fa-solid fa-volume-xmark text-rose-400";
-        soundText.innerText = "Audio Muted";
-      } else {
-        soundIcon.className = "fa-solid fa-volume-high text-[var(--teal)]";
-        soundText.innerText = "Audio Active";
-        playBeep(600, 0.1);
-      }
+      muted=!muted;
+      document.getElementById('soundIcon').className = muted ? 'fa-solid fa-volume-xmark text-rose-400' : 'fa-solid fa-volume-high text-[var(--teal)]';
+      document.getElementById('soundText').innerText = muted ? 'Audio Muted' : 'Audio Active';
+      if (!muted) beep(600,0.1);
     }
 
-    function filterCategory(category) {
-      playBeep(520, 0.05);
-      const cards = document.querySelectorAll('.slide-card');
-      const filterBtns = document.querySelectorAll('.filter-btn');
-
-      filterBtns.forEach(btn => {
-        btn.classList.remove('bg-[var(--teal)]', 'text-[var(--bg-navy)]', 'font-semibold');
-        btn.classList.add('bg-[var(--card-navy)]', 'text-[var(--lavender)]');
+    function filterCat(cat) {
+      beep(520,0.05);
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.className='filter-btn px-3 py-1.5 rounded-full text-xs fm bg-[var(--card-navy)] text-[var(--lavender)] border border-[var(--border)] hover:border-[var(--teal)]';
       });
-
-      event.target.classList.remove('bg-[var(--card-navy)]', 'text-[var(--lavender)]');
-      event.target.classList.add('bg-[var(--teal)]', 'text-[var(--bg-navy)]', 'font-semibold');
-
-      cards.forEach(card => {
-        const cardCat = card.getAttribute('data-category');
-        if (category === 'all' || cardCat === category) {
-          card.style.display = 'flex';
-        } else {
-          card.style.display = 'none';
-        }
+      event.target.className='filter-btn px-3 py-1.5 rounded-full text-xs fm bg-[var(--teal)] text-[var(--bg-navy)] font-semibold border border-[var(--teal)]';
+      document.querySelectorAll('.slide-card').forEach(c => {
+        c.style.display = (cat==='all'||c.dataset.cat===cat) ? 'flex' : 'none';
       });
     }
 
-    function openPresentationModal(index = 0) {
-      playBeep(700, 0.1);
-      currentSlideIdx = index;
-      document.getElementById('presentationModal').classList.remove('hidden');
-      renderPresentationSlide();
-      startPresTimer();
-      document.addEventListener('keydown', handlePresKeydown);
+    function openPres(idx=0) {
+      beep(700,0.1); curSlide=idx;
+      document.getElementById('presModal').classList.remove('hidden');
+      renderSlide(); startTimer();
+      document.addEventListener('keydown', presKey);
     }
 
-    function closePresentationModal() {
-      playBeep(300, 0.08);
-      document.getElementById('presentationModal').classList.add('hidden');
-      clearInterval(timerInterval);
-      document.removeEventListener('keydown', handlePresKeydown);
+    function closePres() {
+      beep(300,0.08);
+      document.getElementById('presModal').classList.add('hidden');
+      clearInterval(timerInt);
+      document.removeEventListener('keydown', presKey);
     }
 
-    function renderPresentationSlide() {
-      const slide = slidesData[currentSlideIdx];
-      document.getElementById('presSlideNum').innerText = slide.num;
-      document.getElementById('presHookTitle').innerHTML = slide.title;
-      document.getElementById('presSubText').innerText = slide.body;
-      document.getElementById('slideCounter').innerText = `Slide ${currentSlideIdx + 1} / ${slidesData.length}`;
-      document.getElementById('speakerNotesText').innerText = slide.notes;
-
-      const statBox = document.getElementById('presStatContainer');
-      if (slide.stat) {
-        statBox.innerText = slide.stat;
-        statBox.classList.remove('hidden');
-      } else {
-        statBox.classList.add('hidden');
-      }
-
-      const pillGroup = document.getElementById('presPillGroup');
-      pillGroup.innerHTML = '';
-      if (slide.pills && slide.pills.length > 0) {
-        slide.pills.forEach(p => {
-          const pillSpan = document.createElement('span');
-          pillSpan.className = `pill ${p.class}`;
-          pillSpan.innerHTML = `<i class="fa-solid ${p.icon}"></i> ${p.text}`;
-          pillGroup.appendChild(pillSpan);
-        });
-      }
-    }
-
-    function nextSlide() {
-      if (currentSlideIdx < slidesData.length - 1) {
-        currentSlideIdx++;
-        playBeep(580, 0.06);
-        renderPresentationSlide();
-      }
-    }
-
-    function prevSlide() {
-      if (currentSlideIdx > 0) {
-        currentSlideIdx--;
-        playBeep(450, 0.06);
-        renderPresentationSlide();
-      }
-    }
-
-    function handlePresKeydown(e) {
-      if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
-      if (e.key === 'ArrowLeft') prevSlide();
-      if (e.key === 'Escape') closePresentationModal();
-    }
-
-    function toggleSpeakerNotes() {
-      const box = document.getElementById('speakerNotesBox');
-      box.classList.toggle('hidden');
-      playBeep(500, 0.05);
-    }
-
-    function startPresTimer() {
-      timerSeconds = 0;
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        timerSeconds++;
-        const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
-        const secs = String(timerSeconds % 60).padStart(2, '0');
-        document.getElementById('presTimer').innerHTML = `<i class="fa-solid fa-clock"></i> ${mins}:${secs}`;
-      }, 1000);
-    }
-
-    function quickEditSlide(idx) {
-      playBeep(650, 0.08);
-      currentEditIdx = idx;
-      const slide = slidesData[idx];
-      document.getElementById('editModalHeader').innerText = `Edit ${slide.num}`;
-      document.getElementById('editModalTitle').value = slide.title;
-      document.getElementById('editModalBody').value = slide.body;
-      document.getElementById('editModalStat').value = slide.stat || '';
-      document.getElementById('editSlideModal').classList.remove('hidden');
-    }
-
-    function closeEditModal() {
-      document.getElementById('editSlideModal').classList.add('hidden');
-    }
-
-    function saveSlideEdits() {
-      if (currentEditIdx === null) return;
-      playBeep(800, 0.1);
-      const slide = slidesData[currentEditIdx];
-      slide.title = document.getElementById('editModalTitle').value;
-      slide.body = document.getElementById('editModalBody').value;
-      slide.stat = document.getElementById('editModalStat').value;
-
-      const titleElem = document.getElementById(`title-${currentEditIdx}`);
-      const bodyElem = document.getElementById(`body-${currentEditIdx}`);
-      const statElem = document.getElementById(`stat-${currentEditIdx}`);
-
-      if (titleElem) titleElem.innerHTML = slide.title;
-      if (bodyElem) bodyElem.innerText = slide.body;
-      if (statElem && slide.stat) statElem.innerText = slide.stat;
-
-      closeEditModal();
-    }
-
-    function openLandingPageModal() {
-      playBeep(620, 0.08);
-      document.getElementById('landingPageModal').classList.remove('hidden');
-    }
-
-    function closeLandingPageModal() {
-      playBeep(350, 0.08);
-      document.getElementById('landingPageModal').classList.add('hidden');
-    }
-
-    function exportDeckSummary() {
-      playBeep(720, 0.1);
-      let textContent = "FLOWEN PITCH DECK CANVAS SUMMARY\n=================================\n\n";
-      slidesData.forEach((s, idx) => {
-        textContent += `[SLIDE ${idx + 1}] ${s.num}\n`;
-        textContent += `TITLE: ${s.title.replace(/<[^>]*>?/gm, '')}\n`;
-        textContent += `SUMMARY: ${s.body}\n`;
-        if (s.stat) textContent += `HERO STAT: ${s.stat}\n`;
-        textContent += `\n---------------------------------\n\n`;
+    function renderSlide() {
+      const s = SLIDES[curSlide];
+      document.getElementById('presNum').innerText = s.num;
+      document.getElementById('presTitle').innerHTML = s.title;
+      document.getElementById('presBody').innerText = s.body;
+      document.getElementById('slideCounter').innerText = `Slide ${curSlide+1} / ${SLIDES.length}`;
+      document.getElementById('notesText').innerText = s.notes;
+      const st = document.getElementById('presStat');
+      if (s.stat) { st.innerText=s.stat; st.classList.remove('hidden'); } else { st.classList.add('hidden'); }
+      const pg = document.getElementById('presPills'); pg.innerHTML='';
+      (s.pills||[]).forEach(p => {
+        const el=document.createElement('span');
+        el.className=`pill ${p.c}`;
+        el.innerHTML=`<i class="fa-solid ${p.i}"></i> ${p.t}`;
+        pg.appendChild(el);
       });
-
-      const tempTextArea = document.createElement('textarea');
-      tempTextArea.value = textContent;
-      document.body.appendChild(tempTextArea);
-      tempTextArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempTextArea);
-
-      alert("Pitch Deck summary copied to clipboard!");
     }
 
-    let simAnimId = null;
-    let isSpeechBlockSim = false;
+    function nextSlide() { if(curSlide<SLIDES.length-1){curSlide++;beep(580,0.06);renderSlide();} }
+    function prevSlide() { if(curSlide>0){curSlide--;beep(450,0.06);renderSlide();} }
+    function presKey(e) {
+      if(e.key==='ArrowRight'||e.key===' ') nextSlide();
+      if(e.key==='ArrowLeft') prevSlide();
+      if(e.key==='Escape') closePres();
+    }
+    function toggleNotes() { document.getElementById('notesBox').classList.toggle('hidden'); beep(500,0.05); }
+    function startTimer() {
+      timerSecs=0; clearInterval(timerInt);
+      timerInt=setInterval(()=>{
+        timerSecs++;
+        const m=String(Math.floor(timerSecs/60)).padStart(2,'0'), s=String(timerSecs%60).padStart(2,'0');
+        document.getElementById('presTimer').innerHTML=`<i class="fa-solid fa-clock"></i> ${m}:${s}`;
+      },1000);
+    }
 
-    function initWaveformCanvas() {
-      const canvas = document.getElementById('waveformCanvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      let step = 0;
+    function quickEdit(idx) {
+      beep(650,0.08); editIdx=idx;
+      const s=SLIDES[idx];
+      document.getElementById('editHeader').innerText=`Edit ${s.num}`;
+      document.getElementById('editTitle').value=s.title;
+      document.getElementById('editBody').value=s.body;
+      document.getElementById('editStat').value=s.stat||'';
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+    function closeEdit() { document.getElementById('editModal').classList.add('hidden'); }
+    function saveEdit() {
+      if(editIdx===null) return; beep(800,0.1);
+      const s=SLIDES[editIdx];
+      s.title=document.getElementById('editTitle').value;
+      s.body=document.getElementById('editBody').value;
+      s.stat=document.getElementById('editStat').value;
+      const te=document.getElementById(`title-${editIdx}`), be=document.getElementById(`body-${editIdx}`), se=document.getElementById(`stat-${editIdx}`);
+      if(te) te.innerHTML=s.title; if(be) be.innerText=s.body; if(se&&s.stat) se.innerText=s.stat;
+      closeEdit();
+    }
 
+    function openLandingModal() { beep(620,0.08); document.getElementById('landingModal').classList.remove('hidden'); }
+    function closeLandingModal() { beep(350,0.08); document.getElementById('landingModal').classList.add('hidden'); }
+
+    function exportSummary() {
+      beep(720,0.1);
+      let txt='FLOWEN PITCH DECK — INVESTOR SUMMARY\n=====================================\n\n';
+      SLIDES.forEach((s,i)=>{ txt+=`[SLIDE ${i+1}] ${s.num}\nTITLE: ${s.title.replace(/<[^>]*>?/gm,'')}\nSUMMARY: ${s.body}\n${s.stat?`HERO STAT: ${s.stat}\n`:''}\n---------------------------------\n\n`; });
+      const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      alert('Deck summary copied to clipboard!');
+    }
+
+    // ASR SIMULATOR
+    let simAnim=null, isBlock=false;
+    function initCanvas() {
+      const canvas=document.getElementById('waveCanvas'); if(!canvas) return;
+      const ctx=canvas.getContext('2d'); let step=0;
       function draw() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        const width = canvas.width;
-        const height = canvas.height;
-        const centerY = height / 2;
-
-        for (let x = 0; x < width; x += 3) {
-          let amplitude = Math.sin((x + step) * 0.05) * 16;
-          
-          if (isSpeechBlockSim && x > width * 0.3 && x < width * 0.7) {
-            amplitude = (Math.random() - 0.5) * 4;
-          }
-
-          ctx.strokeStyle = isSpeechBlockSim ? '#E2703A' : '#2FBBA3';
-          if (x === 0) ctx.moveTo(x, centerY + amplitude);
-          else ctx.lineTo(x, centerY + amplitude);
+        canvas.width=canvas.offsetWidth; canvas.height=canvas.offsetHeight;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.lineWidth=2.5; ctx.beginPath();
+        const w=canvas.width, h=canvas.height, cy=h/2;
+        for(let x=0;x<w;x+=3) {
+          let amp = Math.sin((x+step)*0.05)*16;
+          if(isBlock&&x>w*0.3&&x<w*0.7) amp=(Math.random()-0.5)*4;
+          ctx.strokeStyle=isBlock?'#E2703A':'#2FBBA3';
+          if(x===0) ctx.moveTo(x,cy+amp); else ctx.lineTo(x,cy+amp);
         }
-        ctx.stroke();
-
-        step += 2;
-        simAnimId = requestAnimationFrame(draw);
+        ctx.stroke(); step+=2; simAnim=requestAnimationFrame(draw);
       }
       draw();
     }
 
-    function simulateSpeechBlock() {
-      playBeep(350, 0.2);
-      isSpeechBlockSim = true;
-      document.getElementById('blockIndicator').innerText = "DISFLUENCY DETECTED (BLOCK)";
-      document.getElementById('blockIndicator').className = "px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] animate-pulse";
-      document.getElementById('liveLatencyVal').innerText = "118 ms (Sub-150ms)";
-      document.getElementById('stdAsrStatus').innerText = "TIMED OUT (>3000ms)";
-      document.getElementById('stdAsrStatus').className = "text-rose-400 font-bold";
-      document.getElementById('flowenAsrStatus').innerText = "Viseme Guide Active";
+    function simBlock() {
+      beep(350,0.2); isBlock=true;
+      document.getElementById('blockInd').innerText='DISFLUENCY DETECTED';
+      document.getElementById('blockInd').className='px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] animate-pulse';
+      document.getElementById('latVal').innerText='118 ms (Sub-150ms)';
+      document.getElementById('stdStatus').innerText='TIMED OUT (>3000ms)';
+      document.getElementById('stdStatus').className='text-rose-400 font-bold';
+      document.getElementById('flowenStatus').innerText='Viseme Guide Active';
+      document.getElementById('dataStatus').innerText='Block captured → training pipeline ✓';
+      document.getElementById('dataStatus').className='text-[var(--violet-hi)] font-bold';
+    }
+    function resetSim() {
+      beep(500,0.05); isBlock=false;
+      document.getElementById('blockInd').innerText='FLUENT PATTERN';
+      document.getElementById('blockInd').className='px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px]';
+      document.getElementById('latVal').innerText='112 ms';
+      document.getElementById('stdStatus').innerText='Listening...';
+      document.getElementById('stdStatus').className='text-amber-400';
+      document.getElementById('flowenStatus').innerText='Active Visual Guide';
+      document.getElementById('dataStatus').innerText='Recording phoneme pattern';
+      document.getElementById('dataStatus').className='text-[var(--violet-hi)]';
     }
 
-    function resetSpeechSim() {
-      playBeep(500, 0.05);
-      isSpeechBlockSim = false;
-      document.getElementById('blockIndicator').innerText = "FLUENT PATTERN";
-      document.getElementById('blockIndicator').className = "px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px]";
-      document.getElementById('liveLatencyVal').innerText = "112 ms";
-      document.getElementById('stdAsrStatus').innerText = "Listening...";
-      document.getElementById('stdAsrStatus').className = "text-amber-400";
-      document.getElementById('flowenAsrStatus').innerText = "Active Visual Guide";
-    }
-
-    const ladderData = [
-      {
-        step: "STAGE 01 OF 05",
-        title: "Single Word Repetition",
-        desc: "Focuses on easy diaphragmatic onset and gentle vocal cord vibration before consonant release. Your 3D viseme guide models lip and jaw positioning prior to vocalization.",
-        marker: "Diaphragmatic onset sync within 120ms of breath release.",
-        tech: "Fluency Shaping"
-      },
-      {
-        step: "STAGE 02 OF 05",
-        title: "Phrases & Chunks",
-        desc: "Two-to-four word linking drills that introduce natural rhythm and continuous phonation without losing onset control.",
-        marker: "Continuous vocal cord vibration across word boundaries.",
-        tech: "Continuous Phonation"
-      },
-      {
-        step: "STAGE 03 OF 05",
-        title: "Sentences & Pacing",
-        desc: "Full sentence structures guided by visual pacing cues; light articulatory contact drills prevent block onset at plosive sounds (B, P, T, D).",
-        marker: "Light articulatory contact force detection < 20% max tension.",
-        tech: "Rate Control & Light Contact"
-      },
-      {
-        step: "STAGE 04 OF 05",
-        title: "Paragraph Endurance",
-        desc: "Extended reading passages that build stamina and self-monitoring, helping users spot physical tension before it escalates into a vocal freeze.",
-        marker: "Laryngeal tension threshold visualizer.",
-        tech: "Preparatory Sets & Stammering Mod"
-      },
-      {
-        step: "STAGE 05 OF 05",
-        title: "Live Unscripted Conversation",
-        desc: "Endless AI back-and-forth simulation mirroring real-world pressure: coffee ordering, job interviews, and phone call transfers.",
-        marker: "Real-time speech recovery latency & confidence rating.",
-        tech: "Transfer & Desensitization"
-      }
+    // PRACTICE LADDER
+    const STEPS=[
+      {n:"STAGE 01 OF 05",t:"Single Word Repetition",d:"Easy diaphragmatic onset and gentle vocal cord vibration before consonant release. 3D viseme guide models lip and jaw positioning. Block data → annotated phoneme onset event.",m:"Diaphragmatic onset sync within 120ms of breath release.",tech:"Fluency Shaping"},
+      {n:"STAGE 02 OF 05",t:"Phrases & Chunks",d:"Two-to-four word linking drills introducing natural rhythm and continuous phonation. Each chunk-boundary is a data event.",m:"Continuous vocal cord vibration across word boundaries.",tech:"Continuous Phonation"},
+      {n:"STAGE 03 OF 05",t:"Sentences & Pacing",d:"Full sentences with visual pacing cues; light articulatory contact drills prevent block onset at plosives (B, P, T, D).",m:"Light articulatory contact force < 20% max tension.",tech:"Rate Control & Light Contact"},
+      {n:"STAGE 04 OF 05",t:"Paragraph Endurance",d:"Extended passages building stamina and self-monitoring. Users spot laryngeal tension before it becomes a freeze.",m:"Laryngeal tension threshold visualizer active.",tech:"Preparatory Sets & Stammering Mod"},
+      {n:"STAGE 05 OF 05",t:"Live Unscripted Conversation",d:"AI back-and-forth mirroring real-world pressure: job interviews, phone calls, presentations. Highest-value training data.",m:"Real-time recovery latency & confidence score.",tech:"Transfer & Desensitization"}
     ];
-
-    function selectLadderStep(idx) {
-      playBeep(550, 0.05);
-      const data = ladderData[idx - 1];
-
-      for (let i = 1; i <= 5; i++) {
-        const btn = document.getElementById(`ladderBtn-${i}`);
-        if (i === idx) {
-          btn.className = "w-full text-left p-3 rounded-xl bg-[var(--teal)]/20 border border-[var(--teal)] text-[var(--teal)] font-bold flex justify-between items-center";
-        } else {
-          btn.className = "w-full text-left p-3 rounded-xl bg-[var(--bg-navy)] border border-[var(--border-line)] text-[var(--paper)] flex justify-between items-center hover:border-[var(--teal)]";
-        }
+    function selectStep(idx) {
+      beep(550,0.05); const d=STEPS[idx-1];
+      for(let i=1;i<=5;i++) {
+        document.getElementById(`stepBtn-${i}`).className = i===idx
+          ? 'w-full text-left p-3 rounded-xl bg-[var(--teal)]/20 border border-[var(--teal)] text-[var(--teal)] font-bold flex justify-between items-center'
+          : 'w-full text-left p-3 rounded-xl bg-[var(--bg-navy)] border border-[var(--border)] text-[var(--paper)] flex justify-between items-center hover:border-[var(--teal)]';
       }
-
-      document.getElementById('ladderStepNum').innerText = data.step;
-      document.getElementById('ladderStepTitle').innerText = data.title;
-      document.getElementById('ladderStepDesc').innerText = data.desc;
-      document.getElementById('ladderStepMarker').innerText = data.marker;
+      document.getElementById('stepNum').innerText=d.n;
+      document.getElementById('stepTitle').innerText=d.t;
+      document.getElementById('stepDesc').innerText=d.d;
+      document.getElementById('stepMarker').innerText=d.m;
     }
 
-    function switchSimTab(tab) {
-      playBeep(600, 0.05);
-      document.getElementById('simTab-asr').classList.add('hidden');
-      document.getElementById('simTab-workflow').classList.add('hidden');
-      document.getElementById('simTab-econ').classList.add('hidden');
-
-      document.getElementById('tabBtn-asr').className = "px-3 py-1.5 rounded-lg text-xs font-mono-ibm bg-[var(--card-navy-hi)] text-[var(--lavender)] border border-[var(--border-line)]";
-      document.getElementById('tabBtn-workflow').className = "px-3 py-1.5 rounded-lg text-xs font-mono-ibm bg-[var(--card-navy-hi)] text-[var(--lavender)] border border-[var(--border-line)]";
-      document.getElementById('tabBtn-econ').className = "px-3 py-1.5 rounded-lg text-xs font-mono-ibm bg-[var(--card-navy-hi)] text-[var(--lavender)] border border-[var(--border-line)]";
-
-      if (tab === 'asr') {
-        document.getElementById('simTab-asr').classList.remove('hidden');
-        document.getElementById('tabBtn-asr').className = "px-3 py-1.5 rounded-lg text-xs font-mono-ibm bg-[var(--teal)] text-[var(--bg-navy)] font-semibold";
-      } else if (tab === 'workflow') {
-        document.getElementById('simTab-workflow').classList.remove('hidden');
-        document.getElementById('tabBtn-workflow').className = "px-3 py-1.5 rounded-lg text-xs font-mono-ibm bg-[var(--teal)] text-[var(--bg-navy)] font-semibold";
-      } else {
-        document.getElementById('simTab-econ').classList.remove('hidden');
-        document.getElementById('tabBtn-econ').className = "px-3 py-1.5 rounded-lg text-xs font-mono-ibm bg-[var(--teal)] text-[var(--bg-navy)] font-semibold";
-      }
+    // TAB SWITCHING
+    function switchTab(tab) {
+      beep(600,0.05);
+      ['asr','workflow','econ'].forEach(t=>{
+        document.getElementById(`simTab-${t}`).classList.add('hidden');
+        document.getElementById(`tabBtn-${t}`).className='px-3 py-1.5 rounded-lg text-xs fm bg-[var(--card-hi)] text-[var(--lavender)] border border-[var(--border)]';
+      });
+      document.getElementById(`simTab-${tab}`).classList.remove('hidden');
+      document.getElementById(`tabBtn-${tab}`).className='px-3 py-1.5 rounded-lg text-xs fm bg-[var(--teal)] text-[var(--bg-navy)] font-semibold';
     }
 
-    function updateEconCalc() {
-      const users = parseInt(document.getElementById('userSlider').value);
-      const price = parseInt(document.getElementById('priceSlider').value);
-      const nhsCount = parseInt(document.getElementById('nhsSlider').value);
+    // ECONOMICS CALCULATOR — Flowen + Vocali + NHS
+    function updateEcon() {
+      const fu=parseInt(document.getElementById('flowenSlider').value);
+      const fp=parseInt(document.getElementById('priceSlider').value);
+      const vu=parseInt(document.getElementById('vocaliSlider').value);
+      const nhs=parseInt(document.getElementById('nhsSlider').value);
 
-      document.getElementById('userCountVal').innerText = `${users.toLocaleString()} Users`;
-      document.getElementById('priceVal').innerText = `£${price}.00 / mo`;
-      document.getElementById('nhsCountVal').innerText = `${nhsCount} ICB Trusts`;
+      document.getElementById('flowenUsers').innerText=`${fu.toLocaleString()} Users`;
+      document.getElementById('flowenPrice').innerText=`£${fp}.00/mo`;
+      document.getElementById('vocaliUsers').innerText=`${vu.toLocaleString()} Users`;
+      document.getElementById('nhsCount').innerText=`${nhs} ICBs`;
 
-      const annualUserRev = users * price * 12;
-      const annualNhsRev = nhsCount * 45000;
-      const totalArr = annualUserRev + annualNhsRev;
+      const fArr=fu*fp*12;
+      const vArr=vu*1.80*12;
+      const nArr=nhs*45000;
+      const total=fArr+vArr+nArr;
 
-      if (totalArr >= 1000000) {
-        document.getElementById('projectedArrVal').innerText = `£${(totalArr / 1000000).toFixed(2)} M`;
-      } else {
-        document.getElementById('projectedArrVal').innerText = `£${(totalArr / 1000).toFixed(0)} k`;
-      }
-
-      const yearlyTherapyCost = 5000;
-      const flowenYearlyCost = price * 12;
-      document.getElementById('userSavingsVal').innerText = `£${(yearlyTherapyCost - flowenYearlyCost).toLocaleString()} / yr`;
+      const fmt=v=>v>=1000000?`£${(v/1000000).toFixed(2)}M`:`£${(v/1000).toFixed(0)}k`;
+      document.getElementById('flowenArr').innerText=fmt(fArr);
+      document.getElementById('vocaliArr').innerText=fmt(vArr);
+      document.getElementById('nhsArr').innerText=fmt(nArr);
+      document.getElementById('totalArr').innerText=fmt(total);
+      document.getElementById('exit30x').innerText=fmt(total*30);
+      document.getElementById('exit40x').innerText=fmt(total*40);
     }
 
-    window.onload = function() {
-      initWaveformCanvas();
-      updateEconCalc();
-    };
+    window.onload=function(){ initCanvas(); updateEcon(); };
   </script>
 </body>
 </html>
