@@ -99,6 +99,8 @@ const nextConfig: NextConfig = {
   // for the PDF generation route so they're bundled into the serverless function.
   outputFileTracingIncludes: {
     '/api/reports/my-progress': ['./node_modules/pdfkit/js/data/**/*'],
+    // Pitch deck PDF route also needs pdfkit's AFM font metrics + ICC profiles
+    '/api/pitch/[token]/pdf': ['./node_modules/pdfkit/js/data/**/*'],
   },
 };
 
