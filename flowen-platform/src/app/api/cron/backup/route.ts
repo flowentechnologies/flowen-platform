@@ -75,6 +75,16 @@ const BACKUP_TABLES = [
 const RETENTION_DAYS  = 30;
 const PAGE_SIZE       = 1_000;
 
+/**
+ * Primary-key column for keyset pagination.
+ * Most tables use `id`; the two exceptions are listed here.
+ * Keeping this explicit is safer than querying information_schema at runtime.
+ */
+const TABLE_PK: Partial<Record<typeof BACKUP_TABLES[number], string>> = {
+  app_config:     'key',
+  user_programme: 'user_id',
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function db() {
@@ -89,17 +99,18 @@ function dateFolder(d = new Date()) {
   return d.toISOString().slice(0, 10); // "2026-08-21"
 }
 
-/** Fetch all rows from a table using keyset pagination on id. */
+/** Fetch all rows from a table using keyset pagination on its primary key. */
 async function exportTable(
   admin: ReturnType<typeof db>,
-  table: string,
+  table: typeof BACKUP_TABLES[number],
 ): Promise<{ rows: unknown[]; error: string | null }> {
+  const pk = TABLE_PK[table] ?? 'id';
   const rows: unknown[] = [];
   let cursor: string | null = null;
 
   for (;;) {
-    let q = admin.from(table).select('*').order('id', { ascending: true }).limit(PAGE_SIZE);
-    if (cursor) q = q.gt('id', cursor);
+    let q = admin.from(table).select('*').order(pk, { ascending: true }).limit(PAGE_SIZE);
+    if (cursor) q = q.gt(pk, cursor);
 
     const { data, error } = await q;
     if (error) return { rows, error: error.message };
@@ -108,10 +119,9 @@ async function exportTable(
     rows.push(...data);
     if (data.length < PAGE_SIZE) break;
 
-    // Some tables use UUID ids, some use integer ids — both work with gt()
     const last = data[data.length - 1] as Record<string, unknown>;
-    cursor = String(last.id ?? '');
-    if (!cursor) break; // table has no id column — fetched in one shot
+    cursor = String(last[pk] ?? '');
+    if (!cursor) break;
   }
 
   return { rows, error: null };
