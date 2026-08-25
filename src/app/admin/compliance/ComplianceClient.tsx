@@ -469,7 +469,41 @@ function ItemCard({ item, onStatusChange, onNotesChange, onEvidenceChange, savin
   const [localNotes, setLocalNotes]             = useState(item.notes ?? '');
   const [localEvidence, setLocalEvidence]       = useState(item.evidence_url ?? '');
   const [evidenceEditing, setEvidenceEditing]   = useState(false);
+  const [uploadState, setUploadState]           = useState<'idle' | 'uploading' | 'error'>('idle');
+  const [uploadError, setUploadError]           = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const notesRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset input so re-uploading same file triggers onChange again
+    e.target.value = '';
+
+    setUploadState('uploading');
+    setUploadError(null);
+
+    const fd = new FormData();
+    fd.append('file',      file);
+    fd.append('framework', item.framework);
+    fd.append('item_code', item.code);
+
+    try {
+      const res  = await fetch('/api/admin/compliance/upload', { method: 'POST', body: fd });
+      const json = await res.json() as { url?: string; error?: string };
+      if (!res.ok || !json.url) {
+        setUploadError(json.error ?? 'Upload failed');
+        setUploadState('error');
+        return;
+      }
+      setLocalEvidence(json.url);
+      onEvidenceChange(item.code, json.url);
+      setUploadState('idle');
+    } catch {
+      setUploadError('Network error — check connection and retry');
+      setUploadState('error');
+    }
+  }, [item.code, item.framework, onEvidenceChange]);
 
   // Keep local state in sync when parent updates
   React.useEffect(() => { setLocalNotes(item.notes ?? ''); },        [item.notes]);
@@ -536,62 +570,111 @@ function ItemCard({ item, onStatusChange, onNotesChange, onEvidenceChange, savin
         )}
       </div>
 
-      {/* Evidence URL */}
-      <div className="flex items-center gap-2">
-        {evidenceEditing ? (
-          <form
-            className="flex items-center gap-2 flex-1"
-            onSubmit={e => {
-              e.preventDefault();
-              onEvidenceChange(item.code, localEvidence);
-              setEvidenceEditing(false);
-            }}
-          >
-            <input
-              autoFocus
-              type="url"
-              value={localEvidence}
-              onChange={e => setLocalEvidence(e.target.value)}
-              onBlur={() => {
+      {/* Evidence — file upload + URL */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2 flex-wrap">
+          {evidenceEditing ? (
+            <form
+              className="flex items-center gap-2 flex-1 min-w-0"
+              onSubmit={e => {
+                e.preventDefault();
                 onEvidenceChange(item.code, localEvidence);
                 setEvidenceEditing(false);
               }}
-              placeholder="https://docs.example.com/evidence"
-              className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
-            />
-            <button type="submit" className="text-[11px] text-emerald-400 hover:text-emerald-300 font-mono shrink-0">
-              Save
-            </button>
-          </form>
-        ) : localEvidence ? (
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <a
-              href={localEvidence}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] text-teal-400 hover:text-teal-300 truncate max-w-[240px] font-mono"
             >
-              Evidence ↗
-            </a>
+              <input
+                autoFocus
+                type="url"
+                value={localEvidence}
+                onChange={e => setLocalEvidence(e.target.value)}
+                onBlur={() => {
+                  onEvidenceChange(item.code, localEvidence);
+                  setEvidenceEditing(false);
+                }}
+                placeholder="https://docs.example.com/evidence"
+                className="flex-1 min-w-0 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
+              />
+              <button type="submit" className="text-[11px] text-emerald-400 hover:text-emerald-300 font-mono shrink-0">
+                Save
+              </button>
+            </form>
+          ) : localEvidence ? (
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <a
+                href={localEvidence}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-teal-400 hover:text-teal-300 truncate max-w-[200px] font-mono"
+              >
+                Evidence ↗
+              </a>
+              <button
+                onClick={() => setEvidenceEditing(true)}
+                className="text-[10px] text-slate-600 hover:text-slate-400 shrink-0"
+              >
+                edit URL
+              </button>
+            </div>
+          ) : (
             <button
               onClick={() => setEvidenceEditing(true)}
-              className="text-[10px] text-slate-600 hover:text-slate-400 shrink-0"
+              className="text-[11px] text-slate-600 hover:text-slate-400 transition-colors font-mono"
             >
-              edit
+              + Paste URL
             </button>
-          </div>
-        ) : (
+          )}
+
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt"
+            className="hidden"
+            onChange={handleFileUpload}
+          />
+
+          {/* Upload file button */}
           <button
-            onClick={() => setEvidenceEditing(true)}
-            className="text-[11px] text-slate-600 hover:text-slate-400 transition-colors font-mono"
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadState === 'uploading'}
+            className="flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-400 hover:text-slate-200 transition-colors disabled:opacity-50 shrink-0"
+            title="Upload evidence file (PDF, Word, Excel, image)"
           >
-            + Add evidence URL
+            {uploadState === 'uploading' ? (
+              <>
+                <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Uploading…
+              </>
+            ) : (
+              <>
+                <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+                </svg>
+                Upload file
+              </>
+            )}
           </button>
-        )}
-        {item.updated_at && (
-          <span className="ml-auto text-[10px] text-slate-700 font-mono shrink-0">
-            {timeAgo(item.updated_at)}
-          </span>
+
+          {item.updated_at && (
+            <span className="ml-auto text-[10px] text-slate-700 font-mono shrink-0">
+              {timeAgo(item.updated_at)}
+            </span>
+          )}
+        </div>
+
+        {/* Upload error */}
+        {uploadState === 'error' && uploadError && (
+          <p className="text-[11px] text-red-400 flex items-center gap-1.5">
+            <svg className="w-3 h-3 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"/>
+            </svg>
+            {uploadError}
+            <button onClick={() => setUploadState('idle')} className="text-slate-500 hover:text-slate-300 ml-1">dismiss</button>
+          </p>
         )}
       </div>
     </div>
