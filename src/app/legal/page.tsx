@@ -29,6 +29,12 @@ const SECTIONS = [
     content: MASTER_POLICIES.clinicalCompliance,
   },
   {
+    title: 'Cookie Policy',
+    tag: 'PECR 2003',
+    summary: 'Every cookie we set — strictly necessary auth tokens, first-party analytics (__vs, __utm, flowen_anon_id), affiliate tracking, and third-party tools.',
+    content: MASTER_POLICIES.cookiePolicy,
+  },
+  {
     title: 'Governing Law',
     tag: 'JURISDICTION',
     summary: 'These agreements are governed by the laws of England and Wales.',

@@ -1,139 +1,247 @@
 import MarketingNavbar from '@/components/MarketingNavbar';
 import MarketingFooter from '@/components/MarketingFooter';
+import Link from 'next/link';
 import type { Metadata } from 'next';
+import { MASTER_POLICIES } from '@/app/legal/policies';
 
 export const metadata: Metadata = {
-  title: 'Cookie Policy — Flowen Speech Platform',
-  description: 'How Flowen uses cookies and similar technologies on its platform, and how you can manage your preferences.',
+  title: 'Cookie Policy — Flowen',
+  description:
+    'Full details on every cookie Flowen sets — strictly necessary auth cookies, first-party analytics (__vs, __utm), affiliate tracking, and third-party tools.',
+  alternates: { canonical: '/cookie-policy' },
 };
 
-const COOKIES = [
+// ── Cookie table data ─────────────────────────────────────────────────────────
+
+interface CookieRow {
+  name: string;
+  category: 'strictly-necessary' | 'analytics' | 'affiliate' | 'third-party';
+  purpose: string;
+  setBy: string;
+  retention: string;
+  httpOnly: boolean;
+}
+
+const COOKIES: CookieRow[] = [
   {
-    category: 'Strictly Necessary',
-    required: true,
-    desc: 'These cookies are essential for the platform to function. They cannot be disabled.',
-    cookies: [
-      { name: 'sb-*-auth-token', purpose: 'Supabase authentication session token. Maintains your logged-in state.', duration: 'Session / up to 1 year', provider: 'Flowen / Supabase' },
-      { name: 'flowen_ob', purpose: 'Onboarding completion flag. Prevents repeated profile setup queries on every page load.', duration: '1 year', provider: 'Flowen' },
-      { name: '__Secure-next-auth.session-token', purpose: 'Next.js session management.', duration: 'Session', provider: 'Flowen' },
-    ],
+    name: 'sb-* / *-auth-token*',
+    category: 'strictly-necessary',
+    purpose: 'Supabase session tokens — keep you signed in. Contains a signed JWT and refresh token.',
+    setBy: 'Flowen server (Supabase SSR)',
+    retention: 'Session / 1 hour (auto-renewed)',
+    httpOnly: true,
   },
   {
-    category: 'Functional',
-    required: false,
-    desc: 'These cookies enable personalised features and remember your preferences.',
-    cookies: [
-      { name: 'flowen_theme', purpose: 'Remembers your UI theme preference (dark/light).', duration: '1 year', provider: 'Flowen' },
-      { name: 'flowen_locale', purpose: 'Remembers your language and regional format preferences.', duration: '1 year', provider: 'Flowen' },
-    ],
+    name: '__vs',
+    category: 'analytics',
+    purpose: 'Visitor session ID. A random UUID assigned on first visit — no personal data. Used to count unique visitors and measure sessions.',
+    setBy: 'Flowen server (proxy)',
+    retention: '30 days (rolling)',
+    httpOnly: true,
   },
   {
-    category: 'Analytics',
-    required: false,
-    desc: 'These cookies help us understand how the platform is used so we can improve it. No personally-identifying data is included.',
-    cookies: [
-      { name: 'vercel-analytics-*', purpose: 'Anonymised page view analytics via Vercel Analytics. No cross-site tracking.', duration: '30 days', provider: 'Vercel' },
-      { name: '_sentry_*', purpose: 'Error monitoring session data. Used only when an application error occurs.', duration: 'Session', provider: 'Sentry (EU servers)' },
-    ],
+    name: '__utm',
+    category: 'analytics',
+    purpose: 'First-touch UTM parameters (source, medium, campaign, term, content). Only set when UTM params are present in the URL. Never shared with third parties.',
+    setBy: 'Flowen server (proxy)',
+    retention: '30 days',
+    httpOnly: true,
   },
   {
-    category: 'Marketing / Tracking',
-    required: false,
-    desc: 'Flowen does not use advertising or third-party tracking cookies.',
-    cookies: [],
+    name: 'flowen_anon_id',
+    category: 'analytics',
+    purpose: 'Anonymous marketing attribution ID. Links ad click IDs (gclid, fbclid) to conversions via server-side Conversions API. No personal data.',
+    setBy: 'Flowen server (proxy)',
+    retention: '365 days',
+    httpOnly: true,
+  },
+  {
+    name: 'flowen_ref',
+    category: 'affiliate',
+    purpose: 'Affiliate referral code. Set only when you arrive via a ?ref= link. Stores the partner code (short alphanumeric, not personal data) for commission attribution.',
+    setBy: 'Flowen server (proxy)',
+    retention: '30 days',
+    httpOnly: true,
+  },
+  {
+    name: 'ph_*',
+    category: 'third-party',
+    purpose: 'PostHog product analytics — distinct ID and session ID for usage funnels (e.g. "session started"). Hosted on our own EU instance.',
+    setBy: 'PostHog JS (browser)',
+    retention: '1 year (distinct ID) / session',
+    httpOnly: false,
+  },
+  {
+    name: '__stripe_mid / __stripe_sid',
+    category: 'third-party',
+    purpose: 'Stripe fraud prevention and payment flow continuity. Only set on pricing and checkout pages.',
+    setBy: 'Stripe JS (browser)',
+    retention: '1 year / session',
+    httpOnly: false,
   },
 ];
 
+const CATEGORY_LABELS: Record<CookieRow['category'], { label: string; color: string }> = {
+  'strictly-necessary': { label: 'Strictly Necessary', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+  'analytics':          { label: 'First-Party Analytics', color: 'text-sky-400 bg-sky-500/10 border-sky-500/30' },
+  'affiliate':          { label: 'Affiliate / Referral', color: 'text-violet-400 bg-violet-500/10 border-violet-500/30' },
+  'third-party':        { label: 'Third-Party', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
+};
+
+// ── Page ─────────────────────────────────────────────────────────────────────
+
 export default function CookiePolicyPage() {
+  const policy = MASTER_POLICIES.cookiePolicy;
+
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1 max-w-3xl mx-auto px-6 py-16">
-        <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-          LEGAL
-        </span>
-        <h1 className="text-4xl font-extrabold text-white tracking-tight mt-4">Cookie Policy</h1>
-        <p className="text-slate-500 text-xs mt-2">Last updated: 28 July 2026</p>
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-16 space-y-12">
 
-        <div className="mt-10 space-y-5 text-sm text-slate-400 leading-relaxed">
-          <p>
-            This Cookie Policy explains how Flowen Group HoldCo (&quot;Flowen&quot;, &quot;we&quot;, &quot;us&quot;) uses cookies and similar technologies when you use our website and platform at <span className="text-slate-200">flowen.digital</span>.
-          </p>
-          <p>
-            We operate under the UK&apos;s Privacy and Electronic Communications Regulations (PECR) 2003 and the UK General Data Protection Regulation (UK GDPR). We only set non-essential cookies with your explicit consent.
+        {/* Header */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-slate-500">
+            <Link href="/legal" className="hover:text-slate-300 transition-colors">Legal</Link>
+            <span>›</span>
+            <span>Cookie Policy</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Cookie Policy</h1>
+          <p className="text-slate-400 text-sm leading-relaxed max-w-2xl">
+            Last updated <strong className="text-slate-300">1 August 2026</strong>.
+            We believe cookie policies should be readable — this one is.
+            Below is every cookie we set, in plain English, alongside the full legal text.
           </p>
         </div>
 
-        <div className="mt-12 space-y-10">
-          {COOKIES.map(group => (
-            <div key={group.category}>
-              <div className="flex items-center gap-3 mb-4">
-                <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-300">{group.category}</h2>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-mono ${
-                  group.required
-                    ? 'bg-slate-800 text-slate-500 border border-slate-700'
-                    : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                }`}>
-                  {group.required ? 'Always active' : 'Optional'}
-                </span>
+        {/* Quick summary banner */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">TL;DR</p>
+          <div className="grid sm:grid-cols-2 gap-3 text-sm">
+            {[
+              { icon: '✓', color: 'text-emerald-400', text: 'No advertising or cross-site tracking cookies' },
+              { icon: '✓', color: 'text-emerald-400', text: 'First-party analytics only — data stays on our servers' },
+              { icon: '✓', color: 'text-emerald-400', text: '__vs visitor ID is a random UUID — no personal data' },
+              { icon: '✓', color: 'text-emerald-400', text: 'All first-party cookies are HttpOnly — not readable by scripts' },
+              { icon: '✓', color: 'text-emerald-400', text: 'We honour the Do Not Track browser signal' },
+              { icon: '✓', color: 'text-emerald-400', text: 'You can opt out of analytics by emailing us' },
+            ].map(({ icon, color, text }) => (
+              <div key={text} className="flex items-start gap-2">
+                <span className={`${color} font-bold shrink-0`}>{icon}</span>
+                <span className="text-slate-300">{text}</span>
               </div>
-              <p className="text-slate-500 text-xs mb-5">{group.desc}</p>
+            ))}
+          </div>
+        </div>
 
-              {group.cookies.length === 0 ? (
-                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 text-slate-500 text-xs italic">
-                  No marketing or advertising cookies are used.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {group.cookies.map(cookie => (
-                    <div key={cookie.name} className="bg-slate-900/50 border border-slate-800 rounded-xl p-5">
-                      <div className="font-mono text-emerald-400 text-xs mb-2">{cookie.name}</div>
-                      <p className="text-slate-400 text-xs mb-3">{cookie.purpose}</p>
-                      <div className="flex items-center gap-6 text-xs text-slate-500">
-                        <span><span className="text-slate-600">Duration:</span> {cookie.duration}</span>
-                        <span><span className="text-slate-600">Provider:</span> {cookie.provider}</span>
-                      </div>
-                    </div>
+        {/* Cookie table */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-white">Every cookie we set</h2>
+
+          {/* Category legend */}
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(CATEGORY_LABELS).map(([key, { label, color }]) => (
+              <span
+                key={key}
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-mono font-bold border ${color}`}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-slate-800">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-800 bg-slate-900/60">
+                  {['Cookie name', 'Category', 'Purpose', 'Set by', 'Retention', 'HttpOnly'].map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-[10px] font-mono uppercase tracking-widest text-slate-500 whitespace-nowrap">
+                      {h}
+                    </th>
                   ))}
-                </div>
-              )}
-            </div>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {COOKIES.map(c => {
+                  const cat = CATEGORY_LABELS[c.category];
+                  return (
+                    <tr key={c.name} className="hover:bg-slate-900/40 transition-colors">
+                      <td className="px-4 py-3 font-mono text-xs text-slate-200 whitespace-nowrap align-top">{c.name}</td>
+                      <td className="px-4 py-3 align-top">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border ${cat.color} whitespace-nowrap`}>
+                          {cat.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-400 leading-relaxed max-w-xs align-top">{c.purpose}</td>
+                      <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap align-top">{c.setBy}</td>
+                      <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap align-top">{c.retention}</td>
+                      <td className="px-4 py-3 text-center align-top">
+                        {c.httpOnly
+                          ? <span className="text-emerald-400 text-xs font-bold">Yes</span>
+                          : <span className="text-slate-500 text-xs">No</span>
+                        }
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Opt-out section */}
+        <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <h2 className="text-base font-bold text-white">Your choices</h2>
+          <div className="space-y-3 text-sm text-slate-400 leading-relaxed">
+            <p>
+              <strong className="text-slate-200">Browser settings:</strong> Block or delete cookies in your browser settings.
+              Note: blocking strictly necessary cookies will prevent sign-in.
+            </p>
+            <p>
+              <strong className="text-slate-200">First-party analytics opt-out:</strong> Email{' '}
+              <a href="mailto:hello@flowen.digital?subject=Cookie opt-out" className="text-emerald-400 hover:text-emerald-300">
+                hello@flowen.digital
+              </a>{' '}
+              with the subject "Cookie opt-out". We will suppress analytics for your account within 5 working days.
+            </p>
+            <p>
+              <strong className="text-slate-200">Do Not Track:</strong> We honour the DNT browser signal.
+              When active, all non-essential cookies and analytics events are suppressed.
+            </p>
+            <p>
+              <strong className="text-slate-200">PostHog:</strong> Opt out via Dashboard → Settings → Privacy, or email us.
+            </p>
+          </div>
+        </section>
+
+        {/* Full legal text */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-white">Full legal text</h2>
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 overflow-x-auto">
+            <pre className="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap font-mono">
+              {policy}
+            </pre>
+          </div>
+        </section>
+
+        {/* Related links */}
+        <nav className="grid sm:grid-cols-3 gap-4">
+          {[
+            { href: '/legal', label: 'Privacy Policy', desc: 'Full UK GDPR statement' },
+            { href: '/dpa', label: 'Data Processing Agreement', desc: 'For NHS and institutional customers' },
+            { href: '/security', label: 'Security & Compliance', desc: 'Technical controls and DCB0129' },
+          ].map(({ href, label, desc }) => (
+            <Link
+              key={href}
+              href={href}
+              className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 transition-colors group"
+            >
+              <p className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">{label} →</p>
+              <p className="text-xs text-slate-500 mt-1">{desc}</p>
+            </Link>
           ))}
-        </div>
+        </nav>
 
-        <div className="mt-14 space-y-8 text-sm text-slate-400 leading-relaxed">
-          <section>
-            <h2 className="text-lg font-bold text-white mb-3">How to Manage Cookies</h2>
-            <p>
-              You can control and delete cookies through your browser settings. Most browsers allow you to refuse or accept cookies, and to delete cookies that have been set. The process varies by browser:
-            </p>
-            <ul className="mt-4 space-y-2 text-slate-400">
-              <li><strong className="text-slate-300">Chrome:</strong> Settings → Privacy and Security → Cookies and other site data</li>
-              <li><strong className="text-slate-300">Firefox:</strong> Settings → Privacy & Security → Cookies and Site Data</li>
-              <li><strong className="text-slate-300">Safari:</strong> Preferences → Privacy → Manage Website Data</li>
-              <li><strong className="text-slate-300">Edge:</strong> Settings → Cookies and site permissions</li>
-            </ul>
-            <p className="mt-4 text-slate-500">
-              Note: disabling strictly necessary cookies will prevent you from logging in and using the platform.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold text-white mb-3">Changes to This Policy</h2>
-            <p>
-              We may update this Cookie Policy from time to time. When we make significant changes, we will notify you via the platform and update the &quot;last updated&quot; date above. Continued use of the platform after changes constitutes acceptance of the updated policy.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold text-white mb-3">Contact</h2>
-            <p>
-              For questions about this Cookie Policy or to exercise your rights under UK GDPR, contact us at{' '}
-              <a href="mailto:privacy@flowen.digital" className="text-emerald-400 hover:underline">privacy@flowen.digital</a>.
-            </p>
-          </section>
-        </div>
       </main>
 
       <MarketingFooter />
