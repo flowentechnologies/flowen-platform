@@ -1,9 +1,80 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import type { PracticeSession } from './page';
 import { formatDate, formatDuration, formatTotalTime } from '@/lib/format';
+
+// ── Recording player ─────────────────────────────────────────────────────────
+
+function RecordingPlayer({ sessionId }: { sessionId: string }) {
+  const [state, setState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [url, setUrl]     = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (state !== 'idle') return;
+    setState('loading');
+    try {
+      const res = await fetch(`/api/practice/sessions/${sessionId}/recording`);
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json() as { url: string };
+      setUrl(data.url);
+      setState('ready');
+    } catch {
+      setState('error');
+    }
+  }, [sessionId, state]);
+
+  if (state === 'ready' && url) {
+    return (
+      <audio
+        controls
+        autoPlay
+        src={url}
+        className="h-7 w-40 accent-emerald-500"
+        aria-label="Session recording"
+      />
+    );
+  }
+
+  if (state === 'error') {
+    return (
+      <button
+        onClick={() => setState('idle')}
+        className="text-xs text-red-400 hover:text-red-300 transition-colors"
+        title="Retry"
+      >
+        Error — retry
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={load}
+      disabled={state === 'loading'}
+      className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 disabled:opacity-50 transition-colors font-semibold"
+      aria-label="Play recording"
+    >
+      {state === 'loading' ? (
+        <>
+          <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+          </svg>
+          Loading…
+        </>
+      ) : (
+        <>
+          <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+          </svg>
+          Play
+        </>
+      )}
+    </button>
+  );
+}
 
 function TranscriptRow({ transcript, colSpan }: { transcript: string; colSpan: number }) {
   return (
@@ -284,6 +355,9 @@ export function HistoryClient({ sessions }: Props) {
                   <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
                     Transcript
                   </th>
+                  <th className="px-6 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600 whitespace-nowrap">
+                    Recording
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -345,9 +419,14 @@ export function HistoryClient({ sessions }: Props) {
                             <span className="text-xs text-slate-700">—</span>
                           )}
                         </td>
+                        <td className="px-6 py-3 text-center">
+                          {s.has_recording
+                            ? <RecordingPlayer sessionId={s.id} />
+                            : <span className="text-xs text-slate-700">—</span>}
+                        </td>
                       </tr>
                       {isExpanded && s.transcript && (
-                        <TranscriptRow key={`${s.id}-transcript`} transcript={s.transcript} colSpan={9} />
+                        <TranscriptRow key={`${s.id}-transcript`} transcript={s.transcript} colSpan={10} />
                       )}
                     </>
                   );

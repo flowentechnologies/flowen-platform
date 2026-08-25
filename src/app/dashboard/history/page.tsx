@@ -12,6 +12,7 @@ export type PracticeSession = {
   total_prolongations_detected: number;
   created_at: string;
   transcript: string | null;
+  has_recording: boolean;
 };
 
 export default async function HistoryPage() {
@@ -35,13 +36,23 @@ export default async function HistoryPage() {
   const { data: rawSessions } = await supabase
     .from('practice_sessions')
     .select(
-      'id,stage_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at,transcript'
+      'id,stage_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at,transcript,audio_storage_path'
     )
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(500);
 
-  const sessions = (rawSessions ?? []) as PracticeSession[];
+  const sessions: PracticeSession[] = (rawSessions ?? []).map((s) => ({
+    id:                           s.id,
+    stage_id:                     s.stage_id,
+    duration_seconds:             s.duration_seconds,
+    total_blocks_detected:        s.total_blocks_detected,
+    total_repetitions_detected:   s.total_repetitions_detected,
+    total_prolongations_detected: s.total_prolongations_detected,
+    created_at:                   s.created_at,
+    transcript:                   s.transcript,
+    has_recording:                !!(s as { audio_storage_path?: string | null }).audio_storage_path,
+  }));
 
   return <HistoryClient sessions={sessions} />;
 }
