@@ -36,6 +36,42 @@ export const SERVICES = [
     url:        'https://supabase.com',
   },
   {
+    id:         'supabase-domain',
+    name:       'Supabase Custom Domain',
+    icon:       '🌐',
+    category:   'Database & Auth',
+    billing:    'fixed' as const,
+    monthlyGbp: 7.90,
+    unit:       null,
+    rate:       null,
+    note:       'Custom Domain add-on — $10/mo. Maps auth.flowen.digital to Supabase project.',
+    url:        'https://supabase.com/docs/guides/platform/custom-domains',
+  },
+  {
+    id:         'domain',
+    name:       'Domain Registration',
+    icon:       '🌍',
+    category:   'Hosting & CI/CD',
+    billing:    'fixed' as const,
+    monthlyGbp: 1.25,
+    unit:       null,
+    rate:       null,
+    note:       'flowen.digital annual renewal — ~£15/yr (≈ £1.25/mo). DNS managed via Cloudflare.',
+    url:        'https://cloudflare.com',
+  },
+  {
+    id:         'github',
+    name:       'GitHub',
+    icon:       '🐙',
+    category:   'Hosting & CI/CD',
+    billing:    'freemium' as const,
+    monthlyGbp: 0,
+    unit:       null,
+    rate:       null,
+    note:       'Free plan — unlimited private repos + Actions (2,000 CI min/mo). Triggers Vercel deploys.',
+    url:        'https://github.com',
+  },
+  {
     id:         'r2',
     name:       'Cloudflare R2',
     icon:       '🪣',
@@ -49,8 +85,20 @@ export const SERVICES = [
   },
   // ── AI & Speech ───────────────────────────────────────────────────────────
   {
+    id:         'claude-pro',
+    name:       'Claude Pro',
+    icon:       '🤖',
+    category:   'AI Development Tools',
+    billing:    'fixed' as const,
+    monthlyGbp: 15.80,
+    unit:       null,
+    rate:       null,
+    note:       'Claude Pro plan — $20/mo. Used by admin for operations, content, code review, and platform development.',
+    url:        'https://claude.ai',
+  },
+  {
     id:         'anthropic',
-    name:       'Anthropic (Claude)',
+    name:       'Anthropic (Claude API)',
     icon:       '🧠',
     category:   'AI Coaching',
     billing:    'variable' as const,
@@ -60,7 +108,7 @@ export const SERVICES = [
     // Claude Haiku 4.5: input $0.80/M tokens, output $4/M tokens
     // Coaching prompt ≈ 800 input + 200 output tokens per session
     // Cost = (800×0.80 + 200×4) / 1_000_000 = £0.0016 @ 0.79
-    note:       'Claude Haiku 4.5 — coaching feedback after each session. ~£0.0016/session.',
+    note:       'Claude Haiku 4.5 API — coaching feedback after each session. ~£0.0016/session.',
     url:        'https://anthropic.com',
   },
   {
@@ -131,7 +179,7 @@ export const SERVICES = [
     monthlyGbp: 0,
     unit:       'transaction',
     rate:       null,
-    note:       '1.5% + £0.20 per UK card charge (European pricing). No monthly fee.',
+    note:       '1.5% + £0.20 per UK card charge (European pricing). No monthly fee. Custom domain (billing.flowen.digital) via CNAME — no extra Stripe fee.',
     url:        'https://stripe.com',
   },
   {
@@ -145,6 +193,31 @@ export const SERVICES = [
     rate:       1.50,
     note:       '~£1.50 per identity check. One-off at onboarding for clinical pathway users.',
     url:        'https://didit.me',
+  },
+  // ── Mobile Distribution ───────────────────────────────────────────────────
+  {
+    id:         'apple-dev',
+    name:       'Apple Developer Program',
+    icon:       '🍎',
+    category:   'Mobile Distribution',
+    billing:    'fixed' as const,
+    monthlyGbp: 6.52,
+    unit:       null,
+    rate:       null,
+    note:       '$99/year — required for iOS App Store distribution. Covers TestFlight, notarisation, and push certificates.',
+    url:        'https://developer.apple.com/programs/',
+  },
+  {
+    id:         'google-play',
+    name:       'Google Play Console',
+    icon:       '▶',
+    category:   'Mobile Distribution',
+    billing:    'fixed' as const,
+    monthlyGbp: 0,
+    unit:       null,
+    rate:       null,
+    note:       '$25 one-time registration fee (already paid). Ongoing cost: $0/mo.',
+    url:        'https://play.google.com/console',
   },
   // ── Observability & Comms ─────────────────────────────────────────────────
   {
@@ -502,15 +575,21 @@ export async function fetchUsageCosts(): Promise<UsageCostsData> {
     let variableGbp = 0;
     let usageStr: string | null = null;
     switch (svc.id) {
-      case 'anthropic':  variableGbp = anthropicCost; usageStr = `${sessionsMonth} coaching sessions`; break;
-      case 'openai':     variableGbp = openaiCost;    usageStr = `${estimatedAvatarMinMonth} avatar-min (est.)`; break;
-      case 'agora':      variableGbp = agoraCost;     usageStr = `${estimatedAvatarMinMonth} avatar-min (est.)`; break;
-      case 'elevenlabs': variableGbp = elCharCost;    usageStr = `${Math.round(elCharsMonth).toLocaleString()} chars (est.)`; break;
-      case 'byteplus':   variableGbp = 0;             usageStr = `no videos generated this month`; break;
-      case 'stripe':     variableGbp = stripeFees;    usageStr = `${activeSubCount} active sub${activeSubCount !== 1 ? 's' : ''}`; break;
-      case 'didit':      variableGbp = kycCost;       usageStr = `${kycVerifiedTotal} verification${kycVerifiedTotal !== 1 ? 's' : ''}`; break;
-      case 'email':      variableGbp = emailCost;     usageStr = `${emailsSentMonth} sent (${emailOverage} over free)`; break;
-      case 'r2':         variableGbp = r2Var;         usageStr = `${audioStorageGb.toFixed(3)} GB stored`; break;
+      case 'anthropic':       variableGbp = anthropicCost; usageStr = `${sessionsMonth} coaching sessions`; break;
+      case 'openai':          variableGbp = openaiCost;    usageStr = `${estimatedAvatarMinMonth} avatar-min (est.)`; break;
+      case 'agora':           variableGbp = agoraCost;     usageStr = `${estimatedAvatarMinMonth} avatar-min (est.)`; break;
+      case 'elevenlabs':      variableGbp = elCharCost;    usageStr = `${Math.round(elCharsMonth).toLocaleString()} chars (est.)`; break;
+      case 'byteplus':        variableGbp = 0;             usageStr = `no videos generated this month`; break;
+      case 'stripe':          variableGbp = stripeFees;    usageStr = `${activeSubCount} active sub${activeSubCount !== 1 ? 's' : ''}`; break;
+      case 'didit':           variableGbp = kycCost;       usageStr = `${kycVerifiedTotal} verification${kycVerifiedTotal !== 1 ? 's' : ''}`; break;
+      case 'email':           variableGbp = emailCost;     usageStr = `${emailsSentMonth} sent (${emailOverage} over free)`; break;
+      case 'r2':              variableGbp = r2Var;         usageStr = `${audioStorageGb.toFixed(3)} GB stored`; break;
+      case 'claude-pro':      usageStr = 'admin subscription'; break;
+      case 'supabase-domain': usageStr = 'auth.flowen.digital'; break;
+      case 'domain':          usageStr = 'flowen.digital'; break;
+      case 'github':          usageStr = 'free plan — unlimited repos'; break;
+      case 'apple-dev':       usageStr = 'iOS App Store distribution'; break;
+      case 'google-play':     usageStr = 'Android distribution (one-time paid)'; break;
     }
     // Fixed services set monthlyGbp; pure-variable services use 0
     const fixedGbp = svc.monthlyGbp;
