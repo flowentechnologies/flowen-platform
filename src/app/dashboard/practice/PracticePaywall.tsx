@@ -21,7 +21,7 @@ const BENEFITS = [
   'Progress tracking across all 5 fluency stages',
   'Clinician-assigned treatment plans & SLP messaging',
   'Block rate charts, trends, and downloadable reports',
-  'Voice personalisation — the avatar speaks in your voice',
+  'Full fluency analytics — disfluency trends over time',
 ];
 
 export function PracticePaywall({ sessionsUsed, freeLimit }: PracticePaywallProps) {
@@ -64,7 +64,7 @@ export function PracticePaywall({ sessionsUsed, freeLimit }: PracticePaywallProp
             href="/pricing"
             className="block w-full text-center rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20"
           >
-            Unlock full access — from £9.99/mo
+            Unlock full access — from £19.96/mo
           </Link>
           <Link
             href="/dashboard"

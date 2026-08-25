@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { pixelInitiateCheckout, pixelViewContent } from '@/lib/pixel';
 
+// Monthly and yearly are the two primary options; quarterly/6-month are kept in
+// the billingDetails map for the Stripe checkout but not surfaced as primary choices
+// — they confused users and buried the price anchor.
 type BillingCycle = 'monthly' | 'quarterly' | 'six_months' | 'yearly';
 
 export default function PricingSection() {
@@ -70,21 +73,40 @@ export default function PricingSection() {
         <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-4">
           Flexible Deployment & Early Access
         </h2>
-        <div className="inline-flex items-center gap-3 bg-slate-900 border border-slate-800 p-2.5 rounded-2xl shadow-xl">
-          <label htmlFor="billing-cycle-select" className="text-xs font-semibold uppercase tracking-wider text-slate-400 pl-2">
-            Billing Interval:
-          </label>
-          <select
-            id="billing-cycle-select"
-            value={cycle}
-            onChange={(e) => setCycle(e.target.value as BillingCycle)}
-            className="bg-slate-800 text-white font-medium text-sm rounded-xl px-4 py-2 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+
+        {/* Billing toggle — Monthly vs Yearly */}
+        <div className="inline-flex items-center bg-slate-900 border border-slate-800 p-1 rounded-2xl shadow-xl gap-1">
+          <button
+            type="button"
+            onClick={() => setCycle('monthly')}
+            className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
+              cycle === 'monthly'
+                ? 'bg-slate-700 text-white shadow'
+                : 'text-slate-400 hover:text-white'
+            }`}
           >
-            <option value="monthly">Monthly (£35.96/mo • 10% off)</option>
-            <option value="quarterly">Quarterly (£29.97/mo • 25% off)</option>
-            <option value="six_months">6 Months (£23.97/mo • 40% off)</option>
-            <option value="yearly">Yearly (£19.96/mo • 50% off)</option>
-          </select>
+            Monthly
+            <span className="ml-1.5 text-[11px] text-slate-500 font-normal">£35.96</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setCycle('yearly')}
+            className={`relative px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
+              cycle === 'yearly'
+                ? 'bg-emerald-500 text-slate-950 shadow'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Annual
+            <span className={`ml-1.5 text-[11px] font-normal ${cycle === 'yearly' ? 'text-slate-950/70' : 'text-slate-500'}`}>£19.96/mo</span>
+            <span className={`absolute -top-2 -right-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide ${
+              cycle === 'yearly'
+                ? 'bg-slate-950 text-emerald-400'
+                : 'bg-emerald-500 text-slate-950'
+            }`}>
+              SAVE 44%
+            </span>
+          </button>
         </div>
       </div>
 

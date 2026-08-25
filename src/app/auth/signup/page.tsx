@@ -27,7 +27,13 @@ function SignupForm() {
   return (
     <div className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-8 shadow-2xl">
       <h1 className="text-xl font-bold text-white mb-1 text-center">Create your account</h1>
-      <p className="text-slate-500 text-xs text-center mb-6">Join Flowen and start your speech fluency journey</p>
+      <p className="text-slate-500 text-xs text-center mb-2">Join Flowen and start your speech fluency journey</p>
+      <div className="flex items-center justify-center gap-1.5 mb-6">
+        <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd"/>
+        </svg>
+        <span className="text-emerald-400 text-xs font-semibold">3 free sessions included — no card required</span>
+      </div>
 
       {urlError && (
         <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">

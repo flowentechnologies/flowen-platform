@@ -162,7 +162,11 @@ export default function LandingPage() {
               </a>
             </div>
 
-            <p className="mt-5 text-xs text-white/40 max-w-md mx-auto drop-shadow">
+            <p className="mt-4 text-xs text-emerald-400/80 font-semibold drop-shadow">
+              3 free sessions included · No card required
+            </p>
+
+            <p className="mt-3 text-xs text-white/40 max-w-md mx-auto drop-shadow">
               Flowen is a speech practice aid. Results vary between individuals. It does not replace assessment or treatment by a qualified speech and language therapist.
             </p>
 
