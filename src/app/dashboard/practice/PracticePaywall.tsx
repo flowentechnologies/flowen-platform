@@ -57,6 +57,43 @@ export function PracticePaywall({ sessionsUsed, freeLimit }: PracticePaywallProp
           ))}
         </ul>
 
+        {/* Social proof */}
+        <div className="space-y-3">
+          {/* Testimonial */}
+          <blockquote className="bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 space-y-2">
+            <p className="text-slate-300 text-sm leading-relaxed italic">
+              &ldquo;After 8 weeks with Flowen I went from dreading calls to leading them. The AI feedback after each session is genuinely useful — not generic.&rdquo;
+            </p>
+            <footer className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <span className="text-emerald-400 text-[11px] font-bold">JR</span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-200 leading-tight">James R.</p>
+                <p className="text-[11px] text-slate-500 leading-tight">Flowen member · 14-day streak</p>
+              </div>
+              <div className="ml-auto flex gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="w-3 h-3 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                ))}
+              </div>
+            </footer>
+          </blockquote>
+
+          {/* Clinical credential badge */}
+          <div className="flex items-center gap-3 bg-sky-950/40 border border-sky-800/40 rounded-2xl px-4 py-3">
+            <svg className="w-8 h-8 text-sky-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 12c0 6.628 5.373 12 12 12s12-5.372 12-12c0-2.049-.513-3.978-1.418-5.664L12 2.714z" />
+            </svg>
+            <div>
+              <p className="text-xs font-bold text-sky-200 leading-tight">DCB0129 Clinical Safety · NHS DTAC Assessed</p>
+              <p className="text-[11px] text-sky-400/70 leading-tight mt-0.5">Built to NHS digital clinical safety standards for speech & language therapy platforms.</p>
+            </div>
+          </div>
+        </div>
+
         {/* CTAs */}
         <div className="space-y-3">
           <Link

@@ -300,6 +300,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   const [saveError, setSaveError] = useState<string | null>(null);
   const [micError, setMicError] = useState<string | null>(null);
   const [progression, setProgression] = useState<ProgressionInfo | null>(null);
+  const [micStatus, setMicStatus] = useState<'idle' | 'checking' | 'granted' | 'denied' | 'unavailable'>('idle');
+  const [micProbeKey, setMicProbeKey] = useState(0);
+  const micStreamRef = useRef<MediaStream | null>(null);
 
   // Avatar — imperative handle avoids 60fps React re-renders
   const avatarRef = useRef<FaceAvatarHandle | null>(null);
@@ -414,6 +417,54 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
   }, []);
+
+  // ── Mic pre-flight check ────────────────────────────────────────────────────
+  // Runs when the user lands on the ready screen, and each time they hit Retry.
+  // Probes getUserMedia so we know mic access is granted before the session
+  // starts. The stream is stopped immediately — Agora opens its own stream later.
+  useEffect(() => {
+    if (screen !== 'ready') {
+      // Transitioning away — release any held stream and reset status
+      if (micStreamRef.current) {
+        micStreamRef.current.getTracks().forEach(t => t.stop());
+        micStreamRef.current = null;
+      }
+      if (screen === 'select') setMicStatus('idle');
+      return;
+    }
+
+    setMicStatus('checking');
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setMicStatus('unavailable');
+      return;
+    }
+
+    let cancelled = false;
+    navigator.mediaDevices
+      .getUserMedia({ audio: true, video: false })
+      .then((stream) => {
+        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
+        // Release immediately — the session will re-acquire via Agora
+        stream.getTracks().forEach(t => t.stop());
+        micStreamRef.current = null;
+        setMicStatus('granted');
+        setMicError(null);
+      })
+      .catch((err: DOMException) => {
+        if (cancelled) return;
+        if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          setMicStatus('unavailable');
+        } else {
+          // NotAllowedError, PermissionDeniedError, SecurityError, etc.
+          setMicStatus('denied');
+        }
+      });
+
+    return () => { cancelled = true; };
+  // micProbeKey increments on Retry to re-run the effect without leaving the screen
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, micProbeKey]);
 
   // Auto-scroll caption box
   useEffect(() => {
@@ -1151,11 +1202,89 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
           <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Before you begin</p>
-            <div className="space-y-2 text-slate-400 text-sm">
-              <p>Click <strong className="text-slate-900 dark:text-white">Start</strong> to allow microphone access.</p>
-              <p>Audio is processed locally and not stored on our servers.</p>
+
+            {/* Mic pre-flight status */}
+            <div className={`flex items-start gap-3 rounded-xl px-4 py-3 border text-sm transition-colors ${
+              micStatus === 'granted'
+                ? 'bg-emerald-500/10 border-emerald-500/30'
+                : micStatus === 'denied' || micStatus === 'unavailable'
+                ? 'bg-red-500/10 border-red-500/30'
+                : 'bg-slate-800/60 border-slate-700'
+            }`}>
+              {/* Icon */}
+              {micStatus === 'checking' && (
+                <svg className="w-4 h-4 shrink-0 mt-0.5 text-slate-400 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              )}
+              {micStatus === 'granted' && (
+                <svg className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd"/>
+                </svg>
+              )}
+              {(micStatus === 'denied' || micStatus === 'unavailable') && (
+                <svg className="w-4 h-4 shrink-0 mt-0.5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"/>
+                </svg>
+              )}
+              {micStatus === 'idle' && (
+                <svg className="w-4 h-4 shrink-0 mt-0.5 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z"/>
+                  <path d="M5.5 9.643a.75.75 0 00-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5H10.75v-1.546A6.001 6.001 0 0016 10v-.357a.75.75 0 00-1.5 0V10a4.5 4.5 0 01-9 0v-.357z"/>
+                </svg>
+              )}
+
+              <div className="flex-1 min-w-0">
+                {micStatus === 'checking' && (
+                  <p className="text-slate-300 font-medium">Checking microphone access…</p>
+                )}
+                {micStatus === 'granted' && (
+                  <>
+                    <p className="text-emerald-300 font-medium">Microphone ready</p>
+                    <p className="text-emerald-400/70 text-xs mt-0.5">Audio is processed locally — not stored on our servers.</p>
+                  </>
+                )}
+                {micStatus === 'denied' && (
+                  <>
+                    <p className="text-red-300 font-medium">Microphone access blocked</p>
+                    <p className="text-red-400/80 text-xs mt-1 leading-relaxed">
+                      {(() => {
+                        const ua = navigator.userAgent;
+                        if (/Chrome/.test(ua) && !/Edg/.test(ua))
+                          return 'Click the camera/mic icon in the address bar → Allow → refresh this page.';
+                        if (/Safari/.test(ua) && !/Chrome/.test(ua))
+                          return 'Go to Safari → Settings for this website → Microphone → Allow.';
+                        if (/Firefox/.test(ua))
+                          return 'Click the shield icon in the address bar → Permissions → Allow Microphone.';
+                        return 'Allow microphone access in your browser settings, then refresh this page.';
+                      })()}
+                    </p>
+                  </>
+                )}
+                {micStatus === 'unavailable' && (
+                  <>
+                    <p className="text-red-300 font-medium">No microphone found</p>
+                    <p className="text-red-400/80 text-xs mt-0.5 leading-relaxed">Connect a microphone and refresh this page, or check that no other app is blocking it.</p>
+                  </>
+                )}
+              </div>
+
+              {/* Retry button when denied/unavailable — re-runs the probe effect */}
+              {(micStatus === 'denied' || micStatus === 'unavailable') && (
+                <button
+                  type="button"
+                  onClick={() => setMicProbeKey(k => k + 1)}
+                  className="shrink-0 text-xs font-semibold text-red-300 hover:text-red-100 underline-offset-2 hover:underline transition-colors"
+                >
+                  Retry
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-1 text-slate-400 text-sm">
               {captionSupported && (
-                <p className="text-emerald-400/80">Live captions will appear during your session.</p>
+                <p className="text-emerald-400/80 text-xs">Live captions will appear during your session.</p>
               )}
             </div>
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
@@ -1172,12 +1301,19 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
         <ExercisePanel key={stageId} stageId={stageId} />
 
+        {/* Start session — disabled until mic is confirmed accessible */}
         <button
           onClick={startRecording}
-          className="w-full rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20"
+          disabled={micStatus === 'checking' || micStatus === 'denied' || micStatus === 'unavailable'}
+          className="w-full rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
         >
-          Start session
+          {micStatus === 'checking' ? 'Checking microphone…' : 'Start session'}
         </button>
+        {(micStatus === 'denied' || micStatus === 'unavailable') && (
+          <p className="text-center text-xs text-red-400">
+            {micStatus === 'denied' ? 'Microphone access is blocked — allow it above to continue.' : 'No microphone detected — connect one to continue.'}
+          </p>
+        )}
       </div>
     );
   }
