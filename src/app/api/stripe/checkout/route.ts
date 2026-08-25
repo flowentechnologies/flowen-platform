@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getStripeClient } from '@/lib/stripe';
+import { checkCheckoutRateLimit } from '@/lib/rate-limit';
 
 type BillingCycle = 'monthly' | 'quarterly' | 'six_months' | 'yearly';
 
@@ -47,6 +48,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
   const customerEmail = user.email;
+
+  // Rate limit: 5 attempts per 15 min per IP, 10 per hour per user.
+  // Prevents card-testing bots and accidental hammering.
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'anon';
+  const { allowed, reason } = await checkCheckoutRateLimit(ip, user.id);
+  if (!allowed) {
+    return NextResponse.json({ error: reason ?? 'Rate limit exceeded' }, { status: 429 });
+  }
 
   try {
     const session = await client.checkout.sessions.create({

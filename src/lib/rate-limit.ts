@@ -105,3 +105,43 @@ export async function checkErrorBoundaryRateLimit(ip: string): Promise<boolean> 
   }
   return fallbackCheck(`err:${ip}`, 20, 60_000);
 }
+
+// ── Stripe checkout ───────────────────────────────────────────────────────────
+
+let _checkoutIpLimiter:   Ratelimit | null | undefined;
+let _checkoutUserLimiter: Ratelimit | null | undefined;
+
+/**
+ * Stripe checkout rate limit — two layered windows:
+ *   IP:   5 attempts per 15 minutes  (blocks card-testing bots)
+ *   User: 10 attempts per hour       (prevents accidental loop hammering)
+ *
+ * Returns { allowed: true } when both pass, or { allowed: false, reason }
+ * when either window is exceeded.
+ */
+export async function checkCheckoutRateLimit(
+  ip: string,
+  userId: string,
+): Promise<{ allowed: boolean; reason?: string }> {
+  // ── Per-IP window ──────────────────────────────────────────────────────────
+  _checkoutIpLimiter = _checkoutIpLimiter
+    ?? buildLimiter(_checkoutIpLimiter, 5, '15 m', 'rl:checkout:ip');
+
+  const ipOk = _checkoutIpLimiter
+    ? (await _checkoutIpLimiter.limit(ip)).success
+    : fallbackCheck(`checkout:ip:${ip}`, 5, 15 * 60_000);
+
+  if (!ipOk) return { allowed: false, reason: 'Too many checkout attempts from this IP. Please wait 15 minutes.' };
+
+  // ── Per-user window ────────────────────────────────────────────────────────
+  _checkoutUserLimiter = _checkoutUserLimiter
+    ?? buildLimiter(_checkoutUserLimiter, 10, '1 h', 'rl:checkout:user');
+
+  const userOk = _checkoutUserLimiter
+    ? (await _checkoutUserLimiter.limit(userId)).success
+    : fallbackCheck(`checkout:user:${userId}`, 10, 60 * 60_000);
+
+  if (!userOk) return { allowed: false, reason: 'Too many checkout attempts on this account. Please try again in an hour.' };
+
+  return { allowed: true };
+}

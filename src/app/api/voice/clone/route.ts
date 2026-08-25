@@ -84,12 +84,33 @@ export async function POST(req: Request) {
     });
 
     if (!elRes.ok) {
-      const err = await elRes.text();
-      console.error('[voice/clone] ElevenLabs error:', err);
-      return NextResponse.json(
-        { error: 'Voice clone failed — check ElevenLabs quota or audio quality' },
-        { status: elRes.status },
-      );
+      const errText = await elRes.text();
+      console.error('[voice/clone] ElevenLabs error:', errText);
+
+      // Parse structured ElevenLabs error to give actionable UI message.
+      let userMessage = 'Voice cloning failed — please try again or re-record.';
+      let statusCode  = elRes.status;
+      try {
+        const errJson = JSON.parse(errText) as {
+          detail?: { code?: string; type?: string; message?: string };
+        };
+        const code = errJson.detail?.code ?? errJson.detail?.type ?? '';
+        if (code === 'paid_plan_required' || code === 'can_not_use_instant_voice_cloning') {
+          // Platform-level limitation — don't surface as a user error.
+          userMessage = 'Voice personalisation is not available on your current plan. Your session will use a default voice.';
+          statusCode  = 402;
+        } else if (code === 'quota_exceeded' || code === 'max_voice_add_reached') {
+          userMessage = 'Voice library is full. Please contact support to clear old voices.';
+          statusCode  = 429;
+        } else if (errJson.detail?.message) {
+          // Use ElevenLabs message as-is when it's safe to show (not a plan error).
+          userMessage = errJson.detail.message;
+        }
+      } catch {
+        // Non-JSON response — keep the default message.
+      }
+
+      return NextResponse.json({ error: userMessage }, { status: statusCode });
     }
 
     const { voice_id } = await elRes.json() as { voice_id: string };

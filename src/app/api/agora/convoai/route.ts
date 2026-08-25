@@ -53,9 +53,13 @@ export async function POST(req: Request) {
     };
 
     const appId = process.env.AGORA_APP_ID;
-    // Default includes the full /api/conversational-ai prefix required by the ConvoAI REST API.
-    // Override with AGORA_CONVOAI_BASE_URL if Agora changes region or version.
-    const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? 'https://api.agora.io/api/conversational-ai';
+    // Agora ConvoAI REST API endpoint.
+    // Override AGORA_CONVOAI_BASE_URL if using a non-US region, e.g.:
+    //   EU: https://api-eu.agora.io/api/conversational-ai
+    //   AP: https://api-ap.agora.io/api/conversational-ai
+    const baseUrl = (process.env.AGORA_CONVOAI_BASE_URL ?? 'https://api.agora.io/api/conversational-ai')
+      // Strip trailing slash so URL construction is consistent
+      .replace(/\/$/, '');
     if (!appId) return NextResponse.json({ error: 'Agora not configured' }, { status: 503 });
 
     const agentUid = body.agentUid ?? 9999;
@@ -115,19 +119,29 @@ export async function POST(req: Request) {
       },
     };
 
-    const res = await fetch(
-      `${baseUrl}/v1/projects/${appId}/join`,
-      {
-        method: 'POST',
-        headers: getConvoAIHeaders(),
-        body: JSON.stringify(payload),
-      },
-    );
+    const joinUrl = `${baseUrl}/v1/projects/${appId}/join`;
+    const res = await fetch(joinUrl, {
+      method: 'POST',
+      headers: getConvoAIHeaders(),
+      body: JSON.stringify(payload),
+    });
 
-    const data = await res.json() as { agent_id?: string; error?: string };
+    const data = await res.json() as { agent_id?: string; error?: string; message?: string };
     if (!res.ok) {
-      console.error('[convoai] join error:', data);
-      return NextResponse.json({ error: data.error ?? 'Agent start failed' }, { status: res.status });
+      // "no Route matched with those values" → ConvoAI add-on not enabled for
+      // this App ID, or wrong regional endpoint. Log the URL (no credentials)
+      // so it's visible in Vercel runtime logs without exposing secrets.
+      console.error('[convoai] join error:', data, '| url:', joinUrl, '| status:', res.status);
+      const message = data.message ?? data.error ?? 'Agent start failed';
+      const isNotFound = res.status === 404 || message.toLowerCase().includes('no route');
+      return NextResponse.json(
+        {
+          error: isNotFound
+            ? 'AI conversation not available — please ensure the ConvoAI add-on is enabled in the Agora Console for this App ID.'
+            : message,
+        },
+        { status: res.status },
+      );
     }
 
     return NextResponse.json({ agentId: data.agent_id, agentUid });

@@ -129,11 +129,31 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // the user is simply treated as unauthenticated and redirected to login if
   // they try to access a protected route.
   let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null;
+  let staleCookies = false;
   try {
     const { data, error } = await supabase.auth.getUser();
-    if (!error) user = data.user;
+    if (!error) {
+      user = data.user;
+    } else if (error.status === 400 && (error as { code?: string }).code === 'refresh_token_not_found') {
+      staleCookies = true;
+    }
   } catch {
-    // Invalid/expired refresh token — fall through with user = null.
+    // AuthApiError thrown (not returned) — treat the same as a stale token.
+    staleCookies = true;
+  }
+
+  // Clear any stale Supabase session cookies so the browser isn't stuck in a
+  // loop of failed refreshes. This eliminates the AuthApiError Sentry noise.
+  if (staleCookies) {
+    for (const cookie of request.cookies.getAll()) {
+      if (
+        cookie.name.startsWith('sb-') ||
+        cookie.name.includes('-auth-token') ||
+        cookie.name === 'supabase-auth-token'
+      ) {
+        response.cookies.delete(cookie.name);
+      }
+    }
   }
 
   // 3. Route classification
