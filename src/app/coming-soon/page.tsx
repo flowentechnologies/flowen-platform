@@ -84,16 +84,25 @@ export default function ComingSoonPage() {
           </p>
         </div>
 
-        {/* Countdown */}
-        <div className="flex items-start gap-4 sm:gap-6">
-          <Digit value={time.days}    label="Days"    />
-          <div className="text-slate-700 text-4xl font-black mt-4 select-none">:</div>
-          <Digit value={time.hours}   label="Hours"   />
-          <div className="text-slate-700 text-4xl font-black mt-4 select-none">:</div>
-          <Digit value={time.minutes} label="Minutes" />
-          <div className="text-slate-700 text-4xl font-black mt-4 select-none">:</div>
-          <Digit value={time.seconds} label="Seconds" />
-        </div>
+        {/* Countdown / launched */}
+        {time.days + time.hours + time.minutes + time.seconds === 0 ? (
+          <div className="flex flex-col items-center gap-3">
+            <div className="px-6 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xl tracking-tight">
+              🎉 We&rsquo;re live!
+            </div>
+            <p className="text-slate-400 text-sm">Flowen is now available — sign in to get started.</p>
+          </div>
+        ) : (
+          <div className="flex items-start gap-4 sm:gap-6">
+            <Digit value={time.days}    label="Days"    />
+            <div className="text-slate-700 text-4xl font-black mt-4 select-none">:</div>
+            <Digit value={time.hours}   label="Hours"   />
+            <div className="text-slate-700 text-4xl font-black mt-4 select-none">:</div>
+            <Digit value={time.minutes} label="Minutes" />
+            <div className="text-slate-700 text-4xl font-black mt-4 select-none">:</div>
+            <Digit value={time.seconds} label="Seconds" />
+          </div>
+        )}
 
         {/* CTA */}
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">

@@ -253,6 +253,21 @@ function TimerRing({
 // Main component
 // ---------------------------------------------------------------------------
 
+// sessionStorage key: flowen_micro_YYYY-MM-DD — resets each day automatically
+function todayKey() {
+  return `flowen_micro_${new Date().toISOString().slice(0, 10)}`;
+}
+function readCompleted(): Set<ExerciseId> {
+  try {
+    const raw = sessionStorage.getItem(todayKey());
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw) as ExerciseId[]);
+  } catch { return new Set(); }
+}
+function writeCompleted(ids: Set<ExerciseId>) {
+  try { sessionStorage.setItem(todayKey(), JSON.stringify([...ids])); } catch { /* quota */ }
+}
+
 export function MicroClient() {
   const [activeId, setActiveId] = useState<ExerciseId | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
@@ -261,6 +276,9 @@ export function MicroClient() {
   const [running, setRunning] = useState(false);
   const [completed, setCompleted] = useState<Set<ExerciseId>>(new Set());
   const [showDone, setShowDone] = useState(false);
+
+  // Hydrate from sessionStorage on mount (persists across in-tab navigations)
+  useEffect(() => { setCompleted(readCompleted()); }, []);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const doneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -315,6 +333,7 @@ export function MicroClient() {
         setCompleted(prev => {
           const next = new Set(prev);
           next.add(exercise.id);
+          writeCompleted(next);
           return next;
         });
         doneTimeoutRef.current = setTimeout(() => setShowDone(false), 2000);

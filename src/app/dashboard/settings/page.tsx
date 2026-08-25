@@ -262,8 +262,16 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-slate-900 dark:text-white">Reminder time (UTC)</p>
-              <p className="text-xs text-slate-500 mt-0.5">Hour you&apos;d like to receive reminders</p>
+              <p className="text-sm text-slate-900 dark:text-white">Reminder time</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {(() => {
+                  try {
+                    const localHour = new Date(Date.UTC(2000, 0, 1, reminderHour)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    return `${localHour} your local time (${tz}) · stored as ${String(reminderHour).padStart(2,'0')}:00 UTC`;
+                  } catch { return `${String(reminderHour).padStart(2,'0')}:00 UTC`; }
+                })()}
+              </p>
             </div>
             <select
               value={reminderHour}
@@ -271,9 +279,10 @@ export default function SettingsPage() {
               disabled={!notifLoaded}
               className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors disabled:opacity-40"
             >
-              {Array.from({ length: 24 }, (_, h) => (
-                <option key={h} value={h}>{String(h).padStart(2, '0')}:00 UTC</option>
-              ))}
+              {Array.from({ length: 24 }, (_, h) => {
+                const local = new Date(Date.UTC(2000, 0, 1, h)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                return <option key={h} value={h}>{String(h).padStart(2, '0')}:00 UTC ({local} local)</option>;
+              })}
             </select>
           </div>
           <div className="flex items-center gap-3 pt-1">

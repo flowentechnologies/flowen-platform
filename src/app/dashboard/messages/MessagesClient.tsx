@@ -45,7 +45,7 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
   }, [slpId]);
 
   useEffect(() => {
-    fetchMessages(true).catch(console.error);
+    fetchMessages(true).catch(() => {});
   }, [fetchMessages]);
 
   // Supabase Realtime — subscribe to new messages and read receipts
@@ -142,7 +142,7 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      send().catch(console.error);
+      send().catch(() => {});
     }
   };
 
@@ -220,7 +220,7 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
             className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500 transition-colors"
           />
           <button
-            onClick={() => send().catch(console.error)}
+            onClick={() => send().catch(() => {})}
             disabled={sending || !content.trim()}
             className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
           >

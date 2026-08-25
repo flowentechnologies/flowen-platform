@@ -505,7 +505,7 @@ function OnboardingForm() {
         address_verified:  state.postcodeStatus === 'verified',
       });
 
-      document.cookie = 'flowen_ob=1; path=/; max-age=31536000; SameSite=Lax';
+      document.cookie = 'flowen_ob=1; path=/; max-age=31536000; SameSite=Lax; Secure';
       router.push(href);
     });
   }

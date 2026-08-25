@@ -48,7 +48,7 @@ const SECTIONS = [
     id: 'history',
     label: 'History',
     href: '/dashboard/history',
-    screenshot: '/assets/screenshots/dashboard-home.jpg',
+    screenshot: '/assets/screenshots/dashboard-history.jpg',
     badge: 'Log',
     description:
       'A chronological log of every session you\'ve completed. Filter by stage. Each entry shows the date, stage, duration, total blocks detected, blocks-per-minute, and the intensity bar. Sessions with captions enabled also display their transcript.',

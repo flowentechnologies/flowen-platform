@@ -90,9 +90,23 @@ export default function LegalPage() {
                 </svg>
               </summary>
               <div className="px-6 pb-6 border-t border-slate-800">
-                <pre className="mt-4 text-xs text-slate-400 leading-relaxed whitespace-pre-wrap font-sans">
-                  {section.content.trim()}
-                </pre>
+                <div className="mt-4 text-xs text-slate-400 leading-relaxed space-y-3">
+                  {section.content.trim().split(/\n\n+/).map((block, i) => {
+                    const firstLine = block.split('\n')[0].trim();
+                    // Detect headings: ALL-CAPS lines, or numbered headings like "5. SUB-PROCESSORS"
+                    const isHeading = /^(\d+\.?\s+)?[A-Z][A-Z\s\d&/().,'-]{4,}$/.test(firstLine);
+                    if (isHeading) {
+                      return (
+                        <h3 key={i} className="text-slate-300 font-semibold text-[11px] uppercase tracking-wider pt-2 whitespace-pre-wrap">
+                          {block}
+                        </h3>
+                      );
+                    }
+                    return (
+                      <p key={i} className="whitespace-pre-wrap">{block}</p>
+                    );
+                  })}
+                </div>
               </div>
             </details>
           ))}
