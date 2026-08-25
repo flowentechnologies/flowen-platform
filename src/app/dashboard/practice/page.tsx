@@ -2,9 +2,13 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { PracticeClient } from './PracticeClient';
+import { PracticePaywall } from './PracticePaywall';
 import type { UserTreatmentPlan } from '@/app/api/user/treatment-plan/route';
 import { computeProgrammeState, weekForSessionCount } from '@/lib/programme';
 import { adminDb } from '@/lib/supabase/admin';
+
+/** Free-tier session allowance before the paywall kicks in. */
+const FREE_SESSION_LIMIT = 3;
 
 export default async function PracticePage() {
   const cookieStore = await cookies();
@@ -20,7 +24,7 @@ export default async function PracticePage() {
 
   const admin = adminDb();
 
-  const [recentSessionsRes, countRes, planRes, profileRes] = await Promise.all([
+  const [recentSessionsRes, countRes, planRes, profileRes, subscriptionRes] = await Promise.all([
     supabase.from('practice_sessions')
       .select('id,duration_seconds,total_blocks_detected,created_at')
       .eq('user_id', user.id)
@@ -35,12 +39,30 @@ export default async function PracticePage() {
       .eq('active', true)
       .maybeSingle(),
     admin.from('profiles')
-      .select('consent_data_collection')
+      .select('consent_data_collection,tier')
       .eq('id', user.id)
+      .maybeSingle(),
+    admin.from('subscriptions')
+      .select('status')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'trialing', 'past_due'])
+      .limit(1)
       .maybeSingle(),
   ]);
 
   const totalSessions = countRes.count ?? 0;
+
+  // ── Paywall gate ─────────────────────────────────────────────────────────────
+  // Founding members and anyone with an active / trialing / past_due subscription
+  // always have full access. Free users get FREE_SESSION_LIMIT taster sessions,
+  // then see the upgrade paywall.
+  const isFounding    = profileRes.data?.tier === 'founding';
+  const hasActiveSub  = !!subscriptionRes.data;
+  const paywallActive = !isFounding && !hasActiveSub && totalSessions >= FREE_SESSION_LIMIT;
+
+  if (paywallActive) {
+    return <PracticePaywall sessionsUsed={totalSessions} freeLimit={FREE_SESSION_LIMIT} />;
+  }
 
   let treatmentPlan: UserTreatmentPlan | null = null;
   let recommendedStage = Math.min(5, Math.floor(totalSessions / 5) + 1);
@@ -109,6 +131,7 @@ export default async function PracticePage() {
   }
 
   const consentDataCollection = profileRes.data?.consent_data_collection ?? false;
+
 
   return (
     <PracticeClient
