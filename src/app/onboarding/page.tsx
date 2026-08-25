@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useTransition, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { completeOnboarding } from '@/app/actions/complete-onboarding';
 import posthog from 'posthog-js';
 
@@ -359,8 +359,16 @@ function StepWrapper({ children, displayStep, totalSteps, onBack }: {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function OnboardingPage() {
+function OnboardingForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Validated relative path — where to send the user after onboarding if they
+  // click the "continue for free" / "go to dashboard" fallback button.
+  const postOnboardingNext = (() => {
+    const raw = searchParams.get('next') ?? '';
+    return raw.startsWith('/') && !raw.startsWith('//') ? raw : '/dashboard';
+  })();
+
   const [step, setStep] = useState<Step>(1);
   const [gdprConsent, setGdprConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
@@ -1095,7 +1103,11 @@ export default function OnboardingPage() {
             <button
               type="button"
               disabled={isPending}
-              onClick={() => handleComplete(rec.secondaryHref!)}
+              onClick={() => handleComplete(
+                // If the recommendation's secondary action is "go to dashboard",
+                // honour the `next` param from the original page instead.
+                rec.secondaryHref === '/dashboard' ? postOnboardingNext : rec.secondaryHref!
+              )}
               className="w-full py-3 rounded-2xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 disabled:opacity-50 text-sm font-medium transition-all"
             >
               {rec.secondaryLabel}
@@ -1106,7 +1118,7 @@ export default function OnboardingPage() {
             <button
               type="button"
               disabled={isPending}
-              onClick={() => handleComplete('/dashboard')}
+              onClick={() => handleComplete(postOnboardingNext)}
               className="w-full text-xs text-slate-600 hover:text-slate-400 transition-colors"
             >
               Continue for free — upgrade any time
@@ -1115,5 +1127,14 @@ export default function OnboardingPage() {
         </div>
       </div>
     </StepWrapper>
+  );
+}
+
+// Wrap in Suspense — useSearchParams() requires it in Next.js App Router
+export default function OnboardingPage() {
+  return (
+    <Suspense>
+      <OnboardingForm />
+    </Suspense>
   );
 }

@@ -14,6 +14,11 @@ function LoginForm() {
 
   const prefillEmail = searchParams.get('email') ?? '';
   const isInvited = searchParams.get('invited') === '1';
+  // Preserve ?next= so OAuth callback can return the user to the right page
+  const nextParam = (() => {
+    const raw = searchParams.get('next') ?? '';
+    return raw.startsWith('/') && !raw.startsWith('//') ? raw : '';
+  })();
   const [tab, setTab] = useState<'password' | 'magic'>(prefillEmail ? 'magic' : 'password');
   const [email, setEmail] = useState(prefillEmail);
   const [magicSent, setMagicSent] = useState(false);
@@ -25,9 +30,12 @@ function LoginForm() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     const supabase = createClient();
+    const callbackUrl = nextParam
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextParam)}`
+      : `${window.location.origin}/auth/callback`;
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: callbackUrl },
     });
     // Page redirects — no need to reset loading state
   };

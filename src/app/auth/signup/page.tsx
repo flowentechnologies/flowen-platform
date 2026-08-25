@@ -10,6 +10,11 @@ import { signup } from '../actions';
 function SignupForm() {
   const searchParams = useSearchParams();
   const urlError = searchParams.get('error');
+  // Preserve ?next= so OAuth callback can return the user to the right page
+  const nextParam = (() => {
+    const raw = searchParams.get('next') ?? '';
+    return raw.startsWith('/') && !raw.startsWith('//') ? raw : '';
+  })();
 
   const [isPending, startTransition] = useTransition();
   const [pwError, setPwError] = useState<string | null>(null);
@@ -18,9 +23,12 @@ function SignupForm() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     const supabase = createClient();
+    const callbackUrl = nextParam
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextParam)}`
+      : `${window.location.origin}/auth/callback`;
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: callbackUrl },
     });
     // Page redirects — no need to reset loading state
   };

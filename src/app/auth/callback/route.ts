@@ -65,13 +65,22 @@ export async function GET(request: NextRequest) {
       const profile = profileRes.data;
       let redirectTo: string;
       if (profile?.is_admin) {
+        // Admins always land on admin — don't honour next for security
         redirectTo = '/admin';
       } else if (!profile?.onboarding_complete) {
-        redirectTo = '/onboarding';
+        // New / incomplete user: must complete onboarding first.
+        // Thread `next` through so the final step can redirect there afterwards.
+        redirectTo = next !== '/dashboard'
+          ? `/onboarding?next=${encodeURIComponent(next)}`
+          : '/onboarding';
       } else {
-        redirectTo = '/dashboard';
+        // Returning user: honour the `next` param (already validated as relative).
+        redirectTo = next;
       }
-      return NextResponse.redirect(new URL(redirectTo, origin));
+      // Mutate the Location header on the existing `response` so the session
+      // cookies Supabase wrote into it are preserved on the redirect.
+      response.headers.set('Location', new URL(redirectTo, origin).toString());
+      return response;
     }
   }
 
