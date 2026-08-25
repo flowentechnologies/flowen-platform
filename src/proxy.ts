@@ -206,7 +206,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       .eq('id', user.id)
       .maybeSingle();
 
-    if (profile && !profile.onboarding_complete) {
+    if (!profile?.onboarding_complete) {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }
   }
