@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, Fragment } from 'react';
 import Link from 'next/link';
 import type { PracticeSession } from './page';
 import { formatDate, formatDuration, formatTotalTime } from '@/lib/format';
@@ -367,11 +367,8 @@ export function HistoryClient({ sessions }: Props) {
                   const stageName = s.stage_id ? (STAGE_NAMES[s.stage_id] ?? `Stage ${s.stage_id}`) : '—';
                   const isExpanded = expandedId === s.id;
                   return (
-                    <>
-                      <tr
-                        key={s.id}
-                        className="hover:bg-slate-800/40 transition-colors"
-                      >
+                    <Fragment key={s.id}>
+                      <tr className="hover:bg-slate-800/40 transition-colors">
                         <td className="px-6 py-3 text-slate-400 font-mono text-xs whitespace-nowrap">
                           {formatDate(s.created_at)}
                         </td>
@@ -426,9 +423,9 @@ export function HistoryClient({ sessions }: Props) {
                         </td>
                       </tr>
                       {isExpanded && s.transcript && (
-                        <TranscriptRow key={`${s.id}-transcript`} transcript={s.transcript} colSpan={10} />
+                        <TranscriptRow transcript={s.transcript} colSpan={10} />
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
               </tbody>

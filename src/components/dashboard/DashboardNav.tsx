@@ -129,7 +129,7 @@ export function MobileBottomNav({ user }: { user: UserProfile }) {
   return (
     <nav className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800/80 pb-safe">
       <div className="flex items-stretch h-16">
-        {links.slice(0, 4).map(link => {
+        {links.slice(0, 5).map(link => {
           const active = pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href));
           return (
             <Link
@@ -304,9 +304,33 @@ export function DashboardNav({ user }: { user: UserProfile }) {
                 {/* Menu items */}
                 <div className="py-1.5">
                   {[
-                    { label: 'Billing',        href: '/dashboard/billing',  icon: '$' },
-                    { label: 'Settings',       href: '/dashboard/settings', icon: '⚙️' },
-                    { label: 'Support Centre', href: '/dashboard/support',  icon: '💬' },
+                    {
+                      label: 'Billing',
+                      href: '/dashboard/billing',
+                      icon: (
+                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M2.5 4A1.5 1.5 0 001 5.5V6h18v-.5A1.5 1.5 0 0017.5 4h-15zM19 8.5H1v6A1.5 1.5 0 002.5 16h15a1.5 1.5 0 001.5-1.5v-6zM3 13.25a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zm4.75-.75a.75.75 0 000 1.5h3.5a.75.75 0 000-1.5h-3.5z" clipRule="evenodd"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: 'Settings',
+                      href: '/dashboard/settings',
+                      icon: (
+                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.929 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.456l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"/>
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: 'Support Centre',
+                      href: '/dashboard/support',
+                      icon: (
+                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902.848.137 1.705.248 2.57.331v3.443a.75.75 0 001.28.53l3.658-3.658A8.975 8.975 0 0010 14c2.236 0 4.43-.18 6.57-.524C18.007 13.245 19 11.986 19 10.574V5.426c0-1.413-.993-2.67-2.43-2.902A41.102 41.102 0 0010 2zm0 8a1 1 0 100-2 1 1 0 000 2zm-2-1a2 2 0 114 0 2 2 0 01-4 0zm-3 1a1 1 0 100-2 1 1 0 000 2zm11-1a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd"/>
+                        </svg>
+                      ),
+                    },
                   ].map(item => (
                     <Link
                       key={item.href}
@@ -314,7 +338,7 @@ export function DashboardNav({ user }: { user: UserProfile }) {
                       onClick={() => setOpen(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
                     >
-                      <span className="text-base leading-none">{item.icon}</span>
+                      {item.icon}
                       {item.label}
                     </Link>
                   ))}

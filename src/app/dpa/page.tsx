@@ -94,6 +94,7 @@ The Controller consents to the engagement of the following sub-processors:
 
 — Supabase Inc.: database infrastructure and authentication (UK-GBR data centres)
 — Vercel Inc.: cloud hosting and edge functions (UK/EU regions)
+— Agora Inc.: real-time voice processing for AI speech coach sessions (live audio streamed in-session only; no persistent audio storage by Agora)
 — Functional Software Inc. (Sentry): anonymised error monitoring (PHI masking enabled)
 — Stripe Inc.: payment processing (operates as independent data controller for payment data)
 
@@ -250,6 +251,7 @@ export default function DPAPage() {
                 {[
                   { name: 'Supabase Inc.', purpose: 'Database, auth, storage', location: 'UK-GBR', safeguard: 'SCCs + UK Addendum' },
                   { name: 'Vercel Inc.', purpose: 'Hosting, edge functions', location: 'UK/EU', safeguard: 'SCCs + UK Addendum' },
+                  { name: 'Agora Inc.', purpose: 'Real-time voice (AI speech coach sessions — live audio only, not stored)', location: 'US/EU', safeguard: 'SCCs + UK Addendum' },
                   { name: 'Functional Software Inc. (Sentry)', purpose: 'Error monitoring (PHI masked)', location: 'EU/US', safeguard: 'SCCs + UK Addendum' },
                   { name: 'Stripe Inc.', purpose: 'Payment processing', location: 'US/EU', safeguard: 'Independent controller; UK–US Data Bridge' },
                 ].map(sp => (

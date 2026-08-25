@@ -11,30 +11,35 @@ export const metadata: Metadata = {
 
 const SECTIONS = [
   {
+    id: 'terms-of-service',
     title: 'Terms of Service',
     tag: 'CONTRACT',
     summary: 'Binding agreement governing access to and use of the Flowen platform, subscription terms, and limitations of liability.',
     content: MASTER_POLICIES.termsOfService,
   },
   {
+    id: 'privacy-policy',
     title: 'Privacy Policy & UK GDPR',
     tag: 'DATA PROTECTION',
     summary: 'How we collect, process, and protect your personal data under the UK GDPR and Data Protection Act 2018.',
     content: MASTER_POLICIES.privacyPolicy,
   },
   {
+    id: 'clinical-safety',
     title: 'DCB0129 Clinical Safety Statement',
     tag: 'CLINICAL GOVERNANCE',
     summary: 'Our compliance with the NHS Digital DCB0129 Clinical Safety Standard for Health IT systems.',
     content: MASTER_POLICIES.clinicalCompliance,
   },
   {
+    id: 'cookie-policy',
     title: 'Cookie Policy',
     tag: 'PECR 2003',
     summary: 'Every cookie we set — strictly necessary auth tokens, first-party analytics (__vs, __utm, flowen_anon_id), affiliate tracking, and third-party tools.',
     content: MASTER_POLICIES.cookiePolicy,
   },
   {
+    id: 'governing-law',
     title: 'Governing Law',
     tag: 'JURISDICTION',
     summary: 'These agreements are governed by the laws of England and Wales.',
@@ -67,7 +72,7 @@ export default function LegalPage() {
 
         <div className="mt-12 space-y-6">
           {SECTIONS.map(section => (
-            <details key={section.title} className="group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <details key={section.title} id={section.id} className="group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
               <summary className="flex items-center justify-between p-6 cursor-pointer list-none hover:bg-slate-800/40 transition-colors">
                 <div>
                   <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest">{section.tag}</span>

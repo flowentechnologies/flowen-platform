@@ -17,7 +17,7 @@ const FAQS = [
   },
   {
     q: 'Is my voice data stored?',
-    a: 'No raw audio is stored. Flowen processes audio entirely on-device via your browser. Only anonymised acoustic metrics (latency, disfluency counts) are sent to our servers under strict clinical data governance.',
+    a: 'By default, only anonymised acoustic metrics (disfluency counts, timing data) are sent to our servers — no raw audio leaves your device during a session. If you have a clinician assigned, session recordings may be stored securely for up to 30 days so your SLP can review your progress. You can review and change your data preferences under Settings → Privacy. All data is processed under UK GDPR and NHS DCB0129 clinical safety standards.',
   },
   {
     q: 'How do I change my subscription?',

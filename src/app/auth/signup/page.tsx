@@ -142,11 +142,11 @@ function SignupForm() {
 
         <p className="text-[11px] text-slate-500 leading-relaxed">
           By creating an account you agree to our{' '}
-          <Link href="/legal" className="text-emerald-400 hover:underline" target="_blank">
+          <Link href="/legal#terms-of-service" className="text-emerald-400 hover:underline" target="_blank">
             Terms of Service
           </Link>{' '}
           and{' '}
-          <Link href="/legal" className="text-emerald-400 hover:underline" target="_blank">
+          <Link href="/legal#privacy-policy" className="text-emerald-400 hover:underline" target="_blank">
             Privacy Policy
           </Link>
           .

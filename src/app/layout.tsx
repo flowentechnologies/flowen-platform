@@ -70,10 +70,17 @@ export default async function RootLayout({
   const trackingProviders = await getTrackingProviders();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en-GB" suppressHydrationWarning>
       {/* Anti-FOUC: runs synchronously before React paint */}
       <script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
       <body className="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
+        {/* Skip to main content — first focusable element for keyboard / screen-reader users */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-emerald-500 focus:text-slate-950 focus:font-bold focus:text-sm focus:shadow-lg"
+        >
+          Skip to main content
+        </a>
         <JsonLd data={{
           '@context': 'https://schema.org',
           '@type': 'Organization',
