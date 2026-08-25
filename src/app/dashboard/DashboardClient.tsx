@@ -120,7 +120,7 @@ function PlanBanner({ tier }: { tier: string | null }) {
             href="/pricing"
             className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-colors whitespace-nowrap"
           >
-            Upgrade — £19.99/mo
+            Upgrade — from £19.96/mo
           </Link>
           <Link
             href="/resources/access-to-work"
@@ -511,7 +511,7 @@ export function DashboardClient({
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-slate-900 dark:text-white font-semibold text-sm">
-                    Recent sessions
+                    Fluency trend
                   </h2>
                   <span className="text-[10px] font-mono text-slate-400 dark:text-slate-600">
                     blocks / min &mdash; lower is better
@@ -570,7 +570,7 @@ export function DashboardClient({
                   Recent sessions
                 </h2>
                 <Link
-                  href="/dashboard/analytics"
+                  href="/dashboard/history"
                   className="text-[11px] font-mono text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
                 >
                   View all &#8594;

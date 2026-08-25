@@ -281,7 +281,7 @@ function deriveRecommendation(state: State): Recommendation {
     badge: 'STANDARD',
     badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
     features: ['Unlimited practice sessions', 'Real-time acoustic biofeedback', '8-week guided programme', 'Fluency progress analytics'],
-    primaryLabel: 'Start Standard Access — £19.99/mo →',
+    primaryLabel: 'Start Standard Access — from £19.96/mo →',
     primaryHref: '/pricing',
     secondaryLabel: 'Try for free first',
     secondaryHref: '/dashboard',

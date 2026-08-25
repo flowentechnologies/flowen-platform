@@ -189,6 +189,16 @@ export default function SettingsPage() {
         </div>
       </Section>
 
+      {/* Billing */}
+      <Section title="Billing & Subscription" description="View your current plan, manage your subscription, or update payment details.">
+        <button
+          onClick={() => router.push('/dashboard/billing')}
+          className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white transition-colors"
+        >
+          Manage billing →
+        </button>
+      </Section>
+
       {/* Security */}
       <Section title="Security" description="Change your password or update your sign-in method.">
         <button
@@ -341,8 +351,8 @@ export default function SettingsPage() {
         </form>
       </Section>
 
-      <div className="flex gap-4 text-[11px] text-slate-600 pt-2">
-        {[['Privacy Policy', '/legal'], ['Cookie Policy', '/cookie-policy'], ['Security', '/security']].map(([label, href]) => (
+      <div className="flex flex-wrap gap-4 text-[11px] text-slate-600 pt-2">
+        {[['Terms', '/legal#terms-of-service'], ['Privacy Policy', '/legal#privacy-policy'], ['Cookie Policy', '/cookie-policy'], ['Security', '/security']].map(([label, href]) => (
           <a key={href} href={href} className="hover:text-slate-400 transition-colors">{label}</a>
         ))}
       </div>

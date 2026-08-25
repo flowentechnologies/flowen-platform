@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: 'How do I change my subscription?',
-    a: 'Contact support below and we\'ll adjust your plan. Billing changes typically take effect within one business day.',
+    a: 'Go to Dashboard → Settings → Billing & Subscription to manage your plan via the Stripe customer portal. You can upgrade, downgrade, or cancel directly — changes take effect immediately. For manual adjustments, contact support below.',
   },
   {
     q: 'Can I export my session data?',
