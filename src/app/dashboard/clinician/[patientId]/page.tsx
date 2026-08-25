@@ -32,7 +32,7 @@ export default async function PatientPage({ params }: { params: Promise<{ patien
   const [patientProfileRes, sessionsRes, notesRes] = await Promise.all([
     admin.from('profiles').select('id, display_name, email, role').eq('id', patientId).single(),
     admin.from('practice_sessions')
-      .select('id, stage_id, duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, created_at')
+      .select('id, stage_id, duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, created_at, audio_storage_path')
       .eq('user_id', patientId)
       .order('created_at', { ascending: true }),
     admin.from('slp_session_notes')
@@ -49,8 +49,15 @@ export default async function PatientPage({ params }: { params: Promise<{ patien
     role: patientProfileRes.data?.role ?? null,
     assigned_at: assignment.assigned_at,
     sessions: (sessionsRes.data ?? []).map(s => ({
-      ...s,
+      id: s.id,
+      stage_id: s.stage_id,
+      duration_seconds: s.duration_seconds,
+      total_blocks_detected: s.total_blocks_detected,
+      total_repetitions_detected: s.total_repetitions_detected,
+      total_prolongations_detected: s.total_prolongations_detected,
+      created_at: s.created_at,
       note: noteMap.get(s.id) ?? null,
+      has_recording: !!(s as { audio_storage_path?: string | null }).audio_storage_path,
     })),
   };
 

@@ -12,6 +12,7 @@ export interface PatientSession {
   total_prolongations_detected: number;
   created_at: string;
   note: string | null;
+  has_recording: boolean;
 }
 
 export interface PatientDetail {
@@ -59,7 +60,7 @@ export async function GET(
   const [profileRes, sessionsRes, notesRes] = await Promise.all([
     admin.from('profiles').select('id, display_name, email, role').eq('id', patientId).single(),
     admin.from('practice_sessions')
-      .select('id, stage_id, duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, created_at')
+      .select('id, stage_id, duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, created_at, audio_storage_path')
       .eq('user_id', patientId)
       .order('created_at', { ascending: false })
       // Most-recent 500 sessions — prevents full-table scan on active patients.
@@ -73,8 +74,15 @@ export async function GET(
 
   const noteMap = new Map((notesRes.data ?? []).map(n => [n.session_id, n.note]));
   const sessions: PatientSession[] = (sessionsRes.data ?? []).map(s => ({
-    ...s,
+    id: s.id,
+    stage_id: s.stage_id,
+    duration_seconds: s.duration_seconds,
+    total_blocks_detected: s.total_blocks_detected,
+    total_repetitions_detected: s.total_repetitions_detected,
+    total_prolongations_detected: s.total_prolongations_detected,
+    created_at: s.created_at,
     note: noteMap.get(s.id) ?? null,
+    has_recording: !!s.audio_storage_path,
   }));
 
   const detail: PatientDetail = {

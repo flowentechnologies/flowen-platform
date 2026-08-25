@@ -124,6 +124,66 @@ function NoteCell({ session, patientId }: { session: PatientSession; patientId: 
   );
 }
 
+// ── Session Recording Player ─────────────────────────────────────────────────
+
+function RecordingPlayer({ sessionId }: { sessionId: string }) {
+  const [state, setState] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [url, setUrl]     = useState<string | null>(null);
+  const audioRef          = useRef<HTMLAudioElement>(null);
+
+  const load = useCallback(async () => {
+    setState('loading');
+    try {
+      const res  = await fetch(`/api/practice/sessions/${sessionId}/recording`);
+      const json = await res.json() as { url?: string; error?: string };
+      if (!res.ok || !json.url) { setState('error'); return; }
+      setUrl(json.url);
+      setState('ready');
+    } catch {
+      setState('error');
+    }
+  }, [sessionId]);
+
+  if (state === 'idle') {
+    return (
+      <button
+        onClick={load}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-300 transition-colors"
+        title="Play session recording"
+      >
+        <svg className="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M2 10a8 8 0 1116 0A8 8 0 012 10zm6.39-2.908a.75.75 0 01.766.027l3.5 2.25a.75.75 0 010 1.262l-3.5 2.25A.75.75 0 018 12.25v-4.5a.75.75 0 01.39-.658z" clipRule="evenodd"/>
+        </svg>
+        Play
+      </button>
+    );
+  }
+  if (state === 'loading') {
+    return (
+      <span className="flex items-center gap-1.5 text-xs text-slate-500">
+        <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        Loading…
+      </span>
+    );
+  }
+  if (state === 'error') {
+    return <span className="text-xs text-red-400">Unavailable</span>;
+  }
+  return (
+    <audio
+      ref={audioRef}
+      src={url ?? undefined}
+      controls
+      autoPlay
+      className="h-8 w-36"
+      style={{ colorScheme: 'dark' }}
+    />
+  );
+}
+
 const PHASES = ['Establishment', 'Consolidation', 'Transfer', 'Maintenance'];
 const ALL_STAGES = [1, 2, 3, 4, 5];
 const STAGE_LABELS: Record<number, string> = {
@@ -567,7 +627,7 @@ export function PatientClient({ patient, clinicianId }: { patient: PatientDetail
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left border-b border-slate-200 dark:border-slate-800/60">
-                  {['Date', 'Stage', 'Duration', 'Blocks', 'Blk/min', 'Clinical notes'].map(h => (
+                  {['Date', 'Stage', 'Duration', 'Blocks', 'Blk/min', 'Recording', 'Clinical notes'].map(h => (
                     <th key={h} className="px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-slate-600">{h}</th>
                   ))}
                 </tr>
@@ -582,6 +642,12 @@ export function PatientClient({ patient, clinicianId }: { patient: PatientDetail
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300 text-xs">{fmtDur(s.duration_seconds)}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300 text-xs">{s.total_blocks_detected}</td>
                       <td className={`px-4 py-3 text-xs font-semibold tabular-nums ${bpmColor(bpm)}`}>{bpm.toFixed(1)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {s.has_recording
+                          ? <RecordingPlayer sessionId={s.id} />
+                          : <span className="text-[10px] text-slate-600">—</span>
+                        }
+                      </td>
                       <td className="px-4 py-3 min-w-[200px]">
                         <NoteCell session={s} patientId={patientId} />
                       </td>

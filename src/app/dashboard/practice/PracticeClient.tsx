@@ -925,6 +925,26 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           })();
         }
       }
+      // Fire-and-forget: upload recording to session-recordings bucket so SLP
+      // can play it back from the clinician dashboard. Runs for all users
+      // regardless of ML consent (separate purpose/bucket from training-data).
+      if (json.session && audioChunksRef.current.length > 0) {
+        const recSessionId = json.session.id;
+        const recChunks    = audioChunksRef.current.slice();
+        const recMime      = mediaRecorderRef.current?.mimeType || 'audio/webm';
+        void (async () => {
+          try {
+            const blob = new Blob(recChunks, { type: recMime });
+            const fd   = new FormData();
+            fd.append('audio', blob, 'session.webm');
+            await fetch(`/api/practice/sessions/${recSessionId}/recording`, {
+              method: 'POST',
+              body: fd,
+            });
+          } catch { /* best-effort — never block UI */ }
+        })();
+      }
+
       posthog.capture('practice_session_saved', {
         stage_id: stageId,
         duration_seconds: elapsed,
