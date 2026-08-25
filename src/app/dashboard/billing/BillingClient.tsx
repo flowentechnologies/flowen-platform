@@ -258,10 +258,13 @@ export function BillingClient({
 }: BillingProps) {
   const params = useSearchParams();
   const router = useRouter();
+  const [trialBanner, setTrialBanner] = useState(false);
 
   useEffect(() => {
     if (params.get('success') === '1') {
-      // Meta Pixel — Purchase
+      const isTrial = params.get('trial') === '1';
+
+      // Meta Pixel — Purchase / Trial Start
       pixelPurchase({ value: 0, currency: 'GBP', content_ids: [tier ?? 'subscription'] });
 
       // Google Ads — Purchase conversion
@@ -272,6 +275,7 @@ export function BillingClient({
         });
       }
 
+      if (isTrial) setTrialBanner(true);
       router.replace('/dashboard/billing');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -279,6 +283,22 @@ export function BillingClient({
 
   return (
     <div className="space-y-4">
+      {trialBanner && (
+        <div className="flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl px-5 py-4">
+          <svg className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd"/>
+          </svg>
+          <div>
+            <p className="text-sm font-bold text-emerald-300">Your 7-day free trial has started</p>
+            <p className="text-xs text-emerald-400/70 mt-0.5">
+              You won&apos;t be charged until the trial ends. Cancel any time from this page.
+            </p>
+          </div>
+          <button onClick={() => setTrialBanner(false)} className="ml-auto text-emerald-500 hover:text-emerald-300 shrink-0" aria-label="Dismiss">
+            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>
+          </button>
+        </div>
+      )}
       <CurrentPlanCard
         tier={tier}
         status={status}

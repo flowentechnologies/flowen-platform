@@ -38,11 +38,10 @@ export function PracticePaywall({ sessionsUsed, freeLimit }: PracticePaywallProp
           </div>
 
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            You&apos;ve used your {freeLimit} free sessions
+            Ready for your next session?
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-            You completed {sessionsUsed} practice session{sessionsUsed !== 1 ? 's' : ''} on the free plan.
-            Subscribe to keep going and unlock everything Flowen has to offer.
+            You&apos;ve completed your {freeLimit} taster sessions. Start a free 7-day trial to keep going — no charge until day 8, cancel any time.
           </p>
         </div>
 
@@ -64,8 +63,11 @@ export function PracticePaywall({ sessionsUsed, freeLimit }: PracticePaywallProp
             href="/pricing"
             className="block w-full text-center rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20"
           >
-            Unlock full access — from £19.96/mo
+            Start 7-day free trial →
           </Link>
+          <p className="text-center text-xs text-slate-400 dark:text-slate-500">
+            No charge today · Then from £19.96/mo · Cancel any time before day 8
+          </p>
           <Link
             href="/dashboard"
             className="block w-full text-center rounded-xl px-6 py-3 font-medium text-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors"
@@ -76,7 +78,7 @@ export function PracticePaywall({ sessionsUsed, freeLimit }: PracticePaywallProp
 
         {/* Reassurance note */}
         <p className="text-center text-xs text-slate-400 dark:text-slate-500">
-          Your {sessionsUsed} completed sessions and progress are saved — they&apos;ll be right here when you subscribe.
+          Your {sessionsUsed} completed sessions and all your progress are saved — they&apos;ll be right here when your trial starts.
         </p>
 
       </div>

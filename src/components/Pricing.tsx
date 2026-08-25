@@ -147,8 +147,11 @@ export default function PricingSection() {
             disabled={checkoutLoading}
             className="w-full py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {checkoutLoading ? 'Redirecting to checkout…' : 'Secure Founding Seat'}
+            {checkoutLoading ? 'Redirecting to checkout…' : 'Start 7-day free trial →'}
           </button>
+          <p className="text-center text-xs text-slate-500 mt-2">
+            No charge today · {currentFounding.totalText} after trial · Cancel any time
+          </p>
           {checkoutError && (
             <p className="mt-2 text-xs text-red-400 bg-red-900/20 border border-red-700/30 rounded-lg px-3 py-2 text-center">
               {checkoutError}
