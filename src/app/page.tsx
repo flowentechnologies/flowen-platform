@@ -555,7 +555,7 @@ export default function LandingPage() {
                     name="email" 
                     type="email" 
                     required 
-                    placeholder="howard@example.com" 
+                    placeholder="jane@example.com"
                     className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
                   />
                   {formState.errors?.email && <p className="text-red-400 text-xs mt-1">{formState.errors.email}</p>}
