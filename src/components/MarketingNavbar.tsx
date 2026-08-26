@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FlowenLogo } from '@/components/FlowenLogo';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 const NAV_LINKS = [
   { label: 'How it works', href: '/how-it-works' },
@@ -17,6 +19,20 @@ const NAV_LINKS = [
 export default function MarketingNavbar() {
   const pathname  = usePathname();
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    // Initial check
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    // Keep in sync with session changes (login / logout in another tab)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const loggedIn = user !== null;
 
   return (
     <nav className="sticky top-0 z-40 bg-[#06080F]/90 backdrop-blur-md border-b border-slate-800/80">
@@ -40,17 +56,27 @@ export default function MarketingNavbar() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          {loggedIn ? (
+            <Link
+              href="/dashboard"
+              className="hidden sm:block text-sm font-medium text-slate-400 hover:text-white transition-colors"
+            >
+              Dashboard →
+            </Link>
+          ) : (
+            <Link
+              href="/auth/login"
+              className="hidden sm:block text-sm font-medium text-slate-400 hover:text-white transition-colors"
+            >
+              Sign In
+            </Link>
+          )}
+
           <Link
-            href="/auth/login"
-            className="hidden sm:block text-sm font-medium text-slate-400 hover:text-white transition-colors"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/waitlist"
+            href={loggedIn ? '/dashboard' : '/waitlist'}
             className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-sm transition-all hover:scale-105 shadow-md shadow-emerald-500/20"
           >
-            Join Waitlist
+            {loggedIn ? 'Open Dashboard' : 'Join Waitlist'}
           </Link>
 
           {/* Hamburger — mobile only */}
@@ -86,11 +112,11 @@ export default function MarketingNavbar() {
             </Link>
           ))}
           <Link
-            href="/auth/login"
+            href={loggedIn ? '/dashboard' : '/auth/login'}
             onClick={() => setOpen(false)}
             className="block pt-3 text-sm font-medium text-slate-400 hover:text-white transition-colors"
           >
-            Sign In →
+            {loggedIn ? 'Dashboard →' : 'Sign In →'}
           </Link>
         </div>
       )}

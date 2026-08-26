@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { pixelInitiateCheckout, pixelViewContent } from '@/lib/pixel';
+import { createClient } from '@/lib/supabase/client';
 
 // Monthly and yearly are the two primary options; quarterly/6-month are kept in
 // the billingDetails map for the Stripe checkout but not surfaced as primary choices
@@ -22,8 +23,23 @@ export default function PricingSection() {
   const currentFounding = billingDetails[cycle];
   const router = useRouter();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-
   const [checkoutError, setCheckoutError] = React.useState<string | null>(null);
+
+  // 'loading' | 'unauthenticated' | 'standard' | 'founding'
+  const [userTier, setUserTier] = useState<string>('loading');
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) { setUserTier('unauthenticated'); return; }
+      const { data } = await supabase
+        .from('profiles')
+        .select('tier')
+        .eq('id', user.id)
+        .single();
+      setUserTier(data?.tier ?? 'standard');
+    });
+  }, []);
 
   const handleFoundingSeat = async () => {
     setCheckoutLoading(true);
@@ -142,16 +158,32 @@ export default function PricingSection() {
               <div className="text-xs text-emerald-400 font-medium mt-1">{currentFounding.billingPeriodText}</div>
             </div>
           </div>
-          <button
-            onClick={handleFoundingSeat}
-            disabled={checkoutLoading}
-            className="w-full py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {checkoutLoading ? 'Redirecting to checkout…' : 'Start 7-day free trial →'}
-          </button>
-          <p className="text-center text-xs text-slate-500 mt-2">
-            No charge today · {currentFounding.totalText} after trial · Cancel any time
-          </p>
+          {userTier === 'founding' ? (
+            <>
+              <div className="w-full py-3.5 px-6 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-sm text-center">
+                ✓ Current plan
+              </div>
+              <button
+                onClick={() => router.push('/dashboard/billing')}
+                className="w-full mt-2 py-2.5 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm transition-colors border border-slate-700"
+              >
+                Manage subscription →
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handleFoundingSeat}
+                disabled={checkoutLoading || userTier === 'loading'}
+                className="w-full py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {checkoutLoading ? 'Redirecting to checkout…' : 'Start 7-day free trial →'}
+              </button>
+              <p className="text-center text-xs text-slate-500 mt-2">
+                No charge today · {currentFounding.totalText} after trial · Cancel any time
+              </p>
+            </>
+          )}
           {checkoutError && (
             <p className="mt-2 text-xs text-red-400 bg-red-900/20 border border-red-700/30 rounded-lg px-3 py-2 text-center">
               {checkoutError}
