@@ -3,7 +3,7 @@
 import React, { useState, useTransition, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import MarketingNavbar from '@/components/MarketingNavbar';
+import MarketingNavbar from '@/components/MarketingNavbarClient';
 import { createClient } from '@/lib/supabase/client';
 import { signup } from '../actions';
 

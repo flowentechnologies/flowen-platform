@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import MarketingNavbar from '@/components/MarketingNavbar';
+import MarketingNavbar from '@/components/MarketingNavbarClient';
 import { createClient } from '@/lib/supabase/client';
 
 export default function ResetPasswordPage() {

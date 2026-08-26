@@ -4,7 +4,7 @@ import React, { useState, useTransition, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { submitContactForm, FormState } from './actions/submit-form';
 import { LegalPoliciesModal } from '@/components/LegalPoliciesModal';
-import MarketingNavbar from '@/components/MarketingNavbar';
+import MarketingNavbar from '@/components/MarketingNavbarClient';
 import MarketingFooter from '@/components/MarketingFooter';
 
 export default function LandingPage() {

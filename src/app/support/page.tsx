@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import MarketingNavbar from '@/components/MarketingNavbar';
+import MarketingNavbar from '@/components/MarketingNavbarClient';
 import MarketingFooter from '@/components/MarketingFooter';
 
 const FAQS = [

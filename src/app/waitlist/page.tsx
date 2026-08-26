@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import MarketingNavbar from '@/components/MarketingNavbar';
+import MarketingNavbar from '@/components/MarketingNavbarClient';
 import MarketingFooter from '@/components/MarketingFooter';
 import { joinWaitlist } from '@/app/actions/join-waitlist';
 import { pixelLead } from '@/lib/pixel';
