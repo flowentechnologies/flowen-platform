@@ -310,10 +310,10 @@ export default function LandingPage() {
               <span className="text-xs font-semibold text-emerald-400 uppercase tracking-widest">Early Cohort</span>
               <h3 className="text-2xl font-bold text-white mt-2">Founding Member</h3>
               <div className="mt-4 flex items-baseline text-white">
-                <span className="text-4xl font-extrabold">£19.99</span>
+                <span className="text-4xl font-extrabold">£19.96</span>
                 <span className="text-slate-400 ml-2">/ month</span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">Price locked for early adopters.</p>
+              <p className="text-xs text-slate-400 mt-1">From £19.96/mo billed annually · Price locked for early adopters.</p>
               <ul className="mt-6 space-y-3 text-sm text-slate-300">
                 <li className="flex items-center">✓ Full sub-80ms speech biofeedback</li>
                 <li className="flex items-center">✓ 3D avatar & viseme alignment</li>
