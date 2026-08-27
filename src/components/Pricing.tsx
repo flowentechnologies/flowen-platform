@@ -147,20 +147,35 @@ export default function PricingSection() {
         </div>
 
         <div className="bg-gradient-to-b from-slate-900 via-slate-900 to-emerald-950/30 border-2 border-emerald-500/80 rounded-3xl p-8 flex flex-col justify-between relative scale-105 z-10">
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 text-xs font-extrabold tracking-wider uppercase px-4 py-1 rounded-full">
-            {currentFounding.discountBadge} INFRASTRUCTURE SLOT
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 text-xs font-extrabold tracking-wider uppercase px-4 py-1 rounded-full whitespace-nowrap">
+            {currentFounding.discountBadge} · FOUNDING COHORT
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-white mt-2 mb-2">Founding Member</h3>
-            <div className="my-4">
-              <span className="text-4xl font-extrabold text-white">£{currentFounding.monthlyEquivalent.toFixed(2)}</span>
-              <span className="text-slate-400 text-sm">/mo</span>
+            <h3 className="text-2xl font-bold text-white mt-2 mb-1">Founding Member</h3>
+            {/* Scarcity indicator */}
+            <p className="text-xs text-emerald-400/80 font-medium mb-3">Early cohort · Price locked for life when you join</p>
+            <div className="my-3">
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-extrabold text-white">£{currentFounding.monthlyEquivalent.toFixed(2)}</span>
+                <span className="text-slate-400 text-sm">/mo</span>
+                {cycle === 'yearly' && (
+                  <span className="ml-2 text-xs line-through text-slate-600">£35.96</span>
+                )}
+              </div>
               <div className="text-xs text-emerald-400 font-medium mt-1">{currentFounding.billingPeriodText}</div>
             </div>
+            {/* Feature list */}
+            <ul className="mt-4 space-y-2 text-sm text-slate-300">
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Sub-80ms real-time speech biofeedback</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>3D avatar & viseme alignment</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Personal fluency progress metrics</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>NHS & Access to Work eligible</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Price locked — yours for life at this rate</li>
+            </ul>
           </div>
           {userTier === 'founding' ? (
             <>
-              <div className="w-full py-3.5 px-6 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-sm text-center">
+              <div className="w-full py-3.5 px-6 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-sm text-center mt-6">
                 ✓ Current plan
               </div>
               <button
@@ -175,9 +190,9 @@ export default function PricingSection() {
               <button
                 onClick={handleFoundingSeat}
                 disabled={checkoutLoading || userTier === 'loading'}
-                className="w-full py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-6 py-4 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all hover:scale-[1.02] active:scale-100 shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                {checkoutLoading ? 'Redirecting to checkout…' : 'Start 7-day free trial →'}
+                {checkoutLoading ? 'Redirecting to checkout…' : '🚀 Start 7-day free trial →'}
               </button>
               <p className="text-center text-xs text-slate-500 mt-2">
                 No charge today · {currentFounding.totalText} after trial · Cancel any time
