@@ -145,10 +145,18 @@ async function setProfileTier(
   admin: AdminClient,
   userId: string,
   tier: SubscriptionTier,
+  grantEarlyAccess = false,
 ): Promise<void> {
   const { error } = await admin
     .from('profiles')
-    .update({ tier, updated_at: new Date().toISOString() })
+    .update({
+      tier,
+      updated_at: new Date().toISOString(),
+      // Grant dashboard access when a user subscribes. We never revoke
+      // early_access on cancellation — they keep access until period end
+      // and the tier downgrade to 'standard' already gates features.
+      ...(grantEarlyAccess && { early_access: true }),
+    })
     .eq('id', userId);
 
   if (error) throw new Error(`profiles.tier update failed: ${error.message}`);
@@ -254,10 +262,10 @@ async function handleCheckoutSessionCompleted(
     amountPence = sub.items.data[0]?.price.unit_amount ?? 0;
     currency    = sub.items.data[0]?.price.currency ?? 'gbp';
 
-    await setProfileTier(admin, userId, tier);
+    await setProfileTier(admin, userId, tier, /* grantEarlyAccess */ true);
     await upsertSubscription(admin, sub, userId);
   } else {
-    await setProfileTier(admin, userId, 'founding');
+    await setProfileTier(admin, userId, 'founding', /* grantEarlyAccess */ true);
     amountPence = session.amount_total ?? 0;
     currency    = session.currency ?? 'gbp';
   }

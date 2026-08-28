@@ -40,6 +40,20 @@ export async function completeOnboarding(opts: {
   const { data: { user } } = await ssr.auth.getUser();
   if (!user) return { error: 'Not authenticated' };
 
+  const admin = adminDb();
+
+  // Guard: prevent re-submission once onboarding is already complete.
+  // Without this check a user could navigate directly to /onboarding and
+  // overwrite their display name, role, and GDPR consent timestamp.
+  const { data: existingProfile } = await admin
+    .from('profiles')
+    .select('onboarding_complete')
+    .eq('id', user.id)
+    .single();
+  if (existingProfile?.onboarding_complete) {
+    return { error: 'Onboarding already complete' };
+  }
+
   if (!ALLOWED_ROLES.has(opts.role)) return { error: 'Invalid role' };
   if (!opts.displayName.trim() || opts.displayName.length > 100) return { error: 'Invalid display name' };
 
@@ -61,8 +75,6 @@ export async function completeOnboarding(opts: {
   if (opts.hcpcNumber && !/^[A-Z]{2}\d{6}$/i.test(opts.hcpcNumber.replace(/\s/g, ''))) {
     return { error: 'HCPC numbers follow the format TS999999 — please check and try again' };
   }
-
-  const admin = adminDb();
 
   const profileUpdate: Record<string, unknown> = {
     display_name:         opts.displayName.trim(),

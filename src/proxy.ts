@@ -166,12 +166,14 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // 4. Auth gates — unauthenticated users bounce to login
   if ((isDashboardRoute || isAdminRoute || isPortalRoute || isOnboardingRoute) && !user) {
     const loginUrl = new URL('/auth/login', request.url);
-    loginUrl.searchParams.set('returnTo', pathname);
+    loginUrl.searchParams.set('next', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // 5. Redirect already-authed users away from auth pages
-  if (isAuthRoute && user) {
+  // 5. Redirect already-authed users away from auth pages.
+  //    Exempt /auth/callback — it must run even when a session cookie exists
+  //    (e.g. re-linking a Google account) so the OAuth code exchange completes.
+  if (isAuthRoute && user && !pathname.startsWith('/auth/callback')) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
