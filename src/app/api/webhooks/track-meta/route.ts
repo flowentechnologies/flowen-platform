@@ -14,9 +14,12 @@
  * Required env vars:
  *   SUPABASE_WEBHOOK_SECRET        — shared secret verified on every request
  *
- * Meta env vars:
- *   META_PIXEL_ID                  — Meta Pixel / dataset ID
- *   META_ACCESS_TOKEN              — Meta system user access token
+ * Meta config (read from tracking_providers table — set via /admin/tracking):
+ *   tracking_providers WHERE provider_key='meta':
+ *     pixel_id       — Meta Pixel / dataset ID
+ *     server_config  — { capi_token: "EAAxxxxxxx" }
+ *
+ * Optional env var:
  *   META_TEST_EVENT_CODE           — (optional) test mode in Events Manager
  *
  * Google Ads env vars:
@@ -283,11 +286,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const metaResult = { sent: false, skipped: false };
 
   if (!metaDone) {
-    const pixelId     = process.env.META_PIXEL_ID;
-    const accessToken = process.env.META_ACCESS_TOKEN;
+    // Read pixel ID and CAPI token from tracking_providers (set via /admin/tracking).
+    const { data: metaProvider } = await serviceDb()
+      .from('tracking_providers')
+      .select('pixel_id, server_config, enabled')
+      .eq('provider_key', 'meta')
+      .single();
 
-    if (!pixelId || !accessToken) {
-      console.warn('[track-meta] Meta env vars not configured — skipping');
+    const pixelId     = metaProvider?.pixel_id ?? null;
+    const accessToken = (metaProvider?.server_config as Record<string, string> | null)?.capi_token ?? null;
+
+    if (!metaProvider?.enabled || !pixelId || !accessToken) {
+      console.warn('[track-meta] Meta CAPI not configured — pixel_id or capi_token missing, or provider disabled');
       metaResult.skipped = true;
     } else {
       const eventTime = Math.floor(new Date(convertedAt).getTime() / 1000);
