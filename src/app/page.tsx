@@ -106,6 +106,9 @@ export default function LandingPage() {
 
   return (
     <>
+    {/* Preload hero poster as LCP hint — browser fetches this before discovering the video element */}
+    {/* eslint-disable-next-line @next/next/no-head-element */}
+    <link rel="preload" as="image" href="/assets/videos/Flowen_Hero_poster.jpg" fetchPriority="high" />
     <div className="min-h-screen bg-[#06080F] text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-black">
       
       {/* Navigation Header */}
@@ -121,7 +124,7 @@ export default function LandingPage() {
             ref={videoRef}
             muted
             playsInline
-            preload="auto"
+            preload="none"
             poster="/assets/videos/Flowen_Hero_poster.jpg"
             className="absolute inset-0 w-full h-full object-cover"
           >
