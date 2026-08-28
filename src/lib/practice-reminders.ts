@@ -32,7 +32,9 @@ function inactiveEmail(name: string, daysSince: number): string {
   return emailBase(`
     <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#f8fafc;">Hi ${name},</p>
     <p style="margin:0 0 16px;font-size:15px;color:#94a3b8;line-height:1.65;">
-      It's been <strong style="color:#f8fafc;">${daysSince} days</strong> since your last practice session.
+      ${daysSince >= 999
+        ? `You haven't started practising yet — your first session is the hardest step.`
+        : `It's been <strong style="color:#f8fafc;">${daysSince} day${daysSince === 1 ? '' : 's'}</strong> since your last practice session.`}
       Even a short 5-minute session keeps your fluency techniques fresh.
     </p>
     <p style="margin:0;font-size:14px;color:#64748b;line-height:1.65;">

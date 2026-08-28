@@ -1332,7 +1332,7 @@ export async function sendSlpInactivityDigest(opts: {
   const SITE_URL   = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://flowen.digital';
   const count      = opts.patients.length;
   const subject    = count === 1
-    ? `Patient inactivity alert — ${opts.patients[0].patientName} hasn't practised in ${opts.patients[0].daysSince} days`
+    ? `Patient inactivity alert — ${opts.patients[0].patientName} ${opts.patients[0].daysSince >= 999 ? 'has never practised' : `hasn't practised in ${opts.patients[0].daysSince} days`}`
     : `Patient inactivity alert — ${count} patients need attention`;
 
   const patientRows = opts.patients
@@ -1359,7 +1359,7 @@ export async function sendSlpInactivityDigest(opts: {
     dept:      'clinical',
     category:  'Inactivity Alert',
     preheader: count === 1
-      ? `${opts.patients[0].patientName} hasn't practised in ${opts.patients[0].daysSince} days.`
+      ? `${opts.patients[0].patientName} ${opts.patients[0].daysSince >= 999 ? 'has never practised.' : `hasn't practised in ${opts.patients[0].daysSince} days.`}`
       : `${count} of your patients haven't practised in 5+ days.`,
     body: `
       ${h1(`Hi ${opts.slpName} — ${count === 1 ? 'a patient needs' : `${count} patients need`} attention.`)}
