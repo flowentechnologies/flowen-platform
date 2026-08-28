@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { pixelPurchase } from '@/lib/pixel';
+import { pixelPurchase, pixelSubscribe, pixelStartTrial } from '@/lib/pixel';
 import posthog from 'posthog-js';
 
 export interface BillingProps {
@@ -264,8 +264,13 @@ export function BillingClient({
     if (params.get('success') === '1') {
       const isTrial = params.get('trial') === '1';
 
-      // Meta Pixel — Purchase / Trial Start
-      pixelPurchase({ value: 0, currency: 'GBP', content_ids: [tier ?? 'subscription'] });
+      // Meta Pixel — Purchase / Subscribe / Trial Start
+      if (isTrial) {
+        pixelStartTrial({ value: 0, currency: 'GBP' });
+      } else {
+        pixelSubscribe({ value: 0, currency: 'GBP' });
+        pixelPurchase({ value: 0, currency: 'GBP', content_ids: [tier ?? 'subscription'] });
+      }
 
       // Google Ads — Purchase conversion
       if (typeof window.gtag === 'function') {
