@@ -46,8 +46,9 @@ export default function ContactFormSection() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Selected Tier</label>
+              <label htmlFor="selected-tier" className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Selected Tier</label>
               <input
+                id="selected-tier"
                 type="text"
                 value={selectedTier}
                 readOnly

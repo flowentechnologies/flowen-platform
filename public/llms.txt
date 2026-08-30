@@ -31,15 +31,32 @@ Flowen helps people who stutter develop fluent speech through evidence-based tec
 - Public Funds: NHS and local authority funded
 - Freemium: limited free access via partner programmes
 
+## Key pages
+
+- [Home](https://flowen.digital/)
+- [Pricing](https://flowen.digital/pricing)
+- [How it works](https://flowen.digital/how-it-works)
+- [For clinicians](https://flowen.digital/clinicians)
+- [NHS framework](https://flowen.digital/nhs-framework)
+- [Resources](https://flowen.digital/resources)
+- [Easy onset techniques](https://flowen.digital/resources/easy-onset-techniques)
+- [Biofeedback evidence](https://flowen.digital/resources/biofeedback-evidence)
+- [Access to Work guide](https://flowen.digital/resources/access-to-work)
+- [DSA guide](https://flowen.digital/resources/dsa-guide)
+- [FAQ](https://flowen.digital/faq)
+- [About](https://flowen.digital/about)
+- [Security](https://flowen.digital/security)
+- [Whitepaper](https://flowen.digital/whitepaper)
+
 ## Contact
 
-- Website: https://flowen.digital
+- Website: [https://flowen.digital](https://flowen.digital)
 - Support: support@flowen.digital
 - Clinical enquiries: clinical@flowen.digital
 
 ## Technical
 
-- Built with Next.js 16, React, Three.js, Supabase, Stripe
+- Built with Next.js, React, Three.js, Supabase, Stripe
 - Deployed on Vercel (EU-West region)
 - WCAG 2.1 AA accessible
 - GDPR and UK GDPR compliant
