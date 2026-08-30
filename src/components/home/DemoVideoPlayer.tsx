@@ -14,7 +14,7 @@ export default function DemoVideoPlayer() {
         muted={muted}
         loop
         playsInline
-        preload="metadata"
+        preload="none"
         poster="/assets/videos/flowen_demo_poster.jpg"
         className="w-full aspect-video object-cover"
       >

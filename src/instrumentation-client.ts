@@ -5,13 +5,27 @@ const posthogToken = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
 const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
 if (posthogToken && posthogHost) {
-  posthog.init(posthogToken, {
-    api_host: posthogHost,
-    capture_pageview: false,
-    capture_pageleave: true,
-    capture_exceptions: true,
-    session_recording: { maskAllInputs: false, maskInputOptions: { password: true } },
-  });
+  // Defer PostHog initialisation until the browser is idle so it doesn't
+  // block LCP or inflate TBT. Falls back to a 4-second timeout on browsers
+  // that don't support requestIdleCallback (Safari < 16.4).
+  const initPostHog = () => {
+    posthog.init(posthogToken, {
+      api_host: posthogHost,
+      capture_pageview: false,
+      capture_pageleave: true,
+      capture_exceptions: true,
+      session_recording: { maskAllInputs: false, maskInputOptions: { password: true } },
+    });
+  };
+
+  if (typeof window !== 'undefined') {
+    if ('requestIdleCallback' in window) {
+      (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => void })
+        .requestIdleCallback(initPostHog, { timeout: 4000 });
+    } else {
+      setTimeout(initPostHog, 4000);
+    }
+  }
 } else if (process.env.NODE_ENV === 'development') {
   const missingVariable = posthogToken
     ? 'NEXT_PUBLIC_POSTHOG_HOST'

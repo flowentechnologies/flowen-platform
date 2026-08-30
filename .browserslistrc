@@ -1,0 +1,10 @@
+[production]
+Chrome >= 92
+Firefox >= 90
+Safari >= 15
+Edge >= 92
+
+[development]
+last 1 Chrome version
+last 1 Firefox version
+last 1 Safari version
