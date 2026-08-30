@@ -13,10 +13,21 @@ export default function HeroVideo() {
     const content = heroContentRef.current;
     if (!video || !hero) return;
 
-    // Auto-play loop — calling play() starts the load even with preload="none"
+    let scrubbing  = false;
+    let rafPending = false;
+    let targetTime = 0;
+
+    // Call play() directly — triggers load even with preload="none"
     video.play().catch(() => {});
 
-    const MAX_BLUR = 12; // px — "35%" blur at scroll progress 0
+    const applyFrame = () => {
+      rafPending = false;
+      if (video.readyState >= 2 && Math.abs(video.currentTime - targetTime) > 0.008) {
+        video.currentTime = targetTime;
+      }
+    };
+
+    const MAX_BLUR = 12; // px — ~30% blur feel at scroll progress 0
 
     const onScroll = () => {
       const heroScrollable = hero.offsetHeight - window.innerHeight;
@@ -25,9 +36,23 @@ export default function HeroVideo() {
         ? Math.max(0, Math.min(1, scrolled / heroScrollable))
         : 0;
 
+      // Switch to scrub mode on first scroll
+      if (!scrubbing && window.scrollY > 0) {
+        scrubbing = true;
+        video.pause();
+      }
+
+      if (scrubbing) {
+        targetTime = progress * (video.duration || 0);
+        if (!rafPending) {
+          rafPending = true;
+          requestAnimationFrame(applyFrame);
+        }
+      }
+
       // Blur: MAX_BLUR → 0 as user scrolls through the hero.
-      // Scale compensates for edge bleed so blurred pixels don't show
-      // the container background at the borders.
+      // Scale compensates for edge bleed so blurred pixels don't
+      // show the container background at the borders.
       const blurPx = MAX_BLUR * (1 - progress);
       const scale  = 1 + blurPx * 0.004; // ~1.048 at max blur → 1.0 at clear
       video.style.filter    = blurPx > 0.05 ? `blur(${blurPx.toFixed(2)}px)` : '';
@@ -42,7 +67,7 @@ export default function HeroVideo() {
       }
     };
 
-    // Apply initial state immediately (blur on load)
+    // Apply initial blur state before any scroll event fires
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => { window.removeEventListener('scroll', onScroll); };
@@ -52,16 +77,15 @@ export default function HeroVideo() {
     <section ref={heroRef} id="hero" className="relative" style={{ height: '200vh' }}>
       <div className="sticky top-0 h-screen overflow-hidden">
 
-        {/* Auto-playing looping background video — blur clears as user scrolls */}
+        {/* Scroll-scrubbed background video — blur clears as user scrolls */}
         <video
           ref={videoRef}
           muted
-          loop
           playsInline
           preload="none"
           poster="/assets/videos/Flowen_Hero_poster.jpg"
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: `blur(${12}px)`, transform: 'scale(1.048)' }}
+          style={{ filter: `blur(12px)`, transform: 'scale(1.048)' }}
         >
           <source src="/assets/videos/Flowen_Hero.mp4" type="video/mp4" />
         </video>
