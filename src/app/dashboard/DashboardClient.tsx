@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import type { ProgrammeState } from '@/lib/programme';
+import { GettingStartedChecklist, type ChecklistState } from '@/components/dashboard/GettingStartedChecklist';
 
 type Trend = 'improving' | 'plateauing' | 'regressing' | 'no_data';
 
@@ -37,6 +38,7 @@ interface DashboardClientProps {
   recentBpms: number[];
   recentSessions: RecentSession[];
   programmeState: ProgrammeState | null;
+  checklistState: ChecklistState;
 }
 
 function formatDuration(seconds: number): string {
@@ -331,6 +333,7 @@ export function DashboardClient({
   recentBpms,
   recentSessions,
   programmeState,
+  checklistState,
 }: DashboardClientProps) {
   // Parse the server-computed timestamp once so SSR and hydration use the same anchor,
   // avoiding text-node mismatches (React error #418) from date/time differences.
@@ -397,6 +400,9 @@ export function DashboardClient({
 
       {/* B. Plan banner */}
       <PlanBanner tier={tier} />
+
+      {/* B2. Getting started checklist — shown until all 5 tasks complete */}
+      <GettingStartedChecklist state={checklistState} tier={tier} />
 
       {/* C. KPI cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

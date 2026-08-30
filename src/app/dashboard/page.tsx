@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { DashboardClient } from './DashboardClient';
 import { computeProgrammeState, weekForSessionCount, type ProgrammeState } from '@/lib/programme';
+import type { ChecklistState } from '@/components/dashboard/GettingStartedChecklist';
 import { adminDb } from '@/lib/supabase/admin';
 
 export const metadata: Metadata = {
@@ -57,7 +58,7 @@ export default async function DashboardPage() {
       .select('id,stage_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true }),
-    supabase.from('profiles').select('display_name,tier').eq('id', user.id).single(),
+    supabase.from('profiles').select('display_name,tier,onboarding_complete,social_follow_verified_at').eq('id', user.id).single(),
     admin.from('user_programme').select('*').eq('user_id', user.id).maybeSingle(),
     admin.from('treatment_plans').select('id', { count: 'exact', head: true }).eq('patient_user_id', user.id).eq('active', true),
   ]);
@@ -66,6 +67,15 @@ export default async function DashboardPage() {
   const profile = profileRes.data;
   const n = sessions.length;
   const hasTreatmentPlan = (hasPlanRes.count ?? 0) > 0;
+
+  // Checklist state — drives the Getting Started component
+  const checklistState: ChecklistState = {
+    accountCreated:  true,
+    profileComplete: profile?.onboarding_complete === true,
+    firstSession:    n >= 1,
+    socialFollow:    !!profile?.social_follow_verified_at,
+    threeSessions:   n >= 3,
+  };
 
   // Programme state — only shown when user has no clinician-assigned plan
   let programmeState: ProgrammeState | null = null;
@@ -153,6 +163,7 @@ export default async function DashboardPage() {
     <DashboardClient
       serverDate={requestTime.toISOString()}
       greeting={computeGreeting(requestTime)}
+      checklistState={checklistState}
       displayName={profile?.display_name ?? user.email?.split('@')[0] ?? 'there'}
       tier={profile?.tier ?? null}
       sessionCount={n}
