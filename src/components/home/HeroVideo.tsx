@@ -13,12 +13,18 @@ export default function HeroVideo() {
     const content = heroContentRef.current;
     if (!video || !hero) return;
 
+    // Autoplay immediately — first frame shows before any scroll.
+    // On first scroll we pause and take manual control of currentTime.
     let scrubbing  = false;
     let rafPending = false;
     let targetTime = 0;
 
-    // Call play() directly — triggers load even with preload="none"
-    video.play().catch(() => {});
+    const startPlay = () => { video.play().catch(() => {}); };
+    if (video.readyState >= 3) {
+      startPlay();
+    } else {
+      video.addEventListener('canplay', startPlay, { once: true });
+    }
 
     const applyFrame = () => {
       rafPending = false;
@@ -36,7 +42,7 @@ export default function HeroVideo() {
         ? Math.max(0, Math.min(1, scrolled / heroScrollable))
         : 0;
 
-      // Switch to scrub mode on first scroll
+      // Switch to scrub mode on first downward scroll
       if (!scrubbing && window.scrollY > 0) {
         scrubbing = true;
         video.pause();
@@ -70,6 +76,7 @@ export default function HeroVideo() {
     // Apply initial blur state before any scroll event fires
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
+
     return () => { window.removeEventListener('scroll', onScroll); };
   }, []);
 
@@ -77,24 +84,26 @@ export default function HeroVideo() {
     <section ref={heroRef} id="hero" className="relative" style={{ height: '200vh' }}>
       <div className="sticky top-0 h-screen overflow-hidden">
 
-        {/* Scroll-scrubbed background video — blur clears as user scrolls */}
+        {/* Scroll-scrubbed background video — autoplays to show first frame immediately,
+            switches to manual currentTime control on first scroll.
+            blur(12px) on load → clears to 0 as user scrolls through the hero. */}
         <video
           ref={videoRef}
           muted
           playsInline
-          preload="none"
+          preload="auto"
           poster="/assets/videos/Flowen_Hero_poster.jpg"
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: `blur(12px)`, transform: 'scale(1.048)' }}
+          style={{ filter: 'blur(12px)', transform: 'scale(1.048)' }}
         >
           <source src="/assets/videos/Flowen_Hero.mp4" type="video/mp4" />
         </video>
 
-        {/* Gradient overlays */}
+        {/* Gradient overlays — darken edges for nav legibility, keep centre clear */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#06080F]/75 via-[#06080F]/20 to-[#06080F]/85 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#06080F]/50 via-transparent to-[#06080F]/50 pointer-events-none" />
 
-        {/* Hero content — fades and lifts on scroll */}
+        {/* Hero content — fades and lifts as the user scrolls through the 200vh section */}
         <div
           ref={heroContentRef}
           className="relative z-10 h-full flex flex-col items-center justify-center px-6 text-center"
