@@ -13,13 +13,8 @@ export default function HeroVideo() {
     const content = heroContentRef.current;
     if (!video || !hero) return;
 
-    // Auto-play and loop
-    const startPlay = () => { video.play().catch(() => {}); };
-    if (video.readyState >= 3) {
-      startPlay();
-    } else {
-      video.addEventListener('canplay', startPlay, { once: true });
-    }
+    // Auto-play loop — calling play() starts the load even with preload="none"
+    video.play().catch(() => {});
 
     const MAX_BLUR = 12; // px — "35%" blur at scroll progress 0
 
