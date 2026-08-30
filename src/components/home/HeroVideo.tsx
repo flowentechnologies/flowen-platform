@@ -13,10 +13,7 @@ export default function HeroVideo() {
     const content = heroContentRef.current;
     if (!video || !hero) return;
 
-    let scrubbing  = false;
-    let rafPending = false;
-    let targetTime = 0;
-
+    // Auto-play and loop
     const startPlay = () => { video.play().catch(() => {}); };
     if (video.readyState >= 3) {
       startPlay();
@@ -24,12 +21,7 @@ export default function HeroVideo() {
       video.addEventListener('canplay', startPlay, { once: true });
     }
 
-    const applyFrame = () => {
-      rafPending = false;
-      if (video.readyState >= 2 && Math.abs(video.currentTime - targetTime) > 0.008) {
-        video.currentTime = targetTime;
-      }
-    };
+    const MAX_BLUR = 12; // px — "35%" blur at scroll progress 0
 
     const onScroll = () => {
       const heroScrollable = hero.offsetHeight - window.innerHeight;
@@ -38,19 +30,15 @@ export default function HeroVideo() {
         ? Math.max(0, Math.min(1, scrolled / heroScrollable))
         : 0;
 
-      if (!scrubbing && window.scrollY > 0) {
-        scrubbing = true;
-        video.pause();
-      }
+      // Blur: MAX_BLUR → 0 as user scrolls through the hero.
+      // Scale compensates for edge bleed so blurred pixels don't show
+      // the container background at the borders.
+      const blurPx = MAX_BLUR * (1 - progress);
+      const scale  = 1 + blurPx * 0.004; // ~1.048 at max blur → 1.0 at clear
+      video.style.filter    = blurPx > 0.05 ? `blur(${blurPx.toFixed(2)}px)` : '';
+      video.style.transform = `scale(${scale.toFixed(4)})`;
 
-      if (scrubbing) {
-        targetTime = progress * (video.duration || 0);
-        if (!rafPending) {
-          rafPending = true;
-          requestAnimationFrame(applyFrame);
-        }
-      }
-
+      // Hero content: fade out and lift as user scrolls away
       if (content) {
         const opacity    = Math.max(0, 1 - progress * 2.2);
         const translateY = progress * -70;
@@ -59,6 +47,8 @@ export default function HeroVideo() {
       }
     };
 
+    // Apply initial state immediately (blur on load)
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => { window.removeEventListener('scroll', onScroll); };
   }, []);
@@ -67,14 +57,16 @@ export default function HeroVideo() {
     <section ref={heroRef} id="hero" className="relative" style={{ height: '200vh' }}>
       <div className="sticky top-0 h-screen overflow-hidden">
 
-        {/* Scroll-scrubbed background video */}
+        {/* Auto-playing looping background video — blur clears as user scrolls */}
         <video
           ref={videoRef}
           muted
+          loop
           playsInline
           preload="none"
           poster="/assets/videos/Flowen_Hero_poster.jpg"
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: `blur(${12}px)`, transform: 'scale(1.048)' }}
         >
           <source src="/assets/videos/Flowen_Hero.mp4" type="video/mp4" />
         </video>
@@ -116,16 +108,6 @@ export default function HeroVideo() {
           <p className="mt-4 text-xs text-emerald-400/80 font-semibold drop-shadow">
             3 free sessions included · No card required
           </p>
-
-          <p className="mt-3 text-xs text-white/40 max-w-md mx-auto drop-shadow">
-            Flowen is a speech practice aid. Results vary between individuals. It does not replace assessment or treatment by a qualified speech and language therapist.
-          </p>
-
-          {/* Scroll indicator */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40 select-none">
-            <span className="text-xs font-mono uppercase tracking-widest">Scroll</span>
-            <div className="w-px h-10 bg-gradient-to-b from-white/50 to-transparent animate-pulse" />
-          </div>
         </div>
       </div>
     </section>
