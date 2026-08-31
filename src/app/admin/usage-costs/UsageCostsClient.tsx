@@ -516,7 +516,7 @@ function ComputeSection({ c }: { c: ComputeData }) {
             { label: 'Audio processed',    value: mins(c.audioTotalSeconds),     sub: `${(c.audioTotalSeconds / 60).toFixed(1)} minutes total` },
             { label: 'Sessions processed', value: c.audioSessionCount,            sub: 'all-time' },
             { label: 'Avg session length', value: mins(Math.round(c.avgSessionDurationS)), sub: 'per session' },
-            { label: 'ASR latency',        value: 'Not yet logged',               sub: 'average_latency_ms → null' },
+            { label: 'ASR latency',        value: 'Not yet logged',               sub: 'instrument average_latency_ms to enable' },
           ].map(m => (
             <div key={m.label} className="rounded-lg bg-slate-100/60 dark:bg-slate-800/40 px-4 py-3">
               <div className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">{m.value}</div>

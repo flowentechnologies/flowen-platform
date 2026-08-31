@@ -111,8 +111,9 @@ export async function GET() {
   const allUserIds = (allUsersRes.data ?? []).length;
   const onboardedPct = allUserIds > 0 ? Math.round((onboardedUserIds.size / allUserIds) * 100) : 0;
 
-  // MRR: read from venture_config if manually set, otherwise 0 (Stripe query is expensive, admin sets it)
-  const mrrPence = config?.monthly_burn_pence != null ? 0 : 0; // placeholder — admin sets via config
+  // MRR: no dedicated field in venture_config yet — will be instrumented when Stripe
+  // subscription revenue is large enough to track separately. UI hides MRR until then.
+  const mrrPence = 0;
 
   const data: VentureData = {
     investors,
