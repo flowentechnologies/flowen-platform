@@ -14,6 +14,11 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import {
+  AreaChart, Area,
+  BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+} from 'recharts';
 
 // ── Tab definitions ───────────────────────────────────────────────────────────
 
@@ -178,37 +183,41 @@ function OverviewTab({ active }: { active: boolean }) {
           <h2 className="font-semibold text-slate-900 dark:text-white text-sm">Customer Journey Funnel</h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Ad → Click → Landing Page → Waitlist → Account → Onboarding → First Session → Activated → Paid</p>
         </div>
-        <div className="p-6 space-y-3">
-          {data.funnel.map((f, i) => {
-            const pct = funnelMax > 0 ? Math.max(2, (f.count / funnelMax) * 100) : 0;
-            const conv = i > 0 && data.funnel[i - 1].count > 0
-              ? Math.round((f.count / data.funnel[i - 1].count) * 100)
-              : null;
-            return (
-              <div key={f.stage} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-700 dark:text-slate-300 font-medium">{f.stage}</span>
-                  <div className="flex items-center gap-3">
-                    {conv !== null && (
-                      <span className={`text-[10px] font-mono ${conv < 30 ? 'text-amber-500' : 'text-slate-400'}`}>
-                        {conv}% from prev
-                      </span>
-                    )}
-                    <span className="font-bold text-slate-900 dark:text-white tabular-nums w-12 text-right">
-                      {f.count.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-                <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: `${pct}%` }}
+        <div className="p-4">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart
+              data={data.funnel}
+              layout="vertical"
+              margin={{ top: 0, right: 60, left: 140, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="currentColor" strokeOpacity={0.08} />
+              <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={v => v.toLocaleString()} />
+              <YAxis type="category" dataKey="stage" tick={{ fontSize: 11 }} width={130} />
+              <Tooltip
+                formatter={(value) => [typeof value === 'number' ? value.toLocaleString() : value, 'Count']}
+                contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+              />
+              <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                {data.funnel.map((_, i) => (
+                  <Cell
+                    key={i}
+                    fill={`hsl(${160 - i * 10} 70% ${45 + i * 2}%)`}
                   />
-                </div>
-                <p className="text-[9px] text-slate-400 font-mono">{f.note}</p>
-              </div>
-            );
-          })}
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="mt-2 flex flex-wrap gap-3">
+            {data.funnel.map((f, i) => {
+              const conv = i > 0 && data.funnel[i - 1].count > 0
+                ? Math.round((f.count / data.funnel[i - 1].count) * 100) : null;
+              return conv !== null ? (
+                <span key={f.stage} className={`text-[10px] font-mono ${conv < 30 ? 'text-amber-500' : 'text-slate-400'}`}>
+                  {f.stage}: {conv}% from prev
+                </span>
+              ) : null;
+            })}
+          </div>
         </div>
       </div>
 
@@ -334,18 +343,46 @@ function PaidMediaTab({ active }: { active: boolean }) {
       {/* Daily spend chart */}
       {Object.keys(data.dailySpend).length > 0 && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Daily Spend (last 30 days)</h3>
-          <div className="flex items-end gap-1 h-20">
-            {Object.entries(data.dailySpend).sort(([a], [b]) => a.localeCompare(b)).map(([date, pence]) => {
-              const maxPence = Math.max(...Object.values(data.dailySpend));
-              const heightPct = maxPence > 0 ? Math.max(4, (pence / maxPence) * 100) : 4;
-              return (
-                <div key={date} className="flex-1 flex flex-col justify-end" title={`${date}: £${(pence / 100).toFixed(2)}`}>
-                  <div className="bg-violet-500 rounded-sm" style={{ height: `${heightPct}%` }} />
-                </div>
-              );
-            })}
-          </div>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Daily Spend — last 30 days</h3>
+          <ResponsiveContainer width="100%" height={160}>
+            <AreaChart
+              data={Object.entries(data.dailySpend)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([date, pence]) => ({ date: date.slice(5), spend: +(pence / 100).toFixed(2) }))}
+              margin={{ top: 4, right: 8, left: -10, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient id="spendGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#8b5cf6" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.07} />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `£${v}`} />
+              <Tooltip
+                formatter={(v) => [typeof v === 'number' ? `£${v.toFixed(2)}` : v, 'Spend']}
+                contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+              />
+              <Area type="monotone" dataKey="spend" stroke="#8b5cf6" strokeWidth={2} fill="url(#spendGrad)" dot={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Platform spend comparison chart */}
+      {data.platforms.length > 1 && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Spend by platform</h3>
+          <ResponsiveContainer width="100%" height={120}>
+            <BarChart data={data.platforms.map(p => ({ platform: p.platform, spend: +p.spendGBP }))} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" strokeOpacity={0.07} />
+              <XAxis dataKey="platform" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `£${v}`} />
+              <Tooltip formatter={(v) => [typeof v === 'number' ? `£${v.toFixed(2)}` : v, 'Spend']} contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }} />
+              <Bar dataKey="spend" fill="#10b981" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       )}
 
