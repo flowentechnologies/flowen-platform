@@ -434,6 +434,74 @@ function AttributionTab({ active }: { active: boolean }) {
 
       <div className="text-xs text-slate-400 italic rounded-lg border border-slate-100 dark:border-slate-800 px-4 py-3">{data.note}</div>
 
+      {/* Attribution coverage breakdown — horizontal stacked bar */}
+      {data.totalRows > 0 && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Attribution funnel</h3>
+          <ResponsiveContainer width="100%" height={80}>
+            <BarChart
+              layout="vertical"
+              data={[{
+                name: 'Users',
+                converted:    data.converted,
+                linked:       data.attributed - data.converted,
+                unattributed: data.unattributed,
+              }]}
+              margin={{ top: 0, right: 8, left: 60, bottom: 0 }}
+            >
+              <XAxis type="number" tick={{ fontSize: 10 }} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={52} />
+              <Tooltip
+                formatter={(v, name) => [
+                  typeof v === 'number' ? v.toLocaleString() : v,
+                  name === 'converted' ? 'Converted' : name === 'linked' ? 'Linked (not converted)' : 'Unattributed',
+                ]}
+                contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+              />
+              <Bar dataKey="converted"    stackId="a" fill="#10b981" radius={[4, 0, 0, 4]} />
+              <Bar dataKey="linked"       stackId="a" fill="#6366f1" />
+              <Bar dataKey="unattributed" stackId="a" fill="#94a3b8" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="flex items-center gap-5 text-[11px]">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />Converted ({data.converted})</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-indigo-500 inline-block" />Linked, not converted ({data.attributed - data.converted})</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-slate-400 inline-block" />Unattributed ({data.unattributed})</span>
+          </div>
+        </div>
+      )}
+
+      {/* Clicks vs conversions by source */}
+      {data.bySource.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Clicks vs conversions by source</h3>
+          <ResponsiveContainer width="100%" height={Math.max(160, data.bySource.length * 44)}>
+            <BarChart
+              layout="vertical"
+              data={[...data.bySource].sort((a, b) => b.clicks - a.clicks)}
+              margin={{ top: 0, right: 40, left: 80, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="currentColor" strokeOpacity={0.07} />
+              <XAxis type="number" tick={{ fontSize: 10 }} />
+              <YAxis type="category" dataKey="source" tick={{ fontSize: 11 }} width={76} />
+              <Tooltip
+                formatter={(v, name) => [
+                  typeof v === 'number' ? v.toLocaleString() : v,
+                  name === 'clicks' ? 'Clicks' : 'Conversions',
+                ]}
+                contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+              />
+              <Bar dataKey="clicks"      fill="#6366f1" radius={[0, 2, 2, 0]} barSize={10} />
+              <Bar dataKey="conversions" fill="#10b981" radius={[0, 2, 2, 0]} barSize={10} />
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="flex items-center gap-5 text-[11px]">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-indigo-500 inline-block" />Clicks</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />Conversions</span>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* By source */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
