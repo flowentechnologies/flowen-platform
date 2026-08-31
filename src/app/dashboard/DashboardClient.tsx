@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import type { ProgrammeState } from '@/lib/programme';
 import { GettingStartedChecklist, type ChecklistState } from '@/components/dashboard/GettingStartedChecklist';
+import { DashboardTour } from '@/components/dashboard/DashboardTour';
 
 type Trend = 'improving' | 'plateauing' | 'regressing' | 'no_data';
 
@@ -377,6 +378,9 @@ export function DashboardClient({
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+      {/* First-run interactive guide */}
+      <DashboardTour />
+
       {/* A. Header row */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
@@ -390,6 +394,7 @@ export function DashboardClient({
           )}
         </div>
         <Link
+          data-tour="practice-btn"
           href="/dashboard/practice"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-bold transition-colors shrink-0"
         >
@@ -402,10 +407,12 @@ export function DashboardClient({
       <PlanBanner tier={tier} />
 
       {/* B2. Getting started checklist — shown until all 5 tasks complete */}
-      <GettingStartedChecklist state={checklistState} tier={tier} />
+      <div data-tour="checklist">
+        <GettingStartedChecklist state={checklistState} tier={tier} />
+      </div>
 
       {/* C. KPI cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div data-tour="kpi-cards" className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <KpiCard
           label="Sessions"
           value={String(sessionCount)}
@@ -448,7 +455,11 @@ export function DashboardClient({
       )}
 
       {/* Programme card — only for self-guided users */}
-      {programmeState && <ProgrammeCard state={programmeState} />}
+      {programmeState && (
+        <div data-tour="programme">
+          <ProgrammeCard state={programmeState} />
+        </div>
+      )}
 
       {sessionCount > 0 && (
         <>
