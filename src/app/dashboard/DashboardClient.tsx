@@ -8,6 +8,12 @@ import { DashboardTour } from '@/components/dashboard/DashboardTour';
 
 type Trend = 'improving' | 'plateauing' | 'regressing' | 'no_data';
 
+export type SubscriptionInfo = {
+  status:            string | null;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd:  string | null;
+};
+
 const STAGE_NAMES: Record<number, string> = {
   1: 'Breathing',
   2: 'Easy Onset',
@@ -30,6 +36,7 @@ interface DashboardClientProps {
   greeting: string;
   displayName: string;
   tier: string | null;
+  subscriptionInfo: SubscriptionInfo;
   sessionCount: number;
   totalMins: number;
   streak: number;
@@ -68,10 +75,120 @@ function buildLast30Days(now: Date): string[] {
 
 // ─── Plan Banner ─────────────────────────────────────────────────────────────
 
-function PlanBanner({ tier }: { tier: string | null }) {
-  if (tier === 'founding' || tier === 'public_funds') return null;
+const LOCKED_FEATURES = [
+  'Unlimited practice sessions',
+  'Full fluency analytics & trend tracking',
+  'Personalised 8-week programme',
+  'SLT-ready progress reports',
+  'Priority AI coach feedback',
+];
 
-  if (tier === 'standard') {
+function PlanBanner({ tier, sub }: { tier: string | null; sub: SubscriptionInfo }) {
+  const isPastDue = sub.status === 'past_due' || sub.status === 'unpaid';
+  const isIncomplete = sub.status === 'incomplete';
+  const isCancelling = sub.cancelAtPeriodEnd && sub.status === 'active';
+  const periodEndLabel = sub.currentPeriodEnd
+    ? new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+
+  // ── 1. OVERDUE / PAST DUE ── highest priority, always shown regardless of tier
+  if (isPastDue || isIncomplete) {
+    return (
+      <div className="rounded-2xl border-2 border-red-500/60 bg-red-500/10 px-5 py-5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center shrink-0 mt-0.5">
+              <svg className="w-5 h-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-base font-bold text-red-600 dark:text-red-400 leading-snug">
+                Payment failed — action required
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                Your subscription payment didn&apos;t go through. Please update your payment method to keep access to Flowen.
+                {periodEndLabel && ` Access ends ${periodEndLabel} if not resolved.`}
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/billing"
+            className="shrink-0 px-5 py-3 rounded-xl bg-red-500 hover:bg-red-400 text-white text-sm font-bold transition-colors whitespace-nowrap shadow-lg shadow-red-500/25"
+          >
+            Pay now →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 2. CANCELLING ── show retention nudge before access ends
+  if (isCancelling) {
+    return (
+      <div className="rounded-2xl border border-amber-500/40 bg-amber-500/8 px-5 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="w-9 h-9 rounded-full bg-amber-500/15 border border-amber-500/40 flex items-center justify-center shrink-0 mt-0.5">
+              <svg className="w-4 h-4 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-amber-600 dark:text-amber-400">
+                Your plan cancels {periodEndLabel ? `on ${periodEndLabel}` : 'soon'}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Reactivate to keep your progress, analytics, and programme access.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link href="/dashboard/billing" className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-bold transition-colors whitespace-nowrap">
+              Reactivate →
+            </Link>
+            <Link href="/dashboard/billing" className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors whitespace-nowrap">
+              Manage billing
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 3. FOUNDING / PUBLIC FUNDS ── affirm + surface billing link
+  if (tier === 'founding' || tier === 'public_funds') {
+    return (
+      <div className="rounded-2xl border border-violet-500/25 bg-gradient-to-r from-violet-500/8 to-emerald-500/5 px-5 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-9 h-9 rounded-full bg-violet-500/15 border border-violet-500/30 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-violet-500 dark:text-violet-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd"/>
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-slate-900 dark:text-white">
+                {tier === 'founding' ? 'Founding Member' : 'Public Funds Access'}{' '}
+                <span className="text-violet-500 dark:text-violet-400 text-[10px] font-mono ml-1 uppercase tracking-widest">Full access</span>
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {tier === 'founding'
+                  ? 'Thank you for believing in Flowen from the start. All features are unlocked.'
+                  : 'Your access is funded. All premium features are unlocked.'}
+              </p>
+            </div>
+          </div>
+          <Link href="/dashboard/billing" className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors shrink-0 whitespace-nowrap">
+            Billing →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 4. ACTIVE STANDARD ── affirm + upsell Access to Work
+  if (tier === 'standard' && sub.status === 'active') {
     return (
       <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -82,7 +199,7 @@ function PlanBanner({ tier }: { tier: string | null }) {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-slate-900 dark:text-white leading-snug">
-              Standard Access <span className="text-emerald-600 dark:text-emerald-400 text-xs font-mono ml-1">ACTIVE</span>
+              Standard Access <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-mono ml-1">ACTIVE</span>
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Employed? Access to Work can reimburse your subscription — you pay nothing.{' '}
@@ -90,48 +207,58 @@ function PlanBanner({ tier }: { tier: string | null }) {
             </p>
           </div>
         </div>
-        <Link
-          href="/dashboard/billing"
-          className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors shrink-0 whitespace-nowrap"
-        >
+        <Link href="/dashboard/billing" className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors shrink-0 whitespace-nowrap">
           Manage billing →
         </Link>
       </div>
     );
   }
 
+  // ── 5. FREE / NO SUBSCRIPTION ── maximum-conversion upgrade card
   return (
-    <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-emerald-500/5 px-5 py-4 space-y-3">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
-            <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd"/>
-            </svg>
+    <div className="rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 px-6 py-6 space-y-5 shadow-xl shadow-emerald-500/5">
+      {/* Headline */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-widest">
+              Upgrade
+            </span>
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-900 dark:text-white leading-snug">
-              Upgrade to Standard Access
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Unlimited sessions · Full analytics · 8-week fluency programme · SLT progress reports
-            </p>
-          </div>
+          <h2 className="text-lg font-bold text-white leading-snug">
+            Unlock everything — from <span className="text-emerald-400">£19.96/mo</span>
+          </h2>
+          <p className="text-slate-400 text-sm mt-1">
+            You&apos;re on the free plan. Upgrade for unlimited sessions, full analytics, and your personalised programme.
+          </p>
         </div>
-        <div className="flex items-center gap-3 shrink-0 flex-wrap">
+        {/* Primary CTA */}
+        <div className="shrink-0 flex flex-col gap-2">
           <Link
             href="/pricing"
-            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-colors whitespace-nowrap"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-bold transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 whitespace-nowrap"
           >
-            Upgrade — from £19.96/mo
+            Upgrade now →
           </Link>
           <Link
             href="/resources/access-to-work"
-            className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors whitespace-nowrap"
+            className="text-center text-[11px] text-slate-400 hover:text-emerald-400 transition-colors"
           >
-            Get it funded →
+            Get it funded via Access to Work ↗
           </Link>
         </div>
+      </div>
+
+      {/* Feature list */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {LOCKED_FEATURES.map((f) => (
+          <div key={f} className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-emerald-500 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+              <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd"/>
+            </svg>
+            <span className="text-slate-300 text-xs">{f}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -325,6 +452,7 @@ export function DashboardClient({
   greeting,
   displayName,
   tier,
+  subscriptionInfo,
   sessionCount,
   totalMins,
   streak,
@@ -404,7 +532,7 @@ export function DashboardClient({
       </div>
 
       {/* B. Plan banner */}
-      <PlanBanner tier={tier} />
+      <PlanBanner tier={tier} sub={subscriptionInfo} />
 
       {/* B2. Getting started checklist — shown until all 5 tasks complete */}
       <div data-tour="checklist">

@@ -52,7 +52,7 @@ export default async function DashboardPage() {
   // Clinicians have no practice data — send them to their patient list.
   const { data: roleRow } = await supabase.from('profiles').select('role').eq('id', user.id).single();
   if (roleRow?.role === 'clinician') redirect('/dashboard/clinician');
-  const [sessionsRes, profileRes, progRes, hasPlanRes] = await Promise.all([
+  const [sessionsRes, profileRes, progRes, hasPlanRes, subRes] = await Promise.all([
     supabase
       .from('practice_sessions')
       .select('id,stage_id,duration_seconds,total_blocks_detected,total_repetitions_detected,total_prolongations_detected,created_at')
@@ -61,12 +61,36 @@ export default async function DashboardPage() {
     supabase.from('profiles').select('display_name,tier,onboarding_complete,social_follow_verified_at').eq('id', user.id).single(),
     admin.from('user_programme').select('*').eq('user_id', user.id).maybeSingle(),
     admin.from('treatment_plans').select('id', { count: 'exact', head: true }).eq('patient_user_id', user.id).eq('active', true),
+    // Fetch latest subscription for billing status banners
+    admin
+      .from('customers')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single()
+      .then(async ({ data: cust }) => {
+        if (!cust) return null;
+        const { data } = await admin
+          .from('subscriptions')
+          .select('status,cancel_at_period_end,current_period_end')
+          .eq('customer_id', cust.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        return data;
+      }),
   ]);
 
   const sessions = (sessionsRes.data ?? []) as Session[];
   const profile = profileRes.data;
   const n = sessions.length;
   const hasTreatmentPlan = (hasPlanRes.count ?? 0) > 0;
+
+  const subData = subRes;
+  const subscriptionInfo = {
+    status:            subData?.status             ?? null,
+    cancelAtPeriodEnd: subData?.cancel_at_period_end ?? false,
+    currentPeriodEnd:  subData?.current_period_end  ?? null,
+  };
 
   // Checklist state — drives the Getting Started component
   const checklistState: ChecklistState = {
@@ -166,6 +190,7 @@ export default async function DashboardPage() {
       checklistState={checklistState}
       displayName={profile?.display_name ?? user.email?.split('@')[0] ?? 'there'}
       tier={profile?.tier ?? null}
+      subscriptionInfo={subscriptionInfo}
       sessionCount={n}
       totalMins={totalMins}
       streak={streak}
