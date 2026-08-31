@@ -56,7 +56,10 @@ export async function GET(
     // Use async readFile (fs/promises) — readFileSync blocks the event loop for
     // the duration of the disk read, which can delay concurrent requests sharing
     // the same Fluid Compute instance.
-    const html = await readFile(join(process.cwd(), 'public', 'deck.html'), 'utf8');
+    // private/ is NOT served by Next.js static asset handler — only public/ is.
+    // deck.html is intentionally kept outside public/ so it cannot be accessed
+    // directly at /deck.html; it is only served through this token-gated route.
+    const html = await readFile(join(process.cwd(), 'private', 'deck.html'), 'utf8');
     // The deck uses Tailwind CDN, Google Fonts, and FontAwesome — set a
     // permissive CSP scoped to this route only.  This overrides the site-wide
     // restrictive CSP set in next.config.ts for all other routes.

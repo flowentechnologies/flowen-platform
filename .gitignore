@@ -43,3 +43,6 @@ next-env.d.ts
 # Sentry Config File
 .env.sentry-build-plugin
 .mcp.json
+
+# Confidential assets — NOT served as static files (only via token-gated API routes)
+/private/
