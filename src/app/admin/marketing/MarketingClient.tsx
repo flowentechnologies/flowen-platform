@@ -687,7 +687,58 @@ function CampaignsTab({ active }: { active: boolean }) {
             </p>
           </div>
         )
-        : (
+        : (<>
+          {/* Spend per campaign — horizontal bar */}
+          {(() => {
+            const chartData = [...data.campaigns]
+              .sort((a, b) => parseFloat(b.spendGBP) - parseFloat(a.spendGBP))
+              .slice(0, 10)
+              .map(c => ({
+                name:   (c.campaignName ?? c.campaignId).slice(0, 28) + ((c.campaignName ?? c.campaignId).length > 28 ? '…' : ''),
+                spend:  parseFloat(c.spendGBP),
+                clicks: c.clicks,
+              }));
+            return (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Spend */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Spend by campaign</h3>
+                  <ResponsiveContainer width="100%" height={Math.max(140, chartData.length * 36)}>
+                    <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 48, left: 4, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="currentColor" strokeOpacity={0.07} />
+                      <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `£${v}`} />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={160} />
+                      <Tooltip
+                        formatter={(v) => [typeof v === 'number' ? `£${v.toFixed(2)}` : v, 'Spend']}
+                        contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+                      />
+                      <Bar dataKey="spend" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Clicks */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Clicks by campaign</h3>
+                  <ResponsiveContainer width="100%" height={Math.max(140, chartData.length * 36)}>
+                    <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 48, left: 4, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="currentColor" strokeOpacity={0.07} />
+                      <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : String(v)} />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={160} />
+                      <Tooltip
+                        formatter={(v) => [typeof v === 'number' ? v.toLocaleString() : v, 'Clicks']}
+                        contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+                      />
+                      <Bar dataKey="clicks" fill="#10b981" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            );
+          })()}
+        </>)}
+
+      {data.campaigns.length > 0 && (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -726,7 +777,7 @@ function CampaignsTab({ active }: { active: boolean }) {
               </table>
             </div>
           </div>
-        )}
+      )}
     </div>
   );
 }
