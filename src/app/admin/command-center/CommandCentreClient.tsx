@@ -412,26 +412,88 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
           {/* Quick actions */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
             <p className="text-sm font-bold text-slate-900 dark:text-white mb-3">Quick Links</p>
-            <div className="space-y-1.5">
-              {[
-                { label: 'Support Queue',      href: '/admin/tickets',                badge: openTickets > 0 ? `${openTickets} open` : null,    badgeColor: 'bg-amber-500/10 text-amber-400' },
-                { label: 'GDPR Requests',      href: '/admin/tickets/gdpr-requests',  badge: pendingGdpr > 0 ? `${pendingGdpr} pending` : null, badgeColor: 'bg-red-500/10 text-red-400' },
-                { label: 'Grants',             href: '/admin/grants',                 badge: grantsDeadlineSoon > 0 ? `${grantsDeadlineSoon} due soon` : null, badgeColor: 'bg-amber-500/10 text-amber-400' },
-                { label: 'Roadmap',            href: '/admin/roadmap',                badge: roadmapInProgress > 0 ? `${roadmapInProgress} active` : null, badgeColor: 'bg-indigo-500/10 text-indigo-400' },
-                { label: 'Evidence Pack',      href: '/admin/evidence',               badge: null,                                               badgeColor: '' },
-                { label: 'Notifications',      href: '/admin/notifications',          badge: null,                                               badgeColor: '' },
-                { label: 'Users',              href: '/admin/users',                  badge: null,                                               badgeColor: '' },
-                { label: 'Billing',            href: '/admin/billing',                badge: null,                                               badgeColor: '' },
-                { label: 'Workflows',          href: '/admin/workflows',              badge: failedRunsWeek > 0 ? `${failedRunsWeek} failed` : null, badgeColor: 'bg-red-500/10 text-red-400' },
-                { label: 'System',             href: '/admin/system',                 badge: recentErrors.length > 0 ? `${recentErrors.length} errors` : null, badgeColor: 'bg-red-500/10 text-red-400' },
-              ].map(item => (
-                <Link key={item.href} href={item.href}
-                  className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-800/60 transition-colors group">
-                  <span className="text-xs text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{item.label}</span>
-                  {item.badge && (
-                    <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}>{item.badge}</span>
-                  )}
-                </Link>
+            <div className="space-y-3">
+              {([
+                {
+                  section: 'Ops',
+                  items: [
+                    { label: 'Support Queue',   href: '/admin/tickets',               badge: openTickets > 0 ? `${openTickets} open` : null,    badgeColor: 'bg-amber-500/10 text-amber-400' },
+                    { label: 'GDPR Requests',   href: '/admin/tickets/gdpr-requests', badge: pendingGdpr > 0 ? `${pendingGdpr} pending` : null, badgeColor: 'bg-red-500/10 text-red-400' },
+                    { label: 'Notifications',   href: '/admin/notifications',         badge: null, badgeColor: '' },
+                    { label: 'Workflows',       href: '/admin/workflows',             badge: failedRunsWeek > 0 ? `${failedRunsWeek} failed` : null, badgeColor: 'bg-red-500/10 text-red-400' },
+                    { label: 'System',          href: '/admin/system',                badge: recentErrors.length > 0 ? `${recentErrors.length} errors` : null, badgeColor: 'bg-red-500/10 text-red-400' },
+                    { label: 'Audit Log',       href: '/admin/audit',                 badge: null, badgeColor: '' },
+                    { label: 'Staff',           href: '/admin/staff',                 badge: null, badgeColor: '' },
+                  ],
+                },
+                {
+                  section: 'Growth',
+                  items: [
+                    { label: 'Marketing',       href: '/admin/marketing',             badge: null, badgeColor: '' },
+                    { label: 'Campaign',        href: '/admin/campaign',              badge: null, badgeColor: '' },
+                    { label: 'Analytics',       href: '/admin/analytics',             badge: null, badgeColor: '' },
+                    { label: 'Tracking',        href: '/admin/tracking',              badge: null, badgeColor: '' },
+                    { label: 'Affiliate',       href: '/admin/affiliate',             badge: null, badgeColor: '' },
+                    { label: 'Waitlist',        href: '/admin/waitlist',              badge: null, badgeColor: '' },
+                    { label: 'NPS',             href: '/admin/nps',                   badge: null, badgeColor: '' },
+                  ],
+                },
+                {
+                  section: 'Product',
+                  items: [
+                    { label: 'Roadmap',         href: '/admin/roadmap',               badge: roadmapInProgress > 0 ? `${roadmapInProgress} active` : null, badgeColor: 'bg-indigo-500/10 text-indigo-400' },
+                    { label: 'Feature Flags',   href: '/admin/feature-flags',         badge: null, badgeColor: '' },
+                    { label: 'Users',           href: '/admin/users',                 badge: null, badgeColor: '' },
+                    { label: 'Billing',         href: '/admin/billing',               badge: null, badgeColor: '' },
+                    { label: 'Usage & Costs',   href: '/admin/usage-costs',           badge: null, badgeColor: '' },
+                    { label: 'Session Quality', href: '/admin/session-quality',       badge: null, badgeColor: '' },
+                  ],
+                },
+                {
+                  section: 'Fundraising',
+                  items: [
+                    { label: 'Venture',         href: '/admin/venture',               badge: null, badgeColor: '' },
+                    { label: 'Cap Table',       href: '/admin/cap-table',             badge: null, badgeColor: '' },
+                    { label: 'Pitch Deck',      href: '/admin/pitch-deck',            badge: null, badgeColor: '' },
+                    { label: 'Data Room',       href: '/admin/data-room',             badge: null, badgeColor: '' },
+                    { label: 'Grants',          href: '/admin/grants',                badge: grantsDeadlineSoon > 0 ? `${grantsDeadlineSoon} due soon` : null, badgeColor: 'bg-amber-500/10 text-amber-400' },
+                    { label: 'Valuation',       href: '/admin/valuation',             badge: null, badgeColor: '' },
+                  ],
+                },
+                {
+                  section: 'Compliance',
+                  items: [
+                    { label: 'Evidence Pack',   href: '/admin/evidence',              badge: null, badgeColor: '' },
+                    { label: 'Compliance',      href: '/admin/compliance',            badge: null, badgeColor: '' },
+                    { label: 'Hazard Log',      href: '/admin/hazard-log',            badge: null, badgeColor: '' },
+                    { label: 'ROPA',            href: '/admin/ropa',                  badge: null, badgeColor: '' },
+                    { label: 'Policies',        href: '/admin/policies',              badge: null, badgeColor: '' },
+                    { label: 'IP',              href: '/admin/ip',                    badge: null, badgeColor: '' },
+                  ],
+                },
+                {
+                  section: 'NHS',
+                  items: [
+                    { label: 'NHS',             href: '/admin/nhs',                   badge: null, badgeColor: '' },
+                    { label: 'Clinician Assign',href: '/admin/clinician-assignments', badge: null, badgeColor: '' },
+                    { label: 'SLP Beta',        href: '/admin/slp-beta',              badge: null, badgeColor: '' },
+                  ],
+                },
+              ] as { section: string; items: { label: string; href: string; badge: string | null; badgeColor: string }[] }[]).map(group => (
+                <div key={group.section}>
+                  <p className="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-500 px-3 mb-1">{group.section}</p>
+                  <div className="space-y-0.5">
+                    {group.items.map(item => (
+                      <Link key={item.href} href={item.href}
+                        className="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors group">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{item.label}</span>
+                        {item.badge && (
+                          <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}>{item.badge}</span>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
