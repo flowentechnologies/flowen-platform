@@ -413,6 +413,26 @@ type AttributionData = {
 
 function AttributionTab({ active }: { active: boolean }) {
   const { data, loading, error } = useSection<AttributionData>('attribution', active);
+  const [syncingGA, setSyncingGA]     = useState(false);
+  const [gaSyncResult, setGaSyncResult] = useState<string | null>(null);
+
+  const syncGA4 = async () => {
+    setSyncingGA(true);
+    setGaSyncResult(null);
+    try {
+      const res  = await fetch('/api/admin/marketing/sync/google-analytics', { method: 'POST' });
+      const json = await res.json() as { synced?: number; error?: string; hint?: string };
+      if (json.error) {
+        setGaSyncResult(`Error: ${json.error}${json.hint ? ` — ${json.hint}` : ''}`);
+      } else {
+        setGaSyncResult(`✓ Synced ${json.synced} rows from GA4`);
+      }
+    } catch (e) {
+      setGaSyncResult(`Network error: ${String(e)}`);
+    } finally {
+      setSyncingGA(false);
+    }
+  };
 
   if (loading) return <Spinner />;
   if (error)   return <SectionError msg={error} />;
@@ -420,6 +440,30 @@ function AttributionTab({ active }: { active: boolean }) {
 
   return (
     <div className="space-y-8">
+      {/* GA4 sync */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-xs text-slate-400 leading-snug">
+            First-touch attribution comes from your landing page UTM capture.<br />
+            Sync GA4 to enrich with session-level source/medium/campaign data.
+          </p>
+          {gaSyncResult && (
+            <p className={`text-xs mt-1 ${gaSyncResult.startsWith('Error') ? 'text-red-500' : 'text-emerald-500'}`}>
+              {gaSyncResult}
+            </p>
+          )}
+        </div>
+        <button
+          onClick={syncGA4}
+          disabled={syncingGA}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-sm font-bold transition-colors whitespace-nowrap"
+        >
+          {syncingGA
+            ? <><div className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" /> Syncing…</>
+            : 'Sync from GA4 ↓'}
+        </button>
+      </div>
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Stat label="Attribution rows"  value={String(data.totalRows)} />
         <Stat label="Linked to user"   value={String(data.attributed)} />
@@ -624,25 +668,28 @@ type CampaignsData = {
 
 function CampaignsTab({ active }: { active: boolean }) {
   const { data, loading, error, refresh } = useSection<CampaignsData>('campaigns', active);
-  const [syncing, setSyncing] = useState(false);
+  const [syncingPlatform, setSyncingPlatform] = useState<string | null>(null);
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
-  const syncMeta = async () => {
-    setSyncing(true);
+  const syncPlatform = async (platform: 'meta' | 'google') => {
+    setSyncingPlatform(platform);
     setSyncResult(null);
+    const url = platform === 'meta'
+      ? '/api/admin/marketing/sync'
+      : '/api/admin/marketing/sync/google-ads';
     try {
-      const res  = await fetch('/api/admin/marketing/sync', { method: 'POST' });
+      const res  = await fetch(url, { method: 'POST' });
       const json = await res.json() as { synced?: number; error?: string; hint?: string; configured?: boolean };
       if (json.error) {
-        setSyncResult(`Error: ${json.error}${json.hint ? ` — ${json.hint}` : ''}`);
+        setSyncResult(`Error (${platform}): ${json.error}${json.hint ? ` — ${json.hint}` : ''}`);
       } else {
-        setSyncResult(`Synced ${json.synced} rows from Meta`);
+        setSyncResult(`✓ Synced ${json.synced} rows from ${platform === 'meta' ? 'Meta' : 'Google Ads'}`);
         refresh();
       }
     } catch (e) {
       setSyncResult(`Network error: ${String(e)}`);
     } finally {
-      setSyncing(false);
+      setSyncingPlatform(null);
     }
   };
 
@@ -658,7 +705,7 @@ function CampaignsTab({ active }: { active: boolean }) {
           <p className="text-xs text-slate-400">
             {data.lastSyncAt
               ? `Last synced: ${new Date(data.lastSyncAt).toLocaleString('en-GB')}`
-              : 'No ad data synced yet — click Sync to pull from Meta'}
+              : 'No ad data synced yet — sync from a platform below'}
           </p>
           {syncResult && (
             <p className={`text-xs mt-1 ${syncResult.startsWith('Error') ? 'text-red-500' : 'text-emerald-500'}`}>
@@ -666,17 +713,23 @@ function CampaignsTab({ active }: { active: boolean }) {
             </p>
           )}
         </div>
-        <button
-          onClick={syncMeta}
-          disabled={syncing}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-bold transition-colors"
-        >
-          {syncing ? (
-            <><div className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" /> Syncing…</>
-          ) : (
-            'Sync from Meta ↓'
-          )}
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {([
+            { platform: 'meta'   as const, label: 'Meta',        color: 'bg-violet-600 hover:bg-violet-500' },
+            { platform: 'google' as const, label: 'Google Ads',  color: 'bg-blue-600   hover:bg-blue-500'   },
+          ]).map(({ platform, label, color }) => (
+            <button
+              key={platform}
+              onClick={() => syncPlatform(platform)}
+              disabled={syncingPlatform !== null}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl ${color} disabled:opacity-50 text-white text-sm font-bold transition-colors`}
+            >
+              {syncingPlatform === platform
+                ? <><div className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" /> Syncing…</>
+                : `Sync from ${label} ↓`}
+            </button>
+          ))}
+        </div>
       </div>
 
       {data.campaigns.length === 0
@@ -684,7 +737,9 @@ function CampaignsTab({ active }: { active: boolean }) {
           <div className="bg-slate-50 dark:bg-slate-900/50 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-10 text-center space-y-3">
             <p className="text-slate-600 dark:text-slate-400 font-semibold">No campaign data</p>
             <p className="text-sm text-slate-400">
-              Add <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">META_ADS_ACCESS_TOKEN</code> and <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">META_AD_ACCOUNT_ID</code> to Vercel env vars, then click Sync.
+              Sync from Meta or Google Ads using the buttons above.<br />
+              Meta: <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">META_ADS_ACCESS_TOKEN</code> + <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">META_AD_ACCOUNT_ID</code><br />
+              Google Ads: <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">GOOGLE_ADS_DEVELOPER_TOKEN</code> + <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">GOOGLE_ADS_CUSTOMER_ID</code> + OAuth vars
             </p>
           </div>
         )
