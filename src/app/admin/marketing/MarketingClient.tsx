@@ -17,7 +17,8 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   AreaChart, Area,
   BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  RadialBarChart, RadialBar,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine, Legend,
 } from 'recharts';
 
 // ── Tab definitions ───────────────────────────────────────────────────────────
@@ -1378,6 +1379,80 @@ function TrackingHealthTab({ active }: { active: boolean }) {
           valueClass={data.unattributedUsers > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}
         />
         <Stat label="Attribution rows" value={String(data.totalAttributionRows)} sub={`${data.linkedAttributionRows} linked to user`} />
+      </div>
+
+      {/* Coverage gauges + provider config chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Radial gauges — UTM & attribution coverage */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-2">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Coverage vs 80% target</h3>
+          <p className="text-[11px] text-slate-400">UTM and attribution coverage — aim for ≥80%</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <RadialBarChart
+              cx="50%" cy="55%"
+              innerRadius="30%" outerRadius="90%"
+              startAngle={180} endAngle={0}
+              data={[
+                {
+                  name: 'Attribution',
+                  value: data.attrCoveragePercent ?? 0,
+                  fill: data.attrCoveragePercent != null && data.attrCoveragePercent < 70 ? '#f59e0b' : '#6366f1',
+                },
+                {
+                  name: 'UTM',
+                  value: data.utmCoveragePercent ?? 0,
+                  fill: data.utmCoveragePercent != null && data.utmCoveragePercent < 70 ? '#ef4444' : '#10b981',
+                },
+              ]}
+            >
+              <RadialBar dataKey="value" cornerRadius={4} label={false} />
+              <Tooltip
+                formatter={(v) => [`${v}%`]}
+                contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+              />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+            </RadialBarChart>
+          </ResponsiveContainer>
+          <p className="text-[10px] text-center text-slate-400 font-mono">Target: 80%+ · Red/amber = below threshold</p>
+        </div>
+
+        {/* Provider config — grouped bar (1 = configured, 0 = missing) */}
+        {data.providers.length > 0 && (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-2">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Pixel & CAPI status</h3>
+            <p className="text-[11px] text-slate-400">1 = configured · 0 = missing</p>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart
+                data={data.providers.map(p => ({
+                  provider:  p.provider.charAt(0).toUpperCase() + p.provider.slice(1),
+                  Pixel:     p.hasPixel    ? 1 : 0,
+                  CAPI:      p.hasCapiToken ? 1 : 0,
+                  Enabled:   p.enabled     ? 1 : 0,
+                }))}
+                margin={{ top: 4, right: 8, left: -20, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" strokeOpacity={0.07} />
+                <XAxis dataKey="provider" tick={{ fontSize: 11 }} />
+                <YAxis domain={[0, 1]} ticks={[0, 1]} tick={{ fontSize: 10 }} />
+                <ReferenceLine y={1} stroke="#10b981" strokeDasharray="4 2" strokeOpacity={0.4} />
+                <Tooltip
+                  formatter={(v, name) => [v === 1 ? '✓ Configured' : '✗ Missing', String(name)]}
+                  contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+                />
+                <Bar dataKey="Enabled" fill="#94a3b8" radius={[2, 2, 0, 0]} barSize={12} />
+                <Bar dataKey="Pixel"   fill="#6366f1" radius={[2, 2, 0, 0]} barSize={12} />
+                <Bar dataKey="CAPI"    fill="#10b981" radius={[2, 2, 0, 0]} barSize={12} />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap gap-4 text-[11px]">
+              {[['#94a3b8','Enabled'],['#6366f1','Pixel'],['#10b981','CAPI']].map(([c, l]) => (
+                <span key={l} className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: c }} />{l}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Platform providers */}
