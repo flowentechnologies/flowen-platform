@@ -801,8 +801,62 @@ function CreativesTab({ active }: { active: boolean }) {
     <EmptyState msg="No creative data yet. Sync campaign data from Meta in the Campaigns tab." />
   );
 
+  const chartData = [...data.creatives]
+    .sort((a, b) => parseFloat(b.spendGBP) - parseFloat(a.spendGBP))
+    .slice(0, 10)
+    .map(c => ({
+      name:  (c.adName ?? c.adId).slice(0, 28) + ((c.adName ?? c.adId).length > 28 ? '…' : ''),
+      spend: parseFloat(c.spendGBP),
+      ctr:   c.ctr ? parseFloat(c.ctr) : 0,
+    }));
+
   return (
     <div className="space-y-6">
+      {/* Spend vs CTR — side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Spend by creative</h3>
+          <ResponsiveContainer width="100%" height={Math.max(140, chartData.length * 36)}>
+            <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 48, left: 4, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="currentColor" strokeOpacity={0.07} />
+              <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `£${v}`} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={160} />
+              <Tooltip
+                formatter={(v) => [typeof v === 'number' ? `£${v.toFixed(2)}` : v, 'Spend']}
+                contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+              />
+              <Bar dataKey="spend" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">CTR by creative</h3>
+            <p className="text-[11px] text-slate-400 mt-0.5">Higher CTR = more compelling creative</p>
+          </div>
+          <ResponsiveContainer width="100%" height={Math.max(140, chartData.length * 36)}>
+            <BarChart layout="vertical" data={[...chartData].sort((a, b) => b.ctr - a.ctr)} margin={{ top: 0, right: 48, left: 4, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="currentColor" strokeOpacity={0.07} />
+              <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `${v}%`} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={160} />
+              <Tooltip
+                formatter={(v) => [typeof v === 'number' ? `${v.toFixed(2)}%` : v, 'CTR']}
+                contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+              />
+              <Bar dataKey="ctr" radius={[0, 4, 4, 0]}>
+                {[...chartData].sort((a, b) => b.ctr - a.ctr).map((entry, i) => {
+                  const max = Math.max(...chartData.map(d => d.ctr), 0.01);
+                  const ratio = entry.ctr / max;
+                  const g = Math.round(80 + ratio * 100);
+                  return <Cell key={i} fill={`hsl(160 65% ${Math.max(35, 55 - i * 3)}%)`} />;
+                })}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
           <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Creative performance (by ad)</h3>
