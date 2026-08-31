@@ -880,6 +880,90 @@ function SocialTab({ active }: { active: boolean }) {
         })}
       </div>
 
+      {/* Engagement by platform — grouped bar */}
+      {data.hasSyncedData && (() => {
+        const engagementData = data.platforms
+          .filter(p => p.latest)
+          .map(p => ({
+            platform: PLATFORM_META[p.platform]?.label ?? p.platform,
+            Likes:    p.latest!.likes    ?? 0,
+            Comments: p.latest!.comments ?? 0,
+            Shares:   p.latest!.shares   ?? 0,
+            Saves:    p.latest!.saves    ?? 0,
+          }));
+        if (engagementData.length === 0) return null;
+        return (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Engagement by platform</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={engagementData} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" strokeOpacity={0.07} />
+                <XAxis dataKey="platform" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : String(v)} />
+                <Tooltip
+                  formatter={(v) => [typeof v === 'number' ? v.toLocaleString() : v]}
+                  contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+                />
+                <Bar dataKey="Likes"    fill="#10b981" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="Comments" fill="#6366f1" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="Shares"   fill="#f59e0b" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="Saves"    fill="#8b5cf6" radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap items-center gap-5 text-[11px]">
+              {[['#10b981','Likes'],['#6366f1','Comments'],['#f59e0b','Shares'],['#8b5cf6','Saves']].map(([c,l]) => (
+                <span key={l} className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: c }} />{l}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Top posts by views — horizontal bar */}
+      {data.posts.length > 0 && (() => {
+        const postsWithViews = data.posts
+          .filter(p => typeof p.views === 'number' && (p.views as number) > 0)
+          .sort((a, b) => (b.views as number) - (a.views as number))
+          .slice(0, 8)
+          .map((p, i) => ({
+            label: (p.hook && String(p.hook).length > 0)
+              ? String(p.hook).slice(0, 32) + (String(p.hook).length > 32 ? '…' : '')
+              : `Post ${i + 1}`,
+            views:   (p.views as number) ?? 0,
+            likes:   (p.likes as number) ?? 0,
+            platform: String(p.platform ?? ''),
+          }));
+        if (postsWithViews.length === 0) return null;
+        return (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Top posts by views</h3>
+            <ResponsiveContainer width="100%" height={Math.max(160, postsWithViews.length * 36)}>
+              <BarChart
+                layout="vertical"
+                data={postsWithViews}
+                margin={{ top: 0, right: 60, left: 140, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="currentColor" strokeOpacity={0.07} />
+                <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : String(v)} />
+                <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={136} />
+                <Tooltip
+                  formatter={(v, name) => [typeof v === 'number' ? v.toLocaleString() : v, name === 'views' ? 'Views' : 'Likes']}
+                  contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+                />
+                <Bar dataKey="views" fill="#10b981" radius={[0, 4, 4, 0]} barSize={14} />
+                <Bar dataKey="likes" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={14} />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="flex items-center gap-5 text-[11px]">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />Views</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-indigo-500 inline-block" />Likes</span>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Posts table */}
       {data.posts.length > 0 && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
