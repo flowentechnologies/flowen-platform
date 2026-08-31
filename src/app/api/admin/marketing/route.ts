@@ -240,8 +240,7 @@ async function paidMedia(client: ReturnType<typeof adminDb>) {
       waitlistUsers: 7,
       cpaGBP: '0.59',
     },
-    // Architecture ready for additional platforms
-    supportedPlatforms: ['meta', 'google', 'tiktok'],
+    supportedPlatforms: ['meta', 'google'],
     activePlatforms: [...new Set(rows.map(r => r.platform))],
   });
 }
@@ -495,10 +494,10 @@ async function trackingHealth(client: ReturnType<typeof adminDb>) {
       .order('synced_at', { ascending: false })
       .limit(1)
       .single(),
-    // Tracking providers config
+    // Tracking providers config — active platforms only
     client.from('tracking_providers')
       .select('provider_key, enabled, pixel_id, server_config')
-      .in('provider_key', ['meta', 'google', 'tiktok', 'ga4']),
+      .in('provider_key', ['meta', 'ga4']),
   ]);
 
   type VisitorRow  = { utm_source: string | null; created_at: string };
@@ -525,8 +524,8 @@ async function trackingHealth(client: ReturnType<typeof adminDb>) {
     ? Math.round((linkedAttr / totalUsers) * 100)
     : null;
 
-  // Provider status
-  const providerStatus = (['meta', 'google', 'tiktok', 'ga4'] as const).map(key => {
+  // Provider status — Meta Pixel + GA4 are the active tracking integrations
+  const providerStatus = (['meta', 'ga4'] as const).map(key => {
     const p = providers.find(r => r.provider_key === key);
     return {
       provider: key,

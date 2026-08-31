@@ -1182,7 +1182,7 @@ function PledgesTab({
         </div>
         <div className="flex justify-between">
           <p className="text-[10px] font-mono text-slate-600">{pence(signedLivePence, '£0')} signed / live</p>
-          <p className="text-[10px] font-mono text-slate-600">£500k target (placeholder)</p>
+          <p className="text-[10px] font-mono text-slate-600">£500k target</p>
         </div>
       </div>
 

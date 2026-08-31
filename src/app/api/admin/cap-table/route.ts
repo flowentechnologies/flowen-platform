@@ -118,7 +118,7 @@ const SEED_ENTRIES = [
     notes: 'Board-approved EMI option pool. Standard 4-year vest, 1-year cliff applied to all grants.',
   },
   {
-    holder_name: 'SEIS Advance Assurance Investor (Placeholder)',
+    holder_name: 'SEIS Investor — Advance Assurance',
     holder_type: 'investor',
     instrument: 'safe_note',
     shares: null,
