@@ -23,15 +23,15 @@ const securityHeaders = [
     value: [
       `default-src 'self'`,
       // 'wasm-unsafe-eval' required for WebAssembly compilation (MediaPipe)
-      // Active trackers only: Meta, GA4/Google Ads, PostHog, Stripe, MediaPipe
-      `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://js.stripe.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://*.doubleclick.net https://connect.facebook.net https://*.posthog.com`,
+      // Active trackers only: Meta, GA4/Google Ads, PostHog, Stripe, MediaPipe, LinkedIn
+      `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://js.stripe.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://*.doubleclick.net https://connect.facebook.net https://*.posthog.com https://snap.licdn.com`,
       `style-src 'self' 'unsafe-inline'`,
       `img-src 'self' data: blob: https:`,
       `font-src 'self' data:`,
       // Sentry tunnel proxies browser events through /monitoring — no external ingest needed
       // cdn.jsdelivr.net + storage.googleapis.com needed for MediaPipe WASM + model download
-      // Active trackers only: Supabase, Stripe, Google Ads/GA4, Meta, PostHog, MediaPipe
-      `connect-src 'self' ${SUPABASE_URL} wss://*.supabase.co https://*.supabase.co https://api.stripe.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net https://*.facebook.com https://eu.i.posthog.com https://cdn.jsdelivr.net https://storage.googleapis.com`,
+      // Active trackers only: Supabase, Stripe, Google Ads/GA4, Meta, PostHog, MediaPipe, LinkedIn
+      `connect-src 'self' ${SUPABASE_URL} wss://*.supabase.co https://*.supabase.co https://api.stripe.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net https://*.facebook.com https://eu.i.posthog.com https://cdn.jsdelivr.net https://storage.googleapis.com https://px.ads.linkedin.com`,
       `frame-src https://js.stripe.com https://hooks.stripe.com https://*.doubleclick.net`,
       `worker-src 'self' blob:`,
       `media-src 'self' blob:`,
