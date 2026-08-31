@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { DashboardNav, MobileBottomNav, type UserProfile } from '@/components/dashboard/DashboardNav';
 import FeedbackWidget from '@/components/dashboard/FeedbackWidget';
+import { adminDb } from '@/lib/supabase/admin';
 
 export const metadata: Metadata = {
   title: 'Dashboard | Flowen',
@@ -57,12 +58,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const earlyAccess = profile?.early_access ?? false;
   if (!isAdmin && !earlyAccess) redirect('/coming-soon');
 
+  // Check if the user has a clinician assigned — determines whether Messages is shown
+  const db = adminDb();
+  const { data: slpRow } = await db
+    .from('slp_assignments')
+    .select('id')
+    .eq('patient_user_id', authUser.id)
+    .limit(1)
+    .maybeSingle();
+
   const user: UserProfile = {
-    email:       authUser.email ?? '',
-    displayName: profile?.display_name ?? null,
-    tier:        profile?.tier ?? null,
+    email:        authUser.email ?? '',
+    displayName:  profile?.display_name ?? null,
+    tier:         profile?.tier ?? null,
     isAdmin,
-    role:        profile?.role ?? null,
+    role:         profile?.role ?? null,
+    hasClinician: !!slpRow,
   };
 
   return (

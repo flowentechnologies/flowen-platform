@@ -14,6 +14,13 @@ export type SubscriptionInfo = {
   currentPeriodEnd:  string | null;
 };
 
+const TIER_LABELS: Record<string, string> = {
+  founding:        'Founding Member',
+  standard:        'Standard',
+  public_funds:    'Public Funds',
+  vocali_freemium: 'Freemium',
+};
+
 const STAGE_NAMES: Record<number, string> = {
   1: 'Breathing',
   2: 'Easy Onset',
@@ -517,7 +524,7 @@ export function DashboardClient({
           </h1>
           {tier && (
             <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">
-              {tier}
+              {TIER_LABELS[tier] ?? tier}
             </span>
           )}
         </div>

@@ -13,6 +13,7 @@ export interface UserProfile {
   tier: string | null;
   isAdmin: boolean;
   role: string | null;
+  hasClinician: boolean;
 }
 
 const TIER_LABELS: Record<string, string> = {
@@ -27,6 +28,8 @@ function initials(profile: UserProfile): string {
   return name.slice(0, 2).toUpperCase();
 }
 
+// Order matters for MobileBottomNav — it slices the first 5.
+// Slots 1-5 appear on mobile; slot 6 (Analytics) is desktop-only.
 const NAV_LINKS = [
   {
     label: 'Dashboard',
@@ -59,17 +62,18 @@ const NAV_LINKS = [
       </svg>
     ),
   },
+  // Slot 3 — Guide: important for onboarding, shown on mobile
   {
-    label: 'Analytics',
-    href: '/dashboard/analytics',
+    label: 'Guide',
+    href: '/dashboard/guide',
     icon: (
       <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-        <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 003 0v-13A1.5 1.5 0 0015.5 2zM9.5 6A1.5 1.5 0 008 7.5v9a1.5 1.5 0 003 0v-9A1.5 1.5 0 009.5 6zM3.5 10A1.5 1.5 0 002 11.5v5a1.5 1.5 0 003 0v-5A1.5 1.5 0 003.5 10z"/>
+        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd"/>
       </svg>
     ),
     iconActive: (
       <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-        <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 003 0v-13A1.5 1.5 0 0015.5 2zM9.5 6A1.5 1.5 0 008 7.5v9a1.5 1.5 0 003 0v-9A1.5 1.5 0 009.5 6zM3.5 10A1.5 1.5 0 002 11.5v5a1.5 1.5 0 003 0v-5A1.5 1.5 0 003.5 10z"/>
+        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd"/>
       </svg>
     ),
   },
@@ -101,17 +105,18 @@ const NAV_LINKS = [
       </svg>
     ),
   },
+  // Slot 6 — Analytics: complex charts, desktop-only on mobile bottom nav
   {
-    label: 'Guide',
-    href: '/dashboard/guide',
+    label: 'Analytics',
+    href: '/dashboard/analytics',
     icon: (
       <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd"/>
+        <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 003 0v-13A1.5 1.5 0 0015.5 2zM9.5 6A1.5 1.5 0 008 7.5v9a1.5 1.5 0 003 0v-9A1.5 1.5 0 009.5 6zM3.5 10A1.5 1.5 0 002 11.5v5a1.5 1.5 0 003 0v-5A1.5 1.5 0 003.5 10z"/>
       </svg>
     ),
     iconActive: (
       <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd"/>
+        <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 003 0v-13A1.5 1.5 0 0015.5 2zM9.5 6A1.5 1.5 0 008 7.5v9a1.5 1.5 0 003 0v-9A1.5 1.5 0 009.5 6zM3.5 10A1.5 1.5 0 002 11.5v5a1.5 1.5 0 003 0v-5A1.5 1.5 0 003.5 10z"/>
       </svg>
     ),
   },
@@ -121,7 +126,12 @@ export function MobileBottomNav({ user }: { user: UserProfile }) {
   const pathname = usePathname();
   const clinicianExcluded = new Set(['/dashboard/analytics', '/dashboard/history', '/dashboard/messages']);
   const links = [
-    ...NAV_LINKS.filter(l => user.role !== 'clinician' || !clinicianExcluded.has(l.href)),
+    ...NAV_LINKS.filter(l => {
+      if (user.role === 'clinician' && clinicianExcluded.has(l.href)) return false;
+      // Hide Messages when the user has no assigned clinician
+      if (l.href === '/dashboard/messages' && !user.hasClinician && user.role !== 'clinician') return false;
+      return true;
+    }),
     ...(user.role === 'clinician'
       ? [{ label: 'Clinician', href: '/dashboard/clinician', icon: null, iconActive: null }]
       : []),
@@ -206,6 +216,8 @@ export function DashboardNav({ user }: { user: UserProfile }) {
               link.href === '/dashboard/analytics' ||
               link.href === '/dashboard/history'
             )) return null;
+            // Hide Messages when no clinician assigned
+            if (link.href === '/dashboard/messages' && !user.hasClinician && user.role !== 'clinician') return null;
             const active = pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href));
             const isMessages = link.href === '/dashboard/messages';
             return (
@@ -304,6 +316,15 @@ export function DashboardNav({ user }: { user: UserProfile }) {
                 {/* Menu items */}
                 <div className="py-1.5">
                   {[
+                    ...(user.role !== 'clinician' && user.tier !== 'founding' && user.tier !== 'public_funds' ? [{
+                      label: 'Upgrade',
+                      href: '/dashboard/upgrade',
+                      icon: (
+                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clipRule="evenodd"/>
+                        </svg>
+                      ),
+                    }] : []),
                     {
                       label: 'Billing',
                       href: '/dashboard/billing',
