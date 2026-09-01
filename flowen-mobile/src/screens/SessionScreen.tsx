@@ -28,6 +28,8 @@ export function SessionScreen({ pipeline, profile, onSignOut }: SessionScreenPro
   const ORB = 160;
   // RMS [0, 0.3] → scale [1.0, 1.6]
   const scale = 1 + Math.min(pipeline.rms / 0.3, 1) * 0.6;
+  // pacer_default_bpm drives the orb pulse rate (future milestone)
+  const _pacerBpm = profile.pacer_default_bpm ?? 80;
 
   return (
     <View style={styles.root}>

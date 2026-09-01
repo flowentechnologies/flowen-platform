@@ -5,10 +5,13 @@
  * profile via Realtime, and routes to the correct screen.
  *
  * Screen routing:
- *   no session            → LoginScreen
- *   session, no profile   → loading
- *   profile.id_verified   → SessionScreen
- *   !profile.id_verified  → VerifyIdentityScreen
+ *   no session          → LoginScreen
+ *   session, no profile → loading
+ *   session + profile   → SessionScreen
+ *
+ * Note: the id_verified KYC gate was removed in Aug 2026 when the web
+ * onboarding flow dropped the DIDIT step. All authenticated users go
+ * straight to SessionScreen.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -25,7 +28,6 @@ import { createClient, type Session } from '@supabase/supabase-js';
 
 import { useAudioPipeline }        from './src/lib/audio/AudioPipeline';
 import { LoginScreen }             from './src/screens/LoginScreen';
-import { VerifyIdentityScreen }    from './src/screens/VerifyIdentityScreen';
 import { SessionScreen }           from './src/screens/SessionScreen';
 
 // ── Supabase client ───────────────────────────────────────────────────────────
@@ -56,13 +58,13 @@ export const supabase = createClient(
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface UserProfile {
-  id:           string;
-  tier:         string;
-  id_verified:  boolean;
-  pacer_bpm:    number;
+  id:                string;
+  tier:              string;
+  pacer_default_bpm: number;
+  display_name:      string | null;
 }
 
-type AppScreen = 'loading' | 'login' | 'verify-identity' | 'session';
+type AppScreen = 'loading' | 'login' | 'session';
 
 // ── Profile sync via Supabase Realtime ────────────────────────────────────────
 
@@ -77,7 +79,7 @@ function useProfileSync(userId: string | null) {
 
     supabase
       .from('profiles')
-      .select('id, tier, id_verified, pacer_bpm')
+      .select('id, tier, pacer_default_bpm, display_name')
       .eq('id', userId)
       .single()
       .then(({ data }) => {
@@ -131,23 +133,17 @@ export default function App() {
       (_event: string, session: Session | null) => {
         const uid = session?.user?.id ?? null;
         setUserId(uid);
-        if (!uid) {
-          setScreen('login');
-        }
+        if (!uid) setScreen('login');
       },
     );
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Profile-gate routing
+  // Route: authenticated + profile → session, authenticated + no profile → loading
   useEffect(() => {
     if (!userId) return; // auth effect handles login redirect
-    if (!profile) {
-      setScreen('loading');
-      return;
-    }
-    setScreen(profile.id_verified ? 'session' : 'verify-identity');
+    setScreen(profile ? 'session' : 'loading');
   }, [userId, profile]);
 
   const handleSignOut = async () => {
@@ -158,9 +154,8 @@ export default function App() {
 
   const renderScreen = () => {
     switch (screen) {
-      case 'loading':          return <LoadingScreen />;
-      case 'login':            return <LoginScreen supabase={supabase} />;
-      case 'verify-identity':  return <VerifyIdentityScreen onSignOut={handleSignOut} />;
+      case 'loading': return <LoadingScreen />;
+      case 'login':   return <LoginScreen supabase={supabase} />;
       case 'session':
         return profile
           ? <SessionScreen pipeline={pipeline} profile={profile} onSignOut={handleSignOut} />
