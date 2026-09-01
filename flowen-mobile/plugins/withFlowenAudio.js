@@ -187,13 +187,27 @@ function withFlowenAudioAndroid(config) {
 
 function withFlowenAudioCMake(config) {
   return withAppBuildGradle(config, (cfg) => {
-    const src = cfg.modResults.contents;
-    if (src.includes('AudioOboeEngine') || src.includes('CMakeLists.txt')) return cfg;
+    let src = cfg.modResults.contents;
 
-    cfg.modResults.contents = src.replace(
-      /(android\s*\{)/,
-      `$1\n    externalNativeBuild {\n        cmake {\n            path "src/main/cpp/CMakeLists.txt"\n            version "3.22.1"\n        }\n    }\n    buildFeatures { prefab = true }`,
-    );
+    if (!src.includes('AudioOboeEngine') && !src.includes('CMakeLists.txt')) {
+      src = src.replace(
+        /(android\s*\{)/,
+        `$1\n    externalNativeBuild {\n        cmake {\n            path "src/main/cpp/CMakeLists.txt"\n            version "3.22.1"\n        }\n    }\n    buildFeatures { prefab = true }`,
+      );
+    }
+
+    // CMakeLists.txt does `find_package(oboe REQUIRED CONFIG)`, which needs the
+    // Oboe AAR pulled in as a prefab dependency — buildFeatures.prefab alone
+    // isn't enough. Without this, Gradle fails at the configureCMake step with
+    // "Could not find a package configuration file provided by oboe".
+    if (!src.includes('com.google.oboe:oboe')) {
+      src = src.replace(
+        /(dependencies\s*\{)/,
+        `$1\n    implementation("com.google.oboe:oboe:1.9.3")`,
+      );
+    }
+
+    cfg.modResults.contents = src;
     return cfg;
   });
 }
