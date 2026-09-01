@@ -106,6 +106,23 @@ export async function checkErrorBoundaryRateLimit(ip: string): Promise<boolean> 
   return fallbackCheck(`err:${ip}`, 20, 60_000);
 }
 
+// ── Affiliate apply ───────────────────────────────────────────────────────────
+
+let _affiliateLimiter: Ratelimit | null | undefined;
+
+/**
+ * Affiliate application rate limit: 5 submissions per IP per hour.
+ * Prevents bot flooding and confirmation email abuse.
+ */
+export async function checkAffiliateRateLimit(ip: string): Promise<boolean> {
+  _affiliateLimiter = _affiliateLimiter ?? buildLimiter(_affiliateLimiter, 5, '1 h', 'rl:affiliate');
+  if (_affiliateLimiter) {
+    const { success } = await _affiliateLimiter.limit(ip);
+    return success;
+  }
+  return fallbackCheck(`affiliate:${ip}`, 5, 60 * 60_000);
+}
+
 // ── Stripe checkout ───────────────────────────────────────────────────────────
 
 let _checkoutIpLimiter:   Ratelimit | null | undefined;

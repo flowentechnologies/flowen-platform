@@ -4,6 +4,7 @@ import {
   sendAffiliateApplicationConfirmation,
   sendAdminAffiliateApplicationAlert,
 } from '@/lib/email';
+import { checkAffiliateRateLimit } from '@/lib/rate-limit';
 
 // ── Tier config (mirrors admin TIER_CONFIG) ────────────────────────────────────
 
@@ -42,6 +43,14 @@ function redirectTo(baseUrl: string, params: Record<string, string>): NextRespon
 // ── POST ───────────────────────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
+  // ── Rate limit — 5 applications per IP per hour ───────────────────────────
+  const forwarded = (req.headers as Headers).get('x-forwarded-for');
+  const ip = forwarded ? forwarded.split(',')[0].trim() : '127.0.0.1';
+  const allowed = await checkAffiliateRateLimit(ip);
+  if (!allowed) {
+    return redirectTo(req.url, { error: 'Too many applications from this IP. Please try again later.' });
+  }
+
   // Parse — handle both multipart/form-data and application/x-www-form-urlencoded
   let formData: FormData;
   try {

@@ -23,6 +23,10 @@ export async function POST(req: Request) {
     total_prolongations_detected?: number;
     stage_id: number;
     transcript?: string;
+    /** Mean round-trip latency in ms across all ASR frames in this session.
+     *  Client-side instrumentation measures time from audio capture to first
+     *  transcript token and averages across the session. */
+    average_latency_ms?: number;
   };
   try {
     body = await req.json();
@@ -30,14 +34,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, stage_id, transcript } = body;
+  const { duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, stage_id, transcript, average_latency_ms } = body;
   if (
     typeof duration_seconds !== 'number' || !Number.isFinite(duration_seconds) || duration_seconds < 5 || duration_seconds > 7200 ||
     typeof total_blocks_detected !== 'number' || !Number.isInteger(total_blocks_detected) || total_blocks_detected < 0 ||
     (total_repetitions_detected !== undefined && (!Number.isInteger(total_repetitions_detected) || total_repetitions_detected < 0)) ||
     (total_prolongations_detected !== undefined && (!Number.isInteger(total_prolongations_detected) || total_prolongations_detected < 0)) ||
     (stage_id !== undefined && stage_id !== null && (!Number.isInteger(stage_id) || stage_id < 1)) ||
-    (transcript !== undefined && typeof transcript !== 'string')
+    (transcript !== undefined && typeof transcript !== 'string') ||
+    (average_latency_ms !== undefined && (typeof average_latency_ms !== 'number' || !Number.isFinite(average_latency_ms) || average_latency_ms < 0 || average_latency_ms > 30_000))
   ) {
     return NextResponse.json({ error: 'Invalid session data' }, { status: 400 });
   }
@@ -56,7 +61,7 @@ export async function POST(req: Request) {
     total_blocks_detected: body.total_blocks_detected,
     total_repetitions_detected:   body.total_repetitions_detected   ?? 0,
     total_prolongations_detected: body.total_prolongations_detected ?? 0,
-    average_latency_ms: null,
+    average_latency_ms: average_latency_ms ?? null,
     stage_id: body.stage_id,
     transcript: transcriptValue,
   }).select('id, created_at').single();

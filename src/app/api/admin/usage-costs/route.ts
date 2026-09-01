@@ -398,6 +398,11 @@ export interface ComputeData {
   audioTotalSeconds:      number;
   audioSessionCount:      number;
   avgSessionDurationS:    number;
+  // ASR latency percentiles (null when no sessions have latency logged yet)
+  asrLatencyP50Ms:        number | null;
+  asrLatencyP95Ms:        number | null;
+  asrLatencyP99Ms:        number | null;
+  asrLatencySampleCount:  number;
   // Capacity limits (Supabase Pro tier)
   supabaseStorageLimitGb: number;
   supabaseAudioStorageGb: number;
@@ -463,7 +468,7 @@ export async function fetchUsageCosts(): Promise<UsageCostsData> {
       .select('id, email, display_name, tier, is_admin, id_verified, created_at'),
 
     db.from('practice_sessions')
-      .select('id, user_id, duration_seconds, created_at')
+      .select('id, user_id, duration_seconds, created_at, average_latency_ms')
       .order('created_at', { ascending: false }),
 
     db.from('subscriptions')
@@ -714,6 +719,21 @@ export async function fetchUsageCosts(): Promise<UsageCostsData> {
   // R2 audio storage (120 KB avg per clip)
   const r2StorageGb = (audioTotal * 120) / (1024 * 1024);
 
+  // ── ASR latency percentiles ──────────────────────────────────────────────────
+  const latencySamples = (sessions as Array<{ average_latency_ms?: number | null }>)
+    .map(s => s.average_latency_ms)
+    .filter((v): v is number => typeof v === 'number' && v > 0)
+    .sort((a, b) => a - b);
+
+  function percentile(arr: number[], p: number): number | null {
+    if (arr.length === 0) return null;
+    const idx = Math.ceil(arr.length * p / 100) - 1;
+    return arr[Math.max(0, idx)];
+  }
+  const asrLatencyP50Ms = percentile(latencySamples, 50);
+  const asrLatencyP95Ms = percentile(latencySamples, 95);
+  const asrLatencyP99Ms = percentile(latencySamples, 99);
+
   const compute: ComputeData = {
     vercelRegion:             'iad1 (US East — Virginia)',
     nodeVersion:              'Node.js 24 LTS',
@@ -742,6 +762,10 @@ export async function fetchUsageCosts(): Promise<UsageCostsData> {
     audioTotalSeconds:        totalSeconds,
     audioSessionCount:        sessions.length,
     avgSessionDurationS:      sessions.length > 0 ? totalSeconds / sessions.length : 0,
+    asrLatencyP50Ms,
+    asrLatencyP95Ms,
+    asrLatencyP99Ms,
+    asrLatencySampleCount:    latencySamples.length,
     supabaseStorageLimitGb:   1,
     supabaseAudioStorageGb:   r2StorageGb,
     r2StorageGb,

@@ -22,12 +22,18 @@ export async function POST(req: Request) {
   // Look up the pending survey row
   const { data: row, error: fetchErr } = await supabase
     .from('nps_responses')
-    .select('id, responded_at')
+    .select('id, responded_at, created_at')
     .eq('survey_token', token)
     .single();
 
   if (fetchErr || !row) {
     return NextResponse.json({ error: 'Invalid or expired token' }, { status: 404 });
+  }
+
+  // Tokens expire after 30 days
+  const AGE_LIMIT_MS = 30 * 24 * 60 * 60 * 1000;
+  if (row.created_at && Date.now() - new Date(row.created_at).getTime() > AGE_LIMIT_MS) {
+    return NextResponse.json({ error: 'This survey link has expired' }, { status: 410 });
   }
 
   if (row.responded_at) {

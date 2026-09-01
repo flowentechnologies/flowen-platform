@@ -516,7 +516,13 @@ function ComputeSection({ c }: { c: ComputeData }) {
             { label: 'Audio processed',    value: mins(c.audioTotalSeconds),     sub: `${(c.audioTotalSeconds / 60).toFixed(1)} minutes total` },
             { label: 'Sessions processed', value: c.audioSessionCount,            sub: 'all-time' },
             { label: 'Avg session length', value: mins(Math.round(c.avgSessionDurationS)), sub: 'per session' },
-            { label: 'ASR latency',        value: 'Not yet logged',               sub: 'instrument average_latency_ms to enable' },
+            {
+              label: 'ASR latency (P50)',
+              value: c.asrLatencyP50Ms != null ? `${Math.round(c.asrLatencyP50Ms)}ms` : '—',
+              sub: c.asrLatencySampleCount > 0
+                ? `${c.asrLatencySampleCount} sessions logged`
+                : 'instrument average_latency_ms to enable',
+            },
           ].map(m => (
             <div key={m.label} className="rounded-lg bg-slate-100/60 dark:bg-slate-800/40 px-4 py-3">
               <div className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">{m.value}</div>
@@ -525,10 +531,28 @@ function ComputeSection({ c }: { c: ComputeData }) {
             </div>
           ))}
         </div>
-        <div className="rounded-lg bg-amber-500/5 border border-amber-500/15 px-4 py-3 text-[11px] text-amber-500/80">
-          <strong>Next:</strong> Instrument <code className="font-mono">average_latency_ms</code> in the ASR session writer to track real-time factor
-          (target &lt; 0.5× for sub-500ms response latency). Once populated, P50/P95/P99 latency will appear here.
-        </div>
+        {c.asrLatencyP50Ms != null ? (
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {[
+              { label: 'P50 latency', value: `${Math.round(c.asrLatencyP50Ms!)}ms`, good: c.asrLatencyP50Ms! < 500 },
+              { label: 'P95 latency', value: c.asrLatencyP95Ms != null ? `${Math.round(c.asrLatencyP95Ms)}ms` : '—', good: (c.asrLatencyP95Ms ?? 9999) < 1000 },
+              { label: 'P99 latency', value: c.asrLatencyP99Ms != null ? `${Math.round(c.asrLatencyP99Ms)}ms` : '—', good: (c.asrLatencyP99Ms ?? 9999) < 2000 },
+            ].map(m => (
+              <div key={m.label} className="rounded-lg bg-slate-100/60 dark:bg-slate-800/40 px-4 py-3 flex items-center justify-between">
+                <div>
+                  <div className={`text-sm font-bold tabular-nums ${m.good ? 'text-emerald-500' : 'text-amber-500'}`}>{m.value}</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">{m.label}</div>
+                </div>
+                <div className={`text-xs font-bold ${m.good ? 'text-emerald-500' : 'text-amber-500'}`}>{m.good ? '✓' : '!'}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg bg-slate-800/30 border border-slate-700/40 px-4 py-3 text-[11px] text-slate-500 mb-4">
+            ASR latency (P50/P95/P99) will appear here once the client-side ASR SDK reports
+            <code className="font-mono mx-1">average_latency_ms</code> per session. Target: P50 &lt; 500ms.
+          </div>
+        )}
       </div>
     </section>
   );
