@@ -41,6 +41,8 @@ const NAV: NavSection[] = [
       { label: 'Feature Flags', href: '/admin/feature-flags' },
       { label: 'Waitlist', href: '/admin/waitlist' },
       { label: 'Affiliates', href: '/admin/affiliate' },
+      { label: 'NPS', href: '/admin/nps' },
+      { label: 'Feedback', href: '/admin/feedback' },
     ],
   },
   {
@@ -59,6 +61,7 @@ const NAV: NavSection[] = [
       { label: 'Data Room', href: '/admin/data-room' },
       { label: 'Pitch Deck', href: '/admin/pitch-deck' },
       { label: 'IP Register', href: '/admin/ip' },
+      { label: 'IP Docs', href: '/admin/ip-docs' },
       { label: 'IP Debt & Readiness', href: '/admin/ip-readiness' },
       { label: 'Valuation', href: '/admin/valuation' },
       { label: 'Cap Table', href: '/admin/cap-table' },
@@ -100,8 +103,9 @@ const NAV: NavSection[] = [
   {
     section: 'Communications',
     items: [
-      { label: 'Content', href: '/admin/content' },
+      { label: 'Marketing', href: '/admin/marketing' },
       { label: 'Campaign', href: '/admin/campaign' },
+      { label: 'Content', href: '/admin/content' },
     ],
   },
 ];
