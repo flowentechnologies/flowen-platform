@@ -326,6 +326,15 @@ export function DashboardNav({ user }: { user: UserProfile }) {
                       ),
                     }] : []),
                     {
+                      label: 'Refer a friend',
+                      href: '/dashboard/refer',
+                      icon: (
+                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM6 8a2 2 0 11-4 0 2 2 0 014 0zM14.5 13.5a4.5 4.5 0 00-9 0v.5a.5.5 0 00.5.5h8a.5.5 0 00.5-.5v-.5zM18 14.5v-.5a3.5 3.5 0 00-3.5-3.5h-.146A5.49 5.49 0 0115.5 13.5v.5H18zM5.646 10.5H5.5A3.5 3.5 0 002 14v.5h2.5v-.5a5.49 5.49 0 011.146-3.5z"/>
+                        </svg>
+                      ),
+                    },
+                    {
                       label: 'Billing',
                       href: '/dashboard/billing',
                       icon: (

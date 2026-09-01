@@ -67,7 +67,7 @@ export async function POST(req: Request) {
       // 7-day free trial — card is collected upfront so the trial-to-paid
       // conversion is automatic. Stripe won't charge until day 8.
       subscription_data: { trial_period_days: 7 },
-      success_url: `${baseUrl}/dashboard/billing?success=1&trial=1`,
+      success_url: `${baseUrl}/dashboard/welcome`,
       cancel_url: `${baseUrl}/pricing`,
     });
 
