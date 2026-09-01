@@ -1,0 +1,49 @@
+{
+  "cli": {
+    "version": ">= 10.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": { "simulator": true },
+      "env": {
+        "EXPO_PUBLIC_API_BASE": "https://flowen.digital"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": { "resourceClass": "m-medium" },
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_API_BASE": "https://flowen.digital"
+      }
+    },
+    "production": {
+      "ios": {
+        "resourceClass": "m-medium",
+        "image": "latest"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE": "https://flowen.digital"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "flowenspeech@outlook.com",
+        "ascAppId": "",
+        "appleTeamId": ""
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      }
+    }
+  }
+}
