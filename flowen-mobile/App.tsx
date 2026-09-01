@@ -26,7 +26,6 @@ import { StatusBar } from 'expo-status-bar';
 import * as SecureStore from 'expo-secure-store';
 import { createClient, type Session } from '@supabase/supabase-js';
 
-import { useAudioPipeline }        from './src/lib/audio/AudioPipeline';
 import { LoginScreen }             from './src/screens/LoginScreen';
 import { SessionScreen }           from './src/screens/SessionScreen';
 
@@ -119,7 +118,6 @@ export default function App() {
   const [userId,  setUserId]  = useState<string | null>(null);
 
   const profile  = useProfileSync(userId);
-  const pipeline = useAudioPipeline();
 
   // Bootstrap: restore session from SecureStore on first mount
   useEffect(() => {
@@ -158,7 +156,7 @@ export default function App() {
       case 'login':   return <LoginScreen supabase={supabase} />;
       case 'session':
         return profile
-          ? <SessionScreen pipeline={pipeline} profile={profile} onSignOut={handleSignOut} />
+          ? <SessionScreen profile={profile} onSignOut={handleSignOut} />
           : <LoadingScreen />;
     }
   };

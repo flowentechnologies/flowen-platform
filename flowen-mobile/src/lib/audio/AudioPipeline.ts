@@ -57,6 +57,9 @@ export interface AudioPipelineState {
   stop:          () => Promise<void>;
 }
 
+/** Called on every PCM frame with the raw base64-encoded Int16 LE payload. */
+export type PCMFrameCallback = (base64: string) => void;
+
 interface PCMFrameEvent {
   /** Base64-encoded 16-bit PCM at 16 kHz, 160 samples (320 bytes). */
   data:  string;
@@ -86,7 +89,7 @@ const RENDER_INTERVAL_MS = 33;
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useAudioPipeline(): AudioPipelineState {
+export function useAudioPipeline(onPCMFrame?: PCMFrameCallback): AudioPipelineState {
   const [state, setState] = useState<Omit<AudioPipelineState, 'start' | 'stop'>>({
     isRecording:   false,
     rms:           0,
@@ -100,6 +103,9 @@ export function useAudioPipeline(): AudioPipelineState {
   const voiceRef         = useRef(false);
   const lastRenderRef    = useRef(0);
   const pendingRenderRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onPCMFrameRef    = useRef<PCMFrameCallback | undefined>(onPCMFrame);
+  // Keep the callback ref in sync without re-subscribing event listeners
+  onPCMFrameRef.current  = onPCMFrame;
 
   // Flush accumulated ref values into React state at most 30 Hz.
   const scheduleRender = useCallback(() => {
@@ -140,6 +146,10 @@ export function useAudioPipeline(): AudioPipelineState {
         // Update RMS from frame event if onRMSUpdate is not fired separately.
         rmsRef.current = ev.rms;
         scheduleRender();
+        // Forward raw frame to optional caller callback (e.g. ASR accumulator).
+        if (onPCMFrameRef.current && ev.data) {
+          onPCMFrameRef.current(ev.data);
+        }
       }),
 
       emitter.addListener('onVADChange', (ev: VADChangeEvent) => {
