@@ -10,21 +10,13 @@
  */
 import { NextResponse } from 'next/server';
 import { RtcTokenBuilder, RtcRole } from 'agora-token';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { getUserFromRequest } from '@/lib/supabase/from-request';
 
 const TOKEN_TTL_SECONDS = 3600; // 1 hour
 
 export async function POST(req: Request) {
   try {
-    // Require authenticated user
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } },
-    );
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getUserFromRequest(req);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json() as { uid?: number };

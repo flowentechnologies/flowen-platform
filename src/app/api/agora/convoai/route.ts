@@ -12,8 +12,8 @@
  *   → Stops the agent and releases the channel slot
  */
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient as createAdmin } from '@supabase/supabase-js';
+import { getUserFromRequest } from '@/lib/supabase/from-request';
 
 function getConvoAIHeaders() {
   const customerId = process.env.AGORA_CUSTOMER_ID;
@@ -25,18 +25,20 @@ function getConvoAIHeaders() {
   };
 }
 
-async function getUserAndProfile(req: Request) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
+function adminDb() {
+  return createAdmin(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } },
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
   );
-  const { data: { user } } = await supabase.auth.getUser();
+}
+
+async function getUserAndProfile(req: Request) {
+  const user = await getUserFromRequest(req);
   if (!user) return { user: null, voiceCloneId: null };
 
   // Fetch server-side voice_clone_id so clients cannot spoof another user's voice
-  const { data: profile } = await supabase
+  const { data: profile } = await adminDb()
     .from('profiles')
     .select('voice_clone_id')
     .eq('id', user.id)
@@ -164,7 +166,7 @@ export async function POST(req: Request) {
 // ── Stop agent ────────────────────────────────────────────────────────────────
 export async function DELETE(req: Request) {
   try {
-    const { user } = await getUserAndProfile(req);
+    const user = await getUserFromRequest(req);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json() as { agentId: string; channel?: string };

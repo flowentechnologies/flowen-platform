@@ -1,13 +1,19 @@
 /**
  * SessionScreen
  *
- * Full session UI with live ASR transcript:
- *   - Owns the AudioPipeline (moved here from App.tsx)
- *   - Accumulates PCM frames → flushes every 15 s to /api/practice/asr (Whisper)
- *   - Builds rolling transcript, shown live as captions
- *   - AI coach message, triggered on transcript growth or silence
- *   - On Stop: POSTs full session to /api/practice/sessions
- *   - Post-session summary with duration, blocks, transcript snippet
+ * Two modes:
+ *
+ * PRACTICE MODE (default)
+ *   - Owns FlowenAudio pipeline (PCM frames → WavEncoder → Whisper ASR)
+ *   - Block counting via VAD falling edges
+ *   - AI coach polling every 60 s
+ *   - Post-session summary with BPM card, sparkline, transcript snippet
+ *
+ * CONVERSATION MODE
+ *   - Joins an Agora RTC channel via react-native-agora
+ *   - Starts a ConvoAI agent on the server (GPT-4o-mini + ElevenLabs TTS)
+ *   - Full-duplex audio with the AI speech-therapy assistant
+ *   - Mute/unmute button; no ASR or block counting
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -20,10 +26,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useAudioPipeline }  from '../lib/audio/AudioPipeline';
-import { WavEncoder }        from '../lib/audio/WavEncoder';
-import type { UserProfile }  from '../../App';
-import { supabase }          from '../../App';
+import { useAudioPipeline }    from '../lib/audio/AudioPipeline';
+import { WavEncoder }          from '../lib/audio/WavEncoder';
+import { useAgoraConvoAI }     from '../hooks/useAgoraConvoAI';
+import type { UserProfile }    from '../../App';
+import { supabase }            from '../../App';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -33,6 +40,10 @@ const ASR_MIN_BYTES          = 16_000;  // ~0.5 s of PCM — skip tiny flushes
 const COACH_INTERVAL_MS      = 60_000;  // poll coach every 60 s
 const DEFAULT_STAGE_ID       = 1;
 const PROGRESSION_THRESHOLD  = 3.5;    // blocks/min — matches server-side value
+
+// ── Session mode ───────────────────────────────────────────────────────────────
+
+type SessionMode = 'practice' | 'conversation';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -99,6 +110,12 @@ interface Props {
 export function SessionScreen({ profile, onSignOut }: Props) {
   const ORB = 152;
   const orbScale = useRef(new Animated.Value(1)).current;
+
+  // Mode selection (idle-only toggle)
+  const [sessionMode, setSessionMode] = useState<SessionMode>('practice');
+
+  // Agora ConvoAI hook (conversation mode)
+  const convoAI = useAgoraConvoAI();
 
   // Session accumulators (refs = no re-render on update)
   const elapsedRef      = useRef(0);
@@ -223,7 +240,7 @@ export function SessionScreen({ profile, onSignOut }: Props) {
   // ── Start ─────────────────────────────────────────────────────────────────────
 
   const handleStart = useCallback(async () => {
-    // Reset everything
+    // Reset shared state
     elapsedRef.current     = 0;
     blocksRef.current      = 0;
     transcriptRef.current  = '';
@@ -238,18 +255,37 @@ export function SessionScreen({ profile, onSignOut }: Props) {
     setResult(null);
     setSaveError(null);
 
+    if (sessionMode === 'conversation') {
+      // ── Conversation mode: join Agora + start ConvoAI agent ──────────────
+      const token = await getToken();
+      if (!token) {
+        setSaveError('Could not authenticate');
+        return;
+      }
+      await convoAI.join(token);
+      if (convoAI.status !== 'error') {
+        setPhase('recording');
+        timerRef.current = setInterval(() => {
+          elapsedRef.current += 1;
+          setElapsedSecs(elapsedRef.current);
+        }, 1000);
+      }
+      return;
+    }
+
+    // ── Practice mode: FlowenAudio + ASR + coach ──────────────────────────
     await pipeline.start();
     setPhase('recording');
 
-    timerRef.current     = setInterval(() => {
+    timerRef.current      = setInterval(() => {
       elapsedRef.current += 1;
       setElapsedSecs(elapsedRef.current);
     }, 1000);
 
-    asrTimerRef.current  = setInterval(flushASR, ASR_FLUSH_MS);
+    asrTimerRef.current   = setInterval(flushASR, ASR_FLUSH_MS);
     coachTimerRef.current = setInterval(fetchCoach, COACH_INTERVAL_MS);
     setTimeout(fetchCoach, 12_000); // first coach message after 12 s
-  }, [pipeline, flushASR, fetchCoach]);
+  }, [sessionMode, pipeline, flushASR, fetchCoach, convoAI]);
 
   // ── Stop + save ───────────────────────────────────────────────────────────────
 
@@ -257,6 +293,13 @@ export function SessionScreen({ profile, onSignOut }: Props) {
     if (timerRef.current)     { clearInterval(timerRef.current);     timerRef.current     = null; }
     if (asrTimerRef.current)  { clearInterval(asrTimerRef.current);  asrTimerRef.current  = null; }
     if (coachTimerRef.current){ clearInterval(coachTimerRef.current); coachTimerRef.current = null; }
+
+    if (sessionMode === 'conversation') {
+      // ── Conversation mode: leave Agora channel + stop agent ───────────────
+      await convoAI.leave();
+      setPhase('idle'); // no summary for conversation sessions currently
+      return;
+    }
 
     await pipeline.stop();
     setPhase('saving');
@@ -309,7 +352,7 @@ export function SessionScreen({ profile, onSignOut }: Props) {
     }
 
     setPhase('summary');
-  }, [pipeline, flushASR]);
+  }, [sessionMode, pipeline, flushASR, convoAI]);
 
   // ── Cleanup on unmount ────────────────────────────────────────────────────────
 
@@ -398,97 +441,160 @@ export function SessionScreen({ profile, onSignOut }: Props) {
         {/* ── Recording / Idle ── */}
         {phase !== 'summary' && (
           <>
-            {/* Pacer orb */}
-            <View style={[styles.orbWrap, { width: ORB, height: ORB }]}>
-              <Animated.View
-                style={[
-                  styles.glow,
-                  {
-                    width: ORB, height: ORB, borderRadius: ORB / 2,
-                    transform:   [{ scale: orbScale }],
-                    opacity:     Math.min(0.2 + pipeline.rms * 2.5, 0.9),
-                  },
-                ]}
+            {/* Mode toggle — only visible when idle */}
+            {phase === 'idle' && (
+              <ModeToggle
+                mode={sessionMode}
+                onChange={setSessionMode}
               />
-              <View style={styles.core} />
-            </View>
-
-            {/* Live metrics */}
-            {isRecording && (
-              <View style={styles.metricsRow}>
-                <MetricPill label="Time"   value={fmt(elapsedSecs)} />
-                <MetricPill label="Blocks" value={`${blocksDetected}`} />
-                <MetricPill
-                  label="Blk/min"
-                  value={elapsedSecs >= 10
-                    ? calcBpm(blocksDetected, elapsedSecs).toFixed(1)
-                    : '—'}
-                  color={elapsedSecs >= 10
-                    ? bpmColor(calcBpm(blocksDetected, elapsedSecs))
-                    : undefined}
-                />
-              </View>
             )}
 
-            {/* VAD */}
-            <Text style={[styles.vad, pipeline.isVoiceActive && styles.vadActive]}>
-              {isRecording
-                ? pipeline.isVoiceActive ? '● Voice detected' : '○ Listening…'
-                : 'Ready to start'}
-            </Text>
+            {/* ── CONVERSATION MODE recording UI ── */}
+            {sessionMode === 'conversation' && isRecording ? (
+              <>
+                <View style={styles.convoOrbWrap}>
+                  <Animated.View
+                    style={[
+                      styles.glow,
+                      {
+                        width: ORB, height: ORB, borderRadius: ORB / 2,
+                        transform: [{ scale: orbScale }],
+                        opacity:   0.7,
+                        backgroundColor: '#7c3aed',
+                        shadowColor:     '#7c3aed',
+                      },
+                    ]}
+                  />
+                  <View style={[styles.core, { backgroundColor: '#ddd6fe' }]} />
+                </View>
 
-            {/* Meter */}
-            <View style={styles.meterTrack}>
-              <View
-                style={[
-                  styles.meterFill,
-                  { height: `${Math.max(0, (pipeline.decibelLevel + 60) / 60) * 100}%` },
-                ]}
-              />
-            </View>
+                <Text style={styles.convoStatus}>
+                  {convoAI.status === 'joining' ? '⏳ Connecting…' : '🤖 AI Coach active'}
+                </Text>
 
-            {/* Live transcript + interim */}
-            {isRecording && (transcript || interimText) && (
-              <View style={styles.captionBox}>
-                {transcript.length > 0 && (
-                  <Text style={styles.captionText} numberOfLines={4}>
-                    {transcript}
+                <MetricPill label="Time" value={fmt(elapsedSecs)} />
+
+                {/* Mute toggle */}
+                <Pressable
+                  style={[styles.muteBtn, convoAI.isMuted && styles.muteBtnActive]}
+                  onPress={convoAI.toggleMute}
+                >
+                  <Text style={styles.muteBtnText}>
+                    {convoAI.isMuted ? '🔇 Unmute' : '🎙 Mute'}
                   </Text>
+                </Pressable>
+
+                {/* ConvoAI error */}
+                {convoAI.error && (
+                  <View style={styles.errorBox}>
+                    <Text style={styles.errorText}>{convoAI.error}</Text>
+                  </View>
                 )}
-                {interimText.length > 0 && (
-                  <Text style={styles.interimText}>{interimText}</Text>
+
+                {/* Stop */}
+                <Pressable style={[styles.cta, styles.ctaStop]} onPress={handleStop}>
+                  <Text style={styles.ctaText}>End Conversation</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                {/* ── PRACTICE MODE (or idle) UI ── */}
+
+                {/* Pacer orb */}
+                <View style={[styles.orbWrap, { width: ORB, height: ORB }]}>
+                  <Animated.View
+                    style={[
+                      styles.glow,
+                      {
+                        width: ORB, height: ORB, borderRadius: ORB / 2,
+                        transform:   [{ scale: orbScale }],
+                        opacity:     Math.min(0.2 + pipeline.rms * 2.5, 0.9),
+                      },
+                    ]}
+                  />
+                  <View style={styles.core} />
+                </View>
+
+                {/* Live metrics */}
+                {isRecording && (
+                  <View style={styles.metricsRow}>
+                    <MetricPill label="Time"   value={fmt(elapsedSecs)} />
+                    <MetricPill label="Blocks" value={`${blocksDetected}`} />
+                    <MetricPill
+                      label="Blk/min"
+                      value={elapsedSecs >= 10
+                        ? calcBpm(blocksDetected, elapsedSecs).toFixed(1)
+                        : '—'}
+                      color={elapsedSecs >= 10
+                        ? bpmColor(calcBpm(blocksDetected, elapsedSecs))
+                        : undefined}
+                    />
+                  </View>
                 )}
-              </View>
-            )}
 
-            {/* Coach */}
-            {coachMsg && (
-              <View style={styles.coachBox}>
-                <Text style={styles.coachLabel}>COACH</Text>
-                <Text style={styles.coachText}>{coachMsg}</Text>
-              </View>
-            )}
+                {/* VAD */}
+                <Text style={[styles.vad, pipeline.isVoiceActive && styles.vadActive]}>
+                  {isRecording
+                    ? pipeline.isVoiceActive ? '● Voice detected' : '○ Listening…'
+                    : sessionMode === 'conversation'
+                    ? 'Speak with your AI coach'
+                    : 'Ready to start'}
+                </Text>
 
-            {/* Pipeline error */}
-            {pipeline.error && (
-              <View style={styles.errorBox}>
-                <Text style={styles.errorText}>{pipeline.error}</Text>
-              </View>
-            )}
+                {/* Meter */}
+                <View style={styles.meterTrack}>
+                  <View
+                    style={[
+                      styles.meterFill,
+                      { height: `${Math.max(0, (pipeline.decibelLevel + 60) / 60) * 100}%` },
+                    ]}
+                  />
+                </View>
 
-            {/* CTA */}
-            <Pressable
-              style={[styles.cta, isRecording && styles.ctaStop, isSaving && styles.ctaDisabled]}
-              onPress={isRecording ? handleStop : handleStart}
-              disabled={isSaving}
-            >
-              {isSaving
-                ? <ActivityIndicator color="#ffffff" />
-                : <Text style={styles.ctaText}>
-                    {isRecording ? 'Stop Session' : 'Start Session'}
-                  </Text>
-              }
-            </Pressable>
+                {/* Live transcript + interim */}
+                {isRecording && (transcript || interimText) && (
+                  <View style={styles.captionBox}>
+                    {transcript.length > 0 && (
+                      <Text style={styles.captionText} numberOfLines={4}>
+                        {transcript}
+                      </Text>
+                    )}
+                    {interimText.length > 0 && (
+                      <Text style={styles.interimText}>{interimText}</Text>
+                    )}
+                  </View>
+                )}
+
+                {/* Coach */}
+                {coachMsg && (
+                  <View style={styles.coachBox}>
+                    <Text style={styles.coachLabel}>COACH</Text>
+                    <Text style={styles.coachText}>{coachMsg}</Text>
+                  </View>
+                )}
+
+                {/* Pipeline error */}
+                {pipeline.error && (
+                  <View style={styles.errorBox}>
+                    <Text style={styles.errorText}>{pipeline.error}</Text>
+                  </View>
+                )}
+
+                {/* CTA */}
+                <Pressable
+                  style={[styles.cta, isRecording && styles.ctaStop, isSaving && styles.ctaDisabled]}
+                  onPress={isRecording ? handleStop : handleStart}
+                  disabled={isSaving}
+                >
+                  {isSaving
+                    ? <ActivityIndicator color="#ffffff" />
+                    : <Text style={styles.ctaText}>
+                        {isRecording ? 'Stop Session' : 'Start Session'}
+                      </Text>
+                  }
+                </Pressable>
+              </>
+            )}
           </>
         )}
       </ScrollView>
@@ -497,6 +603,34 @@ export function SessionScreen({ profile, onSignOut }: Props) {
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
+
+// ── ModeToggle ─────────────────────────────────────────────────────────────────
+
+function ModeToggle({
+  mode,
+  onChange,
+}: { mode: SessionMode; onChange: (m: SessionMode) => void }) {
+  return (
+    <View style={styles.modeRow}>
+      <Pressable
+        style={[styles.modeTab, mode === 'practice' && styles.modeTabActive]}
+        onPress={() => onChange('practice')}
+      >
+        <Text style={[styles.modeTabText, mode === 'practice' && styles.modeTabTextActive]}>
+          🎙 Practice
+        </Text>
+      </Pressable>
+      <Pressable
+        style={[styles.modeTab, mode === 'conversation' && styles.modeTabActive]}
+        onPress={() => onChange('conversation')}
+      >
+        <Text style={[styles.modeTabText, mode === 'conversation' && styles.modeTabTextActive]}>
+          🤖 Conversation
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
 
 function MetricPill({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
@@ -729,4 +863,27 @@ const styles = StyleSheet.create({
     position: 'absolute', right: 0,
     fontSize: 8, color: '#64748b',
   },
+
+  // Mode toggle
+  modeRow: {
+    flexDirection: 'row', borderRadius: 12, overflow: 'hidden',
+    borderWidth: 1, borderColor: '#1e293b',
+  },
+  modeTab: {
+    flex: 1, paddingVertical: 9, paddingHorizontal: 14, alignItems: 'center',
+    backgroundColor: '#0f172a',
+  },
+  modeTabActive: { backgroundColor: '#1e3a5f' },
+  modeTabText: { fontSize: 13, color: '#475569', fontWeight: '600' },
+  modeTabTextActive: { color: '#93c5fd' },
+
+  // Conversation mode
+  convoOrbWrap: { alignItems: 'center', justifyContent: 'center', width: 152, height: 152 },
+  convoStatus: { fontSize: 14, color: '#a78bfa', fontWeight: '600', marginTop: 4 },
+  muteBtn: {
+    borderWidth: 1, borderColor: '#334155', borderRadius: 12,
+    paddingVertical: 10, paddingHorizontal: 28, backgroundColor: '#0f172a',
+  },
+  muteBtnActive: { borderColor: '#ef4444', backgroundColor: '#450a0a' },
+  muteBtnText:   { fontSize: 14, color: '#e2e8f0', fontWeight: '600' },
 });
