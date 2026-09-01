@@ -34,16 +34,6 @@
     }
   },
   "submit": {
-    "production": {
-      "ios": {
-        "appleId": "flowenspeech@outlook.com",
-        "ascAppId": "",
-        "appleTeamId": ""
-      },
-      "android": {
-        "serviceAccountKeyPath": "./google-service-account.json",
-        "track": "internal"
-      }
-    }
+    "production": {}
   }
 }

@@ -1,43 +1,41 @@
 {
   "expo": {
-    "name":        "Flowen",
-    "slug":        "flowen-mobile",
-    "version":     "1.0.0",
-    "scheme":      "flowen",
+    "name": "Flowen",
+    "slug": "flowen-mobile",
+    "owner": "flowen-technologies",
+    "version": "1.0.0",
+    "scheme": "flowen",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-
     "ios": {
       "bundleIdentifier": "com.flowen.app",
       "buildNumber": "1",
       "supportsTablet": false,
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Flowen needs microphone access to analyse your speech during therapy sessions.",
-        "NSCameraUsageDescription":     "Flowen uses the front camera for avatar face-tracking. This mirrors your expressions during sessions.",
-        "UIBackgroundModes":            []
+        "NSCameraUsageDescription": "Flowen uses the front camera for avatar face-tracking. This mirrors your expressions during sessions.",
+        "UIBackgroundModes": []
       }
     },
-
     "android": {
-      "package":     "com.flowen.app",
+      "package": "com.flowen.app",
       "versionCode": 1,
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA"
       ]
     },
-
     "plugins": [
-      ["./plugins/withFlowenAudio"]
+      [
+        "./plugins/withFlowenAudio"
+      ]
     ],
-
     "splash": {
       "backgroundColor": "#020617"
     },
-
     "extra": {
       "eas": {
-        "projectId": "flowen-mobile"
+        "projectId": "e90b17c8-8635-4061-bded-74141a85d9b7"
       }
     }
   }
