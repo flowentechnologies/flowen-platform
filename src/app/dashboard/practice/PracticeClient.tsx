@@ -1728,75 +1728,90 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     }
   }
 
+  // Celebration tier
+  const celebrationEmoji = blocks === 0 ? '🌟' : summaryBpm < 2 ? '🎉' : summaryBpm < 5 ? '✅' : '💪';
+  const celebrationMsg   = blocks === 0
+    ? 'Perfect session — zero blocks detected!'
+    : summaryBpm < 2
+    ? 'Excellent fluency — you\'re in the zone.'
+    : summaryBpm < 5
+    ? 'Solid session — keep the consistency going.'
+    : 'Session banked — every rep builds the habit.';
+
+  const trendArrow = lastBpm === null ? null
+    : summaryBpm < lastBpm - 0.05 ? { label: `↓ ${(lastBpm - summaryBpm).toFixed(1)} better than last`, cls: 'text-emerald-400' }
+    : summaryBpm > lastBpm + 0.05 ? { label: `↑ ${(summaryBpm - lastBpm).toFixed(1)} more than last`, cls: 'text-red-400' }
+    : { label: 'Same as last session', cls: 'text-slate-400' };
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       {/* Step bar */}
       <StepBar current="summary" />
 
-      <div>
-        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Session complete</span>
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Your results</h1>
+      {/* Celebration hero */}
+      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-950/70 via-slate-900 to-slate-900 border border-emerald-500/25 px-6 py-8 text-center space-y-2">
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-emerald-500/6 blur-3xl pointer-events-none" />
+        <div className="text-4xl mb-1">{celebrationEmoji}</div>
+        <h1 className="text-2xl font-extrabold text-white tracking-tight">Session complete</h1>
+        <p className="text-emerald-400/80 text-sm font-medium">{celebrationMsg}</p>
       </div>
 
-      {/* Stats grid */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-1">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Duration</p>
-            <p className="text-2xl font-bold font-mono text-slate-900 dark:text-white">{formatDurationLong(elapsed)}</p>
+      {/* Key metric — BPM front and centre */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Fluency score</p>
+        <div className="flex items-end gap-4">
+          <div>
+            <span className={`text-5xl font-extrabold font-mono tabular-nums ${
+              summaryBpm < 2 ? 'text-emerald-400' : summaryBpm < 5 ? 'text-amber-400' : 'text-red-400'
+            }`}>
+              {summaryBpm.toFixed(1)}
+            </span>
+            <span className="text-slate-500 text-sm ml-1.5">blocks/min</span>
           </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks detected</p>
-            <p className={`text-2xl font-bold font-mono ${blocks === 0 ? 'text-emerald-400' : blocks < 5 ? 'text-amber-400' : 'text-red-400'}`}>
-              {blocks}
-            </p>
-            {blocks === 0 && <p className="text-[10px] font-mono text-emerald-400">great session!</p>}
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Blocks per min</p>
-            <p className="text-2xl font-bold font-mono text-amber-400">{summaryBpm.toFixed(1)}</p>
-            <p className="text-[10px] font-mono text-slate-600">lower is better</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Stage</p>
-            <p className="text-base font-bold text-slate-900 dark:text-white">{stage.name}</p>
-          </div>
+          {trendArrow && (
+            <span className={`text-sm font-mono mb-1.5 ${trendArrow.cls}`}>{trendArrow.label}</span>
+          )}
+        </div>
+        <p className="text-[11px] text-slate-600">Target: below 2 blocks/min · lower is better</p>
+        {/* BPM bar */}
+        <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-700 ${
+              summaryBpm < 2 ? 'bg-emerald-500' : summaryBpm < 5 ? 'bg-amber-500' : 'bg-red-500'
+            }`}
+            style={{ width: `${Math.min(100, (summaryBpm / 10) * 100)}%` }}
+          />
         </div>
       </div>
 
-      {/* Comparison */}
-      {lastBpm !== null && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-2">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">vs last session</p>
-          <div className="flex items-baseline gap-3">
-            <span className="text-sm text-slate-400">Last: {lastBpm.toFixed(1)} blocks/min</span>
-            <span className="text-slate-600">—</span>
-            <span className="text-sm text-slate-400">This: {summaryBpm.toFixed(1)} blocks/min</span>
+      {/* Secondary stats */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: 'Duration', value: formatDurationLong(elapsed) },
+          { label: 'Stage', value: stage.name.split(' ')[0] },
+          { label: 'Blocks', value: String(blocks), sub: blocks === 0 ? 'none!' : undefined },
+        ].map(s => (
+          <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-center">
+            <p className="text-[9px] font-mono uppercase tracking-widest text-slate-500 mb-1">{s.label}</p>
+            <p className="text-base font-bold font-mono text-slate-900 dark:text-white">{s.value}</p>
+            {s.sub && <p className="text-[10px] text-emerald-400 mt-0.5">{s.sub}</p>}
           </div>
-          <p className={`text-sm font-mono ${comparisonClass}`}>{comparisonText}</p>
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* Playback */}
       {audioUrl && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
-            Playback — hear your voice
-          </p>
-          <audio
-            controls
-            src={audioUrl}
-            className="w-full rounded-lg"
-            style={{ colorScheme: 'dark', height: '40px' }}
-          />
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-2">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Playback</p>
+          <audio controls src={audioUrl} className="w-full rounded-lg" style={{ colorScheme: 'dark', height: '36px' }} />
         </div>
       )}
 
       {/* Transcript */}
       {finalTranscript && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Session transcript</p>
-          <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{finalTranscript}</p>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-2">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">Transcript</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{finalTranscript}</p>
         </div>
       )}
 
@@ -1813,7 +1828,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           )}
-          {saving ? 'Saving...' : 'Save & return to dashboard'}
+          {saving ? 'Saving…' : 'Save & return to dashboard →'}
         </button>
 
         <button
@@ -1821,7 +1836,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           disabled={saving}
           className="w-full rounded-xl px-6 py-3 font-semibold text-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Save & do another session
+          Do another session
         </button>
 
         {saveError && (
@@ -1830,9 +1845,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
         <button
           onClick={discardAndReset}
-          className="w-full text-center text-sm text-slate-500 hover:text-slate-300 transition-colors py-2"
+          className="w-full text-center text-sm text-slate-600 hover:text-slate-400 transition-colors py-1"
         >
-          Discard & practice again
+          Discard session
         </button>
       </div>
     </div>

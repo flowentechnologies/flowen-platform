@@ -546,6 +546,49 @@ export function DashboardClient({
         <GettingStartedChecklist state={checklistState} tier={tier} />
       </div>
 
+      {/* C0. Today card — streak + daily target */}
+      {sessionCount > 0 && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-4">
+              {/* Streak flame */}
+              <div className={`flex flex-col items-center justify-center w-14 h-14 rounded-2xl border shrink-0 ${
+                streak > 0
+                  ? 'bg-orange-500/10 border-orange-500/30'
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+              }`}>
+                <span className="text-xl leading-none">{streak > 0 ? '🔥' : '💤'}</span>
+                <span className={`text-[11px] font-bold font-mono tabular-nums mt-0.5 ${
+                  streak > 0 ? 'text-orange-500' : 'text-slate-500'
+                }`}>{streak}d</span>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                  {(sessionsByDay[todayKey] ?? 0) > 0
+                    ? "Today's session done ✓"
+                    : streak > 0
+                    ? `Keep your ${streak}-day streak alive`
+                    : 'Start your practice streak'}
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {(sessionsByDay[todayKey] ?? 0) > 0
+                    ? `${sessionsByDay[todayKey]} session${sessionsByDay[todayKey] > 1 ? 's' : ''} today · great work`
+                    : 'One session a day builds lasting fluency — takes ~8 min'}
+                </p>
+              </div>
+            </div>
+            {(sessionsByDay[todayKey] ?? 0) === 0 && (
+              <Link
+                href="/dashboard/practice"
+                className="shrink-0 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-colors"
+              >
+                Practice now →
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* C. KPI cards */}
       <div data-tour="kpi-cards" className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <KpiCard

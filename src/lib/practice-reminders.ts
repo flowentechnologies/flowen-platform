@@ -53,6 +53,17 @@ function streakEmail(name: string, streak: number): string {
     <p style="margin:0;font-size:14px;color:#64748b;">Keep the streak alive today.</p>`);
 }
 
+function streakAtRiskEmail(name: string, streak: number): string {
+  const medal = streak >= 14 ? '🏆' : streak >= 7 ? '🌟' : '🔥';
+  return emailBase(`
+    <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#f8fafc;">Hi ${name},</p>
+    <p style="margin:0 0 16px;font-size:15px;color:#94a3b8;line-height:1.65;">
+      ${medal} Your <strong style="color:#f59e0b;">${streak}-day streak</strong> is at risk —
+      you haven't practised yet today. One short session keeps it alive.
+    </p>
+    <p style="margin:0;font-size:14px;color:#64748b;">Even 5 minutes counts. Streaks are built one session at a time.</p>`);
+}
+
 function goalEmail(name: string, sessionsPerWeek: number): string {
   return emailBase(`
     <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#f8fafc;">Hi ${name},</p>
@@ -167,6 +178,35 @@ export async function sendPracticeReminders(): Promise<{ sent: number; skipped: 
         if (ok) {
           sent++;
           await admin.from('notification_log').insert({ user_id: profile.id, type: `streak_${streak}`, metadata: { streak } });
+        }
+        continue;
+      }
+    }
+
+    // ── Streak at risk — user has streak ≥ 3 but hasn't practiced today ──────
+    // Only fire between 17:00–18:00 UTC (5pm) so it feels timely, not spammy.
+    const todayStr = now.toISOString().slice(0, 10);
+    const practicedToday = sessions.some(s => s.created_at.startsWith(todayStr));
+    if (
+      !practicedToday &&
+      streak >= 3 &&
+      profile.streak_notifications !== false &&
+      currentHour === 17
+    ) {
+      const alreadySent = await wasRecentlySent(admin, profile.id, 'streak_at_risk', 1);
+      if (!alreadySent) {
+        const ok = await sendReminderEmail(
+          email,
+          `Your ${streak}-day streak is at risk 🔥`,
+          streakAtRiskEmail(name, streak),
+        );
+        if (ok) {
+          sent++;
+          await admin.from('notification_log').insert({
+            user_id: profile.id,
+            type: 'streak_at_risk',
+            metadata: { streak },
+          });
         }
         continue;
       }

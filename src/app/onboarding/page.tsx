@@ -276,14 +276,14 @@ function deriveRecommendation(state: State): Recommendation {
   }
   return {
     type: 'standard',
-    headline: 'Standard Access',
-    subline: "Real-time acoustic biofeedback, your 8-week programme, and fluency analytics — for less than a coffee a day.",
-    badge: 'STANDARD',
-    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    features: ['Unlimited practice sessions', 'Real-time acoustic biofeedback', '8-week guided programme', 'Fluency progress analytics'],
-    primaryLabel: 'Start Standard Access — from £19.96/mo →',
-    primaryHref: '/pricing',
-    secondaryLabel: 'Try for free first',
+    headline: "You're all set, let's go",
+    subline: "Your first session takes about 5 minutes. Flowen analyses your speech in real time and sets your personalised baseline.",
+    badge: 'READY',
+    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+    features: ['3 free sessions included — no card required', 'Real-time acoustic biofeedback', 'Personalised 8-week programme', 'Fluency progress analytics'],
+    primaryLabel: 'Start your first session →',
+    primaryHref: '/dashboard/practice',
+    secondaryLabel: 'Go to dashboard first',
     secondaryHref: '/dashboard',
   };
 }
@@ -401,17 +401,15 @@ function OnboardingForm() {
   // Whether the user has a stammer (determines if step 3 appears)
   const isStammerer = ['pwds', 'parent_carer'].includes(state.role);
 
-  // Total visible steps: 6 for stammerers (includes stammer experience step), 5 for others
-  const totalSteps = (isStammerer || step < 2) ? 6 : 5;
+  // Simplified 3-step flow: Name → Role → [Stammer] → Recommendation
+  // Steps 4 (Funding) and 5 (KYC) are removed from onboarding — deferred to paywall/settings.
+  // Total visible: stammerers 4, others 3 (step < 2 means role not yet chosen)
+  const totalSteps = isStammerer ? 4 : 3;
 
-  // Map internal step number (1-6, with possible gap at 3 for non-stammerers)
-  // to the displayed progress position
+  // Map internal step number to displayed progress position
   function toDisplay(s: Step): number {
-    if (isStammerer || s <= 2) return s;
-    // Non-stammerers skip step 3: internal 4→display 3, 5→4, 6→5
-    if (s === 4) return 3;
-    if (s === 5) return 4;
-    if (s === 6) return 5;
+    if (s <= 3) return s; // 1→1 (Name), 2→2 (Role), 3→3 (Stammer)
+    if (s === 6) return isStammerer ? 4 : 3; // Recommendation is last
     return s;
   }
 
@@ -431,8 +429,10 @@ function OnboardingForm() {
   function nextStep() {
     setError(null);
     setStep(s => {
-      // Skip step 3 (stammer experience) for non-stammerers
-      if (s === 2 && !isStammerer) return 4;
+      // Non-stammerers: 1→2→6 (skip stammer + funding + KYC)
+      if (s === 2 && !isStammerer) return 6;
+      // Stammerers: 1→2→3→6 (skip funding + KYC)
+      if (s === 3) return 6;
       return Math.min(s + 1, 6) as Step;
     });
   }
@@ -440,8 +440,9 @@ function OnboardingForm() {
   function prevStep() {
     setError(null);
     setStep(s => {
-      // Skip back over step 3 for non-stammerers
-      if (s === 4 && !isStammerer) return 2;
+      // Going back from recommendation (6)
+      if (s === 6 && isStammerer) return 3;
+      if (s === 6) return 2;
       return Math.max(s - 1, 1) as Step;
     });
   }
