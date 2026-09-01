@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient as createAdmin } from '@supabase/supabase-js';
-import { createClient } from '@/lib/supabase/server';
+import { getUserFromRequest } from '@/lib/supabase/from-request';
 import { evaluateAutoAdvance, PROGRAMME } from '@/lib/programme';
 
 function db() {
@@ -12,8 +12,7 @@ function db() {
 }
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let body: {

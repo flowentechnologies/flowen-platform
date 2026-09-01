@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getUserFromRequest } from '@/lib/supabase/from-request';
 import type Anthropic from '@anthropic-ai/sdk';
 import { getAnthropicClient, requireAnthropicKey } from '@/lib/anthropic';
 import { checkAiRateLimit } from '@/lib/rate-limit';
@@ -13,8 +13,7 @@ const STAGE_PROMPTS: Record<number, string> = {
 };
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   // Per-user rate limit: 30 coach requests per hour.

@@ -1,35 +1,251 @@
 /**
  * SessionScreen
  *
- * Main therapy session UI. Renders the Pacer orb, volume meter, VAD indicator,
- * and start/stop controls backed by the native AudioPipeline.
+ * Full session UI:
+ *   - Pacer orb animated by live RMS
+ *   - Duration timer + block counter
+ *   - AI coach message (fetched every 60 s during session)
+ *   - On Stop: POSTs session to /api/practice/sessions
+ *   - Post-session summary with progression feedback
  *
- * pacer_bpm from the user's profile will drive the Pacer animation in a later
- * milestone; right now the orb pulses proportionally to the live RMS level.
+ * API auth: passes Supabase access token as Bearer so the server routes
+ * accept both cookie (web) and token (mobile) callers.
  */
 
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Animated,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import type { AudioPipelineState } from '../lib/audio/AudioPipeline';
 import type { UserProfile }        from '../../App';
+import { supabase }                from '../../App';
 
-interface SessionScreenProps {
-  pipeline:   AudioPipelineState;
-  profile:    UserProfile;
-  onSignOut:  () => void;
+// ── Constants ──────────────────────────────────────────────────────────────────
+
+const API_BASE     = process.env.EXPO_PUBLIC_API_BASE ?? 'https://flowen.digital';
+const COACH_INTERVAL_MS  = 60_000; // poll coach every 60 s
+const DEFAULT_STAGE_ID   = 1;      // diaphragmatic breathing
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+type ScreenPhase = 'idle' | 'recording' | 'saving' | 'summary';
+
+interface SessionResult {
+  sessionId: string;
+  durationSeconds: number;
+  blocksDetected: number;
+  progression: { advanced: boolean; newWeek?: number; avgBpm?: number } | null;
 }
 
-export function SessionScreen({ pipeline, profile, onSignOut }: SessionScreenProps) {
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function formatDuration(secs: number): string {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+async function getAccessToken(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
+}
+
+async function apiFetch(
+  path: string,
+  body: unknown,
+  token: string,
+): Promise<Response> {
+  return fetch(`${API_BASE}${path}`, {
+    method:  'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+// ── SessionScreen ──────────────────────────────────────────────────────────────
+
+interface Props {
+  pipeline:  AudioPipelineState;
+  profile:   UserProfile;
+  onSignOut: () => void;
+}
+
+export function SessionScreen({ pipeline, profile, onSignOut }: Props) {
   const ORB = 160;
-  // RMS [0, 0.3] → scale [1.0, 1.6]
-  const scale = 1 + Math.min(pipeline.rms / 0.3, 1) * 0.6;
-  // pacer_default_bpm drives the orb pulse rate (future milestone)
-  const _pacerBpm = profile.pacer_default_bpm ?? 80;
+  const orbScale = useRef(new Animated.Value(1)).current;
+
+  // Session state
+  const [phase,          setPhase]         = useState<ScreenPhase>('idle');
+  const [elapsedSecs,    setElapsedSecs]   = useState(0);
+  const [blocksDetected, setBlocksDetected] = useState(0);
+  const [coachMsg,       setCoachMsg]      = useState<string | null>(null);
+  const [result,         setResult]        = useState<SessionResult | null>(null);
+  const [saveError,      setSaveError]     = useState<string | null>(null);
+
+  // Refs for values needed inside intervals/callbacks without stale closure issues
+  const elapsedRef       = useRef(0);
+  const blocksRef        = useRef(0);
+  const transcriptRef    = useRef('');
+  const lastVadRef       = useRef(false);
+  const lastCoachRef     = useRef<string | undefined>(undefined);
+  const timerRef         = useRef<ReturnType<typeof setInterval> | null>(null);
+  const coachTimerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ── Orb animation ────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const target = 1 + Math.min(pipeline.rms / 0.3, 1) * 0.5;
+    Animated.spring(orbScale, {
+      toValue:        target,
+      useNativeDriver: true,
+      tension:        80,
+      friction:       6,
+    }).start();
+  }, [pipeline.rms, orbScale]);
+
+  // ── Block counting (VAD edge: voice→silence = 1 utterance/block event) ───────
+
+  useEffect(() => {
+    if (phase !== 'recording') return;
+    if (lastVadRef.current && !pipeline.isVoiceActive) {
+      // Falling edge — user finished a speech burst
+      blocksRef.current += 1;
+      setBlocksDetected(blocksRef.current);
+    }
+    lastVadRef.current = pipeline.isVoiceActive;
+  }, [pipeline.isVoiceActive, phase]);
+
+  // ── Coach polling ─────────────────────────────────────────────────────────────
+
+  const fetchCoach = useCallback(async () => {
+    const token = await getAccessToken();
+    if (!token) return;
+    try {
+      const res = await apiFetch('/api/practice/coach', {
+        stageId:          DEFAULT_STAGE_ID,
+        transcript:       transcriptRef.current.slice(-400),
+        sessionElapsed:   elapsedRef.current,
+        lastCoachResponse: lastCoachRef.current,
+      }, token);
+      if (res.ok) {
+        const json = await res.json() as { reply?: string };
+        if (json.reply) {
+          setCoachMsg(json.reply);
+          lastCoachRef.current = json.reply;
+        }
+      }
+    } catch { /* network errors — silently skip */ }
+  }, []);
+
+  // ── Start ─────────────────────────────────────────────────────────────────────
+
+  const handleStart = useCallback(async () => {
+    // Reset accumulators
+    elapsedRef.current   = 0;
+    blocksRef.current    = 0;
+    transcriptRef.current = '';
+    lastVadRef.current   = false;
+    lastCoachRef.current = undefined;
+    setElapsedSecs(0);
+    setBlocksDetected(0);
+    setCoachMsg(null);
+    setResult(null);
+    setSaveError(null);
+
+    await pipeline.start();
+    setPhase('recording');
+
+    // Elapsed-time timer (1 s tick)
+    timerRef.current = setInterval(() => {
+      elapsedRef.current += 1;
+      setElapsedSecs(elapsedRef.current);
+    }, 1000);
+
+    // Coach polling (first call after 10 s, then every 60 s)
+    coachTimerRef.current = setInterval(fetchCoach, COACH_INTERVAL_MS);
+    setTimeout(fetchCoach, 10_000);
+  }, [pipeline, fetchCoach]);
+
+  // ── Stop + save ───────────────────────────────────────────────────────────────
+
+  const handleStop = useCallback(async () => {
+    // Stop timers first
+    if (timerRef.current)    { clearInterval(timerRef.current);    timerRef.current    = null; }
+    if (coachTimerRef.current){ clearInterval(coachTimerRef.current); coachTimerRef.current = null; }
+
+    await pipeline.stop();
+    setPhase('saving');
+
+    const durationSeconds = elapsedRef.current;
+    const blocks          = blocksRef.current;
+
+    // Sessions under 5 s are rejected by the server — just go to idle
+    if (durationSeconds < 5) {
+      setPhase('idle');
+      return;
+    }
+
+    const token = await getAccessToken();
+    if (!token) {
+      setSaveError('Could not get auth token — session not saved.');
+      setPhase('summary');
+      return;
+    }
+
+    try {
+      const res = await apiFetch('/api/practice/sessions', {
+        duration_seconds:      durationSeconds,
+        total_blocks_detected: blocks,
+        stage_id:              DEFAULT_STAGE_ID,
+        transcript:            transcriptRef.current.slice(0, 20_000) || undefined,
+      }, token);
+
+      const json = await res.json() as {
+        ok?: boolean;
+        session?: { id: string; created_at: string };
+        progression?: { advanced: boolean; newWeek?: number; avgBpm?: number } | null;
+        error?: string;
+      };
+
+      if (!res.ok || !json.ok) {
+        setSaveError(json.error ?? `Server error ${res.status}`);
+      } else {
+        setResult({
+          sessionId:       json.session?.id ?? '',
+          durationSeconds,
+          blocksDetected:  blocks,
+          progression:     json.progression ?? null,
+        });
+      }
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Network error');
+    }
+
+    setPhase('summary');
+  }, [pipeline]);
+
+  // ── Cleanup on unmount ────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current)    clearInterval(timerRef.current);
+      if (coachTimerRef.current) clearInterval(coachTimerRef.current);
+    };
+  }, []);
+
+  // ── Render ────────────────────────────────────────────────────────────────────
+
+  const isRecording = phase === 'recording';
+  const isSaving    = phase === 'saving';
 
   return (
     <View style={styles.root}>
@@ -41,111 +257,197 @@ export function SessionScreen({ pipeline, profile, onSignOut }: SessionScreenPro
         </Pressable>
       </View>
 
-      {/* Tier chip */}
-      <View style={styles.tierChip}>
-        <Text style={styles.tierText}>{profile.tier}</Text>
-      </View>
-
-      {/* Pacer orb */}
-      <View style={[styles.orbWrap, { width: ORB, height: ORB }]}>
-        <View
-          style={[
-            styles.glow,
-            {
-              width:        ORB * scale,
-              height:       ORB * scale,
-              borderRadius: (ORB * scale) / 2,
-              opacity:      Math.min(0.3 + pipeline.rms * 2, 0.9),
-            },
-          ]}
-        />
-        <View style={styles.core} />
-      </View>
-
-      {/* Volume meter — vertical bar */}
-      <View style={styles.meterTrack}>
-        <View
-          style={[
-            styles.meterFill,
-            { height: `${Math.max(0, (pipeline.decibelLevel + 60) / 60) * 100}%` },
-          ]}
-        />
-      </View>
-
-      <Text style={styles.dbLabel}>{Math.round(pipeline.decibelLevel)} dBFS</Text>
-
-      <Text style={[styles.vad, pipeline.isVoiceActive && styles.vadActive]}>
-        {pipeline.isVoiceActive ? '● Voice Detected' : '○ Listening…'}
-      </Text>
-
-      {pipeline.error && (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>{pipeline.error}</Text>
-        </View>
-      )}
-
-      {/* Start / Stop */}
-      <Pressable
-        style={[styles.cta, pipeline.isRecording && styles.ctaStop]}
-        onPress={pipeline.isRecording ? pipeline.stop : pipeline.start}
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.ctaText}>
-          {pipeline.isRecording ? 'Stop Session' : 'Start Session'}
-        </Text>
-      </Pressable>
+        {/* Tier + name */}
+        <View style={styles.tierChip}>
+          <Text style={styles.tierText}>
+            {profile.display_name ? `${profile.display_name} · ` : ''}{profile.tier}
+          </Text>
+        </View>
+
+        {/* ── Summary phase ── */}
+        {phase === 'summary' && (
+          <View style={styles.summaryBox}>
+            {saveError ? (
+              <>
+                <Text style={styles.summaryEmoji}>⚠️</Text>
+                <Text style={styles.summaryHeading}>Session not saved</Text>
+                <Text style={styles.summaryBody}>{saveError}</Text>
+              </>
+            ) : result ? (
+              <>
+                <Text style={styles.summaryEmoji}>🎉</Text>
+                <Text style={styles.summaryHeading}>Session complete</Text>
+                <View style={styles.statsRow}>
+                  <Stat label="Duration" value={formatDuration(result.durationSeconds)} />
+                  <Stat label="Blocks"   value={`${result.blocksDetected}`} />
+                </View>
+                {result.progression?.advanced && (
+                  <View style={styles.progressionBanner}>
+                    <Text style={styles.progressionText}>
+                      🏆 Advanced to week {result.progression.newWeek}!
+                    </Text>
+                  </View>
+                )}
+              </>
+            ) : null}
+            <Pressable style={styles.cta} onPress={() => setPhase('idle')}>
+              <Text style={styles.ctaText}>New Session</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {/* ── Recording / idle phase ── */}
+        {phase !== 'summary' && (
+          <>
+            {/* Pacer orb */}
+            <View style={[styles.orbWrap, { width: ORB, height: ORB }]}>
+              <Animated.View
+                style={[
+                  styles.glow,
+                  {
+                    width:        ORB,
+                    height:       ORB,
+                    borderRadius: ORB / 2,
+                    transform:    [{ scale: orbScale }],
+                    opacity:      Math.min(0.25 + pipeline.rms * 2.5, 0.9),
+                  },
+                ]}
+              />
+              <View style={styles.core} />
+            </View>
+
+            {/* Live metrics */}
+            {isRecording && (
+              <View style={styles.metricsRow}>
+                <Metric label="Time"   value={formatDuration(elapsedSecs)} />
+                <Metric label="Blocks" value={`${blocksDetected}`} />
+                <Metric label="dBFS"   value={`${Math.round(pipeline.decibelLevel)}`} />
+              </View>
+            )}
+
+            {/* VAD status */}
+            <Text style={[styles.vad, pipeline.isVoiceActive && styles.vadActive]}>
+              {isRecording
+                ? pipeline.isVoiceActive ? '● Voice detected' : '○ Listening…'
+                : 'Ready to start'}
+            </Text>
+
+            {/* Volume meter */}
+            <View style={styles.meterTrack}>
+              <View
+                style={[
+                  styles.meterFill,
+                  { height: `${Math.max(0, (pipeline.decibelLevel + 60) / 60) * 100}%` },
+                ]}
+              />
+            </View>
+
+            {/* Coach message */}
+            {coachMsg && (
+              <View style={styles.coachBox}>
+                <Text style={styles.coachLabel}>COACH</Text>
+                <Text style={styles.coachText}>{coachMsg}</Text>
+              </View>
+            )}
+
+            {/* Pipeline error */}
+            {pipeline.error && (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{pipeline.error}</Text>
+              </View>
+            )}
+
+            {/* CTA */}
+            <Pressable
+              style={[
+                styles.cta,
+                isRecording  && styles.ctaStop,
+                isSaving     && styles.ctaDisabled,
+              ]}
+              onPress={isRecording ? handleStop : handleStart}
+              disabled={isSaving}
+            >
+              {isSaving
+                ? <ActivityIndicator color="#ffffff" />
+                : <Text style={styles.ctaText}>
+                    {isRecording ? 'Stop Session' : 'Start Session'}
+                  </Text>
+              }
+            </Pressable>
+          </>
+        )}
+      </ScrollView>
     </View>
   );
 }
 
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.metric}>
+      <Text style={styles.metricValue}>{value}</Text>
+      <Text style={styles.metricLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.stat}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+// ── Styles ─────────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  root: {
-    flex:           1,
-    alignItems:     'center',
-    justifyContent: 'center',
-    padding:        24,
-    gap:            16,
-  },
+  root: { flex: 1 },
   header: {
-    position:       'absolute',
-    top:            0,
-    left:           0,
-    right:          0,
-    flexDirection:  'row',
-    justifyContent: 'space-between',
-    alignItems:     'center',
-    padding:        20,
+    flexDirection:   'row',
+    justifyContent:  'space-between',
+    alignItems:      'center',
+    paddingHorizontal: 20,
+    paddingTop:      16,
+    paddingBottom:   8,
   },
-  wordmark: {
-    fontSize:      18,
-    fontWeight:    '900',
-    color:         '#ffffff',
-    letterSpacing: 3,
+  wordmark: { fontSize: 18, fontWeight: '900', color: '#ffffff', letterSpacing: 3 },
+  signOut:  { fontSize: 13, color: '#475569' },
+
+  scroll: {
+    alignItems:      'center',
+    paddingHorizontal: 24,
+    paddingBottom:   40,
+    gap:             20,
+    flexGrow:        1,
+    justifyContent:  'center',
   },
-  signOut: {
-    fontSize: 13,
-    color:    '#475569',
-  },
+
   tierChip: {
-    backgroundColor: '#0f172a',
-    borderWidth:     1,
-    borderColor:     '#1e293b',
-    borderRadius:    20,
+    backgroundColor:   '#0f172a',
+    borderWidth:       1,
+    borderColor:       '#1e293b',
+    borderRadius:      20,
     paddingVertical:   4,
     paddingHorizontal: 12,
-    marginBottom:    8,
   },
   tierText: {
-    fontSize:    11,
-    color:       '#64748b',
-    fontWeight:  '600',
+    fontSize:      11,
+    color:         '#64748b',
+    fontWeight:    '600',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  orbWrap: {
-    alignItems:     'center',
-    justifyContent: 'center',
-    marginVertical: 8,
-  },
+
+  // ── Orb ──
+  orbWrap: { alignItems: 'center', justifyContent: 'center' },
   glow: {
     position:        'absolute',
     backgroundColor: '#2563eb',
@@ -165,48 +467,90 @@ const styles = StyleSheet.create({
     shadowOpacity:   0.9,
     shadowOffset:    { width: 0, height: 0 },
   },
+
+  // ── Metrics ──
+  metricsRow: {
+    flexDirection:  'row',
+    gap:            24,
+    justifyContent: 'center',
+  },
+  metric:      { alignItems: 'center' },
+  metricValue: { fontSize: 20, fontWeight: '800', color: '#f1f5f9', fontVariant: ['tabular-nums'] },
+  metricLabel: { fontSize: 10, color: '#475569', marginTop: 2, letterSpacing: 0.5 },
+
+  // ── VAD / meter ──
+  vad:      { fontSize: 13, color: '#334155', fontWeight: '600' },
+  vadActive: { color: '#22d3ee' },
   meterTrack: {
-    width:           16,
-    height:          120,
+    width:           12,
+    height:          80,
     backgroundColor: '#0f172a',
     borderRadius:    4,
     overflow:        'hidden',
     justifyContent:  'flex-end',
   },
-  meterFill: {
+  meterFill: { width: '100%', backgroundColor: '#22d3ee', borderRadius: 4 },
+
+  // ── Coach ──
+  coachBox: {
+    backgroundColor: '#0f172a',
+    borderWidth:     1,
+    borderColor:     '#1e293b',
+    borderRadius:    16,
+    padding:         16,
     width:           '100%',
-    backgroundColor: '#22d3ee',
-    borderRadius:    4,
   },
-  dbLabel: {
-    fontSize:    13,
-    color:       '#475569',
-    fontVariant: ['tabular-nums'],
+  coachLabel: {
+    fontSize:      9,
+    color:         '#3b82f6',
+    fontWeight:    '700',
+    letterSpacing: 2,
+    marginBottom:  6,
   },
-  vad:      { fontSize: 14, color: '#334155', fontWeight: '600' },
-  vadActive:{ color: '#22d3ee' },
+  coachText: { fontSize: 14, color: '#cbd5e1', lineHeight: 22 },
+
+  // ── Errors ──
   errorBox: {
     backgroundColor: '#450a0a',
     borderRadius:    10,
     padding:         12,
     width:           '100%',
   },
-  errorText: {
-    color:     '#fca5a5',
-    fontSize:  12,
-    textAlign: 'center',
-  },
+  errorText: { color: '#fca5a5', fontSize: 12, textAlign: 'center' },
+
+  // ── CTA ──
   cta: {
-    backgroundColor: '#3b82f6',
+    backgroundColor:   '#3b82f6',
     paddingVertical:   15,
     paddingHorizontal: 40,
     borderRadius:      14,
-    marginTop:         4,
+    alignItems:        'center',
+    minWidth:          180,
   },
-  ctaStop: { backgroundColor: '#ef4444' },
-  ctaText: {
-    color:      '#ffffff',
-    fontSize:   15,
-    fontWeight: '700',
+  ctaStop:     { backgroundColor: '#ef4444' },
+  ctaDisabled: { opacity: 0.6 },
+  ctaText:     { color: '#ffffff', fontSize: 15, fontWeight: '700' },
+
+  // ── Summary ──
+  summaryBox: {
+    alignItems: 'center',
+    gap:        16,
+    width:      '100%',
   },
+  summaryEmoji:   { fontSize: 52 },
+  summaryHeading: { fontSize: 22, fontWeight: '800', color: '#ffffff', textAlign: 'center' },
+  summaryBody:    { fontSize: 14, color: '#94a3b8', textAlign: 'center', lineHeight: 22 },
+  statsRow:       { flexDirection: 'row', gap: 32, justifyContent: 'center', marginTop: 4 },
+  stat:           { alignItems: 'center' },
+  statValue:      { fontSize: 28, fontWeight: '900', color: '#f1f5f9', fontVariant: ['tabular-nums'] },
+  statLabel:      { fontSize: 11, color: '#475569', marginTop: 2, letterSpacing: 0.5, textTransform: 'uppercase' },
+  progressionBanner: {
+    backgroundColor: '#052e16',
+    borderWidth:     1,
+    borderColor:     '#16a34a',
+    borderRadius:    12,
+    paddingVertical:   10,
+    paddingHorizontal: 20,
+  },
+  progressionText: { color: '#4ade80', fontWeight: '700', fontSize: 14, textAlign: 'center' },
 });
