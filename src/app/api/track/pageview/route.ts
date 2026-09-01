@@ -8,14 +8,16 @@ export async function POST(req: NextRequest) {
   const sessionId = req.cookies.get(VS_COOKIE)?.value;
   if (!sessionId) return NextResponse.json({ ok: false }, { status: 400 });
 
-  let body: { path: string; referrer?: string };
+  let rawBody: { path?: string; referrer?: string };
   try {
-    body = await req.json();
+    rawBody = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
 
-  const { path, referrer } = body;
+  // Clamp lengths to prevent unbounded writes to the DB
+  const path     = (rawBody.path     ?? '').slice(0, 2048);
+  const referrer = (rawBody.referrer ?? '').slice(0, 2048) || undefined;
 
   // Geo from Vercel headers (free, no external API)
   const country = req.headers.get('x-vercel-ip-country')      ?? null;
@@ -49,6 +51,7 @@ export async function POST(req: NextRequest) {
       region,
       landing_page:   path,
       referrer:       referrer ?? null,
+
       utm_source:     utm.utm_source   ?? null,
       utm_medium:     utm.utm_medium   ?? null,
       utm_campaign:   utm.utm_campaign ?? null,

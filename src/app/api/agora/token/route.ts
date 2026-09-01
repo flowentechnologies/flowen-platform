@@ -27,8 +27,11 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json() as { channel?: string; uid?: number };
-    const channel = body.channel ?? `flowen-${user.id.replace(/-/g, '').slice(0, 16)}`;
+    const body = await req.json() as { uid?: number };
+    // Force channel to the caller's own deterministic ID — ignore any client-supplied
+    // channel name to prevent an authenticated user from obtaining a token for another
+    // user's session channel.
+    const channel = `flowen-${user.id.replace(/-/g, '').slice(0, 16)}`;
     const uid = body.uid ?? 0; // 0 = auto-assign
 
     const appId = process.env.AGORA_APP_ID;

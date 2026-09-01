@@ -86,6 +86,45 @@ async function captureAttribution(
 // Rate limiting is handled by the distributed Upstash-backed checkProxyRateLimit
 // imported above.  See src/lib/rate-limit.ts for limits and fallback behaviour.
 
+// ── CSP builder ───────────────────────────────────────────────────────────────
+
+/**
+ * Builds a per-request Content-Security-Policy with a unique nonce.
+ * Replaces the static 'unsafe-inline' in script-src with:
+ *   'nonce-<n>'  — allows only the FOUC script that carries the nonce
+ *   'strict-dynamic' — allows scripts added programmatically by trusted scripts
+ *                      (e.g. TrackingScripts' document.createElement pattern)
+ * 'unsafe-inline' is intentionally kept in style-src; CSS injection carries
+ * far lower XSS risk than script injection and is required by many third-party
+ * widgets.
+ */
+function buildCsp(nonce: string): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+  return [
+    `default-src 'self'`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'wasm-unsafe-eval'`
+      + ` https://js.stripe.com https://cdn.jsdelivr.net`
+      + ` https://www.googletagmanager.com https://www.google-analytics.com`
+      + ` https://www.googleadservices.com https://*.doubleclick.net`
+      + ` https://connect.facebook.net https://*.posthog.com https://snap.licdn.com`,
+    `style-src 'self' 'unsafe-inline'`,
+    `img-src 'self' data: blob: https:`,
+    `font-src 'self' data:`,
+    `connect-src 'self' ${supabaseUrl} wss://*.supabase.co https://*.supabase.co`
+      + ` https://api.stripe.com https://*.google-analytics.com https://analytics.google.com`
+      + ` https://*.analytics.google.com https://www.google.com https://www.googleadservices.com`
+      + ` https://*.doubleclick.net https://*.facebook.com https://eu.i.posthog.com`
+      + ` https://cdn.jsdelivr.net https://storage.googleapis.com https://px.ads.linkedin.com`,
+    `frame-src https://js.stripe.com https://hooks.stripe.com https://*.doubleclick.net`,
+    `worker-src 'self' blob:`,
+    `media-src 'self' blob:`,
+    `object-src 'none'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+    `upgrade-insecure-requests`,
+  ].join('; ');
+}
+
 // ── Proxy function ────────────────────────────────────────────────────────────
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
@@ -99,10 +138,20 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return new NextResponse('Too Many Requests', { status: 429 });
   }
 
+  // Generate a per-request nonce for the Content-Security-Policy.
+  // Server components read this via headers().get('x-nonce').
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+
+  // Forward the nonce to server components via a request header.
+  // We build a mutable copy so we can include it even when Supabase
+  // reassigns `response` inside the setAll cookie callback below.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+
   // 2. Supabase session hydration
   //    createServerClient reads and refreshes the auth cookie on every request,
   //    keeping the JWT in sync with the response headers.
-  let response = NextResponse.next({ request: { headers: request.headers } });
+  let response = NextResponse.next({ request: { headers: requestHeaders } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -114,7 +163,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
         },
         setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
+          // Preserve x-nonce when response is reassigned after cookie refresh
+          response = NextResponse.next({ request: { headers: requestHeaders } });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
@@ -162,9 +212,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const isAdminRoute      = pathname.startsWith('/admin');
   const isPortalRoute     = pathname.startsWith('/portal');
   const isOnboardingRoute = pathname.startsWith('/onboarding');
+  const isSlpRoute        = pathname.startsWith('/slp');
 
   // 4. Auth gates — unauthenticated users bounce to login
-  if ((isDashboardRoute || isAdminRoute || isPortalRoute || isOnboardingRoute) && !user) {
+  if ((isDashboardRoute || isAdminRoute || isPortalRoute || isOnboardingRoute || isSlpRoute) && !user) {
     const loginUrl = new URL('/auth/login', request.url);
     loginUrl.searchParams.set('next', pathname);
     return NextResponse.redirect(loginUrl);
@@ -318,6 +369,13 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   //     Attribution model: last-touch — a new ?ref= param overwrites the existing
   //     cookie so the most-recent referrer receives credit.
   applyAffiliateReferral(request, response);
+
+  // 12. Content-Security-Policy — nonce-based, generated per request.
+  //     The pitch deck route (/api/pitch/*) intentionally uses its own permissive
+  //     CSP defined in next.config.ts (Tailwind CDN, FontAwesome, unsafe-inline);
+  //     next.config.ts route-level headers override proxy headers for that path,
+  //     so we still set it here — the config override wins safely.
+  response.headers.set('Content-Security-Policy', buildCsp(nonce));
 
   return response;
 }

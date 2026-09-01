@@ -1,9 +1,17 @@
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.flowen.digital';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
+// Derive the Supabase storage hostname for image allow-listing.
+// Falls back to the *.supabase.co wildcard if the URL isn't set yet (e.g. CI).
+function supabaseHostname(): string {
+  try { return new URL(SUPABASE_URL).hostname; } catch { return '*.supabase.co'; }
+}
+
+// CSP is generated dynamically in src/proxy.ts (per-request nonce).
+// Only non-CSP security headers are set here so they apply to all routes
+// including static files and API routes that the proxy does not cover.
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -18,34 +26,18 @@ const securityHeaders = [
     key: 'Strict-Transport-Security',
     value: 'max-age=63072000; includeSubDomains; preload',
   },
-  {
-    key: 'Content-Security-Policy',
-    value: [
-      `default-src 'self'`,
-      // 'wasm-unsafe-eval' required for WebAssembly compilation (MediaPipe)
-      // Active trackers only: Meta, GA4/Google Ads, PostHog, Stripe, MediaPipe, LinkedIn
-      `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://js.stripe.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://*.doubleclick.net https://connect.facebook.net https://*.posthog.com https://snap.licdn.com`,
-      `style-src 'self' 'unsafe-inline'`,
-      `img-src 'self' data: blob: https:`,
-      `font-src 'self' data:`,
-      // Sentry tunnel proxies browser events through /monitoring — no external ingest needed
-      // cdn.jsdelivr.net + storage.googleapis.com needed for MediaPipe WASM + model download
-      // Active trackers only: Supabase, Stripe, Google Ads/GA4, Meta, PostHog, MediaPipe, LinkedIn
-      `connect-src 'self' ${SUPABASE_URL} wss://*.supabase.co https://*.supabase.co https://api.stripe.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://www.google.com https://www.googleadservices.com https://*.doubleclick.net https://*.facebook.com https://eu.i.posthog.com https://cdn.jsdelivr.net https://storage.googleapis.com https://px.ads.linkedin.com`,
-      `frame-src https://js.stripe.com https://hooks.stripe.com https://*.doubleclick.net`,
-      `worker-src 'self' blob:`,
-      `media-src 'self' blob:`,
-      `object-src 'none'`,
-      `base-uri 'self'`,
-      `form-action 'self'`,
-      `upgrade-insecure-requests`,
-    ].join('; '),
-  },
 ];
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [{ protocol: 'https', hostname: '*' }],
+    remotePatterns: [
+      // Supabase Storage — user avatars and uploads
+      { protocol: 'https', hostname: supabaseHostname() },
+      // OAuth provider profile pictures
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },  // Google
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com' }, // GitHub
+      { protocol: 'https', hostname: '*.googleusercontent.com' },    // other Google
+    ],
   },
   async headers() {
     return [

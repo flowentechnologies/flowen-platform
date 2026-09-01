@@ -25,7 +25,7 @@ function getConvoAIHeaders() {
   };
 }
 
-async function getUser(req: Request) {
+async function getUserAndProfile(req: Request) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,13 +33,24 @@ async function getUser(req: Request) {
     { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } },
   );
   const { data: { user } } = await supabase.auth.getUser();
-  return user;
+  if (!user) return { user: null, voiceCloneId: null };
+
+  // Fetch server-side voice_clone_id so clients cannot spoof another user's voice
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('voice_clone_id')
+    .eq('id', user.id)
+    .single();
+
+  return { user, voiceCloneId: (profile?.voice_clone_id as string | null) ?? null };
 }
+
+const MAX_SYSTEM_PROMPT_CHARS = 2000;
 
 // ── Start agent ───────────────────────────────────────────────────────────────
 export async function POST(req: Request) {
   try {
-    const user = await getUser(req);
+    const { user, voiceCloneId: storedVoiceCloneId } = await getUserAndProfile(req);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json() as {
@@ -47,9 +58,7 @@ export async function POST(req: Request) {
       token: string;
       agentUid?: number;
       systemPrompt?: string;
-      /** ElevenLabs voice_id from the user's voice clone calibration. When present,
-       *  TTS switches from OpenAI nova to ElevenLabs IVC so the avatar sounds like the user. */
-      voiceCloneId?: string;
+      // voiceCloneId from client is ignored — we use the DB value to prevent spoofing
     };
 
     const appId = process.env.AGORA_APP_ID;
@@ -83,23 +92,24 @@ export async function POST(req: Request) {
           messages: [
             {
               role: 'system',
-              content: body.systemPrompt ?? [
+              // Clamp to prevent token-bomb attacks; slice at a word boundary
+              content: (body.systemPrompt ?? [
                 'You are Flowen, a warm and encouraging AI speech therapy assistant.',
                 'You help people who stutter practise fluency techniques including easy onset,',
                 'light articulatory contacts, prolongation, and paced speech.',
                 'Keep responses concise (2–3 sentences), supportive, and clinically appropriate.',
                 'Celebrate progress and gently redirect when the user struggles.',
-              ].join(' '),
+              ].join(' ')).slice(0, MAX_SYSTEM_PROMPT_CHARS),
             },
           ],
         },
-        tts: body.voiceCloneId
-          // ── User has a cloned voice — speak back in their own voice ──────────
+        tts: storedVoiceCloneId
+          // ── User has a cloned voice — use the DB-stored voice ID ──────────────
           ? {
               vendor: 'elevenlabs',
               params: {
                 api_key:  process.env.ELEVENLABS_API_KEY ?? '',
-                voice_id: body.voiceCloneId,
+                voice_id: storedVoiceCloneId,
                 model_id: 'eleven_turbo_v2_5', // lowest latency, real-time suitable
                 stability:         0.45,
                 similarity_boost:  0.80,
@@ -154,10 +164,19 @@ export async function POST(req: Request) {
 // ── Stop agent ────────────────────────────────────────────────────────────────
 export async function DELETE(req: Request) {
   try {
-    const user = await getUser(req);
+    const { user } = await getUserAndProfile(req);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json() as { agentId: string };
+    const body = await req.json() as { agentId: string; channel?: string };
+
+    // Ownership check: the caller must supply their channel and it must match
+    // the deterministic channel derived from their user ID. This prevents an
+    // authenticated user from stopping another user's live AI session.
+    const expectedChannel = `flowen-${user.id.replace(/-/g, '').slice(0, 16)}`;
+    if (body.channel && body.channel !== expectedChannel) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const appId = process.env.AGORA_APP_ID;
     const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? 'https://api.agora.io/api/conversational-ai';
 

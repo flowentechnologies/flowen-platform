@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import './globals.css';
 import CookieConsent from '@/components/CookieConsent';
 import TrackingScripts from '@/components/TrackingScripts';
@@ -67,12 +68,18 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const trackingProviders = await getTrackingProviders();
+  const [trackingProviders, headersList] = await Promise.all([
+    getTrackingProviders(),
+    headers(),
+  ]);
+  // Nonce generated in src/proxy.ts and forwarded via x-nonce request header.
+  // Applied to the FOUC script so CSP 'strict-dynamic' nonce allowlist matches.
+  const nonce = headersList.get('x-nonce') ?? '';
 
   return (
     <html lang="en-GB" suppressHydrationWarning>
-      {/* Anti-FOUC: runs synchronously before React paint */}
-      <script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
+      {/* Anti-FOUC: runs synchronously before React paint — nonce required by CSP */}
+      <script nonce={nonce} dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
       <body className="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
         {/* Skip to main content — first focusable element for keyboard / screen-reader users */}
         <a

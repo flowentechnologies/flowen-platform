@@ -21,15 +21,19 @@ export default async function NpsPage({
   let alreadyResponded = false;
   let validToken = false;
 
+  // 30-day expiry — must match the check in /api/nps/submit
+  const AGE_LIMIT_MS = 30 * 24 * 60 * 60 * 1000;
+
   if (token) {
     const { data } = await db()
       .from('nps_responses')
-      .select('responded_at')
+      .select('responded_at, created_at')
       .eq('survey_token', token)
       .single();
 
     if (data) {
-      validToken = true;
+      const tokenAge = Date.now() - new Date(data.created_at).getTime();
+      validToken = tokenAge <= AGE_LIMIT_MS;
       alreadyResponded = data.responded_at !== null;
     }
   }

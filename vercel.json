@@ -11,6 +11,7 @@
     { "path": "/api/cron/audit-archive",       "schedule": "0 5 * * 0" },
     { "path": "/api/cron/workflows",           "schedule": "0 9 * * *" },
     { "path": "/api/cron/slp-inactivity",      "schedule": "0 7 * * *" },
-    { "path": "/api/cron/backup",              "schedule": "0 1 * * *" }
+    { "path": "/api/cron/backup",              "schedule": "0 1 * * *" },
+    { "path": "/api/cron/system-health",       "schedule": "0 * * * *" }
   ]
 }
