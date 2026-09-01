@@ -1832,6 +1832,21 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         </div>
       )}
 
+      {/* Referral nudge — shown once user has validated the product (3+ sessions) */}
+      {recentSessions.length >= 2 && (
+        <div className="flex items-center justify-between gap-3 bg-violet-500/5 border border-violet-500/20 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <span className="text-base shrink-0">🔗</span>
+            <p className="text-xs text-slate-400 leading-snug">
+              Know someone who stutters?{' '}
+              <Link href="/dashboard/refer" className="text-violet-400 hover:text-violet-300 font-semibold transition-colors">
+                Share Flowen →
+              </Link>
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="space-y-3">
         <button

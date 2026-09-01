@@ -615,6 +615,41 @@ export function DashboardClient({
         />
       </div>
 
+      {/* Milestone badges */}
+      {sessionCount > 0 && (() => {
+        const MILESTONES = [
+          { count: 5,  emoji: '🌱', label: '5 sessions',  sublabel: 'First week' },
+          { count: 10, emoji: '🔥', label: '10 sessions', sublabel: 'Habit forming' },
+          { count: 25, emoji: '🏆', label: '25 sessions', sublabel: 'One month in' },
+          { count: 50, emoji: '💎', label: '50 sessions', sublabel: 'Committed' },
+        ];
+        const earned = MILESTONES.filter(m => sessionCount >= m.count);
+        const next   = MILESTONES.find(m => sessionCount < m.count);
+        if (!earned.length && !next) return null;
+        return (
+          <div className="flex flex-wrap gap-2.5">
+            {earned.map(m => (
+              <div key={m.count} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300">
+                <span className="text-base leading-none">{m.emoji}</span>
+                <div>
+                  <p className="text-xs font-bold leading-tight">{m.label}</p>
+                  <p className="text-[10px] text-emerald-500/70 leading-tight">{m.sublabel}</p>
+                </div>
+              </div>
+            ))}
+            {next && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800/60 border border-slate-700/60 text-slate-600">
+                <span className="text-base leading-none opacity-40">{next.emoji}</span>
+                <div>
+                  <p className="text-xs font-medium leading-tight">{next.label}</p>
+                  <p className="text-[10px] leading-tight">{next.count - sessionCount} to go</p>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* First-session welcome — replaces the empty state */}
       {sessionCount === 0 && (
         <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-950/60 via-slate-900 to-slate-900 border border-emerald-500/20">
