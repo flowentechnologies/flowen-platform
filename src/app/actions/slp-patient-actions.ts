@@ -19,9 +19,10 @@ export async function addSessionNote({
   const { error } = await db()
     .from('slp_session_notes')
     .insert({
-      slp_user_id: slpId,
-      session_id:  sessionId ?? '00000000-0000-0000-0000-000000000000', // null-like sentinel until schema allows null
-      note:        note.trim(),
+      slp_user_id:     slpId,
+      patient_user_id: patientId,
+      session_id:      sessionId ?? null, // null = general note not tied to a specific session
+      note:            note.trim(),
     });
 
   if (error) return { ok: false, error: error.message };

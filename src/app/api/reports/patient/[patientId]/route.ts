@@ -25,7 +25,7 @@ export async function GET(
     .eq('id', user.id)
     .single();
 
-  const isSLP   = callerProfile?.role === 'clinician';
+  const isSLP   = callerProfile?.role === 'slp';
   const isAdmin = callerProfile?.is_admin === true;
 
   if (!isSLP && !isAdmin) return new Response('Forbidden', { status: 403 });
@@ -54,17 +54,19 @@ export async function GET(
       .eq('patient_user_id', patientId)
       .eq('active', true)
       .maybeSingle(),
-    // Clinical notes — from the requesting SLP (or all notes for admins)
+    // Clinical notes for this patient — from the requesting SLP (or all SLPs for admins)
     isSLP
       ? admin
           .from('slp_session_notes')
           .select('note, created_at')
           .eq('slp_user_id', user.id)
+          .eq('patient_user_id', patientId)
           .order('created_at', { ascending: false })
           .limit(50)
       : admin
           .from('slp_session_notes')
           .select('note, created_at')
+          .eq('patient_user_id', patientId)
           .order('created_at', { ascending: false })
           .limit(50),
   ]);

@@ -21,7 +21,7 @@ const NAV = [
   {
     section: 'Resources',
     items: [
-      { label: 'SLT Training Manual', href: '/training/clinicians', icon: DocIcon },
+      { label: 'SLT Training Manual', href: '/training/staff', icon: DocIcon },
     ],
   },
 ];

@@ -41,6 +41,7 @@ const fetchPatientData = unstable_cache(
     supabase.from('slp_session_notes')
       .select('id, session_id, note, created_at')
       .eq('slp_user_id', slpId)
+      .eq('patient_user_id', patientId)
       .order('created_at', { ascending: false }),
     supabase.from('user_programme').select('current_week, started_at').eq('user_id', patientId).single(),
   ]);
