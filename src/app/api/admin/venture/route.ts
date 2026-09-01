@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
 import { requireAdmin } from '@/lib/admin/guard';
 import { logAuditEvent } from '@/lib/admin/audit';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { getStripeClient } from '@/lib/stripe';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -63,7 +65,45 @@ function pick(obj: Record<string, unknown>, allowed: Set<string>): Record<string
   return Object.fromEntries(Object.entries(obj).filter(([k]) => allowed.has(k)));
 }
 
-// ── DB client ──────────────────────────────────────────────────────────────────
+// ── MRR helper ────────────────────────────────────────────────────────────────
+//
+// Sums the monthly-equivalent revenue from all active Stripe subscriptions.
+// Intervals are normalised to monthly: quarterly ÷ 3, six-monthly ÷ 6, yearly ÷ 12.
+// Returns 0 on any Stripe error so the venture dashboard degrades gracefully when
+// Stripe is not yet configured.
+
+async function fetchMrrPence(): Promise<number> {
+  try {
+    const { client } = await getStripeClient();
+    let mrrPence = 0;
+
+    await client.subscriptions
+      .list({ status: 'active', limit: 100 })
+      .autoPagingEach((sub: Stripe.Subscription) => {
+        for (const item of sub.items.data) {
+          // price is a Price object (already included inline by Stripe API)
+          const price = item.price as Stripe.Price;
+          if (typeof price === 'string' || !price.unit_amount || !price.recurring) continue;
+
+          const { interval, interval_count } = price.recurring;
+          const grossPence = price.unit_amount * (item.quantity ?? 1);
+
+          if (interval === 'month') {
+            mrrPence += Math.round(grossPence / interval_count);
+          } else if (interval === 'year') {
+            // e.g. yearly plan: divide by 12 to get monthly equivalent
+            mrrPence += Math.round(grossPence / (interval_count * 12));
+          }
+          // day / week intervals don't exist in Flowen's product; silently ignored
+        }
+      });
+
+    return mrrPence;
+  } catch {
+    // Stripe not yet configured (placeholder key) or temporary API error
+    return 0;
+  }
+}
 
 // ── GET ────────────────────────────────────────────────────────────────────────
 
@@ -82,7 +122,7 @@ export async function GET() {
   const investors: Investor[] = investorsRes.error ? [] : (investorsRes.data ?? []);
   const config: VentureConfig | null = configRes.error ? null : (configRes.data ?? null);
 
-  // Real KPI queries — run in parallel
+  // Real KPI queries — run in parallel (Stripe MRR alongside DB queries)
   const weekAgo = new Date(Date.now() - 7 * 86400_000).toISOString();
   const [
     totalUsersRes,
@@ -91,6 +131,7 @@ export async function GET() {
     waitlistRes,
     onboardedUsersRes,
     allUsersRes,
+    mrrPence,
   ] = await Promise.all([
     client.from('profiles').select('*', { count: 'exact', head: true }),
     client.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo),
@@ -99,6 +140,7 @@ export async function GET() {
     // Users who have at least 1 practice session (distinct user_ids)
     client.from('practice_sessions').select('user_id').limit(5000),
     client.from('profiles').select('id').limit(5000),
+    fetchMrrPence(),
   ]);
 
   const totalUsers = totalUsersRes.count ?? 0;
@@ -110,10 +152,6 @@ export async function GET() {
   const onboardedUserIds = new Set((onboardedUsersRes.data ?? []).map((r: { user_id: string }) => r.user_id));
   const allUserIds = (allUsersRes.data ?? []).length;
   const onboardedPct = allUserIds > 0 ? Math.round((onboardedUserIds.size / allUserIds) * 100) : 0;
-
-  // MRR: no dedicated field in venture_config yet — will be instrumented when Stripe
-  // subscription revenue is large enough to track separately. UI hides MRR until then.
-  const mrrPence = 0;
 
   const data: VentureData = {
     investors,
