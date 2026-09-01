@@ -11,6 +11,42 @@ function db() {
   );
 }
 
+// ── GET — recent sessions for BPM history ────────────────────────────────────
+
+export async function GET(req: Request) {
+  const user = await getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const url    = new URL(req.url);
+  const rawN   = parseInt(url.searchParams.get('n') ?? '10', 10);
+  const n      = Number.isFinite(rawN) && rawN >= 1 && rawN <= 50 ? rawN : 10;
+
+  const { data, error } = await db()
+    .from('practice_sessions')
+    .select('id, duration_seconds, total_blocks_detected, created_at, stage_id')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(n);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Compute BPM per session and return lightest possible payload
+  const sessions = (data ?? []).map(s => ({
+    id:              s.id,
+    created_at:      s.created_at,
+    duration_seconds: s.duration_seconds,
+    blocks:          s.total_blocks_detected,
+    bpm:             s.duration_seconds > 0
+      ? Math.round((s.total_blocks_detected / (s.duration_seconds / 60)) * 100) / 100
+      : 0,
+    stage_id:        s.stage_id,
+  }));
+
+  return NextResponse.json({ sessions });
+}
+
+// ── POST — save a new session ─────────────────────────────────────────────────
+
 export async function POST(req: Request) {
   const user = await getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

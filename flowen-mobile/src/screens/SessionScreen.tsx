@@ -27,22 +27,45 @@ import { supabase }          from '../../App';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const API_BASE          = process.env.EXPO_PUBLIC_API_BASE ?? 'https://flowen.digital';
-const ASR_FLUSH_MS      = 15_000;  // flush PCM buffer every 15 s
-const ASR_MIN_BYTES     = 16_000;  // ~0.5 s of PCM — skip tiny flushes
-const COACH_INTERVAL_MS = 60_000;  // poll coach every 60 s
-const DEFAULT_STAGE_ID  = 1;
+const API_BASE               = process.env.EXPO_PUBLIC_API_BASE ?? 'https://flowen.digital';
+const ASR_FLUSH_MS           = 15_000;  // flush PCM buffer every 15 s
+const ASR_MIN_BYTES          = 16_000;  // ~0.5 s of PCM — skip tiny flushes
+const COACH_INTERVAL_MS      = 60_000;  // poll coach every 60 s
+const DEFAULT_STAGE_ID       = 1;
+const PROGRESSION_THRESHOLD  = 3.5;    // blocks/min — matches server-side value
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type ScreenPhase = 'idle' | 'recording' | 'saving' | 'summary';
 
+interface HistoricalSession {
+  id: string;
+  bpm: number;
+  duration_seconds: number;
+  created_at: string;
+}
+
 interface SessionResult {
   sessionId:       string;
   durationSeconds: number;
   blocksDetected:  number;
+  bpm:             number;
   transcript:      string;
   progression:     { advanced: boolean; newWeek?: number } | null;
+}
+
+// ── BPM helpers ────────────────────────────────────────────────────────────────
+
+function calcBpm(blocks: number, durationSecs: number): number {
+  return durationSecs > 0 ? blocks / (durationSecs / 60) : 0;
+}
+
+/** Colour token for a BPM value relative to the progression threshold. */
+function bpmColor(bpm: number): string {
+  if (bpm === 0)                       return '#64748b'; // no data
+  if (bpm < 2.0)                       return '#4ade80'; // excellent
+  if (bpm <= PROGRESSION_THRESHOLD)    return '#fbbf24'; // on target
+  return '#f87171';                                       // above threshold
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -97,6 +120,25 @@ export function SessionScreen({ profile, onSignOut }: Props) {
   const [coachMsg,       setCoachMsg]      = useState<string | null>(null);
   const [result,         setResult]        = useState<SessionResult | null>(null);
   const [saveError,      setSaveError]     = useState<string | null>(null);
+  const [history,        setHistory]       = useState<HistoricalSession[]>([]);
+
+  // ── Fetch BPM history on mount ────────────────────────────────────────────────
+
+  useEffect(() => {
+    (async () => {
+      const token = await getToken();
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/practice/sessions?n=10`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const json = await res.json() as { sessions?: HistoricalSession[] };
+          if (json.sessions) setHistory(json.sessions);
+        }
+      } catch { /* offline — history stays empty */ }
+    })();
+  }, []);
 
   // ── PCM frame callback (passed to AudioPipeline) ─────────────────────────────
 
@@ -257,6 +299,7 @@ export function SessionScreen({ profile, onSignOut }: Props) {
           sessionId:       json.session?.id ?? '',
           durationSeconds,
           blocksDetected:  blocks,
+          bpm:             calcBpm(blocks, durationSeconds),
           transcript:      fullTranscript,
           progression:     json.progression ?? null,
         });
@@ -316,10 +359,17 @@ export function SessionScreen({ profile, onSignOut }: Props) {
               <>
                 <Text style={styles.summaryEmoji}>🎉</Text>
                 <Text style={styles.summaryHeading}>Session complete</Text>
+
+                {/* Stats row: duration + blocks */}
                 <View style={styles.statsRow}>
                   <Metric label="Duration" value={fmt(result.durationSeconds)} />
                   <Metric label="Blocks"   value={`${result.blocksDetected}`} />
                 </View>
+
+                {/* BPM card */}
+                <BpmCard bpm={result.bpm} history={history} />
+
+                {/* Progression banner */}
                 {result.progression?.advanced && (
                   <View style={styles.progressionBanner}>
                     <Text style={styles.progressionText}>
@@ -327,6 +377,8 @@ export function SessionScreen({ profile, onSignOut }: Props) {
                     </Text>
                   </View>
                 )}
+
+                {/* Transcript snippet */}
                 {result.transcript.length > 0 && (
                   <View style={styles.transcriptBox}>
                     <Text style={styles.transcriptLabel}>TRANSCRIPT</Text>
@@ -366,7 +418,15 @@ export function SessionScreen({ profile, onSignOut }: Props) {
               <View style={styles.metricsRow}>
                 <MetricPill label="Time"   value={fmt(elapsedSecs)} />
                 <MetricPill label="Blocks" value={`${blocksDetected}`} />
-                <MetricPill label="dBFS"   value={`${Math.round(pipeline.decibelLevel)}`} />
+                <MetricPill
+                  label="Blk/min"
+                  value={elapsedSecs >= 10
+                    ? calcBpm(blocksDetected, elapsedSecs).toFixed(1)
+                    : '—'}
+                  color={elapsedSecs >= 10
+                    ? bpmColor(calcBpm(blocksDetected, elapsedSecs))
+                    : undefined}
+                />
               </View>
             )}
 
@@ -438,10 +498,10 @@ export function SessionScreen({ profile, onSignOut }: Props) {
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function MetricPill({ label, value }: { label: string; value: string }) {
+function MetricPill({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <View style={styles.metric}>
-      <Text style={styles.metricValue}>{value}</Text>
+      <Text style={[styles.metricValue, color ? { color } : null]}>{value}</Text>
       <Text style={styles.metricLabel}>{label}</Text>
     </View>
   );
@@ -452,6 +512,90 @@ function Metric({ label, value }: { label: string; value: string }) {
     <View style={styles.stat}>
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+/**
+ * BpmCard — shows this session's BPM vs historical average.
+ *
+ * Colour coding (matches server-side PROGRESSION_BPM_THRESHOLD = 3.5):
+ *   < 2.0  → emerald   (excellent)
+ *   2–3.5  → amber     (on target for progression)
+ *   > 3.5  → red       (above threshold, won't advance this week)
+ */
+function BpmCard({ bpm, history }: { bpm: number; history: HistoricalSession[] }) {
+  const color = bpmColor(bpm);
+
+  // Avg BPM from up to last 10 sessions (exclude 0-duration outliers)
+  const validHistory = history.filter(s => s.duration_seconds >= 10);
+  const avgBpm       = validHistory.length > 0
+    ? validHistory.reduce((sum, s) => sum + s.bpm, 0) / validHistory.length
+    : null;
+
+  // Delta: negative = improved (fewer blocks/min)
+  const delta = avgBpm !== null ? bpm - avgBpm : null;
+
+  const label = bpm < 2.0
+    ? 'Excellent — very few blocks'
+    : bpm <= PROGRESSION_THRESHOLD
+    ? `On target — under ${PROGRESSION_THRESHOLD} blk/min`
+    : `Above ${PROGRESSION_THRESHOLD} blk/min threshold`;
+
+  return (
+    <View style={styles.bpmCard}>
+      <Text style={styles.bpmCardLabel}>BLOCKS / MINUTE</Text>
+      <Text style={[styles.bpmValue, { color }]}>{bpm.toFixed(1)}</Text>
+      <Text style={styles.bpmSubLabel}>{label}</Text>
+
+      {avgBpm !== null && (
+        <View style={styles.bpmHistoryRow}>
+          <Text style={styles.bpmHistoryText}>
+            Your avg ({validHistory.length} sessions): {avgBpm.toFixed(1)} blk/min
+          </Text>
+          {delta !== null && Math.abs(delta) >= 0.1 && (
+            <Text style={[styles.bpmDelta, { color: delta < 0 ? '#4ade80' : '#f87171' }]}>
+              {delta < 0 ? `↓ ${Math.abs(delta).toFixed(1)} better` : `↑ ${delta.toFixed(1)} higher`}
+            </Text>
+          )}
+        </View>
+      )}
+
+      {/* Mini sparkline — last 7 sessions newest on right */}
+      {validHistory.length >= 2 && (
+        <BpmSparkline sessions={[...validHistory].reverse().slice(-7)} current={bpm} />
+      )}
+    </View>
+  );
+}
+
+function BpmSparkline({
+  sessions, current,
+}: { sessions: HistoricalSession[]; current: number }) {
+  const all     = [...sessions.map(s => s.bpm), current];
+  const maxVal  = Math.max(...all, PROGRESSION_THRESHOLD, 1);
+
+  return (
+    <View style={styles.sparkline}>
+      {sessions.map((s, i) => {
+        const h = Math.max(4, Math.min(40, (s.bpm / maxVal) * 40));
+        return (
+          <View key={s.id ?? i} style={styles.sparklineBarWrap}>
+            <View style={[styles.sparklineBar, { height: h, backgroundColor: bpmColor(s.bpm) }]} />
+          </View>
+        );
+      })}
+      {/* Current session bar — slightly wider */}
+      <View style={[styles.sparklineBarWrap, { width: 10 }]}>
+        <View style={[
+          styles.sparklineBar,
+          { height: Math.max(4, Math.min(40, (current / maxVal) * 40)), backgroundColor: bpmColor(current), borderRadius: 3 },
+        ]} />
+      </View>
+      {/* Threshold line label */}
+      <Text style={[styles.sparklineThreshold, { bottom: Math.max(4, Math.min(40, (PROGRESSION_THRESHOLD / maxVal) * 40)) }]}>
+        — {PROGRESSION_THRESHOLD}
+      </Text>
     </View>
   );
 }
@@ -561,4 +705,28 @@ const styles = StyleSheet.create({
   },
   transcriptLabel: { fontSize: 9, color: '#475569', fontWeight: '700', letterSpacing: 2, marginBottom: 6 },
   transcriptText:  { fontSize: 13, color: '#64748b', lineHeight: 20 },
+
+  // BPM card
+  bpmCard: {
+    backgroundColor: '#0f172a', borderWidth: 1, borderColor: '#1e293b',
+    borderRadius: 16, padding: 16, width: '100%', alignItems: 'center',
+  },
+  bpmCardLabel:    { fontSize: 9, color: '#475569', fontWeight: '700', letterSpacing: 2, marginBottom: 6 },
+  bpmValue:        { fontSize: 40, fontWeight: '900', fontVariant: ['tabular-nums'] },
+  bpmSubLabel:     { fontSize: 12, color: '#64748b', marginTop: 4, textAlign: 'center' },
+  bpmHistoryRow:   { marginTop: 10, alignItems: 'center', gap: 4 },
+  bpmHistoryText:  { fontSize: 11, color: '#475569' },
+  bpmDelta:        { fontSize: 12, fontWeight: '700' },
+
+  // Sparkline
+  sparkline: {
+    flexDirection: 'row', alignItems: 'flex-end', gap: 3,
+    marginTop: 14, height: 44, width: '100%',
+  },
+  sparklineBarWrap: { width: 7, alignItems: 'center', justifyContent: 'flex-end' },
+  sparklineBar:     { width: '100%', borderRadius: 2 },
+  sparklineThreshold: {
+    position: 'absolute', right: 0,
+    fontSize: 8, color: '#64748b',
+  },
 });
