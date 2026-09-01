@@ -10,8 +10,8 @@ import { createClient } from '@/lib/supabase/client';
 // — they confused users and buried the price anchor.
 type BillingCycle = 'monthly' | 'quarterly' | 'six_months' | 'yearly';
 
-export default function PricingSection() {
-  const [cycle, setCycle] = useState<BillingCycle>('yearly');
+export default function PricingSection({ initialCycle = 'yearly' }: { initialCycle?: BillingCycle }) {
+  const [cycle, setCycle] = useState<BillingCycle>(initialCycle);
 
   const billingDetails = {
     monthly: { discountBadge: '10% OFF', monthlyEquivalent: 35.96, billingPeriodText: 'billed monthly', totalText: '£35.96 per month' },
@@ -57,9 +57,9 @@ export default function PricingSection() {
         body: JSON.stringify({ interval: cycle }),
       });
 
-      // Unauthenticated — send to login and come back
+      // Unauthenticated — send to login and come back, preserving the selected cycle
       if (res.status === 401) {
-        router.push('/auth/login?next=/pricing');
+        router.push(`/auth/login?next=${encodeURIComponent(`/pricing?cycle=${cycle}`)}`);
         return;
       }
 

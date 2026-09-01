@@ -13,7 +13,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PricingPage() {
+const VALID_CYCLES = ['monthly', 'quarterly', 'six_months', 'yearly'] as const;
+type BillingCycle = typeof VALID_CYCLES[number];
+
+export default async function PricingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const sp = await searchParams;
+  const rawCycle = typeof sp.cycle === 'string' ? sp.cycle : undefined;
+  const initialCycle: BillingCycle = VALID_CYCLES.includes(rawCycle as BillingCycle)
+    ? (rawCycle as BillingCycle)
+    : 'yearly';
+
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <JsonLd data={{
@@ -202,7 +215,7 @@ export default function PricingPage() {
         </div>
 
         {/* ── Pricing tiers ── */}
-        <PricingSection />
+        <PricingSection initialCycle={initialCycle} />
 
         {/* ── Social proof bar ── */}
         <section className="py-10 px-6 border-t border-slate-800/60">
