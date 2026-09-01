@@ -5,7 +5,7 @@
 // The Swift class is declared with @objc(FlowenAudio) and inherits RCTEventEmitter,
 // so we only need the extern module declaration and method exports here.
 
-RCT_EXTERN_MODULE(FlowenAudio, RCTEventEmitter)
+@interface RCT_EXTERN_MODULE(FlowenAudio, RCTEventEmitter)
 
 RCT_EXTERN_METHOD(
   startCapture:(RCTPromiseResolveBlock)resolve
@@ -21,3 +21,5 @@ RCT_EXTERN_METHOD(
   getSampleRate:(RCTPromiseResolveBlock)resolve
   rejecter:(RCTPromiseRejectBlock)reject
 )
+
+@end
