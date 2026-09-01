@@ -61,13 +61,13 @@ public:
   bool start() {
     oboe::AudioStreamBuilder builder;
     builder.setDirection(oboe::Direction::Input)
-           .setPerformanceMode(oboe::PerformanceMode::LowLatency)
-           .setSharingMode(oboe::SharingMode::Exclusive)
-           .setFormat(oboe::AudioFormat::Float)
-           .setChannelCount(1)
-           .setInputPreset(oboe::InputPreset::VoicePerformance)
-           .setDataCallback(this)
-           .setErrorCallback(this);
+           ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+           ->setSharingMode(oboe::SharingMode::Exclusive)
+           ->setFormat(oboe::AudioFormat::Float)
+           ->setChannelCount(1)
+           ->setInputPreset(oboe::InputPreset::VoicePerformance)
+           ->setDataCallback(this)
+           ->setErrorCallback(this);
 
     auto result = builder.openStream(mStream);
     if (result != oboe::Result::OK) {
