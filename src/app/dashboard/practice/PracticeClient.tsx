@@ -1063,6 +1063,27 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           </div>
         )}
 
+        {/* Quick practice shortcut */}
+        <Link
+          href="/dashboard/practice/micro"
+          className="block w-full bg-violet-500/5 border border-violet-500/20 hover:bg-violet-500/10 rounded-2xl px-5 py-4 transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/20 flex items-center justify-center text-lg shrink-0">
+                ⚡
+              </div>
+              <div>
+                <p className="text-sm font-bold text-violet-300 leading-tight">Quick practice · 5 min</p>
+                <p className="text-xs text-slate-500 leading-snug mt-0.5">Guided exercises — no recording needed</p>
+              </div>
+            </div>
+            <svg className="w-4 h-4 text-slate-600 group-hover:text-violet-400 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </Link>
+
         {/* Stage selector */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
           <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
@@ -1075,13 +1096,9 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
                 : 5;
               return STAGES.map(s => {
                 const locked = s.id > maxAllowed;
+                const isRec = s.id === recommendedStage;
                 return (
-                  <div key={s.id} className="flex flex-col items-center gap-1">
-                    {s.id === recommendedStage ? (
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-emerald-400">rec.</span>
-                    ) : (
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-transparent select-none">rec.</span>
-                    )}
+                  <div key={s.id} className="flex flex-col items-center gap-1.5">
                     <button
                       onClick={() => !locked && setStageId(s.id as StageId)}
                       disabled={locked}
@@ -1089,7 +1106,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
                       aria-label={
                         locked
                           ? `Stage ${s.id}: ${s.name} — locked, complete your current programme week to unlock`
-                          : `Stage ${s.id}: ${s.name}${s.id === stageId ? ' (selected)' : ''}`
+                          : `Stage ${s.id}: ${s.name}${isRec ? ' (recommended)' : ''}${s.id === stageId ? ' (selected)' : ''}`
                       }
                       title={locked ? 'Complete your current programme week to unlock' : undefined}
                       className={`w-12 h-12 rounded-full text-sm font-bold border-2 transition-all ${
@@ -1097,6 +1114,8 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
                           ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 cursor-not-allowed'
                           : s.id === stageId
                           ? 'bg-emerald-500 border-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20 active:scale-95'
+                          : isRec
+                          ? 'bg-slate-100 dark:bg-slate-800 border-emerald-500/40 text-slate-300 ring-2 ring-emerald-500/20 hover:border-emerald-500/70 active:scale-95'
                           : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 hover:border-emerald-500/50 hover:text-slate-200 active:scale-95'
                       }`}
                     >
@@ -1106,6 +1125,11 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
                         </svg>
                       ) : <span aria-hidden="true">{s.id}</span>}
                     </button>
+                    {isRec ? (
+                      <span className="text-[9px] font-semibold text-emerald-400 bg-emerald-500/10 rounded-full px-1.5 py-0.5 border border-emerald-500/20">For you</span>
+                    ) : (
+                      <span className="text-[9px] text-transparent select-none">·</span>
+                    )}
                   </div>
                 );
               });
@@ -1168,13 +1192,6 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
             </div>
           </div>
         )}
-
-        {/* Micro-practice link */}
-        <div className="text-center">
-          <Link href="/dashboard/practice/micro" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-            Short on time? Try a quick 30–60s exercise →
-          </Link>
-        </div>
 
         {/* CTA */}
         <button

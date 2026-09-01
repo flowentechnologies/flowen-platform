@@ -7,12 +7,10 @@ import { FlowenLogo } from '@/components/FlowenLogo';
 import { createClient } from '@/lib/supabase/client';
 
 const NAV_LINKS = [
-  { label: 'How it works', href: '/how-it-works' },
-  { label: 'Technology',   href: '/#technology' },
-  { label: 'For SLTs',    href: '/clinicians' },
-  { label: 'Pricing',     href: '/pricing'  },
-  { label: 'About',       href: '/about' },
-  { label: 'Resources',   href: '/resources' },
+  { label: 'How it works',   href: '/how-it-works' },
+  { label: 'Pricing',        href: '/pricing'      },
+  { label: 'For Clinicians', href: '/clinicians'   },
+  { label: 'Resources',      href: '/resources'    },
 ];
 
 export default function MarketingNavbarClient({ initialLoggedIn = false }: { initialLoggedIn?: boolean }) {

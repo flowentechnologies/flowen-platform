@@ -11,8 +11,11 @@
 import Link from 'next/link';
 
 interface PracticePaywallProps {
-  sessionsUsed: number;
-  freeLimit:    number;
+  sessionsUsed:    number;
+  freeLimit:       number;
+  streak:          number;
+  daysActive:      number;
+  bpmImprovement:  number | null; // positive = fewer blocks/min (better), null = no data
 }
 
 const BENEFITS = [
@@ -24,26 +27,55 @@ const BENEFITS = [
   'Full fluency analytics — disfluency trends over time',
 ];
 
-export function PracticePaywall({ sessionsUsed, freeLimit }: PracticePaywallProps) {
+export function PracticePaywall({ sessionsUsed, freeLimit, streak, daysActive, bpmImprovement }: PracticePaywallProps) {
+  const streakLabel = streak >= 2 ? `${streak}-day streak` : streak === 1 ? '1-day streak' : 'Building your streak';
+  const improvementLabel = bpmImprovement !== null && bpmImprovement > 0.1
+    ? `${bpmImprovement.toFixed(1)} fewer blocks/min`
+    : null;
+
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-6">
       <div className="max-w-lg w-full space-y-8">
 
-        {/* Icon + heading */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-            <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-            </svg>
+        {/* Value anchor — progress so far */}
+        <div className="space-y-4">
+          <div className="text-center space-y-1">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-emerald-500">Your progress</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+              You&apos;ve already started
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              {sessionsUsed} sessions in {daysActive} {daysActive === 1 ? 'day' : 'days'} — keep going to see real results.
+            </p>
           </div>
 
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Ready for your next session?
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-            You&apos;ve completed your {freeLimit} taster sessions. Start a free 7-day trial to keep going — no charge until day 8, cancel any time.
+          {/* Stats grid */}
+          <div className={`grid gap-3 ${improvementLabel ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl px-4 py-4 text-center space-y-1">
+              <p className="text-2xl font-extrabold text-emerald-400">{sessionsUsed}</p>
+              <p className="text-[11px] text-slate-500 leading-tight">Sessions done</p>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl px-4 py-4 text-center space-y-1">
+              <p className="text-2xl font-extrabold text-amber-400">🔥</p>
+              <p className="text-[11px] text-slate-500 leading-tight">{streakLabel}</p>
+            </div>
+            {improvementLabel && (
+              <div className="bg-emerald-950/40 border border-emerald-800/40 rounded-2xl px-4 py-4 text-center space-y-1">
+                <p className="text-2xl font-extrabold text-emerald-400">↓</p>
+                <p className="text-[11px] text-slate-500 leading-tight">{improvementLabel}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Transition */}
+          <p className="text-center text-sm text-slate-400 leading-relaxed">
+            Your taster sessions are done. Start a free 7-day trial to keep building —{' '}
+            <span className="text-slate-300 font-medium">no charge until day 8, cancel any time.</span>
           </p>
         </div>
+
+        {/* Divider */}
+        <div className="border-t border-slate-800" />
 
         {/* Benefits list */}
         <ul className="space-y-3">

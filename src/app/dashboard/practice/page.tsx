@@ -61,7 +61,51 @@ export default async function PracticePage() {
   const paywallActive = !isFounding && !hasActiveSub && totalSessions >= FREE_SESSION_LIMIT;
 
   if (paywallActive) {
-    return <PracticePaywall sessionsUsed={totalSessions} freeLimit={FREE_SESSION_LIMIT} />;
+    // Fetch all sessions for value-anchor stats (≤ FREE_SESSION_LIMIT rows, cheap)
+    const { data: allSessions } = await supabase
+      .from('practice_sessions')
+      .select('created_at,total_blocks_detected,duration_seconds')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true });
+
+    const sessions = allSessions ?? [];
+
+    // Streak — consecutive days ending today
+    const uniqueDays = [...new Set(sessions.map(s => s.created_at.slice(0, 10)))].sort().reverse();
+    let streak = 0;
+    let cur = new Date(); cur.setHours(0, 0, 0, 0);
+    for (const day of uniqueDays) {
+      const d = new Date(day);
+      if (Math.round((cur.getTime() - d.getTime()) / 86400_000) > 1) break;
+      streak++; cur = d;
+    }
+
+    // Days since first session
+    const firstSess = sessions[0];
+    const daysActive = firstSess
+      ? Math.max(1, Math.floor((Date.now() - new Date(firstSess.created_at).getTime()) / 86400_000))
+      : 1;
+
+    // BPM improvement: first session vs last session (positive = fewer blocks/min = better)
+    const lastSess = sessions[sessions.length - 1];
+    let bpmImprovement: number | null = null;
+    if (firstSess && lastSess && firstSess.created_at !== lastSess.created_at) {
+      const firstBpm = firstSess.duration_seconds > 0
+        ? firstSess.total_blocks_detected / (firstSess.duration_seconds / 60) : null;
+      const lastBpm  = lastSess.duration_seconds > 0
+        ? lastSess.total_blocks_detected  / (lastSess.duration_seconds  / 60) : null;
+      if (firstBpm !== null && lastBpm !== null) bpmImprovement = firstBpm - lastBpm;
+    }
+
+    return (
+      <PracticePaywall
+        sessionsUsed={totalSessions}
+        freeLimit={FREE_SESSION_LIMIT}
+        streak={streak}
+        daysActive={daysActive}
+        bpmImprovement={bpmImprovement}
+      />
+    );
   }
 
   let treatmentPlan: UserTreatmentPlan | null = null;
