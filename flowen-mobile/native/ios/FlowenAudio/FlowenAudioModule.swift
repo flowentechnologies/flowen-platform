@@ -268,7 +268,7 @@ final class FlowenAudioModule: RCTEventEmitter {
 // ── C-compatible render callback ──────────────────────────────────────────────
 
 private func audioInputCallback(
-  refCon:            UnsafeMutableRawPointer?,
+  refCon:            UnsafeMutableRawPointer,
   actionFlags:       UnsafeMutablePointer<AudioUnitRenderActionFlags>,
   timeStamp:         UnsafePointer<AudioTimeStamp>,
   busNumber:         UInt32,
@@ -276,7 +276,6 @@ private func audioInputCallback(
   ioData:            UnsafeMutablePointer<AudioBufferList>?
 ) -> OSStatus {
 
-  guard let refCon else { return noErr }
   let module = Unmanaged<FlowenAudioModule>.fromOpaque(refCon).takeUnretainedValue()
   guard let unit = module.audioUnit else { return noErr }
 
