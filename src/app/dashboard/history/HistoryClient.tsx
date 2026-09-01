@@ -135,7 +135,10 @@ export function HistoryClient({ sessions }: Props) {
     let result = sessions;
     if (stageFilter !== null) result = result.filter(s => s.stage_id === stageFilter);
     const q = filter.trim().toLowerCase();
-    if (q) result = result.filter(s => formatDate(s.created_at).toLowerCase().includes(q));
+    if (q) result = result.filter(s =>
+      formatDate(s.created_at).toLowerCase().includes(q) ||
+      s.transcript?.toLowerCase().includes(q)
+    );
     return result;
   }, [sessions, filter, stageFilter]);
 
@@ -283,7 +286,7 @@ export function HistoryClient({ sessions }: Props) {
             type="text"
             value={filter}
             onChange={(e) => { setFilter(e.target.value); setPage(1); }}
-            placeholder="Filter by date (e.g. Jul)"
+            placeholder="Search date or transcript…"
             className="pl-9 pr-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 text-sm text-slate-900 dark:text-white placeholder-slate-600 outline-none transition-colors w-52"
           />
         </div>

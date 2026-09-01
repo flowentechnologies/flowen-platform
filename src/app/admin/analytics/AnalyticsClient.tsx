@@ -6,6 +6,7 @@ import type { AnalyticsData } from '@/app/api/admin/analytics/route';
 import { CohortPanel } from './CohortPanel';
 import { QualityPanel } from './QualityPanel';
 import { FunnelPanel } from './FunnelPanel';
+import { ReferralPanel } from './ReferralPanel';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -222,6 +223,9 @@ export function AnalyticsClient({ initialData }: { initialData: AnalyticsData })
 
       {/* Waitlist Conversion Funnel */}
       <FunnelPanel />
+
+      {/* User Referral Funnel */}
+      <ReferralPanel />
 
       {/* Revenue KPIs */}
       <div>
