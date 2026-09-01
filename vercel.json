@@ -3,6 +3,7 @@
   "crons": [
     { "path": "/api/admin/notifications/cron", "schedule": "0 8 * * *" },
     { "path": "/api/cron/practice-reminders",  "schedule": "0 * * * *" },
+    { "path": "/api/cron/trial-emails",        "schedule": "0 * * * *" },
     { "path": "/api/cron/subscription-sync",   "schedule": "0 3 * * *" },
     { "path": "/api/cron/gdpr-sweep",          "schedule": "0 2 * * *" },
     { "path": "/api/cron/data-retention",      "schedule": "0 4 * * 0" },
