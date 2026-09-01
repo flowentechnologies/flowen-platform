@@ -29,7 +29,7 @@ final class FlowenAudioModule: RCTEventEmitter {
 
   // ── State ───────────────────────────────────────────────────────────────────
 
-  private var audioUnit:      AudioComponentInstance?
+  fileprivate var audioUnit:  AudioComponentInstance?
   private var isRunning       = false
   private var hardwareSampleRate: Double = 0
 
