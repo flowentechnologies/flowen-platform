@@ -123,7 +123,7 @@ export default function DocPageLayout({
               </p>
             </div>
             <div className="flex items-center gap-3 print:hidden">
-              <PrintButton />
+              <PrintButton title={title} />
             </div>
           </div>
         </header>
@@ -156,7 +156,7 @@ export default function DocPageLayout({
                 ))}
               </nav>
               <div className="mt-8 pt-6 border-t border-slate-800">
-                <PrintButton />
+                <PrintButton title={title} />
               </div>
             </div>
           </aside>

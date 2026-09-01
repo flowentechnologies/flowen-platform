@@ -79,7 +79,7 @@ export default async function IpDocPage({ params }: Props) {
                 {STATUS_LABEL[doc.status]}
               </span>
             </div>
-            <PrintButton />
+            <PrintButton title={doc.title} contentSelector=".prose-sm" />
           </div>
         </div>
 
