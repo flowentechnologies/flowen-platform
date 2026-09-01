@@ -23,11 +23,11 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useAgora } from '@/hooks/useAgora';
 import { useAgoraConvoAI } from '@/hooks/useAgoraConvoAI';
 import { useLipSync } from '@/hooks/useLipSync';
 import type { RPMAvatarSceneHandle } from './RPMAvatarScene';
-import { VoiceCalibration } from './VoiceCalibration';
 import { createBrowserClient } from '@supabase/ssr';
 
 // Three.js scene is SSR-unsafe — lazy-load it
@@ -77,7 +77,6 @@ export function AgoraAvatarSession({
   // ── Voice clone state ─────────────────────────────────────────────────────
   const [profileState, setProfileState]         = useState<ProfileState>('loading');
   const [voiceCloneId, setVoiceCloneId]         = useState<string | null>(null);
-  const [showCalibration, setShowCalibration]   = useState(false);
   const [voiceLabel, setVoiceLabel]             = useState('');
 
   const avatarRef = useRef<RPMAvatarSceneHandle | null>(null);
@@ -197,27 +196,6 @@ export function AgoraAvatarSession({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Voice calibration handlers ─────────────────────────────────────────────
-  const handleCloneComplete = useCallback((newVoiceId: string) => {
-    setVoiceCloneId(newVoiceId);
-    setVoiceLabel('Your voice');
-    setShowCalibration(false);
-  }, []);
-
-  const handleSkipCalibration = useCallback(() => {
-    setShowCalibration(false);
-  }, []);
-
-  // ── Calibration modal ──────────────────────────────────────────────────────
-  if (showCalibration) {
-    return (
-      <VoiceCalibration
-        onComplete={handleCloneComplete}
-        onSkip={handleSkipCalibration}
-      />
-    );
-  }
-
   return (
     <div className="flex flex-col items-center gap-4 w-full">
       {/* ── Avatar canvas ─────────────────────────────────────────────────── */}
@@ -296,33 +274,28 @@ export function AgoraAvatarSession({
         )}
       </div>
 
-      {/* ── Voice clone prompt / controls ─────────────────────────────────── */}
+      {/* ── Voice clone status ────────────────────────────────────────────── */}
       {profileState === 'loaded' && !sessionActive && (
-        <div className="text-center text-xs text-slate-400">
+        <div className="text-center text-xs text-slate-500">
           {voiceCloneId ? (
             <span>
-              Avatar speaks in{' '}
+              Avatar voice:{' '}
               <span className="text-violet-400 font-medium">{voiceLabel}</span>
               {' '}·{' '}
-              <button
-                type="button"
-                onClick={() => setShowCalibration(true)}
-                className="text-slate-400 underline hover:text-slate-200 transition-colors"
+              <Link
+                href="/dashboard/settings/voice"
+                className="text-slate-500 underline hover:text-slate-300 transition-colors"
               >
-                Re-calibrate
-              </button>
+                Change
+              </Link>
             </span>
           ) : (
-            <span>
-              <button
-                type="button"
-                onClick={() => setShowCalibration(true)}
-                className="text-emerald-400 underline hover:text-emerald-300 transition-colors"
-              >
-                Calibrate your voice
-              </button>
-              {' '}so the avatar sounds exactly like you
-            </span>
+            <Link
+              href="/dashboard/settings/voice"
+              className="text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              Set up your voice →
+            </Link>
           )}
         </div>
       )}

@@ -216,11 +216,11 @@ function SocialFollowStep({ initialDone }: { initialDone: boolean }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function GettingStartedChecklist({ state, tier }: GettingStartedChecklistProps) {
-  const { accountCreated, profileComplete, firstSession, socialFollow, threeSessions } = state;
+  const { accountCreated, profileComplete, firstSession, threeSessions } = state;
 
-  const completedCount = [accountCreated, profileComplete, firstSession, socialFollow, threeSessions]
+  const completedCount = [accountCreated, profileComplete, firstSession, threeSessions]
     .filter(Boolean).length;
-  const totalCount = 5;
+  const totalCount = 4;
   const allDone = completedCount === totalCount;
 
   if (allDone) {
@@ -247,7 +247,7 @@ export function GettingStartedChecklist({ state, tier }: GettingStartedChecklist
           <div>
             <p className="text-[10px] font-mono uppercase tracking-widest text-slate-400 dark:text-slate-600">Getting started</p>
             <h2 className="text-slate-900 dark:text-white font-bold text-base mt-0.5">
-              {completedCount} of {totalCount} complete
+              {completedCount} of {totalCount} done
             </h2>
           </div>
           <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 pt-1">
@@ -309,16 +309,13 @@ export function GettingStartedChecklist({ state, tier }: GettingStartedChecklist
           }
         />
 
-        {/* 4 — Social follow (always unlocked — incentive, not gated) */}
-        <SocialFollowStep initialDone={socialFollow} />
-
-        {/* 5 — Three sessions */}
+        {/* 4 — Three sessions unlocks full analytics */}
         <Step
           done={threeSessions}
           locked={!firstSession}
-          number={5}
+          number={4}
           title="Complete 3 practice sessions"
-          subtitle="Unlocks your full fluency analytics dashboard — trend graphs, heatmaps, and trajectory."
+          subtitle="Unlocks full fluency analytics — trend graphs, weekly heatmap, and AI trajectory prediction."
           cta={
             <Link
               href="/dashboard/practice"

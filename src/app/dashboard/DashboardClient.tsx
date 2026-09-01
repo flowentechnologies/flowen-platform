@@ -572,20 +572,69 @@ export function DashboardClient({
         />
       </div>
 
-      {/* Empty state */}
+      {/* First-session welcome — replaces the empty state */}
       {sessionCount === 0 && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-10 text-center space-y-3">
-          <p className="text-slate-900 dark:text-white font-semibold text-lg">No sessions yet.</p>
-          <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mx-auto">
-            Start your first practice session to begin tracking your progress.
-          </p>
-          <Link
-            href="/dashboard/practice"
-            className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-bold transition-colors"
-          >
-            Start practice
-            <span aria-hidden>&#8594;</span>
-          </Link>
+        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-950/60 via-slate-900 to-slate-900 border border-emerald-500/20">
+          {/* Decorative glow */}
+          <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-emerald-500/8 blur-3xl pointer-events-none" />
+          <div className="relative px-6 py-8 sm:px-10 sm:py-10">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-8">
+              <div className="flex-1 min-w-0">
+                <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono uppercase tracking-widest mb-4">
+                  Week 1 · Stage 1 — Breathing
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-white leading-snug mb-3">
+                  Your programme starts here.
+                </h2>
+                <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-md">
+                  Your first session takes around 5 minutes. Flowen analyses your speech in real time and sets your personalised baseline — no preparation needed, just talk naturally.
+                </p>
+                <div className="flex flex-wrap gap-4 mb-6">
+                  {[
+                    { icon: '🎙', label: 'Real-time AI feedback' },
+                    { icon: '📊', label: 'Fluency baseline set' },
+                    { icon: '🗓', label: '8-week programme unlocked' },
+                  ].map(f => (
+                    <div key={f.label} className="flex items-center gap-2 text-sm text-slate-300">
+                      <span>{f.icon}</span>
+                      <span>{f.label}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  href="/dashboard/practice"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all hover:scale-[1.02] shadow-lg shadow-emerald-500/25"
+                >
+                  Start your first session
+                  <span aria-hidden>→</span>
+                </Link>
+              </div>
+              {/* Stage ladder preview */}
+              <div className="sm:w-44 shrink-0">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-3">Your 5-stage programme</p>
+                <div className="space-y-1.5">
+                  {[
+                    { n: 1, label: 'Breathing',       active: true  },
+                    { n: 2, label: 'Easy Onset',      active: false },
+                    { n: 3, label: 'Light Contacts',  active: false },
+                    { n: 4, label: 'Pausing',         active: false },
+                    { n: 5, label: 'Conversation',    active: false },
+                  ].map(s => (
+                    <div key={s.n} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium ${
+                      s.active
+                        ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
+                        : 'text-slate-600'
+                    }`}>
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                        s.active ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-600'
+                      }`}>{s.n}</span>
+                      {s.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

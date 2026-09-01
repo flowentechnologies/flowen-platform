@@ -189,6 +189,20 @@ export default function SettingsPage() {
         </div>
       </Section>
 
+      {/* AI Voice */}
+      <Section title="AI Voice" description="Set up your personalised voice so your practice avatar sounds exactly like you.">
+        <a
+          href="/dashboard/settings/voice"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-300 hover:bg-violet-500/20 text-sm font-semibold transition-colors"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z"/>
+            <path d="M5.5 9.643a.75.75 0 00-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-1.5v-1.546A6.001 6.001 0 0016 10v-.357a.75.75 0 00-1.5 0V10a4.5 4.5 0 01-9 0v-.357z"/>
+          </svg>
+          Voice setup →
+        </a>
+      </Section>
+
       {/* Billing */}
       <Section title="Billing & Subscription" description="View your current plan, manage your subscription, or update payment details.">
         <button

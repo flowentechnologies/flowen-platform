@@ -1470,34 +1470,18 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
             </button>
           </div>
 
-          {/* Recalibrate row — shown when active and already calibrated */}
-          {faceStatus === 'active' && faceCalibrated && (
+          {/* Recalibrate — available if tracking is active but behaving poorly */}
+          {faceStatus === 'active' && (
             <div className="flex items-center justify-between pt-1 border-t border-slate-200 dark:border-slate-800">
               <p className="text-[10px] text-slate-600">
-                Face not tracking well? Recalibrate with a fresh neutral expression.
+                {faceCalibrated ? 'Tracking active' : 'Auto-calibrating…'}
               </p>
               <button
                 onClick={recalibrate}
                 className="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400 transition-all"
                 aria-label="Recalibrate face tracking baseline"
               >
-                Recalibrate
-              </button>
-            </div>
-          )}
-
-          {/* First-time prompt — nudge user to calibrate if active but not yet done */}
-          {faceStatus === 'active' && !faceCalibrated && (
-            <div className="flex items-center justify-between pt-1 border-t border-slate-200 dark:border-slate-800">
-              <p className="text-[10px] text-amber-400/70">
-                Relax your face, then calibrate so the avatar matches your neutral expression.
-              </p>
-              <button
-                onClick={recalibrate}
-                className="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded border border-amber-500/40 text-amber-400 hover:border-amber-500/70 hover:text-amber-300 transition-all"
-                aria-label="Calibrate face tracking baseline"
-              >
-                Calibrate
+                Reset
               </button>
             </div>
           )}

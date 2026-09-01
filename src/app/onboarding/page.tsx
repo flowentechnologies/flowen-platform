@@ -769,7 +769,7 @@ function OnboardingForm() {
               A few details about you
             </h1>
             <p className="text-slate-400 text-sm mt-2">
-              Required for age verification and funding eligibility. Stored securely under UK GDPR.
+              Optional — helps with funding eligibility and clinical safety compliance. Stored securely under UK GDPR.
             </p>
             <div className="mt-4 flex items-start gap-3 bg-slate-900/70 border border-slate-800 rounded-xl px-4 py-3">
               <svg className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
@@ -784,7 +784,7 @@ function OnboardingForm() {
           {/* Date of birth */}
           <div>
             <label className="block text-xs font-mono uppercase tracking-widest text-slate-500 mb-3">
-              Date of birth <span className="text-red-400">*</span>
+              Date of birth <span className="text-slate-600 normal-case tracking-normal">(optional)</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
               <div>
@@ -1012,11 +1012,18 @@ function OnboardingForm() {
 
           <button
             type="button"
-            disabled={!state.dobDay || !state.dobMonth || !state.dobYear}
             onClick={handleKycNext}
-            className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed text-slate-950 font-bold text-sm transition-all"
+            className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all"
           >
             Continue →
+          </button>
+
+          <button
+            type="button"
+            onClick={nextStep}
+            className="w-full py-2 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+          >
+            Skip for now — I&apos;ll add these details later in Settings
           </button>
         </div>
       </StepWrapper>
