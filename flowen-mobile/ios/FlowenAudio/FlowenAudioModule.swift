@@ -47,7 +47,7 @@ final class FlowenAudioModule: RCTEventEmitter {
 
   // ── RCTEventEmitter ─────────────────────────────────────────────────────────
 
-  override static func supportedEvents() -> [String]! {
+  override func supportedEvents() -> [String]! {
     return ["onPCMFrame", "onRMSUpdate", "onVADChange", "onAudioError"]
   }
 
