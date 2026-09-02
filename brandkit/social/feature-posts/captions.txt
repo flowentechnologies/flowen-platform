@@ -1,0 +1,63 @@
+Phase 2 — Product feature posts (6 posts)
+============================================
+Real, authenticated screenshots of the live Flowen platform — one set
+from the PWS (person-who-stutters) practice experience, one from the
+SLT clinician portal. Blurred UI + bold callout, same format as the
+rest of the series but visually distinct from the letter cards.
+
+Note on the demo data visible in these screenshots: the account used
+("Alex Morgan") is a test account with synthetic seeded session data,
+used only to populate the UI for these captures. Captions describe
+the feature shown, not the specific numbers in the screenshots —
+those numbers are not a real user's results and shouldn't be quoted
+as one.
+
+
+PWS — 1. pws-1-dashboard.png
+------------------------------
+Caption:
+Your practice, one dashboard.
+Everything you need — Practice, Guide, History, Analytics — in one
+place, the moment you sign in.
+Hashtags: #Flowen #ProductUpdate #AppUI #Stuttering #PWS
+
+PWS — 2. pws-2-practice.png
+------------------------------
+Caption:
+Practice, structured.
+Guided stages that build on each other — no guesswork about what to
+work on next.
+Hashtags: #Flowen #GuidedPractice #FluencyPractice #AppUI #PWS
+
+PWS — 3. pws-3-history.png
+------------------------------
+Caption:
+Every session, tracked.
+A full record of your practice — stage, duration, and detail — all in
+one place.
+Hashtags: #Flowen #SessionHistory #TrackYourProgress #AppUI #PWS
+
+PWS — 4. pws-4-analytics.png
+------------------------------
+Caption:
+Progress you can see.
+Fluency trends charted automatically, session over session — no
+manual logging required.
+Hashtags: #Flowen #FluencyProgress #DataVisualisation #AppUI #PWS
+
+
+SLT — 5. slt-1-caseload.png
+------------------------------
+Caption:
+Your caseload, at a glance.
+Every patient's session count, practice time, and trend — one screen,
+no digging.
+Hashtags: #SLT #ClinicalPortal #CaseloadManagement #Flowen #AppUI
+
+SLT — 6. slt-2-detail.png
+------------------------------
+Caption:
+Clinical detail, on demand.
+Full session history and trend data for every patient, ready before
+you walk into the room.
+Hashtags: #SLT #ClinicalPortal #ClinicalCare #Flowen #AppUI

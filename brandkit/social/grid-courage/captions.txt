@@ -1,0 +1,50 @@
+COURAGE Instagram series — 7 posts, one per letter
+====================================================
+Not an official acronym — a letter-breakdown content series built for
+the grid. Facts cited below are real, pulled from the codebase;
+anything without a citation is general supportive framing, not a
+specific claim.
+
+
+1 — C — CONFIDENCE
+Caption: C is for Confidence.
+Confidence to speak up, built one session at a time.
+Hashtags: #Courage #Confidence #Flowen #Stuttering #PWS
+
+2 — O — OWNERSHIP
+Caption: O is for Ownership.
+Your programme, your pace — adjusted remotely by your SLT.
+(Source: src/app/page.tsx — "your SLT can review your session data
+remotely, adjust your programme, and track progress — all in-platform")
+Hashtags: #Courage #Ownership #SLT #RemoteMonitoring #Flowen
+
+3 — U — UNDERSTANDING
+Caption: U is for Understanding.
+Feedback tuned to how you actually speak — not a one-size-fits-all
+script.
+Hashtags: #Courage #Understanding #Flowen #Stuttering #PWS
+
+4 — R — RESILIENCE
+Caption: R is for Resilience.
+Every session is part of the process, not a setback.
+Hashtags: #Courage #Resilience #Flowen #Stuttering #PWS
+
+5 — A — ACTION
+Caption: A is for Action.
+Self-directed practice sessions, whenever you're ready.
+(Source: src/app/training/nhs/page.tsx — "self-directed fluency
+practice sessions")
+Hashtags: #Courage #Action #SelfDirected #Flowen #PWS
+
+6 — G — GROWTH
+Caption: G is for Growth.
+Fluency progress and session trends, tracked over time.
+(Source: src/app/page.tsx — "Fluency progress, session trends, and
+SLT remote monitoring")
+Hashtags: #Courage #Growth #FluencyProgress #Flowen #PWS
+
+7 — E — EMPOWERMENT
+Caption: E is for Empowerment.
+The confidence to speak up — supported by real-time feedback, not
+guesswork.
+Hashtags: #Courage #Empowerment #RealTimeFeedback #Flowen #PWS

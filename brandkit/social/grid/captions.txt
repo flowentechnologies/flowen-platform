@@ -1,0 +1,91 @@
+FLOWEN Instagram grid series — 6 posts, one per acronym letter
+================================================================
+Backronym source (verbatim, src/lib/pitch-pdf.ts):
+"FLOWEN = Fluency & Language Optimization With Empathic Neurofeedback"
+
+Each caption below is grounded in a fact already published elsewhere in
+the codebase (media-kit page stats/key-points, pitch deck bullets, or
+site metadata) — nothing new is claimed. Source noted under each.
+Post these in order (1→6) to build the acronym across the grid.
+
+
+1 — flowen-grid-1-F.png
+------------------------
+Caption:
+F is for Fluency.
+Flowen is purpose-built for stuttering therapy — real-time support
+that works with your speech, not against it.
+(Source: media-kit key point — "Flowen is the UK's first sub-80ms
+neural biofeedback platform purpose-built for stuttering therapy.")
+
+Hashtags:
+#Flowen #Fluency #StutteringTherapy #SpeechFluency #PWS
+
+
+2 — flowen-grid-2-L.png
+------------------------
+Caption:
+L is for Language.
+Every word gets there — sound by sound, in real time.
+(Source: site tagline, src/app/layout.tsx — "Every word gets there.")
+
+Hashtags:
+#Flowen #Language #EveryWordGetsThere #CommunicationMatters #PWS
+
+
+3 — flowen-grid-3-O.png
+------------------------
+Caption:
+O is for Optimization.
+Sub-80ms feedback — fast enough to help mid-sentence, not just
+after the fact.
+(Source: media-kit stat — "<80ms Biofeedback pipeline latency.")
+
+Hashtags:
+#Flowen #RealTimeFeedback #Sub80ms #Neurofeedback #PWS
+
+
+4 — flowen-grid-4-W.png
+------------------------
+Caption:
+W is for With.
+Built with lived experience of stuttering at its core — not just
+studied from the outside.
+(Source: pitch deck bullet, src/lib/pitch-pdf.ts — "LIVED EXPERIENCE
+FOUNDER.")
+
+Hashtags:
+#Flowen #LivedExperience #StutteringCommunity #BuiltWithPurpose #PWS
+
+
+5 — flowen-grid-5-E.png
+------------------------
+Caption:
+E is for Empathic.
+No raw audio is ever stored — voice biomarkers are processed
+on-device and kept anonymised.
+(Source: media-kit key point — "Flowen does not store raw audio. All
+voice biomarkers are computed on-device and retained as anonymised
+aggregate metrics.")
+
+Hashtags:
+#Flowen #Privacy #OnDeviceAI #DataPrivacy #TrustByDesign
+
+
+6 — flowen-grid-6-N.png
+------------------------
+Caption:
+N is for Neurofeedback.
+42 real-time viseme states, tracking speech as it happens.
+(Source: media-kit stat — "42 Viseme states supported.")
+
+Hashtags:
+#Flowen #Neurofeedback #Visemes #RealTimeFeedback #PWS
+
+
+Carousel / bio-link caption (use on post 6, or as a wrap-up post):
+-------------------------------------------------------------------
+FLOWEN = Fluency & Language Optimization With Empathic Neurofeedback.
+Every word gets there.
+
+#Flowen #EveryWordGetsThere #Stuttering #PWS #StutteringAwareness

@@ -1,0 +1,57 @@
+STUTTER Instagram series — 7 posts, one per letter
+====================================================
+Not an official acronym — a letter-breakdown content series built for
+the grid. Facts cited below are real, pulled from the codebase;
+anything without a citation is general supportive framing, not a
+specific claim.
+
+
+1 — S — SUPPORT
+Caption: S is for Support.
+70 million people worldwide stutter. Support that meets them in real
+time.
+(Source: media-kit STATS — "70M — People globally who stutter")
+Hashtags: #Stutter #Support #70Million #Flowen #PWS
+
+2 — T — TECHNOLOGY
+Caption: T is for Technology.
+A proprietary phoneme-level ASR pipeline, built specifically for
+disfluent speech.
+(Source: src/lib/pitch-pdf.ts — "Proprietary phoneme-level disfluent
+ASR pipeline")
+Hashtags: #Stutter #SpeechTech #AI #ASR #Flowen
+
+3 — U — UNDERSTANDING
+Caption: U is for Understanding.
+Understanding disfluency starts with real data, not guesswork.
+Hashtags: #Stutter #Understanding #DataDriven #Flowen #PWS
+
+4 — T — TRACKING
+Caption: T is for Tracking.
+Track your fluency progress and session trends, all in-platform.
+(Source: src/app/page.tsx — "Fluency progress, session trends, and
+SLT remote monitoring")
+Hashtags: #Stutter #Tracking #FluencyProgress #Flowen #PWS
+
+5 — T — TRUST
+Caption: T is for Trust.
+Built by someone who has lived it.
+(Source: src/lib/pitch-pdf.ts pitch deck bullet — "LIVED EXPERIENCE
+FOUNDER")
+Hashtags: #Stutter #Trust #LivedExperience #FounderStory #Flowen
+
+6 — E — EMPATHIC
+Caption: E is for Empathic.
+No raw audio stored — every session processed on-device, kept
+anonymised.
+(Source: media-kit key point — "Flowen does not store raw audio. All
+voice biomarkers are computed on-device and retained as anonymised
+aggregate metrics.")
+Hashtags: #Stutter #Privacy #OnDeviceAI #DataPrivacy #Flowen
+
+7 — R — REAL-TIME
+Caption: R is for Real-time.
+Sub-80ms feedback — fast enough to help mid-sentence, not just after
+the fact.
+(Source: media-kit STATS — "<80ms Biofeedback pipeline latency")
+Hashtags: #Stutter #RealTimeFeedback #Sub80ms #Neurofeedback #Flowen

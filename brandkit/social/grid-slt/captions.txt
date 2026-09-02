@@ -1,0 +1,59 @@
+SLT Instagram series — 3 posts, one per letter
+================================================
+Source (verbatim, src/app/training/nhs/page.tsx):
+"...surfaces telemetry to the responsible Speech & Language Therapist
+(SLT) via a clinical portal."
+
+Each caption is grounded in a fact already published elsewhere in the
+codebase (NHS training page, or the main site's SLT-monitoring
+feature) — nothing new is claimed. Source noted under each.
+
+
+1 — flowen-grid-1-S.png / flowen-story-1-S.png
+------------------------------------------------
+Caption:
+S is for Speech.
+Real-time acoustic biofeedback during self-directed fluency practice
+— every session, tracked.
+(Source: src/app/training/nhs/page.tsx — "It delivers real-time
+acoustic biofeedback during self-directed fluency practice sessions
+and surfaces telemetry to the responsible Speech & Language Therapist
+(SLT) via a clinical portal.")
+
+Hashtags:
+#SLT #SpeechAndLanguageTherapy #ClinicalCare #Flowen #PWS
+
+
+2 — flowen-grid-2-L.png / flowen-story-2-L.png
+------------------------------------------------
+Caption:
+L is for Language.
+Every word gets there — the same principle behind every SLT-reviewed
+session.
+(Source: site tagline, src/app/layout.tsx — "Every word gets there.")
+
+Hashtags:
+#SLT #Language #EveryWordGetsThere #Flowen #ClinicalCare
+
+
+3 — flowen-grid-3-T.png / flowen-story-3-T.png
+------------------------------------------------
+Caption:
+T is for Therapist.
+On Funded Access, your SLT reviews session data remotely and adjusts
+your programme — all in-platform.
+(Source: src/app/page.tsx — "On the Funded Access tier, your SLT can
+review your session data remotely, adjust your programme, and track
+progress — all in-platform.")
+
+Hashtags:
+#SLT #ClinicalPortal #RemoteMonitoring #Flowen #PWS
+
+
+Wrap-up caption (use on post 3):
+----------------------------------
+SLT = Speech & Language Therapist.
+Flowen's clinical portal keeps your SLT in the loop — remotely,
+in real time.
+
+#SLT #SpeechAndLanguageTherapy #ClinicalCare #NHS #Flowen

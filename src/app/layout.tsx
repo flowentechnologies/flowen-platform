@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import CookieConsent from '@/components/CookieConsent';
 import TrackingScripts from '@/components/TrackingScripts';
@@ -156,6 +157,7 @@ export default async function RootLayout({
           <CookieConsent />
           <TrackingScripts providers={trackingProviders} />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
