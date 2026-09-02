@@ -13,6 +13,11 @@
  * Config: pixel_id and capi_token are read from tracking_providers
  * (set via /admin/tracking — same source as the conversion webhook).
  *
+ * Testing: Meta uses META_TEST_EVENT_CODE (a field in the request body).
+ * Snap has no such field — its test mode is a separate endpoint
+ * (/events/validate instead of /events), toggled here via
+ * SNAP_CAPI_VALIDATE=true. See the Snap block below for details.
+ *
  * Privacy contract:
  *   Only hashed email (SHA-256), click IDs, IP, and user-agent are
  *   forwarded. No clinical data, session content, or raw PII.
@@ -205,8 +210,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           }],
         };
 
+        // SNAP_CAPI_VALIDATE=true routes to Snap's /events/validate endpoint
+        // instead of the live /events one — same request shape, but Snap
+        // returns a { status: 'VALID' | 'INVALID', event_logs, errors }
+        // body instead of ingesting the event, and the event also then
+        // shows up under Events Manager → Test Events → Conversions API.
+        // Unset (the production default), behavior is unchanged.
+        const snapValidate = process.env.SNAP_CAPI_VALIDATE === 'true';
+        const snapPath      = snapValidate ? 'events/validate' : 'events';
+
         const snapRes = await fetch(
-          `https://tr.snapchat.com/v3/${snapPixelId}/events?access_token=${snapToken}`,
+          `https://tr.snapchat.com/v3/${snapPixelId}/${snapPath}?access_token=${snapToken}`,
           {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -214,7 +228,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           },
         );
 
-        if (!snapRes.ok) {
+        if (snapValidate) {
+          const validateBody = await snapRes.text().catch(() => '');
+          console.log('[capi] Snapchat validate response:', snapRes.status, validateBody);
+        } else if (!snapRes.ok) {
           const errBody = await snapRes.text().catch(() => '');
           console.error('[capi] Snapchat error:', snapRes.status, errBody);
         }
