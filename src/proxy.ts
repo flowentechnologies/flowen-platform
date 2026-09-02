@@ -106,7 +106,8 @@ function buildCsp(nonce: string): string {
       + ` https://js.stripe.com https://cdn.jsdelivr.net`
       + ` https://www.googletagmanager.com https://www.google-analytics.com`
       + ` https://www.googleadservices.com https://*.doubleclick.net`
-      + ` https://connect.facebook.net https://*.posthog.com https://snap.licdn.com`,
+      + ` https://connect.facebook.net https://*.posthog.com https://snap.licdn.com`
+      + ` https://sc-static.net`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob: https:`,
     `font-src 'self' data:`,
@@ -114,7 +115,8 @@ function buildCsp(nonce: string): string {
       + ` https://api.stripe.com https://*.google-analytics.com https://analytics.google.com`
       + ` https://*.analytics.google.com https://www.google.com https://www.googleadservices.com`
       + ` https://*.doubleclick.net https://*.facebook.com https://eu.i.posthog.com`
-      + ` https://cdn.jsdelivr.net https://storage.googleapis.com https://px.ads.linkedin.com`,
+      + ` https://cdn.jsdelivr.net https://storage.googleapis.com https://px.ads.linkedin.com`
+      + ` https://tr.snapchat.com`,
     `frame-src https://js.stripe.com https://hooks.stripe.com https://*.doubleclick.net`,
     `worker-src 'self' blob:`,
     `media-src 'self' blob:`,
