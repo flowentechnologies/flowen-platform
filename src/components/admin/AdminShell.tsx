@@ -104,6 +104,7 @@ const NAV: NavSection[] = [
     section: 'Communications',
     items: [
       { label: 'Marketing', href: '/admin/marketing' },
+      { label: 'Social Publishing', href: '/admin/social' },
       { label: 'Campaign', href: '/admin/campaign' },
       { label: 'Content', href: '/admin/content' },
     ],
