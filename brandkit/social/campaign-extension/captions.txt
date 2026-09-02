@@ -1,0 +1,81 @@
+Campaign extension — generated from Flowen_branding_example.PNG reference
+=============================================================================
+Extends the reference mood board (phone/story mockups, desktop banner,
+square social cards) across four angles: the original reference angles
+(Adults/Workplace, Parents/School, NHS) plus three new ones (PWS/Stuttering,
+SLT/Clinician, Investors). Built fully deterministically (ImageMagick +
+locked waveform mark + Inter Black/SemiBold) — no AI-generated photography,
+per session decision after a Higgsfield free-tier queue stall. All
+compliance claims (DCB0129, DTAC, UK GDPR/DSPT, WCAG 2.1 AA) are sourced
+verbatim from src/app/security, src/app/faq, and
+src/app/admin/compliance/ComplianceClient.tsx — nothing invented.
+
+Desktop banners (1128x191px, not individually captioned — used as website/
+LinkedIn header assets):
+  banner-general-1128x191.png
+  banner-nhs-1128x191.png
+  banner-pws-1128x191.png
+  banner-slt-1128x191.png
+  banner-investor-1128x191.png
+
+
+Square social cards (1080x1080)
+--------------------------------
+
+card-adults-1080.png
+Caption: Practice sessions built for busy schedules.
+Hashtags: #Flowen #Adults #SpeechTherapy #Stuttering #PWS
+
+card-parents-1080.png
+Caption: Prevent school avoidance during SALT waits. Active daily training.
+(Source: existing site framing, real SALT-wait context)
+Hashtags: #Flowen #Parents #SpeechTherapy #SchoolSupport #PWS
+
+card-nhs-1080.png
+Caption: Don't wait months. Start today.
+Hashtags: #Flowen #NHS #DCB0129 #SpeechTherapy #PWS
+
+card-pws-1080.png
+Caption: 70M people worldwide stutter. Real-time support, real-time feedback.
+(Source: media-kit STATS — "70M — People globally who stutter")
+Hashtags: #Flowen #Stuttering #PWS #StutteringAwareness #70Million
+
+card-slt-1080.png
+Caption: Remote monitoring. Real session data. One clinical portal.
+(Source: src/app/page.tsx SLT remote-monitoring feature copy)
+Hashtags: #Flowen #SLT #ClinicalPortal #RemoteMonitoring #SpeechAndLanguageTherapy
+
+card-investor-1080.png
+Caption: Sub-80ms. The UK's first neural biofeedback platform for stuttering therapy.
+(Source: media-kit KEY_POINTS, verbatim)
+Hashtags: #Flowen #DigitalHealth #Neurofeedback #HealthTech #Investors
+
+card-compliance-badges-1080.png
+Caption: Clinical-grade, compliant, accessible.
+(Badges: DCB0129, DTAC, UK GDPR/DSPT, WCAG 2.1 AA — all sourced, see header)
+Hashtags: #Flowen #DCB0129 #DTAC #WCAG #DigitalHealth
+
+
+Mobile story mockups (1080x1920) — built from real "Capture full size
+screenshot" mobile captures (iPhone 16 Pro Max), not illustrations
+------------------------------------------------------------------------
+
+mobile-stories/story-slt-caseload.png
+Caption: Your caseload, in your pocket.
+Subtext: Every patient's progress, one screen away.
+Hashtags: #Flowen #SLT #ClinicalPortal #AppUI #DigitalHealth
+
+mobile-stories/story-slt-patient-detail.png
+Caption: Clinical detail, on demand.
+Subtext: Full session history, ready before you walk into the room.
+Hashtags: #Flowen #SLT #ClinicalCare #AppUI #DigitalHealth
+
+mobile-stories/story-pws-analytics.png
+Caption: Progress you can see.
+Subtext: Fluency trends, charted automatically.
+Hashtags: #Flowen #FluencyProgress #PWS #AppUI #Stuttering
+
+mobile-stories/story-pws-history.png
+Caption: Every session, tracked.
+Subtext: Your full practice history, always at hand.
+Hashtags: #Flowen #SessionHistory #PWS #AppUI #TrackYourProgress
