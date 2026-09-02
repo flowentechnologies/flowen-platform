@@ -1,13 +1,16 @@
 /**
- * Client-side Meta Pixel wrapper.
+ * Client-side Meta Pixel + Snapchat Pixel wrapper.
  *
  * Each exported function:
  *   1. Fires the browser-side fbq() call with a stable event_id UUID
- *   2. Fire-and-forgets the same event to /api/track/capi with the same event_id
+ *   2. Fires the browser-side snaptr() call for the equivalent Snap event
+ *      (where one exists — see SNAP_EVENT_MAP)
+ *   3. Fire-and-forgets the same event to /api/track/capi with the same
+ *      event_id, which relays it server-side to both Meta CAPI and Snap CAPI
  *
- * Meta deduplicates on event_id — if both the pixel and CAPI report the same
- * event, only one is counted. This gives ad-blocker resilience and a higher
- * Event Match Quality score without double-counting.
+ * Both platforms deduplicate on event_id — if the browser pixel and the CAPI
+ * relay report the same event, only one is counted. This gives ad-blocker
+ * resilience and a higher Event Match Quality score without double-counting.
  */
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -26,6 +29,7 @@ declare global {
   interface Window {
     fbq?: (...args: unknown[]) => void;
     _fbq?: unknown;
+    snaptr?: (...args: unknown[]) => void;
     gtag?: (...args: unknown[]) => void;
     dataLayer?: unknown[];
   }
@@ -36,6 +40,35 @@ declare global {
 function fbq(...args: unknown[]): void {
   if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
     window.fbq(...args);
+  }
+}
+
+function snaptr(...args: unknown[]): void {
+  if (typeof window !== 'undefined' && typeof window.snaptr === 'function') {
+    window.snaptr(...args);
+  }
+}
+
+/**
+ * Meta event name → Snap Pixel standard event name.
+ * Only events with a clean Snap equivalent are mapped; 'Lead' has no
+ * matching Snap standard event and is intentionally left browser/Meta-only
+ * rather than forced onto a mismatched Snap category.
+ */
+const SNAP_EVENT_MAP: Partial<Record<MetaEventName, string>> = {
+  PageView:             'PAGE_VIEW',
+  ViewContent:          'VIEW_CONTENT',
+  InitiateCheckout:     'ADD_CART',
+  Purchase:             'PURCHASE',
+  StartTrial:           'START_TRIAL',
+  CompleteRegistration: 'SIGN_UP',
+  Subscribe:            'SUBSCRIBE',
+};
+
+function fireSnap(eventName: MetaEventName, opts?: Record<string, unknown>): void {
+  const snapEventName = SNAP_EVENT_MAP[eventName];
+  if (snapEventName) {
+    snaptr('track', snapEventName, opts ?? {});
   }
 }
 
@@ -73,6 +106,7 @@ function capi(
 export function pixelPageView(): void {
   const id = uuid();
   fbq('track', 'PageView', {}, { eventID: id });
+  fireSnap('PageView');
   capi('PageView', id);
 }
 
@@ -85,6 +119,7 @@ export function pixelLead(opts?: { content_name?: string; content_category?: str
 export function pixelCompleteRegistration(opts?: { content_name?: string; status?: boolean }): void {
   const id = uuid();
   fbq('track', 'CompleteRegistration', opts ?? {}, { eventID: id });
+  fireSnap('CompleteRegistration', opts as Record<string, unknown>);
   capi('CompleteRegistration', id, opts as Record<string, unknown>);
 }
 
@@ -97,6 +132,7 @@ export function pixelViewContent(opts?: {
 }): void {
   const id = uuid();
   fbq('track', 'ViewContent', opts ?? {}, { eventID: id });
+  fireSnap('ViewContent', opts);
   capi('ViewContent', id, opts);
 }
 
@@ -108,24 +144,28 @@ export function pixelInitiateCheckout(opts?: {
 }): void {
   const id = uuid();
   fbq('track', 'InitiateCheckout', opts ?? {}, { eventID: id });
+  fireSnap('InitiateCheckout', opts);
   capi('InitiateCheckout', id, opts);
 }
 
 export function pixelPurchase(opts: { value: number; currency: string; content_ids?: string[] }): void {
   const id = uuid();
   fbq('track', 'Purchase', opts, { eventID: id });
+  fireSnap('Purchase', opts);
   capi('Purchase', id, opts);
 }
 
 export function pixelStartTrial(opts?: { value?: number; currency?: string; predicted_ltv?: number }): void {
   const id = uuid();
   fbq('track', 'StartTrial', opts ?? {}, { eventID: id });
+  fireSnap('StartTrial', opts);
   capi('StartTrial', id, opts);
 }
 
 export function pixelSubscribe(opts?: { value?: number; currency?: string; predicted_ltv?: number }): void {
   const id = uuid();
   fbq('track', 'Subscribe', opts ?? {}, { eventID: id });
+  fireSnap('Subscribe', opts);
   capi('Subscribe', id, opts);
 }
 

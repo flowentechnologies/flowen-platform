@@ -1,19 +1,21 @@
 /**
  * /api/track/capi
  *
- * Real-time Meta Conversions API bridge for mid-funnel browser events.
- * Called by pixel.ts helpers alongside the client-side fbq() call so that
- * every pixel event is also sent server-side with the same event_id.
+ * Real-time Meta + Snapchat Conversions API bridge for mid-funnel browser
+ * events. Called by pixel.ts helpers alongside the client-side fbq()/
+ * snaptr() calls so that every pixel event is also sent server-side with
+ * the same event_id.
  *
- * Meta deduplicates on event_id: if both the browser pixel and this route
- * report the same event, only one is counted in Events Manager.
+ * Both platforms deduplicate on event_id: if the browser pixel and this
+ * route report the same event, only one is counted in Events Manager.
+ * Snap has no clean equivalent for 'Lead', so that event is Meta-only.
  *
  * Config: pixel_id and capi_token are read from tracking_providers
  * (set via /admin/tracking — same source as the conversion webhook).
  *
  * Privacy contract:
- *   Only hashed email (SHA-256), fbclid, IP, and user-agent are forwarded.
- *   No clinical data, session content, or raw PII.
+ *   Only hashed email (SHA-256), click IDs, IP, and user-agent are
+ *   forwarded. No clinical data, session content, or raw PII.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -51,6 +53,21 @@ function toFbc(fbclid: string, seenAt: string): string {
   return `fb.1.${Math.floor(new Date(seenAt).getTime() / 1000)}.${fbclid}`;
 }
 
+/**
+ * Meta event name → Snap Pixel standard event name.
+ * Only events with a clean Snap equivalent are forwarded — see pixel.ts
+ * for the matching client-side map.
+ */
+const SNAP_EVENT_MAP: Partial<Record<MetaEventName, string>> = {
+  PageView:             'PAGE_VIEW',
+  ViewContent:          'VIEW_CONTENT',
+  InitiateCheckout:     'ADD_CART',
+  Purchase:             'PURCHASE',
+  StartTrial:           'START_TRIAL',
+  CompleteRegistration: 'SIGN_UP',
+  Subscribe:            'SUBSCRIBE',
+};
+
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -73,15 +90,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     .eq('provider_key', 'meta')
     .single();
 
-  const pixelId     = provider?.pixel_id ?? null;
-  const capiToken   = (provider?.server_config as Record<string, string> | null)?.capi_token ?? null;
-
-  if (!provider?.enabled || !pixelId || !capiToken) {
-    // Not configured — 200 so client doesn't log errors
-    return NextResponse.json({ ok: true, skipped: 'capi not configured' });
-  }
+  const pixelId       = provider?.pixel_id ?? null;
+  const capiToken     = (provider?.server_config as Record<string, string> | null)?.capi_token ?? null;
+  const metaConfigured = Boolean(provider?.enabled && pixelId && capiToken);
 
   // 2. Build user_data — hashed email when authenticated, always IP + UA
+  // (shared by both providers below, so this runs even if Meta isn't configured)
   const userData: Record<string, unknown> = {};
 
   // IP address from Vercel/proxy headers
@@ -127,35 +141,88 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Attribution lookup failed — continue without fbc
   }
 
-  // 4. Send to Meta CAPI
-  const capiPayload = {
-    data: [{
-      event_name,
-      event_time:    Math.floor(Date.now() / 1000),
-      event_id,
-      action_source: 'website',
-      user_data:     userData,
-      ...(custom_data && { custom_data }),
-    }],
-    ...(process.env.META_TEST_EVENT_CODE && {
-      test_event_code: process.env.META_TEST_EVENT_CODE,
-    }),
-  };
+  // 4. Send to Meta CAPI (skipped — not returned early — if not configured,
+  //    so Snapchat below still runs independently)
+  let metaOk = true; // no-op default when Meta isn't configured
+  if (metaConfigured) {
+    const capiPayload = {
+      data: [{
+        event_name,
+        event_time:    Math.floor(Date.now() / 1000),
+        event_id,
+        action_source: 'website',
+        user_data:     userData,
+        ...(custom_data && { custom_data }),
+      }],
+      ...(process.env.META_TEST_EVENT_CODE && {
+        test_event_code: process.env.META_TEST_EVENT_CODE,
+      }),
+    };
 
-  const metaRes = await fetch(
-    `https://graph.facebook.com/v21.0/${pixelId}/events?access_token=${capiToken}`,
-    {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(capiPayload),
-    },
-  );
+    const metaRes = await fetch(
+      `https://graph.facebook.com/v21.0/${pixelId}/events?access_token=${capiToken}`,
+      {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(capiPayload),
+      },
+    );
 
-  if (!metaRes.ok) {
-    const errBody = await metaRes.text().catch(() => '');
-    console.error('[capi] Meta error:', metaRes.status, errBody);
-    return NextResponse.json({ ok: false }, { status: 200 }); // 200 so client doesn't surface errors
+    metaOk = metaRes.ok;
+    if (!metaOk) {
+      const errBody = await metaRes.text().catch(() => '');
+      console.error('[capi] Meta error:', metaRes.status, errBody);
+    }
   }
 
-  return NextResponse.json({ ok: true });
+  // 5. Send to Snapchat CAPI (independent of Meta — never blocks the response)
+  const snapEventName = SNAP_EVENT_MAP[event_name];
+  if (snapEventName) {
+    try {
+      const { data: snapProvider } = await adminDb()
+        .from('tracking_providers')
+        .select('pixel_id, server_config, enabled')
+        .eq('provider_key', 'snapchat')
+        .single();
+
+      const snapPixelId = snapProvider?.pixel_id ?? null;
+      const snapToken   = (snapProvider?.server_config as Record<string, string> | null)?.capi_token ?? null;
+
+      if (snapProvider?.enabled && snapPixelId && snapToken) {
+        const snapUserData: Record<string, unknown> = {};
+        if (ip) snapUserData.client_ip_address = ip;
+        if (ua) snapUserData.user_agent = ua;
+        if (userData.em) snapUserData.em = userData.em; // reuse hash already computed above
+
+        const snapPayload = {
+          data: [{
+            event_name:        snapEventName,
+            action_source:     'website',
+            event_source_url:  req.headers.get('referer') ?? 'https://flowen.digital',
+            event_time:        Math.floor(Date.now() / 1000),
+            user_data:         snapUserData,
+            custom_data:       { event_id, ...(custom_data ?? {}) },
+          }],
+        };
+
+        const snapRes = await fetch(
+          `https://tr.snapchat.com/v3/${snapPixelId}/events?access_token=${snapToken}`,
+          {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(snapPayload),
+          },
+        );
+
+        if (!snapRes.ok) {
+          const errBody = await snapRes.text().catch(() => '');
+          console.error('[capi] Snapchat error:', snapRes.status, errBody);
+        }
+      }
+    } catch (err) {
+      console.error('[capi] Snapchat send failed:', err);
+    }
+  }
+
+  return NextResponse.json({ ok: metaOk }, { status: 200 }); // 200 so client doesn't surface errors
 }
