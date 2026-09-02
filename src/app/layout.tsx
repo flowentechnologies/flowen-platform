@@ -9,6 +9,7 @@ import AnalyticsTracker from '@/components/AnalyticsTracker';
 import PostHogProvider from '@/components/PostHogProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { Analytics } from '@vercel/analytics/next';
 
 // Inline script evaluated synchronously before first paint — prevents flash of
 // unstyled (wrong-theme) content. Reads localStorage and applies the `dark`
@@ -155,6 +156,7 @@ export default async function RootLayout({
           <AnalyticsTracker />
           <CookieConsent />
           <TrackingScripts providers={trackingProviders} />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
