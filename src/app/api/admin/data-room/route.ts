@@ -54,8 +54,13 @@ export async function POST(req: NextRequest) {
       'image/webp',
     ]);
 
+    // Must match the Category union + CATEGORIES list in DataRoomClient.tsx —
+    // these had drifted apart (this set used to be pitch/legal/financial/
+    // technical/general/investor-updates), so selecting "Clinical",
+    // "Corporate", or "Regulatory" in the upload form — three of the six
+    // dropdown options — silently failed here with a generic 400.
     const ALLOWED_CATEGORIES = new Set([
-      'pitch', 'legal', 'financial', 'technical', 'general', 'investor-updates',
+      'financial', 'legal', 'clinical', 'technical', 'corporate', 'regulatory',
     ]);
 
     const file        = formData.get('file') as File | null;
