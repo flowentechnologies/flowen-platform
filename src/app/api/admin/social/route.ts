@@ -2,10 +2,11 @@
  * PATCH /api/admin/social
  *
  * Two admin actions on a social_publish_queue row:
- *   { id, action: 'mark_manual_done' } — LinkedIn: admin has pasted the
- *     caption into LinkedIn themselves and posted it manually.
- *   { id, action: 'retry' }            — Instagram/Facebook: reset a
- *     failed row back to pending so the next cron run retries it.
+ *   { id, action: 'mark_manual_done' } — LinkedIn/Snapchat: admin has
+ *     pasted the caption into the platform themselves and posted it
+ *     manually.
+ *   { id, action: 'retry' }            — Instagram/Facebook/Pinterest:
+ *     reset a failed row back to pending so the next cron run retries it.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { assertAdmin } from '@/lib/admin/guard';
@@ -30,7 +31,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
       status: 'manual_done',
       published_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }).eq('id', body.id).eq('platform', 'linkedin');
+    }).eq('id', body.id).in('platform', ['linkedin', 'snapchat']);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
@@ -41,7 +42,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
       attempt_count: 0,
       error_message: null,
       updated_at: new Date().toISOString(),
-    }).eq('id', body.id).in('platform', ['instagram', 'facebook']);
+    }).eq('id', body.id).in('platform', ['instagram', 'facebook', 'pinterest']);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }

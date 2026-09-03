@@ -6,7 +6,7 @@ export interface SocialQueueRow {
   id: string;
   series: string;
   day_num: number | null;
-  platform: 'instagram' | 'facebook' | 'linkedin';
+  platform: 'instagram' | 'facebook' | 'linkedin' | 'pinterest' | 'snapchat';
   caption: string;
   hashtags: string;
   asset_path: string;

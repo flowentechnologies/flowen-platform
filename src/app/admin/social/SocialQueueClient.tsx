@@ -21,13 +21,20 @@ const PLATFORM_LABEL: Record<SocialQueueRow['platform'], string> = {
   instagram: 'Instagram',
   facebook: 'Facebook',
   linkedin: 'LinkedIn',
+  pinterest: 'Pinterest',
+  snapchat: 'Snapchat',
 };
 
 const PLATFORM_DOT: Record<SocialQueueRow['platform'], string> = {
   instagram: 'bg-fuchsia-500',
   facebook: 'bg-blue-500',
   linkedin: 'bg-sky-600',
+  pinterest: 'bg-red-600',
+  snapchat: 'bg-yellow-400',
 };
+
+const MANUAL_PLATFORMS: SocialQueueRow['platform'][] = ['linkedin', 'snapchat'];
+const AUTO_PLATFORMS: SocialQueueRow['platform'][] = ['instagram', 'facebook', 'pinterest'];
 
 function statusBadge(status: SocialQueueRow['status']): { text: string; cls: string } {
   switch (status) {
@@ -117,7 +124,7 @@ function QueueRow({ row, onUpdated }: { row: SocialQueueRow; onUpdated: (r: Soci
       <div className="sm:w-44 shrink-0 flex flex-col items-start sm:items-end gap-2">
         <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold border ${badge.cls}`}>{badge.text}</span>
 
-        {row.platform === 'linkedin' && row.status === 'manual_pending' && (
+        {MANUAL_PLATFORMS.includes(row.platform) && row.status === 'manual_pending' && (
           <div className="flex gap-2">
             <button
               onClick={copyText}
@@ -135,7 +142,7 @@ function QueueRow({ row, onUpdated }: { row: SocialQueueRow; onUpdated: (r: Soci
           </div>
         )}
 
-        {row.status === 'failed' && (row.platform === 'instagram' || row.platform === 'facebook') && (
+        {row.status === 'failed' && AUTO_PLATFORMS.includes(row.platform) && (
           <button
             onClick={retry}
             disabled={isPending}
@@ -151,7 +158,7 @@ function QueueRow({ row, onUpdated }: { row: SocialQueueRow; onUpdated: (r: Soci
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-type Filter = 'all' | 'due' | 'instagram' | 'facebook' | 'linkedin' | 'failed';
+type Filter = 'all' | 'due' | 'instagram' | 'facebook' | 'linkedin' | 'pinterest' | 'snapchat' | 'failed';
 
 export function SocialQueueClient({ initialRows }: { initialRows: SocialQueueRow[] }) {
   const [rows, setRows] = useState(initialRows);
@@ -163,7 +170,7 @@ export function SocialQueueClient({ initialRows }: { initialRows: SocialQueueRow
 
   const counts = useMemo(() => ({
     total: rows.length,
-    pendingMeta: rows.filter(r => r.status === 'pending' && r.platform !== 'linkedin').length,
+    pendingAuto: rows.filter(r => r.status === 'pending' && AUTO_PLATFORMS.includes(r.platform)).length,
     needsManual: rows.filter(r => r.status === 'manual_pending').length,
     published: rows.filter(r => r.status === 'published' || r.status === 'manual_done').length,
     failed: rows.filter(r => r.status === 'failed').length,
@@ -180,6 +187,8 @@ export function SocialQueueClient({ initialRows }: { initialRows: SocialQueueRow
       case 'instagram': return rows.filter(r => r.platform === 'instagram');
       case 'facebook': return rows.filter(r => r.platform === 'facebook');
       case 'linkedin': return rows.filter(r => r.platform === 'linkedin');
+      case 'pinterest': return rows.filter(r => r.platform === 'pinterest');
+      case 'snapchat': return rows.filter(r => r.platform === 'snapchat');
       case 'failed': return rows.filter(r => r.status === 'failed');
       default: return rows;
     }
@@ -191,7 +200,7 @@ export function SocialQueueClient({ initialRows }: { initialRows: SocialQueueRow
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Social Publishing</h1>
           <p className="text-slate-400 text-sm mt-1">
-            Instagram + Facebook auto-publish hourly via the Meta Graph API. LinkedIn is manual —
+            Instagram, Facebook, and Pinterest auto-publish hourly. LinkedIn and Snapchat are manual —
             copy the text below and post it yourself, then mark it done.
           </p>
         </div>
@@ -200,13 +209,13 @@ export function SocialQueueClient({ initialRows }: { initialRows: SocialQueueRow
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Auto-publish queued</p>
-          <p className="text-3xl font-black text-slate-900 dark:text-white">{counts.pendingMeta}</p>
-          <p className="text-[10px] text-slate-600 mt-1 font-mono">Instagram + Facebook</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{counts.pendingAuto}</p>
+          <p className="text-[10px] text-slate-600 mt-1 font-mono">Instagram + Facebook + Pinterest</p>
         </div>
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Needs manual post</p>
           <p className="text-3xl font-black text-slate-900 dark:text-white">{counts.needsManual}</p>
-          <p className="text-[10px] text-slate-600 mt-1 font-mono">LinkedIn</p>
+          <p className="text-[10px] text-slate-600 mt-1 font-mono">LinkedIn + Snapchat</p>
         </div>
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Published</p>
@@ -221,7 +230,7 @@ export function SocialQueueClient({ initialRows }: { initialRows: SocialQueueRow
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {(['due', 'all', 'instagram', 'facebook', 'linkedin', 'failed'] as Filter[]).map(f => (
+        {(['due', 'all', 'instagram', 'facebook', 'linkedin', 'pinterest', 'snapchat', 'failed'] as Filter[]).map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
