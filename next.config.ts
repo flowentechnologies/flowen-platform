@@ -91,10 +91,17 @@ const nextConfig: NextConfig = {
   // Vercel's output-file-tracing misses these because they're accessed via
   // dynamic require paths inside the library, so we explicitly include them
   // for the PDF generation route so they're bundled into the serverless function.
+  //
+  // outputFileTracingIncludes keys are picomatch globs matched against the
+  // route pattern, not plain strings — a dynamic segment's brackets ([token])
+  // must be escaped or picomatch reads them as a character class (matching a
+  // single "t"/"o"/"k"/"e"/"n" character) instead of the literal segment, so
+  // the pattern silently never matches and the files never get bundled (this
+  // shipped broken in production: ENOENT on Helvetica.afm at request time).
   outputFileTracingIncludes: {
     '/api/reports/my-progress': ['./node_modules/pdfkit/js/data/**/*'],
     // Pitch deck PDF route also needs pdfkit's AFM font metrics + ICC profiles
-    '/api/pitch/[token]/pdf': ['./node_modules/pdfkit/js/data/**/*'],
+    '/api/pitch/\\[token\\]/pdf': ['./node_modules/pdfkit/js/data/**/*'],
   },
 };
 
