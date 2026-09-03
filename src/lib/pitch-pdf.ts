@@ -13,6 +13,9 @@
  */
 
 import PDFDocument from 'pdfkit';
+import { patchPdfkitStandardFonts } from './pdfkit-fonts-patch';
+
+patchPdfkitStandardFonts();
 
 // ── Palette ─────────────────────────────────────────────────────────────────
 const C = {

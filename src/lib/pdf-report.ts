@@ -1,4 +1,7 @@
 import PDFDocument from 'pdfkit';
+import { patchPdfkitStandardFonts } from './pdfkit-fonts-patch';
+
+patchPdfkitStandardFonts();
 
 export interface ReportSession {
   created_at: string;
