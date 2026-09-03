@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 import { headers } from 'next/headers';
 import { adminDb as db } from '@/lib/supabase/admin';
 
@@ -53,13 +51,16 @@ export async function GET(
   ]).catch(() => {/* ignore tracking errors */});
 
   try {
-    // Use async readFile (fs/promises) — readFileSync blocks the event loop for
-    // the duration of the disk read, which can delay concurrent requests sharing
-    // the same Fluid Compute instance.
-    // private/ is NOT served by Next.js static asset handler — only public/ is.
-    // deck.html is intentionally kept outside public/ so it cannot be accessed
-    // directly at /deck.html; it is only served through this token-gated route.
-    const html = await readFile(join(process.cwd(), 'private', 'deck.html'), 'utf8');
+    // Served from a private Supabase Storage bucket (fetched server-side
+    // with the service-role key), not the local filesystem — this repo is
+    // public on GitHub, so a git-tracked file would leak the deck publicly,
+    // and a gitignored one never reaches Vercel's deployed filesystem at
+    // all. See scripts/upload-pitch-deck.mjs to update the deck content.
+    const { data: file, error: storageError } = await client.storage
+      .from('pitch-deck')
+      .download('deck.html');
+    if (storageError || !file) throw storageError ?? new Error('deck.html not found');
+    const html = await file.text();
     // The deck uses Tailwind CDN, Google Fonts, and FontAwesome — set a
     // permissive CSP scoped to this route only.  This overrides the site-wide
     // restrictive CSP set in next.config.ts for all other routes.
