@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { logAuditEvent } from '@/lib/admin/audit';
 
 const BUCKET = 'data-room';
 const SIGNED_URL_TTL = 120; // seconds
@@ -102,6 +103,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
 
+    void logAuditEvent({
+      actor_email: admin.email, actor_id: admin.id,
+      action: 'data_room.document_uploaded', resource_type: 'data_room_doc', resource_id: data.id,
+      metadata: { title, category, filename: file.name, file_size: file.size },
+      severity: 'info',
+    });
+
     return NextResponse.json({ data });
   }
 
@@ -125,11 +133,19 @@ export async function POST(req: NextRequest) {
   if (action === 'delete_document') {
     const { id } = body as { action: string; id: string };
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
-    const { data: doc } = await supabase.from('data_room_documents').select('storage_path').eq('id', id).single();
+    const { data: doc } = await supabase.from('data_room_documents').select('storage_path, title, category, file_size').eq('id', id).single();
     if (!doc) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     await supabase.storage.from(BUCKET).remove([doc.storage_path]);
     const { error } = await supabase.from('data_room_documents').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    void logAuditEvent({
+      actor_email: admin.email, actor_id: admin.id,
+      action: 'data_room.document_deleted', resource_type: 'data_room_doc', resource_id: id,
+      metadata: { title: doc.title, category: doc.category, file_size: doc.file_size, storage_path: doc.storage_path },
+      severity: 'warning',
+    });
+
     return NextResponse.json({ success: true });
   }
 
@@ -144,22 +160,48 @@ export async function POST(req: NextRequest) {
       expires_at,
     }).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    void logAuditEvent({
+      actor_email: admin.email, actor_id: admin.id,
+      action: 'data_room.invite_created', resource_type: 'data_room_invite', resource_id: data.id,
+      metadata: { investor_name, investor_email, access_level: data.access_level, expires_at },
+      severity: 'info',
+    });
+
     return NextResponse.json({ data });
   }
 
   if (action === 'revoke_invite') {
     const { id } = body as { action: string; id: string };
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const { data: invite } = await supabase.from('data_room_invites').select('investor_name, investor_email').eq('id', id).single();
     const { error } = await supabase.from('data_room_invites').update({ revoked: true }).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    void logAuditEvent({
+      actor_email: admin.email, actor_id: admin.id,
+      action: 'data_room.invite_revoked', resource_type: 'data_room_invite', resource_id: id,
+      metadata: { investor_name: invite?.investor_name ?? null, investor_email: invite?.investor_email ?? null },
+      severity: 'warning',
+    });
+
     return NextResponse.json({ success: true });
   }
 
   if (action === 'delete_invite') {
     const { id } = body as { action: string; id: string };
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const { data: invite } = await supabase.from('data_room_invites').select('investor_name, investor_email').eq('id', id).single();
     const { error } = await supabase.from('data_room_invites').delete().eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    void logAuditEvent({
+      actor_email: admin.email, actor_id: admin.id,
+      action: 'data_room.invite_deleted', resource_type: 'data_room_invite', resource_id: id,
+      metadata: { investor_name: invite?.investor_name ?? null, investor_email: invite?.investor_email ?? null },
+      severity: 'warning',
+    });
+
     return NextResponse.json({ success: true });
   }
 
