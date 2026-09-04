@@ -104,7 +104,7 @@ export default function ContactFormSection() {
               {formState.errors?.message && <p className="text-red-400 text-xs mt-1">{formState.errors.message}</p>}
             </div>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               By submitting this form, you acknowledge that your details will be processed in accordance with our{' '}
               <button type="button" onClick={() => openLegal('privacy')} className="text-emerald-400 underline">
                 Privacy Policy &amp; UK GDPR

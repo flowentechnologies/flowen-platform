@@ -15,6 +15,7 @@ export default function LandingPage() {
 
         <MarketingNavbar />
 
+        <main id="main-content">
         {/* ── Hero — client island (scroll scrubbing + video) ───────────────── */}
         <HeroVideo />
 
@@ -44,7 +45,7 @@ export default function LandingPage() {
               ].map(s => (
                 <div key={s.label} className="bg-[#0A0D14] border border-slate-800 rounded-xl p-5 text-center">
                   <div className="text-3xl font-black text-emerald-400 font-mono">{s.value}</div>
-                  <div className="text-xs text-slate-500 mt-1 leading-snug">{s.label}</div>
+                  <div className="text-xs text-slate-400 mt-1 leading-snug">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -123,7 +124,7 @@ export default function LandingPage() {
             ].map(stat => (
               <div key={stat.label} className="bg-[#0A0D14] border border-slate-800 rounded-xl p-4 text-center">
                 <div className="text-xl font-black text-emerald-400 font-mono">{stat.value}</div>
-                <div className="text-xs text-slate-500 mt-1">{stat.label}</div>
+                <div className="text-xs text-slate-400 mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -131,7 +132,7 @@ export default function LandingPage() {
           {/* Social proof */}
           <div className="mt-10 pt-8 border-t border-slate-800/60 text-center">
             <div className="text-2xl font-black text-emerald-400 font-mono">88%</div>
-            <div className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">of beta users completed onboarding within their first session</div>
+            <div className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">of beta users completed onboarding within their first session</div>
           </div>
         </section>
 
@@ -291,6 +292,7 @@ export default function LandingPage() {
 
         {/* ── Contact Form — client island ──────────────────────────────────── */}
         <ContactFormSection />
+        </main>
 
         <MarketingFooter />
       </div>
