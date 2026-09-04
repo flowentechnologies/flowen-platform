@@ -159,7 +159,7 @@ bullet(doc, 'Not yet started: Cyber Essentials Plus certification, required for 
 // ── Appendix ──────────────────────────────────────────────────────────────────
 doc.addPage();
 h1(doc, 'Appendix — Company Snapshot');
-p(doc, 'Flowen Technologies Ltd. Pre-seed stage, SEIS advance assurance received. Cap table and IP audit maintained internally (see /admin/cap-table, /admin/ip); a full excerpt is available as a separate Data Room document on request and was intentionally not duplicated in full here given the financial data-quality issue noted in Section 9.');
+p(doc, 'Flowen Technologies Ltd. Pre-seed stage. SEIS advance assurance application submitted to HMRC (15 June 2026) — still awaiting decision, not yet received; do not state this as confirmed elsewhere. Cap table and IP audit maintained internally (see /admin/cap-table, /admin/ip); a full excerpt is available as a separate Data Room document on request and was intentionally not duplicated in full here given the financial data-quality issue noted in Section 9.');
 doc.moveDown(1);
 doc.fontSize(7.5).font('Helvetica').fillColor('#888').text('FLOWEN TECHNOLOGIES LTD · CONFIDENTIAL WORKING DRAFT — NOT SUBMITTED', { align: 'center' });
 
