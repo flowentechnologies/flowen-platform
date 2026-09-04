@@ -94,11 +94,16 @@ export async function POST(req: Request, ctx: RouteContext) {
   // Upload to storage
   const storagePath = `${user.id}/${sessionId}.webm`;
   const audioBuffer = await audioFile.arrayBuffer();
+  // MediaRecorder reports the full type string (e.g. "audio/webm;codecs=opus"),
+  // but the bucket's allowed_mime_types allowlist matches on the bare type
+  // exactly — the ;codecs=... parameter must be stripped or every real
+  // browser-recorded upload is rejected (confirmed happening in production).
+  const contentType = (audioFile.type || 'audio/webm').split(';')[0].trim();
 
   const { error: uploadErr } = await admin.storage
     .from(BUCKET)
     .upload(storagePath, audioBuffer, {
-      contentType: audioFile.type || 'audio/webm',
+      contentType,
       upsert: false,
     });
 
