@@ -97,11 +97,11 @@ export default function CookiePolicyPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-16 space-y-12">
+      <main id="main-content" className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-16 space-y-12">
 
         {/* Header */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-slate-500">
+          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-slate-400">
             <Link href="/legal" className="hover:text-slate-300 transition-colors">Legal</Link>
             <span>›</span>
             <span>Cookie Policy</span>
@@ -116,7 +116,7 @@ export default function CookiePolicyPage() {
 
         {/* Quick summary banner */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-500">TL;DR</p>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-slate-400">TL;DR</p>
           <div className="grid sm:grid-cols-2 gap-3 text-sm">
             {[
               { icon: '✓', color: 'text-emerald-400', text: 'No advertising or cross-site tracking cookies' },
@@ -155,7 +155,7 @@ export default function CookiePolicyPage() {
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/60">
                   {['Cookie name', 'Category', 'Purpose', 'Set by', 'Retention', 'HttpOnly'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-[10px] font-mono uppercase tracking-widest text-slate-500 whitespace-nowrap">
+                    <th key={h} className="px-4 py-3 text-left text-[10px] font-mono uppercase tracking-widest text-slate-400 whitespace-nowrap">
                       {h}
                     </th>
                   ))}
@@ -173,12 +173,12 @@ export default function CookiePolicyPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-xs text-slate-400 leading-relaxed max-w-xs align-top">{c.purpose}</td>
-                      <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap align-top">{c.setBy}</td>
-                      <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap align-top">{c.retention}</td>
+                      <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap align-top">{c.setBy}</td>
+                      <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap align-top">{c.retention}</td>
                       <td className="px-4 py-3 text-center align-top">
                         {c.httpOnly
                           ? <span className="text-emerald-400 text-xs font-bold">Yes</span>
-                          : <span className="text-slate-500 text-xs">No</span>
+                          : <span className="text-slate-400 text-xs">No</span>
                         }
                       </td>
                     </tr>
@@ -237,7 +237,7 @@ export default function CookiePolicyPage() {
               className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 transition-colors group"
             >
               <p className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">{label} →</p>
-              <p className="text-xs text-slate-500 mt-1">{desc}</p>
+              <p className="text-xs text-slate-400 mt-1">{desc}</p>
             </Link>
           ))}
         </nav>

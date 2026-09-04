@@ -158,7 +158,7 @@ export default function DPAPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1 max-w-4xl mx-auto px-6 py-16">
+      <main id="main-content" className="flex-1 max-w-4xl mx-auto px-6 py-16">
         <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
           UK GDPR ARTICLE 28
         </span>
@@ -180,7 +180,7 @@ export default function DPAPage() {
           ].map(b => (
             <div key={b.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
               <div className="text-base font-black text-emerald-400 font-mono">{b.value}</div>
-              <div className="text-xs text-slate-500 mt-1">{b.label}</div>
+              <div className="text-xs text-slate-400 mt-1">{b.label}</div>
             </div>
           ))}
         </div>
@@ -214,7 +214,7 @@ export default function DPAPage() {
                   <h2 className="text-base font-bold text-white mt-1">{clause.title}</h2>
                 </div>
                 <svg
-                  className="w-5 h-5 text-slate-500 flex-shrink-0 ml-4 transition-transform group-open:rotate-180"
+                  className="w-5 h-5 text-slate-400 flex-shrink-0 ml-4 transition-transform group-open:rotate-180"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -265,7 +265,7 @@ export default function DPAPage() {
               </tbody>
             </table>
           </div>
-          <p className="text-slate-500 text-xs mt-3">
+          <p className="text-slate-400 text-xs mt-3">
             Last updated: 1 August 2026. Changes to sub-processors are notified with 30 days&apos; notice.
           </p>
         </div>

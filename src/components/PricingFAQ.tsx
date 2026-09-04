@@ -79,7 +79,7 @@ export default function PricingFAQ() {
         ))}
       </div>
 
-      <p className="text-center text-slate-600 text-sm mt-10">
+      <p className="text-center text-slate-500 text-sm mt-10">
         Still have questions?{' '}
         <a href="mailto:hello@flowen.digital" className="text-emerald-400 hover:text-emerald-300 transition-colors">
           hello@flowen.digital

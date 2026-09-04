@@ -98,7 +98,7 @@ export default function DocPageLayout({
 
         {/* Breadcrumb */}
         <div className="max-w-6xl mx-auto px-6 pt-6 pb-0 print:hidden">
-          <nav className="flex items-center gap-2 text-xs text-slate-500">
+          <nav className="flex items-center gap-2 text-xs text-slate-400">
             <Link href="/" className="hover:text-slate-300 transition-colors">Home</Link>
             <span>/</span>
             <Link href={parentHref} className="hover:text-slate-300 transition-colors">{parentLabel}</Link>
@@ -118,7 +118,7 @@ export default function DocPageLayout({
                 {title}
               </h1>
               <p className="doc-subtitle text-slate-400 text-base leading-relaxed max-w-2xl mb-4">{subtitle}</p>
-              <p className="doc-meta text-xs text-slate-500">
+              <p className="doc-meta text-xs text-slate-400">
                 Published {date} &nbsp;·&nbsp; {readTime} read &nbsp;·&nbsp; Flowen Speech Technology Ltd
               </p>
             </div>
@@ -133,7 +133,7 @@ export default function DocPageLayout({
           {/* Sidebar TOC — hidden on mobile, hidden in print */}
           <aside className="hidden lg:block w-56 shrink-0 print:hidden">
             <div className="sticky top-24">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Contents</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Contents</p>
               <nav className="space-y-1">
                 {toc.map(entry => (
                   <div key={entry.id}>
@@ -147,7 +147,7 @@ export default function DocPageLayout({
                       <a
                         key={s.id}
                         href={`#${s.id}`}
-                        className="block text-xs text-slate-600 hover:text-slate-400 transition-colors py-0.5 pl-3"
+                        className="block text-xs text-slate-500 hover:text-slate-400 transition-colors py-0.5 pl-3"
                       >
                         {s.label}
                       </a>
@@ -162,7 +162,7 @@ export default function DocPageLayout({
           </aside>
 
           {/* Main content */}
-          <main className="doc-content flex-1 min-w-0 max-w-3xl">
+          <main id="main-content" className="doc-content flex-1 min-w-0 max-w-3xl">
             <div className="border-t border-slate-800 pt-10 print:border-0 print:pt-0">
               {children}
             </div>
@@ -172,7 +172,7 @@ export default function DocPageLayout({
         {/* Related */}
         <div className="border-t border-slate-800/60 print:hidden">
           <div className="max-w-6xl mx-auto px-6 py-12">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">More Resources</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">More Resources</p>
             <Link
               href="/resources"
               className="inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"

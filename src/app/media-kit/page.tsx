@@ -39,7 +39,7 @@ export default function MediaKitPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Header */}
         <section className="max-w-4xl mx-auto px-6 py-16">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -62,7 +62,7 @@ export default function MediaKitPage() {
             {STATS.map(s => (
               <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-center">
                 <div className="text-2xl font-black text-emerald-400 font-mono">{s.value}</div>
-                <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+                <div className="text-xs text-slate-400 mt-1">{s.label}</div>
               </div>
             ))}
           </div>
@@ -81,7 +81,7 @@ export default function MediaKitPage() {
                 ['Press contact', 'press@flowen.digital'],
               ].map(([k, v]) => (
                 <div key={k} className="flex flex-col">
-                  <dt className="text-slate-500 text-xs">{k}</dt>
+                  <dt className="text-slate-400 text-xs">{k}</dt>
                   <dd className="text-white font-medium mt-0.5">{v}</dd>
                 </div>
               ))}
@@ -117,7 +117,7 @@ export default function MediaKitPage() {
                 <div className={`w-10 h-10 rounded-lg flex-shrink-0 ${c.class}`} />
                 <div>
                   <div className="text-white text-sm font-medium">{c.name}</div>
-                  <div className="text-slate-500 font-mono text-xs mt-0.5">{c.hex}</div>
+                  <div className="text-slate-400 font-mono text-xs mt-0.5">{c.hex}</div>
                 </div>
               </div>
             ))}
@@ -131,7 +131,7 @@ export default function MediaKitPage() {
               </div>
               <div>
                 <div className="text-white font-black text-2xl tracking-tight">FLOWEN</div>
-                <div className="text-slate-500 text-xs font-mono mt-0.5">Wordmark — Inter font family, weight 900</div>
+                <div className="text-slate-400 text-xs font-mono mt-0.5">Wordmark — Inter font family, weight 900</div>
               </div>
             </div>
             <p className="text-slate-400 text-sm">
@@ -152,7 +152,7 @@ export default function MediaKitPage() {
               &ldquo;Flowen is a UK-based digital health company developing neural biofeedback technology for speech fluency. Its real-time acoustic processing engine captures and analyses voice data in under 80 milliseconds, delivering immediate visual and coaching feedback to support people who stutter. Flowen operates within the NHS Digital DCB0129 Clinical Safety Standard and is designed for individual, clinical, and institutional deployment across NHS, Access to Work, and Disabled Students&apos; Allowance funding pathways.&rdquo;
             </p>
           </div>
-          <p className="text-slate-500 text-xs mt-4">
+          <p className="text-slate-400 text-xs mt-4">
             You may use the above boilerplate in press coverage of Flowen without prior approval. For longer editorial descriptions, please contact our press team.
           </p>
         </section>

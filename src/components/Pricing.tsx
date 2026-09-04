@@ -102,7 +102,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
             }`}
           >
             Monthly
-            <span className="ml-1.5 text-[11px] text-slate-500 font-normal">£35.96</span>
+            <span className="ml-1.5 text-[11px] text-slate-400 font-normal">£35.96</span>
           </button>
           <button
             type="button"
@@ -114,7 +114,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
             }`}
           >
             Annual
-            <span className={`ml-1.5 text-[11px] font-normal ${cycle === 'yearly' ? 'text-slate-950/70' : 'text-slate-500'}`}>£19.96/mo</span>
+            <span className={`ml-1.5 text-[11px] font-normal ${cycle === 'yearly' ? 'text-slate-950/70' : 'text-slate-400'}`}>£19.96/mo</span>
             <span className={`absolute -top-2 -right-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide ${
               cycle === 'yearly'
                 ? 'bg-slate-950 text-emerald-400'
@@ -159,7 +159,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
                 <span className="text-4xl font-extrabold text-white">£{currentFounding.monthlyEquivalent.toFixed(2)}</span>
                 <span className="text-slate-400 text-sm">/mo</span>
                 {cycle === 'yearly' && (
-                  <span className="ml-2 text-xs line-through text-slate-600">£35.96</span>
+                  <span className="ml-2 text-xs line-through text-slate-500">£35.96</span>
                 )}
               </div>
               <div className="text-xs text-emerald-400 font-medium mt-1">{currentFounding.billingPeriodText}</div>
@@ -194,7 +194,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
               >
                 {checkoutLoading ? 'Redirecting to checkout…' : '🚀 Start 7-day free trial →'}
               </button>
-              <p className="text-center text-xs text-slate-500 mt-2">
+              <p className="text-center text-xs text-slate-400 mt-2">
                 No charge today · {currentFounding.totalText} after trial · Cancel any time
               </p>
             </>

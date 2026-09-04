@@ -88,8 +88,8 @@ export default function NpsClient({ initialScore, token, alreadyResponded }: Pro
           })}
         </div>
         <div className="flex justify-between mt-2">
-          <span className="text-xs text-slate-600">Not at all likely</span>
-          <span className="text-xs text-slate-600">Extremely likely</span>
+          <span className="text-xs text-slate-500">Not at all likely</span>
+          <span className="text-xs text-slate-500">Extremely likely</span>
         </div>
         {score !== null && (
           <p className="mt-3 text-sm font-medium text-slate-300">
@@ -113,7 +113,7 @@ export default function NpsClient({ initialScore, token, alreadyResponded }: Pro
             onChange={e => setComment(e.target.value)}
             placeholder="Your thoughts…"
             rows={4}
-            className="w-full bg-slate-800/60 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none"
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none"
           />
           <button
             onClick={submit}

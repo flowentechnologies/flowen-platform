@@ -31,7 +31,7 @@ export default function WaitlistPage() {
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
-      <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-12 flex flex-col justify-center">
+      <main id="main-content" className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-12 flex flex-col justify-center">
         <div className="text-center space-y-4 mb-8">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
             EARLY ACCESS PROGRAM
@@ -51,7 +51,7 @@ export default function WaitlistPage() {
               <span className="text-emerald-400 font-mono">{email}</span>{' '}
               when your early access slot opens.
             </p>
-            <div className="pt-2 space-y-2 text-xs text-slate-500">
+            <div className="pt-2 space-y-2 text-xs text-slate-400">
               <p>✓ Confirmation email sent — check your inbox</p>
               <p>✓ You&apos;ll receive a one-click invite link when ready</p>
               <p>✓ No payment needed until you choose a plan</p>

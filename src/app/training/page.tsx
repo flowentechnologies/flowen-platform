@@ -50,14 +50,14 @@ export default function TrainingPage() {
       <MarketingNavbar />
 
       <div className="max-w-5xl mx-auto px-6 pt-6 pb-0">
-        <nav className="flex items-center gap-2 text-xs text-slate-500">
+        <nav className="flex items-center gap-2 text-xs text-slate-400">
           <Link href="/" className="hover:text-slate-300 transition-colors">Home</Link>
           <span>/</span>
           <span className="text-slate-400">Training</span>
         </nav>
       </div>
 
-      <main className="flex-1 max-w-5xl mx-auto px-6 py-16 w-full">
+      <main id="main-content" className="flex-1 max-w-5xl mx-auto px-6 py-16 w-full">
         <div className="mb-14">
           <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900 text-xs font-mono font-bold uppercase tracking-widest text-slate-400 mb-5">
             Training Materials
@@ -82,8 +82,8 @@ export default function TrainingPage() {
                   <span className={`px-2 py-0.5 rounded-full border text-xs font-bold uppercase tracking-widest ${m.tagColor}`}>
                     {m.tag}
                   </span>
-                  <span className="text-xs text-slate-500">{m.audience}</span>
-                  <span className="text-xs text-slate-600">· {m.readTime} read</span>
+                  <span className="text-xs text-slate-400">{m.audience}</span>
+                  <span className="text-xs text-slate-500">· {m.readTime} read</span>
                 </div>
                 <h2 className="text-lg font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">
                   {m.title}
@@ -91,13 +91,13 @@ export default function TrainingPage() {
                 <p className="text-sm text-slate-400 leading-relaxed mb-4">{m.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {m.sections.map(s => (
-                    <span key={s} className="px-2.5 py-0.5 rounded-full bg-slate-800 text-xs text-slate-500 border border-slate-700">
+                    <span key={s} className="px-2.5 py-0.5 rounded-full bg-slate-800 text-xs text-slate-400 border border-slate-700">
                       {s}
                     </span>
                   ))}
                 </div>
               </div>
-              <div className="flex items-center shrink-0 text-slate-600 group-hover:text-emerald-400 transition-colors">
+              <div className="flex items-center shrink-0 text-slate-500 group-hover:text-emerald-400 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
@@ -107,7 +107,7 @@ export default function TrainingPage() {
         </div>
 
         <div className="mt-14 p-6 rounded-2xl border border-slate-800 bg-slate-900/30">
-          <p className="text-xs font-mono font-bold uppercase tracking-widest text-slate-500 mb-2">Version control</p>
+          <p className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400 mb-2">Version control</p>
           <p className="text-sm text-slate-400">
             These manuals reflect the current platform as of <span className="text-slate-300">August 2026</span>. They are reviewed and updated with each significant platform release. Direct questions to{' '}
             <a href="mailto:clinical@flowen.digital" className="text-emerald-400 hover:text-emerald-300 transition-colors">clinical@flowen.digital</a>.

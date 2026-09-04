@@ -38,7 +38,7 @@ export default async function PricingPage({
         ],
       }} />
       <MarketingNavbar />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
 
         {/* ── Conversion hero ── */}
         <section className="pt-16 pb-4 px-6 max-w-3xl mx-auto text-center">
@@ -58,7 +58,7 @@ export default async function PricingPage({
           </p>
 
           {/* Trust signals */}
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-slate-500 mb-2">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-slate-400 mb-2">
             <span className="flex items-center gap-1.5">
               <span className="text-emerald-400">✓</span> 7-day free trial
             </span>
@@ -145,7 +145,7 @@ export default async function PricingPage({
         {/* ── Value anchor: member voices ── */}
         <section className="py-10 px-6 border-t border-slate-800/40">
           <div className="max-w-4xl mx-auto">
-            <p className="text-[11px] font-mono uppercase tracking-widest text-slate-500 text-center mb-8">What members say</p>
+            <p className="text-[11px] font-mono uppercase tracking-widest text-slate-400 text-center mb-8">What members say</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {[
                 {
@@ -180,7 +180,7 @@ export default async function PricingPage({
                     }`}>{initials}</div>
                     <div>
                       <p className="text-xs font-semibold text-slate-200 leading-tight">{name}</p>
-                      <p className="text-[11px] text-slate-500 leading-tight">{detail}</p>
+                      <p className="text-[11px] text-slate-400 leading-tight">{detail}</p>
                     </div>
                     <div className="ml-auto flex gap-0.5">
                       {[...Array(5)].map((_, i) => (
@@ -208,7 +208,7 @@ export default async function PricingPage({
 
         {/* ── Section bridge ── */}
         <div className="py-6 px-6 text-center">
-          <p className="text-slate-500 text-sm">
+          <p className="text-slate-400 text-sm">
             Everything above is included in the 7-day trial.{' '}
             <span className="text-slate-300 font-medium">No card until you decide to stay.</span>
           </p>
@@ -220,7 +220,7 @@ export default async function PricingPage({
         {/* ── Social proof bar ── */}
         <section className="py-10 px-6 border-t border-slate-800/60">
           <div className="max-w-3xl mx-auto text-center">
-            <p className="text-slate-500 text-sm mb-6 uppercase tracking-widest font-semibold">Designed to work alongside</p>
+            <p className="text-slate-400 text-sm mb-6 uppercase tracking-widest font-semibold">Designed to work alongside</p>
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-slate-400 text-sm font-medium">
               <span>NHS Speech Therapy</span>
               <span className="text-slate-700">·</span>
@@ -253,7 +253,7 @@ export default async function PricingPage({
             >
               🚀 Start your free trial
             </a>
-            <p className="text-xs text-slate-600 mt-4">No card required · Cancel any time · Founding rate locks in when you subscribe</p>
+            <p className="text-xs text-slate-500 mt-4">No card required · Cancel any time · Founding rate locks in when you subscribe</p>
           </div>
         </section>
 

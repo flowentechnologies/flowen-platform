@@ -161,6 +161,7 @@ export default function CliniciansPage() {
   return (
     <div className="min-h-screen bg-[#06080F] text-white">
       <MarketingNavbar />
+      <main id="main-content">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
@@ -211,7 +212,7 @@ export default function CliniciansPage() {
           ].map(stat => (
             <div key={stat.label}>
               <p className="text-2xl font-extrabold text-white">{stat.value}</p>
-              <p className="mt-1 text-xs text-slate-500 leading-snug">{stat.label}</p>
+              <p className="mt-1 text-xs text-slate-400 leading-snug">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -222,7 +223,7 @@ export default function CliniciansPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Problem */}
           <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-8">
-            <p className="text-xs font-mono font-bold uppercase tracking-widest text-slate-500 mb-4">The gap between sessions</p>
+            <p className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400 mb-4">The gap between sessions</p>
             <h2 className="text-2xl font-bold text-white mb-5 leading-snug">
               Patients practise alone.<br />Without feedback.
             </h2>
@@ -360,7 +361,7 @@ export default function CliniciansPage() {
               },
             ].map(s => (
               <div key={s.step} className="bg-[#06080F] border border-slate-800 rounded-2xl p-6">
-                <p className="text-3xl font-black text-slate-800 mb-3">{s.step}</p>
+                <p className="text-3xl font-black text-emerald-400 mb-3">{s.step}</p>
                 <h3 className="font-bold text-white mb-2">{s.title}</h3>
                 <p className="text-sm text-slate-400 leading-relaxed">{s.body}</p>
               </div>
@@ -384,7 +385,7 @@ export default function CliniciansPage() {
             >
               <summary className="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none select-none hover:bg-slate-800/40 transition-colors">
                 <span className="font-medium text-white text-sm">{item.q}</span>
-                <span className="shrink-0 text-slate-500 group-open:rotate-45 transition-transform duration-200 text-xl leading-none">+</span>
+                <span className="shrink-0 text-slate-400 group-open:rotate-45 transition-transform duration-200 text-xl leading-none">+</span>
               </summary>
               <div className="px-6 pb-5 text-sm text-slate-400 leading-relaxed border-t border-slate-800/60 pt-4">
                 {item.a}
@@ -409,6 +410,7 @@ export default function CliniciansPage() {
         </div>
       </section>
 
+      </main>
       <MarketingFooter />
     </div>
   );

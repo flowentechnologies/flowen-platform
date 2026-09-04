@@ -60,7 +60,7 @@ export default function LegalPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1 max-w-4xl mx-auto px-6 py-16">
+      <main id="main-content" className="flex-1 max-w-4xl mx-auto px-6 py-16">
         <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
           GOVERNANCE
         </span>
@@ -77,10 +77,10 @@ export default function LegalPage() {
                 <div>
                   <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest">{section.tag}</span>
                   <h2 className="text-base font-bold text-white mt-1">{section.title}</h2>
-                  <p className="text-slate-500 text-xs mt-1">{section.summary}</p>
+                  <p className="text-slate-400 text-xs mt-1">{section.summary}</p>
                 </div>
                 <svg
-                  className="w-5 h-5 text-slate-500 flex-shrink-0 ml-4 transition-transform group-open:rotate-180"
+                  className="w-5 h-5 text-slate-400 flex-shrink-0 ml-4 transition-transform group-open:rotate-180"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -125,7 +125,7 @@ export default function LegalPage() {
                 className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all group"
               >
                 <div className="text-white font-semibold text-sm group-hover:text-emerald-400 transition-colors">{page.title}</div>
-                <div className="text-slate-500 text-xs mt-1 leading-relaxed">{page.desc}</div>
+                <div className="text-slate-400 text-xs mt-1 leading-relaxed">{page.desc}</div>
               </Link>
             ))}
           </div>

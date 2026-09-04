@@ -51,7 +51,7 @@ export default function SecurityPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Header */}
         <section className="max-w-4xl mx-auto px-6 py-16">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -74,7 +74,7 @@ export default function SecurityPage() {
             ].map(b => (
               <div key={b.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
                 <div className="text-lg font-black text-emerald-400 font-mono">{b.value}</div>
-                <div className="text-xs text-slate-500 mt-1">{b.label}</div>
+                <div className="text-xs text-slate-400 mt-1">{b.label}</div>
               </div>
             ))}
           </div>

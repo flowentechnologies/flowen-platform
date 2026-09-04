@@ -25,7 +25,7 @@ function Digit({ value, label }: { value: number; label: string }) {
           </span>
         </div>
       </div>
-      <span className="text-[10px] sm:text-xs font-mono font-bold text-slate-500 uppercase tracking-widest">
+      <span className="text-[10px] sm:text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">
         {label}
       </span>
     </div>
@@ -120,7 +120,7 @@ export default function ComingSoonPage() {
           </Link>
         </div>
 
-        <p className="text-slate-600 text-xs font-mono">
+        <p className="text-slate-500 text-xs font-mono">
           Already have early access?{' '}
           <Link href="/auth/login" className="text-emerald-500 hover:text-emerald-400 transition-colors">
             Sign in to enter

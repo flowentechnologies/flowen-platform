@@ -51,7 +51,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
       >
         <span className="text-sm font-medium text-slate-200 leading-snug">{q}</span>
         <svg
-          className={`w-4 h-4 text-slate-500 shrink-0 mt-0.5 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-slate-400 shrink-0 mt-0.5 transition-transform ${open ? 'rotate-180' : ''}`}
           viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"
         >
           <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd"/>
@@ -69,7 +69,7 @@ export default function SupportPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-16">
+      <main id="main-content" className="flex-1 max-w-4xl mx-auto w-full px-6 py-16">
 
         {/* Header */}
         <div className="mb-12">
@@ -110,7 +110,7 @@ export default function SupportPage() {
             <div key={card.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-3 hover:border-slate-700 transition-colors">
               <div>
                 <p className="text-white font-semibold text-sm mb-1">{card.label}</p>
-                <p className="text-slate-500 text-xs leading-snug">{card.desc}</p>
+                <p className="text-slate-400 text-xs leading-snug">{card.desc}</p>
               </div>
               <a
                 href={card.href}
@@ -124,13 +124,13 @@ export default function SupportPage() {
 
         {/* Response times */}
         <div className="flex gap-3 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5 mb-14">
-          <svg className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
           </svg>
           <p className="text-slate-400 text-xs leading-relaxed">
             <span className="text-slate-300 font-medium">Response times:</span>{' '}
             Bugs &amp; outages: 4h &nbsp;·&nbsp; Billing: 8h &nbsp;·&nbsp; Technical &amp; clinical: 24h &nbsp;·&nbsp; General: 48h
-            <span className="text-slate-600"> (Monday–Friday, UK business hours)</span>
+            <span className="text-slate-500"> (Monday–Friday, UK business hours)</span>
           </p>
         </div>
 

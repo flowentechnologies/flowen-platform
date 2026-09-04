@@ -29,7 +29,7 @@ export default function AboutPage() {
       }} />
       <MarketingNavbar />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Hero */}
         <section className="max-w-4xl mx-auto px-6 py-20 text-center">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">

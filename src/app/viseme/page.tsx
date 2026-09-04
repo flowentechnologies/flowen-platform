@@ -141,7 +141,7 @@ export default function VisemePage() {
       {/* Header */}
       <div className="border-b border-slate-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-slate-500 hover:text-slate-300 text-sm transition-colors">← Flowen</Link>
+          <Link href="/" className="text-slate-400 hover:text-slate-300 text-sm transition-colors">← Flowen</Link>
           <span className="text-slate-700">/</span>
           <span className="text-slate-300 text-sm font-mono">Viseme Reference</span>
         </div>
@@ -237,7 +237,7 @@ export default function VisemePage() {
               <VisemeMouth blends={animated} size={160} />
             </div>
 
-            <div className="mt-4 text-xs text-slate-500 font-mono">
+            <div className="mt-4 text-xs text-slate-400 font-mono">
               Examples: <span className="text-slate-300">{selectedInfo.examples}</span>
             </div>
           </div>
@@ -252,7 +252,7 @@ export default function VisemePage() {
               const activeKeys = group.keys.filter(k => (target[k] ?? 0) > 0.01);
               return (
                 <div key={group.label}>
-                  <div className="text-xs text-slate-600 font-mono uppercase mb-2">{group.label}</div>
+                  <div className="text-xs text-slate-500 font-mono uppercase mb-2">{group.label}</div>
                   {activeKeys.length === 0 ? (
                     <div className="text-xs text-slate-700 italic">— all at rest</div>
                   ) : (
@@ -271,7 +271,7 @@ export default function VisemePage() {
                                 style={{ width: `${v * 100}%` }}
                               />
                             </div>
-                            <div className="text-xs font-mono text-slate-500 w-8 text-right shrink-0">
+                            <div className="text-xs font-mono text-slate-400 w-8 text-right shrink-0">
                               {(t * 100).toFixed(0)}
                             </div>
                           </div>
@@ -287,7 +287,7 @@ export default function VisemePage() {
             {(() => {
               const totalActive = BLEND_GROUPS.flatMap(g => g.keys).filter(k => (target[k] ?? 0) > 0.01).length;
               return (
-                <div className="pt-2 border-t border-slate-800 text-xs text-slate-600 font-mono">
+                <div className="pt-2 border-t border-slate-800 text-xs text-slate-500 font-mono">
                   {totalActive} / 42 parameters active
                 </div>
               );

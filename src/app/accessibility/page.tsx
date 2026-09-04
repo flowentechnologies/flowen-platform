@@ -44,17 +44,17 @@ function ConformanceGroup({ principle, label, description, rows }: ConformanceGr
           </span>
           <h3 className="text-base font-bold text-white">{label}</h3>
         </div>
-        <span className="text-[11px] font-mono text-slate-500">
+        <span className="text-[11px] font-mono text-slate-400">
           {compliant}/{rows.length} compliant
         </span>
       </div>
-      <p className="text-xs text-slate-500 mb-4">{description}</p>
+      <p className="text-xs text-slate-400 mb-4">{description}</p>
       <div className="space-y-2">
         {rows.map(row => (
           <div key={row.sc} className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
             <div className="flex items-start justify-between gap-3 mb-1.5">
               <div className="flex items-center gap-2 flex-wrap min-w-0">
-                <span className="text-[10px] font-mono text-slate-500 shrink-0">{row.sc}</span>
+                <span className="text-[10px] font-mono text-slate-400 shrink-0">{row.sc}</span>
                 <span className="text-sm font-semibold text-white truncate">{row.title}</span>
               </div>
               <StatusBadge status={row.status} />
@@ -77,12 +77,12 @@ export default function AccessibilityPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1 max-w-3xl mx-auto px-6 py-16">
+      <main id="main-content" className="flex-1 max-w-3xl mx-auto px-6 py-16">
         <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
           ACCESSIBILITY
         </span>
         <h1 className="text-4xl font-extrabold text-white tracking-tight mt-4">Accessibility Statement</h1>
-        <p className="text-slate-500 text-xs mt-2">Last updated: 8 August 2026</p>
+        <p className="text-slate-400 text-xs mt-2">Last updated: 8 August 2026</p>
 
         <div className="mt-10 space-y-10 text-sm text-slate-300 leading-relaxed">
 
@@ -128,11 +128,11 @@ export default function AccessibilityPage() {
                     <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden mb-2">
                       <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${pct}%` }} />
                     </div>
-                    <p className="text-xs text-slate-500 font-mono">
+                    <p className="text-xs text-slate-400 font-mono">
                       <span className="text-emerald-400 font-bold">{compliant}</span> Compliant ·{' '}
                       <span className="text-yellow-400 font-bold">{partial}</span> Partial ·{' '}
                       <span className="text-slate-400 font-bold">{inProgress}</span> In Progress ·{' '}
-                      <span className="text-slate-600">{total} criteria total</span>
+                      <span className="text-slate-500">{total} criteria total</span>
                     </p>
                   </div>
                   <div className="text-3xl font-black text-white shrink-0">{pct}%</div>
@@ -226,15 +226,15 @@ export default function AccessibilityPage() {
             <h2 className="text-lg font-bold text-white mb-4">Known Limitations</h2>
             <ul className="space-y-3 text-slate-400">
               <li className="flex items-start gap-3">
-                <span className="text-slate-600 flex-shrink-0 font-bold mt-0.5">—</span>
+                <span className="text-slate-500 flex-shrink-0 font-bold mt-0.5">—</span>
                 The audio capture feature requires a microphone. Users without microphone access receive a static reference guide mode instead of a live session.
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-slate-600 flex-shrink-0 font-bold mt-0.5">—</span>
+                <span className="text-slate-500 flex-shrink-0 font-bold mt-0.5">—</span>
                 Data visualisation charts in the clinician analytics dashboard are currently accompanied by summary statistics but lack full ARIA table equivalents. We are adding accessible data tables alongside each chart (SC 1.3.1).
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-slate-600 flex-shrink-0 font-bold mt-0.5">—</span>
+                <span className="text-slate-500 flex-shrink-0 font-bold mt-0.5">—</span>
                 The investor pitch deck link includes a sender-defined time-limited expiry. Users who need an extension should contact <a href="mailto:hello@flowen.digital" className="text-emerald-400 hover:underline">hello@flowen.digital</a> (SC 2.2.1).
               </li>
             </ul>
@@ -265,9 +265,9 @@ export default function AccessibilityPage() {
             </p>
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
               <dl className="space-y-3 text-sm">
-                <div><dt className="text-slate-500 text-xs">Email</dt><dd className="text-emerald-400 mt-0.5"><a href="mailto:hello@flowen.digital?subject=[ACCESSIBILITY]">hello@flowen.digital</a></dd></div>
-                <div><dt className="text-slate-500 text-xs">Subject line</dt><dd className="text-slate-300 font-mono mt-0.5">[ACCESSIBILITY]</dd></div>
-                <div><dt className="text-slate-500 text-xs">Response time</dt><dd className="text-slate-300 mt-0.5">Within 5 working days</dd></div>
+                <div><dt className="text-slate-400 text-xs">Email</dt><dd className="text-emerald-400 mt-0.5"><a href="mailto:hello@flowen.digital?subject=[ACCESSIBILITY]">hello@flowen.digital</a></dd></div>
+                <div><dt className="text-slate-400 text-xs">Subject line</dt><dd className="text-slate-300 font-mono mt-0.5">[ACCESSIBILITY]</dd></div>
+                <div><dt className="text-slate-400 text-xs">Response time</dt><dd className="text-slate-300 mt-0.5">Within 5 working days</dd></div>
               </dl>
             </div>
           </section>

@@ -21,7 +21,7 @@ const GROUP_OPTIONS = [
 
 const inputClass =
   'w-full bg-[#06080F] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white ' +
-  'focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-slate-600';
+  'focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-slate-500';
 
 const labelClass = 'block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2';
 
@@ -74,7 +74,7 @@ export function CliniciansForm() {
           <span className="text-emerald-400 font-medium">5–7 working days</span> — check your inbox (including spam) for a confirmation email from{' '}
           <span className="font-mono text-slate-300">clinical@flowen.digital</span>.
         </p>
-        <div className="pt-2 space-y-1.5 text-xs text-slate-500">
+        <div className="pt-2 space-y-1.5 text-xs text-slate-400">
           <p>✓ Confirmation email sent to your work address</p>
           <p>✓ First 10 SLTs accepted get up to 10 free patient slots</p>
           <p>✓ Direct access to the Flowen clinical team throughout</p>
@@ -129,7 +129,7 @@ export function CliniciansForm() {
       <div>
         <label htmlFor="slt-motivation" className={labelClass}>
           Why do you want to join the beta?{' '}
-          <span className="text-slate-600 normal-case not-italic">(optional)</span>
+          <span className="text-slate-500 normal-case not-italic">(optional)</span>
         </label>
         <textarea id="slt-motivation" name="motivation" rows={3}
           placeholder="Tell us about your current approach to home practice and what you're hoping Flowen can improve…"
@@ -150,7 +150,7 @@ export function CliniciansForm() {
         {isPending ? 'Submitting…' : 'Apply for Beta Access →'}
       </button>
 
-      <p className="text-center text-xs text-slate-600">
+      <p className="text-center text-xs text-slate-500">
         We're selecting the first 10 SLTs. Free throughout beta. No patient billing setup required.
       </p>
     </form>

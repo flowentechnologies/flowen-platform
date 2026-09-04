@@ -109,7 +109,7 @@ export default function NHSFrameworkPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
 
         {/* Header */}
         <section className="max-w-4xl mx-auto px-6 py-16">
@@ -174,7 +174,7 @@ export default function NHSFrameworkPage() {
                 <div className="min-w-0">
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <h3 className="text-white font-bold text-sm">{step.title}</h3>
-                    <span className="text-xs font-mono text-slate-500 flex-shrink-0">{step.duration}</span>
+                    <span className="text-xs font-mono text-slate-400 flex-shrink-0">{step.duration}</span>
                   </div>
                   <p className="text-slate-400 text-sm leading-relaxed mt-2">{step.detail}</p>
                 </div>
@@ -203,7 +203,7 @@ export default function NHSFrameworkPage() {
               </div>
             ))}
           </div>
-          <p className="text-slate-500 text-xs mt-4">
+          <p className="text-slate-400 text-xs mt-4">
             Full evidence pack provided to NHS procurement teams on request. Contact hello@flowen.digital with subject line &quot;DTAC Evidence Request — [Organisation]&quot;.
           </p>
         </section>
@@ -233,7 +233,7 @@ export default function NHSFrameworkPage() {
               </tbody>
             </table>
           </div>
-          <p className="text-slate-500 text-xs mt-3">
+          <p className="text-slate-400 text-xs mt-3">
             SLA credits apply where commitments are not met as defined in the commercial agreement. Service credits do not limit other remedies available to the Controller.
           </p>
         </section>
@@ -268,7 +268,7 @@ export default function NHSFrameworkPage() {
               </div>
             ))}
           </div>
-          <p className="text-slate-500 text-xs mt-4">
+          <p className="text-slate-400 text-xs mt-4">
             Pricing is provided on request based on your organisation&apos;s scale and requirements. We do not publish list prices for NHS contracts — contact us for a tailored proposal.
           </p>
         </section>

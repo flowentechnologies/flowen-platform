@@ -66,7 +66,7 @@ export default function ResourcesPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <section className="max-w-4xl mx-auto px-6 py-16 text-center">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
             KNOWLEDGE BASE
@@ -117,9 +117,9 @@ export default function ResourcesPage() {
               >
                 <div>
                   <div className="text-white font-semibold text-sm group-hover:text-emerald-400 transition-colors">{link.label}</div>
-                  <div className="text-slate-500 text-xs mt-1">{link.desc}</div>
+                  <div className="text-slate-400 text-xs mt-1">{link.desc}</div>
                 </div>
-                <svg className="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition-colors flex-shrink-0 mt-0.5 ml-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors flex-shrink-0 mt-0.5 ml-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                 </svg>
               </a>

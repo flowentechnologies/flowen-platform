@@ -93,6 +93,7 @@ export default function AffiliatesPage({
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-100 font-sans antialiased">
       <MarketingNavbar />
+      <main id="main-content">
 
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-6 pt-24 pb-16 text-center">
@@ -126,7 +127,7 @@ export default function AffiliatesPage({
             <div key={step} className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-6">
               <span className="text-3xl font-black text-emerald-500/30 leading-none block mb-3">{step}</span>
               <h3 className="text-sm font-bold text-white mb-2">{title}</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">{body}</p>
+              <p className="text-xs text-slate-400 leading-relaxed">{body}</p>
             </div>
           ))}
         </div>
@@ -135,7 +136,7 @@ export default function AffiliatesPage({
       {/* Tiers */}
       <section className="max-w-5xl mx-auto px-6 pb-24">
         <h2 className="text-2xl font-bold text-white text-center mb-4">Commission tiers</h2>
-        <p className="text-slate-500 text-sm text-center mb-12 max-w-xl mx-auto">
+        <p className="text-slate-400 text-sm text-center mb-12 max-w-xl mx-auto">
           All tiers earn recurring commissions on Flowen subscriptions (currently £19.95–£79.99/mo).
           Tier upgrades are reviewed quarterly based on performance.
         </p>
@@ -164,7 +165,7 @@ export default function AffiliatesPage({
                   <span className="text-4xl font-extrabold text-white">{tier.commission}</span>
                   <span className="text-slate-400 text-sm mb-1.5">/ subscription</span>
                 </div>
-                <p className="text-xs text-slate-500">Recurring for {tier.duration} per referral</p>
+                <p className="text-xs text-slate-400">Recurring for {tier.duration} per referral</p>
               </div>
               <p className="text-xs text-slate-400 italic">{tier.who}</p>
               <ul className="space-y-2 flex-1">
@@ -220,7 +221,7 @@ export default function AffiliatesPage({
           ].map(({ q, a }) => (
             <div key={q} className="bg-[#0A0D14] border border-slate-800 rounded-2xl p-6">
               <h3 className="text-sm font-semibold text-white mb-2">{q}</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">{a}</p>
+              <p className="text-xs text-slate-400 leading-relaxed">{a}</p>
             </div>
           ))}
         </div>
@@ -245,7 +246,7 @@ export default function AffiliatesPage({
               </p>
               <Link
                 href="/"
-                className="inline-block text-xs text-slate-500 hover:text-emerald-400 transition-colors"
+                className="inline-block text-xs text-slate-400 hover:text-emerald-400 transition-colors"
               >
                 ← Back to home
               </Link>
@@ -253,7 +254,7 @@ export default function AffiliatesPage({
           ) : (
             <>
               <h2 className="text-2xl font-bold text-white mb-2 text-center">Apply to join</h2>
-              <p className="text-xs text-slate-500 text-center mb-8">
+              <p className="text-xs text-slate-400 text-center mb-8">
                 We review every application and reply within 2 business days.
               </p>
 
@@ -330,7 +331,7 @@ export default function AffiliatesPage({
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
                     Website / social / channel URL{' '}
-                    <span className="text-slate-600 normal-case font-normal">(optional)</span>
+                    <span className="text-slate-500 normal-case font-normal">(optional)</span>
                   </label>
                   <input
                     type="url"
@@ -347,7 +348,7 @@ export default function AffiliatesPage({
                   Submit application
                 </button>
 
-                <p className="text-[11px] text-slate-600 text-center">
+                <p className="text-[11px] text-slate-500 text-center">
                   By applying you agree to the{' '}
                   <Link href="/legal" className="underline hover:text-slate-400 transition-colors">
                     Flowen Affiliate Terms
@@ -360,6 +361,7 @@ export default function AffiliatesPage({
         </div>
       </section>
 
+      </main>
       <MarketingFooter />
     </div>
   );

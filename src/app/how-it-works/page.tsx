@@ -50,6 +50,7 @@ export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-[#06080F] text-white">
       <MarketingNavbar />
+      <main id="main-content">
 
       {/* Header */}
       <section className="max-w-4xl mx-auto px-6 pt-24 pb-16 text-center">
@@ -139,6 +140,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
+      </main>
       <MarketingFooter />
     </div>
   );

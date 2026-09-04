@@ -312,7 +312,7 @@ export default function ApiDocsPage() {
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Header */}
         <section className="max-w-4xl mx-auto px-6 py-16">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -331,21 +331,21 @@ export default function ApiDocsPage() {
             <h2 className="text-sm font-bold text-white">Base URL & Authentication</h2>
             <div className="font-mono text-xs space-y-3">
               <div>
-                <div className="text-slate-500 text-[11px] uppercase tracking-widest mb-1">Base URL</div>
+                <div className="text-slate-400 text-[11px] uppercase tracking-widest mb-1">Base URL</div>
                 <code className="text-emerald-400">https://flowen.digital</code>
               </div>
               <div>
-                <div className="text-slate-500 text-[11px] uppercase tracking-widest mb-1">Authentication Header</div>
+                <div className="text-slate-400 text-[11px] uppercase tracking-widest mb-1">Authentication Header</div>
                 <code className="text-slate-300">Authorization: Bearer {'<'}access_token{'>'}</code>
               </div>
               <div>
-                <div className="text-slate-500 text-[11px] uppercase tracking-widest mb-1">Content Type</div>
+                <div className="text-slate-400 text-[11px] uppercase tracking-widest mb-1">Content Type</div>
                 <code className="text-slate-300">Content-Type: application/json</code>
               </div>
             </div>
 
             <div className="border-t border-slate-800 pt-4">
-              <div className="text-slate-500 text-[11px] uppercase tracking-widest mb-3">Auth Levels</div>
+              <div className="text-slate-400 text-[11px] uppercase tracking-widest mb-3">Auth Levels</div>
               <div className="flex flex-wrap gap-3 text-xs">
                 {(Object.entries(AUTH_LABELS) as [Endpoint['auth'], string][]).map(([key, label]) => (
                   <div key={key} className="flex items-center gap-2">
@@ -361,10 +361,10 @@ export default function ApiDocsPage() {
             </div>
 
             <div className="border-t border-slate-800 pt-4">
-              <div className="text-slate-500 text-[11px] uppercase tracking-widest mb-3">Rate Limits</div>
+              <div className="text-slate-400 text-[11px] uppercase tracking-widest mb-3">Rate Limits</div>
               <div className="grid grid-cols-2 gap-2 font-mono text-xs">
-                <div><span className="text-slate-500">/api routes:</span> <span className="text-slate-200">60 req/min per IP</span></div>
-                <div><span className="text-slate-500">Other routes:</span> <span className="text-slate-200">120 req/min per IP</span></div>
+                <div><span className="text-slate-400">/api routes:</span> <span className="text-slate-200">60 req/min per IP</span></div>
+                <div><span className="text-slate-400">Other routes:</span> <span className="text-slate-200">120 req/min per IP</span></div>
               </div>
             </div>
           </div>
@@ -438,7 +438,7 @@ export default function ApiDocsPage() {
 
                     {ep.requestSchema && (
                       <div>
-                        <div className="text-[11px] font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">Request Body</div>
+                        <div className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-2">Request Body</div>
                         <pre className="bg-slate-950 rounded-xl p-4 text-xs text-slate-300 font-mono overflow-x-auto leading-relaxed">
                           {ep.requestSchema}
                         </pre>
@@ -446,7 +446,7 @@ export default function ApiDocsPage() {
                     )}
 
                     <div>
-                      <div className="text-[11px] font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">Response</div>
+                      <div className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-2">Response</div>
                       <pre className="bg-slate-950 rounded-xl p-4 text-xs text-slate-300 font-mono overflow-x-auto leading-relaxed">
                         {ep.responseSchema}
                       </pre>
@@ -512,7 +512,7 @@ export default function ApiDocsPage() {
               },
             ].map(schema => (
               <div key={schema.name}>
-                <div className="text-[11px] font-mono font-bold text-slate-500 uppercase tracking-widest mb-2">
+                <div className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-2">
                   {schema.name}
                 </div>
                 <pre className="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-300 font-mono overflow-x-auto leading-relaxed">
