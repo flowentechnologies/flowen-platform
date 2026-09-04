@@ -129,7 +129,7 @@ export default function SecurityPage() {
             </ul>
             <p className="text-slate-400 text-sm leading-relaxed">
               Flowen maintains all four DCB0129 artefacts. NHS commissioners can request our Clinical Safety Case Report and Hazard Log summary by contacting{' '}
-              <a href="mailto:security@flowen.digital" className="text-emerald-400 hover:underline">security@flowen.digital</a>.
+              <a href="mailto:security@flowen.digital" className="text-emerald-400 underline">security@flowen.digital</a>.
             </p>
           </div>
         </section>

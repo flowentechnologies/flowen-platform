@@ -196,7 +196,7 @@ export default function DPAPage() {
             For NHS organisations, this Agreement is designed to be consistent with NHS standard data sharing
             terms and the NHS Data Security and Protection Toolkit requirements. For bespoke terms or to request
             a signed DPA, contact{' '}
-            <a href="mailto:hello@flowen.digital" className="text-emerald-400 hover:underline">
+            <a href="mailto:hello@flowen.digital" className="text-emerald-400 underline">
               hello@flowen.digital
             </a>.
           </p>

@@ -253,7 +253,7 @@ export default async function PricingPage({
             >
               🚀 Start your free trial
             </a>
-            <p className="text-xs text-slate-500 mt-4">No card required · Cancel any time · Founding rate locks in when you subscribe</p>
+            <p className="text-xs text-slate-400 mt-4">No card required · Cancel any time · Founding rate locks in when you subscribe</p>
           </div>
         </section>
 

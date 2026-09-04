@@ -252,7 +252,7 @@ export default function VisemePage() {
               const activeKeys = group.keys.filter(k => (target[k] ?? 0) > 0.01);
               return (
                 <div key={group.label}>
-                  <div className="text-xs text-slate-500 font-mono uppercase mb-2">{group.label}</div>
+                  <div className="text-xs text-slate-400 font-mono uppercase mb-2">{group.label}</div>
                   {activeKeys.length === 0 ? (
                     <div className="text-xs text-slate-700 italic">— all at rest</div>
                   ) : (
@@ -287,7 +287,7 @@ export default function VisemePage() {
             {(() => {
               const totalActive = BLEND_GROUPS.flatMap(g => g.keys).filter(k => (target[k] ?? 0) > 0.01).length;
               return (
-                <div className="pt-2 border-t border-slate-800 text-xs text-slate-500 font-mono">
+                <div className="pt-2 border-t border-slate-800 text-xs text-slate-400 font-mono">
                   {totalActive} / 42 parameters active
                 </div>
               );

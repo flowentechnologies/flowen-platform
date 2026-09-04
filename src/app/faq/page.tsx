@@ -131,7 +131,7 @@ export default function FAQPage() {
           <h1 className="text-4xl font-extrabold text-white tracking-tight mt-4">Frequently Asked Questions</h1>
           <p className="text-slate-400 text-sm mt-3 max-w-xl mx-auto">
             Can&apos;t find what you&apos;re looking for? Email us at{' '}
-            <a href="mailto:hello@flowen.digital" className="text-emerald-400 hover:underline">hello@flowen.digital</a>.
+            <a href="mailto:hello@flowen.digital" className="text-emerald-400 underline">hello@flowen.digital</a>.
           </p>
         </div>
 

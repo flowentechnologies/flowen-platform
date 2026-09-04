@@ -83,7 +83,7 @@ export default function TrainingPage() {
                     {m.tag}
                   </span>
                   <span className="text-xs text-slate-400">{m.audience}</span>
-                  <span className="text-xs text-slate-500">· {m.readTime} read</span>
+                  <span className="text-xs text-slate-400">· {m.readTime} read</span>
                 </div>
                 <h2 className="text-lg font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">
                   {m.title}
@@ -97,7 +97,7 @@ export default function TrainingPage() {
                   ))}
                 </div>
               </div>
-              <div className="flex items-center shrink-0 text-slate-500 group-hover:text-emerald-400 transition-colors">
+              <div className="flex items-center shrink-0 text-slate-400 group-hover:text-emerald-400 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>

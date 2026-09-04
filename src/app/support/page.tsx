@@ -130,7 +130,7 @@ export default function SupportPage() {
           <p className="text-slate-400 text-xs leading-relaxed">
             <span className="text-slate-300 font-medium">Response times:</span>{' '}
             Bugs &amp; outages: 4h &nbsp;·&nbsp; Billing: 8h &nbsp;·&nbsp; Technical &amp; clinical: 24h &nbsp;·&nbsp; General: 48h
-            <span className="text-slate-500"> (Monday–Friday, UK business hours)</span>
+            <span className="text-slate-400"> (Monday–Friday, UK business hours)</span>
           </p>
         </div>
 

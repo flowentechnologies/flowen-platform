@@ -88,8 +88,8 @@ export default function NpsClient({ initialScore, token, alreadyResponded }: Pro
           })}
         </div>
         <div className="flex justify-between mt-2">
-          <span className="text-xs text-slate-500">Not at all likely</span>
-          <span className="text-xs text-slate-500">Extremely likely</span>
+          <span className="text-xs text-slate-400">Not at all likely</span>
+          <span className="text-xs text-slate-400">Extremely likely</span>
         </div>
         {score !== null && (
           <p className="mt-3 text-sm font-medium text-slate-300">

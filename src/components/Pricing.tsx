@@ -159,7 +159,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
                 <span className="text-4xl font-extrabold text-white">£{currentFounding.monthlyEquivalent.toFixed(2)}</span>
                 <span className="text-slate-400 text-sm">/mo</span>
                 {cycle === 'yearly' && (
-                  <span className="ml-2 text-xs line-through text-slate-500">£35.96</span>
+                  <span className="ml-2 text-xs line-through text-slate-400">£35.96</span>
                 )}
               </div>
               <div className="text-xs text-emerald-400 font-medium mt-1">{currentFounding.billingPeriodText}</div>

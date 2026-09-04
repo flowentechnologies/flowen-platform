@@ -68,7 +68,7 @@ export default function CookieConsent() {
           <p className="text-sm font-semibold text-white mb-1">This site uses cookies</p>
           <p className="text-xs text-slate-400 leading-relaxed">
             We use strictly necessary cookies for authentication and optional analytics cookies (Sentry error replay) to improve reliability.{' '}
-            <Link href="/cookie-policy" className="text-emerald-400 hover:underline whitespace-nowrap">
+            <Link href="/cookie-policy" className="text-emerald-400 underline whitespace-nowrap">
               Cookie Policy
             </Link>
           </p>

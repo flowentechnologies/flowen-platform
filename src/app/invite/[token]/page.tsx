@@ -159,7 +159,7 @@ export default async function InvitePage({ params }: PageProps) {
           >
             Continue to sign in
           </Link>
-          <p className="text-slate-500 text-xs text-center mt-4">
+          <p className="text-slate-400 text-xs text-center mt-4">
             You&apos;ll receive a one-time magic link at {signup.email}
           </p>
         </div>

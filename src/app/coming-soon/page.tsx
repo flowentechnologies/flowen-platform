@@ -120,7 +120,7 @@ export default function ComingSoonPage() {
           </Link>
         </div>
 
-        <p className="text-slate-500 text-xs font-mono">
+        <p className="text-slate-400 text-xs font-mono">
           Already have early access?{' '}
           <Link href="/auth/login" className="text-emerald-500 hover:text-emerald-400 transition-colors">
             Sign in to enter

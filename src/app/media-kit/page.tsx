@@ -48,7 +48,7 @@ export default function MediaKitPage() {
           <h1 className="text-4xl font-extrabold text-white tracking-tight mt-4">Media Kit</h1>
           <p className="text-slate-400 text-sm mt-3 max-w-2xl">
             For press inquiries, broadcast media, and editorial coverage. Contact our press team at{' '}
-            <a href="mailto:press@flowen.digital" className="text-emerald-400 hover:underline">press@flowen.digital</a>{' '}
+            <a href="mailto:press@flowen.digital" className="text-emerald-400 underline">press@flowen.digital</a>{' '}
             with the subject line <span className="font-mono text-slate-300">[PRESS]</span>.
           </p>
         </section>
@@ -136,7 +136,7 @@ export default function MediaKitPage() {
             </div>
             <p className="text-slate-400 text-sm">
               High-resolution logo files and brand guidelines are available on request for verified press and media organisations. Email{' '}
-              <a href="mailto:press@flowen.digital" className="text-emerald-400 hover:underline">press@flowen.digital</a>{' '}
+              <a href="mailto:press@flowen.digital" className="text-emerald-400 underline">press@flowen.digital</a>{' '}
               with your organisation name and publication.
             </p>
           </div>

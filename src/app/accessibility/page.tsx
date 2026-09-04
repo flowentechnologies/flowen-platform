@@ -132,7 +132,7 @@ export default function AccessibilityPage() {
                       <span className="text-emerald-400 font-bold">{compliant}</span> Compliant ·{' '}
                       <span className="text-yellow-400 font-bold">{partial}</span> Partial ·{' '}
                       <span className="text-slate-400 font-bold">{inProgress}</span> In Progress ·{' '}
-                      <span className="text-slate-500">{total} criteria total</span>
+                      <span className="text-slate-400">{total} criteria total</span>
                     </p>
                   </div>
                   <div className="text-3xl font-black text-white shrink-0">{pct}%</div>
@@ -226,16 +226,16 @@ export default function AccessibilityPage() {
             <h2 className="text-lg font-bold text-white mb-4">Known Limitations</h2>
             <ul className="space-y-3 text-slate-400">
               <li className="flex items-start gap-3">
-                <span className="text-slate-500 flex-shrink-0 font-bold mt-0.5">—</span>
+                <span className="text-slate-400 flex-shrink-0 font-bold mt-0.5">—</span>
                 The audio capture feature requires a microphone. Users without microphone access receive a static reference guide mode instead of a live session.
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-slate-500 flex-shrink-0 font-bold mt-0.5">—</span>
+                <span className="text-slate-400 flex-shrink-0 font-bold mt-0.5">—</span>
                 Data visualisation charts in the clinician analytics dashboard are currently accompanied by summary statistics but lack full ARIA table equivalents. We are adding accessible data tables alongside each chart (SC 1.3.1).
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-slate-500 flex-shrink-0 font-bold mt-0.5">—</span>
-                The investor pitch deck link includes a sender-defined time-limited expiry. Users who need an extension should contact <a href="mailto:hello@flowen.digital" className="text-emerald-400 hover:underline">hello@flowen.digital</a> (SC 2.2.1).
+                <span className="text-slate-400 flex-shrink-0 font-bold mt-0.5">—</span>
+                The investor pitch deck link includes a sender-defined time-limited expiry. Users who need an extension should contact <a href="mailto:hello@flowen.digital" className="text-emerald-400 underline">hello@flowen.digital</a> (SC 2.2.1).
               </li>
             </ul>
           </section>

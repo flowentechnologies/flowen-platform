@@ -331,7 +331,7 @@ export default function AffiliatesPage({
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
                     Website / social / channel URL{' '}
-                    <span className="text-slate-500 normal-case font-normal">(optional)</span>
+                    <span className="text-slate-400 normal-case font-normal">(optional)</span>
                   </label>
                   <input
                     type="url"
@@ -348,7 +348,7 @@ export default function AffiliatesPage({
                   Submit application
                 </button>
 
-                <p className="text-[11px] text-slate-500 text-center">
+                <p className="text-[11px] text-slate-400 text-center">
                   By applying you agree to the{' '}
                   <Link href="/legal" className="underline hover:text-slate-400 transition-colors">
                     Flowen Affiliate Terms

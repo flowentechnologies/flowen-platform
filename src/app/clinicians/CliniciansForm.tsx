@@ -129,7 +129,7 @@ export function CliniciansForm() {
       <div>
         <label htmlFor="slt-motivation" className={labelClass}>
           Why do you want to join the beta?{' '}
-          <span className="text-slate-500 normal-case not-italic">(optional)</span>
+          <span className="text-slate-400 normal-case not-italic">(optional)</span>
         </label>
         <textarea id="slt-motivation" name="motivation" rows={3}
           placeholder="Tell us about your current approach to home practice and what you're hoping Flowen can improve…"
@@ -150,7 +150,7 @@ export function CliniciansForm() {
         {isPending ? 'Submitting…' : 'Apply for Beta Access →'}
       </button>
 
-      <p className="text-center text-xs text-slate-500">
+      <p className="text-center text-xs text-slate-400">
         We're selecting the first 10 SLTs. Free throughout beta. No patient billing setup required.
       </p>
     </form>

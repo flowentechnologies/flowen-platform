@@ -147,7 +147,7 @@ export default function DocPageLayout({
                       <a
                         key={s.id}
                         href={`#${s.id}`}
-                        className="block text-xs text-slate-500 hover:text-slate-400 transition-colors py-0.5 pl-3"
+                        className="block text-xs text-slate-400 hover:text-slate-400 transition-colors py-0.5 pl-3"
                       >
                         {s.label}
                       </a>
