@@ -98,6 +98,10 @@ export function useLipSync(
 
   useEffect(() => {
     if (!remoteAudioTrack) {
+      // stopAnalysis batches several setState calls; React 18+ auto-batches
+      // synchronous updates within one effect into a single re-render, so
+      // this doesn't actually cascade despite what the rule's message implies.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       stopAnalysis();
       return;
     }

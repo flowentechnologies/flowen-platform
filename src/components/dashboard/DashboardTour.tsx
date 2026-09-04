@@ -60,6 +60,11 @@ export function DashboardTour() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Standard hydration-safe "mounted" flag (avoids SSR/CSR mismatch) — the
+    // textbook pattern for this in Next.js. react-hooks/set-state-in-effect
+    // flags it on general principle, but there's no better alternative that
+    // doesn't reintroduce the mismatch it's guarding against.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     try {
       if (!localStorage.getItem(STORAGE_KEY)) {

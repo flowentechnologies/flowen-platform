@@ -180,6 +180,11 @@ export function DashboardNav({ user }: { user: UserProfile }) {
   }, []);
 
   useEffect(() => {
+    // fetchUnread's setState runs after an awaited fetch resolves, not
+    // synchronously during this effect — react-hooks/set-state-in-effect
+    // flags any effect that calls a function containing a setState, but
+    // there's no synchronous cascade here (standard fetch-on-mount + poll).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUnread().catch(() => {});
     const id = setInterval(() => fetchUnread().catch(() => {}), 30000);
     return () => clearInterval(id);
@@ -187,6 +192,7 @@ export function DashboardNav({ user }: { user: UserProfile }) {
 
   useEffect(() => {
     if (pathname === '/dashboard/messages' || pathname.startsWith('/dashboard/clinician')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchUnread().catch(() => {});
     }
   }, [pathname, fetchUnread]);

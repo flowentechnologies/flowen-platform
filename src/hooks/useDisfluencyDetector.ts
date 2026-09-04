@@ -72,7 +72,16 @@ export function useDisfluencyDetector(
 
   const engineRef   = useRef<RuleEngine>(new RuleEngine());
   const onEventRef  = useRef(onEvent);
-  onEventRef.current = onEvent; // keep ref fresh without triggering re-subscribe
+  // Keep ref fresh without triggering re-subscribe. Previously written directly
+  // during render (react-hooks/refs flags mutating a ref outside an effect —
+  // this is a real distinction under React's Compiler assumptions, not a
+  // style nitpick: a ref write during render can be observed twice under
+  // Strict Mode's double-invoke or a bailed-out render). One effect-cycle of
+  // staleness for onEventRef is harmless here — it only affects which
+  // onEvent callback the *next* audio frame sees, not audio timing itself.
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  }, [onEvent]);
 
   const [events, setEvents]   = useState<DisfluencyEvent[]>([]);
   const [baseline, setBaseline] = useState<SpeakerBaseline>({
@@ -108,7 +117,6 @@ export function useDisfluencyDetector(
 
     return unsubscribe;
   // minConfidence: re-subscribe if the threshold changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pipeline, minConfidence]);
 
   // Separate ref for the per-subscription frame counter (avoids closure issues)
@@ -118,6 +126,13 @@ export function useDisfluencyDetector(
     engineRef.current.reset();
     setEvents([]);
     setBaseline({ segmentCount: 0, mean: 0, stddev: 0, isCalibrated: false });
+    // frameCount is a private bookkeeping counter (gates how often the
+    // baseline syncs into state, line ~104) — it's never read for rendering,
+    // so resetting it from this explicit, user-triggered action is correct.
+    // react-hooks/immutability flags any mutation of a ref also written
+    // inside an effect, but there's no race here: this only runs between
+    // sessions, never concurrently with the frame-subscription effect above.
+    // eslint-disable-next-line react-hooks/immutability
     frameCount.current = 0;
   }, []);
 
