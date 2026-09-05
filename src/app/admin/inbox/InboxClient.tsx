@@ -11,6 +11,7 @@ interface InboxItem {
   from_name: string | null;
   subject: string;
   snippet: string;
+  body_text: string;
   received_at: string;
   category: string;
   gmail_category: string | null;
@@ -107,6 +108,7 @@ export function InboxClient() {
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
+  const [openItemId, setOpenItemId] = useState<string | null>(null);
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Debounce the search box so we don't refetch on every keystroke.
@@ -148,6 +150,7 @@ export function InboxClient() {
   }, [fetchInbox, fetchDrafts]);
 
   const threads = useMemo(() => groupThreads(items), [items]);
+  const openItem = items.find(i => i.id === openItemId) ?? null;
 
   // Deep-link: expand and scroll to the thread containing ?item=<id> once
   // it's loaded.
@@ -366,13 +369,13 @@ export function InboxClient() {
         <div className="space-y-2">
           {threads.length === 0 && <p className="text-sm text-slate-400">No mail synced yet.</p>}
           {threads.map(thread => {
-            const isExpanded = expandedThreads.has(thread.threadId) || thread.messages.length === 1;
+            const isExpanded = expandedThreads.has(thread.threadId);
             const item = thread.latest;
             return (
               <div key={thread.threadId} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                 <div
                   className={`p-4 cursor-pointer ${thread.messages.length === 1 && item.id === deepLinkItem ? 'bg-emerald-50 dark:bg-emerald-500/10 ring-1 ring-emerald-400' : ''}`}
-                  onClick={() => thread.messages.length > 1 && toggleThread(thread.threadId)}
+                  onClick={() => setOpenItemId(item.id)}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
@@ -387,7 +390,13 @@ export function InboxClient() {
                           </span>
                         )}
                         {thread.messages.length > 1 && (
-                          <span className="text-[10px] font-mono font-bold text-slate-400">{thread.messages.length} messages</span>
+                          <button
+                            type="button"
+                            onClick={e => { e.stopPropagation(); toggleThread(thread.threadId); }}
+                            className="text-[10px] font-mono font-bold text-slate-400 hover:text-emerald-500 underline decoration-dotted"
+                          >
+                            {thread.messages.length} messages {expandedThreads.has(thread.threadId) ? '▲' : '▼'}
+                          </button>
                         )}
                         {item.ai_drafts?.[0] && (
                           <span className={`text-[10px] font-mono ${confidenceColor(item.ai_drafts[0].confidence_pct)}`}>
@@ -421,7 +430,8 @@ export function InboxClient() {
                       <div
                         key={m.id}
                         ref={el => { itemRefs.current[m.id] = el; }}
-                        className={`p-3 pl-6 flex items-start justify-between gap-3 ${m.id === deepLinkItem ? 'bg-emerald-50 dark:bg-emerald-500/10 ring-1 ring-emerald-400' : ''}`}
+                        onClick={() => setOpenItemId(m.id)}
+                        className={`p-3 pl-6 flex items-start justify-between gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors ${m.id === deepLinkItem ? 'bg-emerald-50 dark:bg-emerald-500/10 ring-1 ring-emerald-400' : ''}`}
                       >
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{m.from_name ?? m.from_address}</p>
@@ -490,6 +500,88 @@ export function InboxClient() {
           })}
         </div>
       )}
+
+      {openItem && (
+        <EmailDetail
+          item={openItem}
+          onClose={() => setOpenItemId(null)}
+          onArchive={() => { archive(openItem.id); setOpenItemId(null); }}
+          onViewDraft={() => { setOpenItemId(null); setTab('drafts'); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function EmailDetail({ item, onClose, onArchive, onViewDraft }: {
+  item: InboxItem;
+  onClose: () => void;
+  onArchive: () => void;
+  onViewDraft: () => void;
+}) {
+  const draft = item.ai_drafts?.[0];
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/50" onClick={onClose}>
+      <div
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-2xl max-h-[85vh] overflow-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-lg font-bold text-slate-900 dark:text-white truncate">{item.subject}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              {item.from_name ?? item.from_address} &lt;{item.from_address}&gt;
+            </p>
+            <p className="text-xs text-slate-400">
+              To {item.alias}@flowen.digital · {new Date(item.received_at).toLocaleString('en-GB')}
+            </p>
+          </div>
+          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-white flex-shrink-0">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 5l10 10M15 5L5 15" /></svg>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${CATEGORY_COLOR[item.category] ?? CATEGORY_COLOR.general}`}>
+            {item.category}
+          </span>
+          {item.gmail_category && (
+            <span className="text-[10px] font-mono text-slate-400">
+              {GMAIL_CATEGORY_ICON[item.gmail_category]} {GMAIL_CATEGORY_LABEL[item.gmail_category]}
+            </span>
+          )}
+          {draft && (
+            <span className={`text-[10px] font-mono ${confidenceColor(draft.confidence_pct)}`}>
+              draft: {draft.confidence_pct}% confidence ({draft.status})
+            </span>
+          )}
+        </div>
+
+        <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
+          <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+            {item.body_text || item.snippet || '(no body content synced)'}
+          </p>
+        </div>
+
+        <div className="flex gap-2 justify-end border-t border-slate-200 dark:border-slate-800 pt-4">
+          <button
+            type="button"
+            onClick={onArchive}
+            className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            Archive
+          </button>
+          {draft && draft.status === 'pending' && (
+            <button
+              type="button"
+              onClick={onViewDraft}
+              className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 transition-colors"
+            >
+              Review draft reply →
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
