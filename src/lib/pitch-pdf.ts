@@ -306,7 +306,7 @@ const SLIDES: Slide[] = [
   {
     num: '20',
     title: 'Founder\'s Pledge: Why I\'m Building This',
-    body: 'I\'ve stammered since I was 18 months old. I\'ve spent 30+ years navigating a system that too often has nothing to offer between appointments. I built Flowen because I needed it, and because I refuse to accept that the only options are an 18-week wait or £200/hour. Whatever happens with this raise, I\'m not stopping — but the right capital, from the right partner, lets this reach the people who need it faster and more safely. That\'s the pledge: the mission comes before the exit.\n\n[Placeholder draft — to be personalised and approved by the founder before this deck is shared.]',
+    body: 'I\'ve stammered since I was 18 months old. For more than 30 years I\'ve been on the other side of this system — a patient, not a founder — waiting for appointments, paying for therapy when I could, and practising alone in between with no real way to tell if it was working.\n\nI built Flowen myself, from nothing, in six weeks, while carrying more than most people would call reasonable at once. Not because it was easy — because I couldn\'t find the tool I needed, so I built it.\n\nThis isn\'t something I\'ll walk away from if this round doesn\'t close on my terms. Flowen continues regardless, because the people it\'s for don\'t stop needing it. What the right investment does is get it there faster, and built properly — safe, NHS-compliant, and evidenced, instead of held together by one person\'s unpaid hours.\n\nMy pledge is simple: the mission comes before the exit.',
     accentColor: C.gold,
   },
   {
