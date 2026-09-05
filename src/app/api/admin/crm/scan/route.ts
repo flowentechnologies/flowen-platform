@@ -25,7 +25,7 @@ export async function POST(_req: NextRequest): Promise<NextResponse> {
   const supabase = db();
   const { data: candidates, error } = await supabase
     .from('inbox_items')
-    .select('id, from_address, from_name, subject, gmail_category, category')
+    .select('id, from_address, from_name, subject, gmail_category, category, received_at')
     .is('crm_contact_id', null)
     .neq('category', 'billing')
     .order('received_at', { ascending: false })
@@ -36,14 +36,18 @@ export async function POST(_req: NextRequest): Promise<NextResponse> {
   // Group by sender, excluding Flowen's own addresses and mail already
   // known to be automated/marketing noise (same rule used to skip AI
   // drafts) — cheap filters before spending a Claude call on anything.
-  interface SenderEntry { fromName: string | null; subjects: string[]; itemIds: string[] }
+  interface SenderEntry { fromName: string | null; subjects: string[]; itemIds: string[]; lastReceivedAt: string }
   const bySender = new Map<string, SenderEntry>();
   for (const item of candidates ?? []) {
     if (item.from_address.endsWith('@flowen.digital')) continue;
     if (isAutomatedMail({ fromAddress: item.from_address, gmailCategory: item.gmail_category })) continue;
-    const entry: SenderEntry = bySender.get(item.from_address) ?? { fromName: item.from_name, subjects: [], itemIds: [] };
+    const entry: SenderEntry = bySender.get(item.from_address) ?? { fromName: item.from_name, subjects: [], itemIds: [], lastReceivedAt: item.received_at };
     entry.subjects.push(item.subject);
     entry.itemIds.push(item.id);
+    // candidates is ordered received_at desc, so the first item seen per
+    // sender is already their most recent — kept explicit rather than
+    // relying on iteration order in case that ever changes.
+    if (item.received_at > entry.lastReceivedAt) entry.lastReceivedAt = item.received_at;
     bySender.set(item.from_address, entry);
   }
 
@@ -70,7 +74,7 @@ export async function POST(_req: NextRequest): Promise<NextResponse> {
         name: info.fromName,
         category: classification.category,
         source: 'inbox:scan',
-        last_contact_at: new Date().toISOString(),
+        last_contact_at: info.lastReceivedAt,
       }, { onConflict: 'email', ignoreDuplicates: false })
       .select('id')
       .single();
