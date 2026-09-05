@@ -54,58 +54,58 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     num: '01',
-    title: '80 Million people stammer. We built FLOWEN — a deep-tech data processing engine that turns disfluent speech into the world\'s most valuable clinical dataset.',
-    body: 'FLOWEN = Fluency & Language Optimization With Empathic Neurofeedback. Proprietary phoneme-level disfluent ASR pipeline. Not a health app. A data processing company.',
+    title: '80 Million people stammer. We built FLOWEN — a real-time acoustic biofeedback engine purpose-built for disfluent speech.',
+    body: 'FLOWEN = Fluency & Language Optimization With Empathic Neurofeedback. A proprietary, sub-80ms real-time acoustic pipeline, built in-house — not a wrapper around someone else\'s speech AI.',
     bullets: [
       { text: 'LIVED EXPERIENCE FOUNDER', color: C.amber },
-      { text: 'DEEP TECH · DATA PROCESSING ENGINE', color: C.violet },
-      { text: 'PROPRIETARY DISFLUENT ASR PIPELINE', color: C.teal },
-      { text: 'NOT JUST A HEALTH APP', color: C.lav },
+      { text: 'DEEP TECH · REAL-TIME ACOUSTIC ENGINE', color: C.violet },
+      { text: 'PROPRIETARY, SUB-80MS PIPELINE', color: C.teal },
+      { text: 'BUILT FOR DISFLUENT SPEECH, NOT FLUENT SPEECH', color: C.lav },
     ],
     accentColor: C.amber,
   },
   {
     num: '02',
-    title: '18-Month NHS Waits. £200/Hour Therapy. 92% Dropout. Zero Daily Tools.',
-    body: '80 million people globally stutter. NHS SALT queues are critically oversubscribed. Standard AI (Google, Siri, Whisper) treats disfluency as noise and times out — it was never designed for it. No effective daily practice tool exists.',
+    title: 'Patchy NHS Coverage. £200/Hour Private Therapy. Zero Daily Tools.',
+    body: '80 million people globally stutter [1]. NHS adult stammering coverage varies widely by area — reported waits range from a few weeks to several months, and some areas have no dedicated adult service at all [2]. Standard AI (Google, Siri, Whisper) is trained on fluent speech and was never designed to characterise disfluency. No effective daily practice tool exists.',
     grid: [
-      { label: 'NHS SALT wait', value: '18 months', color: C.rose },
-      { label: 'Dropout rate', value: '92%', color: C.amber },
+      { label: 'NHS coverage', value: 'Patchy', color: C.rose },
+      { label: 'Private therapy', value: '£200/hr', color: C.amber },
       { label: 'People globally', value: '80M+', color: C.violet },
-      { label: 'Private therapy cost', value: '£200/hr', color: C.rose },
+      { label: 'Daily practice tools', value: 'None', color: C.rose },
     ],
     accentColor: C.rose,
   },
   {
     num: '03',
-    title: 'Deep Tech & Data Processing: Phoneme-Level Disfluency Pipeline',
-    body: 'This is not a health app with an AI wrapper. Flowen is a data processing company built on a proprietary phoneme-level pipeline that processes speech blocks as structured training signals. Google and Apple ASR discard disfluencies — our model is trained on them. That inversion is the moat.',
-    stat: '< 150ms',
+    title: 'Deep Tech: A Real-Time Acoustic Pipeline Purpose-Built for Disfluent Speech',
+    body: 'This isn\'t a health app wrapped around someone else\'s speech AI. Flowen\'s core is a proprietary, rule-based acoustic engine, built from scratch, that detects blocks, prolongations, and repetitions directly from the raw audio signal in real time. General-purpose ASR (Google, Apple, Whisper) is trained on fluent speech and isn\'t designed to characterise disfluency — Flowen doesn\'t rely on it for detection.',
+    stat: '<80ms',
     statColor: C.violet,
     bullets: [
-      { text: 'Phoneme-level block detection (not word-level like standard ASR)', color: C.violet },
-      { text: '100k+ proprietary disfluent clips — growing with each session', color: C.violet },
-      { text: 'No public dataset exists for this — we built it from scratch', color: C.lav },
-      { text: 'Exit precedent: Nuance acquired $19.7bn — for the DATA, not the product', color: C.amber },
+      { text: 'Acoustic-signal detection (amplitude, pitch, voice-tension) — not word-level transcription', color: C.violet },
+      { text: 'Sub-80ms audio pipeline; block/prolongation/repetition detection resolves within 300ms end-to-end', color: C.violet },
+      { text: 'Built entirely in-house — no third-party disfluency-detection model exists to depend on', color: C.lav },
+      { text: 'Every session\'s outcome data compounds into clinical evidence as usage grows', color: C.amber },
     ],
     accentColor: C.violet,
   },
   {
     num: '04',
     title: 'Product & Compliance: 3D Viseme Guide. NHS #WaitlistHero.',
-    body: 'Continuous mouth-shape animation, breathing biofeedback, and real-time block coaching. Built to NHS clinical safety standards from day one. Full compliance stack aligned before commercialisation.',
+    body: 'Continuous mouth-shape animation, breathing biofeedback, and real-time block coaching — with a formal hazard log already tracking 8 identified risks (6 mitigated) [3].',
     bullets: [
-      { text: '✓  DTAC Aligned', color: C.teal },
-      { text: '✓  DCB0129 Clinical Safety', color: C.teal },
-      { text: '✓  UK GDPR', color: C.teal },
-      { text: '✓  WCAG 2.1 AA', color: C.teal },
+      { text: 'DTAC — in progress (8/10 items)', color: C.amber },
+      { text: 'DCB0129 — in progress (7/8 items)', color: C.amber },
+      { text: 'UK GDPR — designed in from day one', color: C.teal },
+      { text: 'WCAG 2.1 AA — 0 automated violations; audit in progress', color: C.amber },
     ],
     accentColor: C.teal,
   },
   {
     num: '05',
     title: 'Methodology: 7-Stage Practice Ladder — From Block to Flow',
-    body: 'Combines Fluency Shaping (diaphragmatic onset) & Stammering Modification (pull-outs) into continuous visual biofeedback loops. Every session generates phoneme-level block data that feeds back into the ASR training pipeline.',
+    body: 'Combines Fluency Shaping (diaphragmatic onset) & Stammering Modification (pull-outs) into continuous visual biofeedback loops. Every session logs structured block/prolongation/repetition event data, building a growing real-world evidence base.',
     bullets: [
       { text: 'Stage 01 — Single Words: Diaphragmatic onset, gentle vocal cord vibration', color: C.teal },
       { text: 'Stage 02 — Phrases & Chunks: Continuous phonation across word boundaries', color: C.teal },
@@ -117,13 +117,13 @@ const SLIDES: Slide[] = [
   },
   {
     num: '06',
-    title: 'The Data Flywheel: Each Session = New Training Data',
-    body: 'Every user practice session generates annotated phoneme-level disfluency data. This feeds directly back into ASR fine-tuning. As users grow, the model improves — creating a compounding data moat no competitor can replicate without years of clinical partnerships.',
+    title: 'The Real Flywheel: Every Session Strengthens the Evidence Base',
+    body: 'Every practice session logs structured, anonymised outcome data — disfluency counts, fluency trends, technique adherence. That evidence compounds: it strengthens the clinical case NHS commissioners need to see, deepens SLT trust, and sharpens the product roadmap. This is a clinical-evidence and distribution flywheel, not a model-training one — Flowen\'s detection engine is hand-built and rule-based, not a model that needs data to improve.',
     bullets: [
-      { text: 'User session → phoneme block captured as structured data', color: C.violet },
-      { text: 'Block data → ASR fine-tuning pipeline', color: C.violet },
-      { text: 'Better model → better product → more users → more data', color: C.teal },
-      { text: 'Compounding advantage irreplicable without clinical access', color: C.amber },
+      { text: 'Session -> structured outcome data (events, trends, adherence) captured automatically', color: C.violet },
+      { text: 'Outcome data -> stronger clinical evidence for NHS/ICB commissioning conversations', color: C.violet },
+      { text: 'Better evidence -> more clinician referrals -> more users -> more evidence', color: C.teal },
+      { text: 'Compounding advantage: 30+ years of founder community trust + a growing outcomes record', color: C.amber },
     ],
     accentColor: C.violet,
   },
@@ -138,8 +138,8 @@ const SLIDES: Slide[] = [
       { label: 'Mature 20% target', value: '£1.77bn', color: C.amber },
     ],
     bullets: [
-      { text: 'Flowen — Tier 1/2: UK · EU · US · AU · Japan · ME  →  TAM £7.04bn', color: C.teal },
-      { text: 'Vocali — Tier 3/4: India · LatAm · Africa · SE Asia  →  TAM £1.8bn', color: C.violet },
+      { text: 'Flowen — Tier 1/2: UK · EU · US · AU · Japan · ME  ->  TAM £7.04bn', color: C.teal },
+      { text: 'Vocali — Tier 3/4: India · LatAm · Africa · SE Asia  ->  TAM £1.8bn', color: C.violet },
     ],
     accentColor: C.amber,
   },
@@ -152,7 +152,7 @@ const SLIDES: Slide[] = [
     bullets: [
       { text: "Founder's direct PWS community contacts (UK + global)", color: C.amber },
       { text: 'SLT clinician network — free SLP portal creates clinical pull', color: C.teal },
-      { text: 'NHS ICB block pledges — waiting-list relief angle', color: C.lav },
+      { text: 'NHS ICB conversations — waiting-list relief angle (0 formal contacts to date, see Slide 14)', color: C.lav },
       { text: 'Word-of-mouth: stuttering community is tight-knit with high advocacy density', color: C.lav },
     ],
     accentColor: C.teal,
@@ -160,7 +160,7 @@ const SLIDES: Slide[] = [
   {
     num: '09',
     title: 'Unit Economics & Exit: Deep Tech Commands 30×+ Multiples',
-    body: 'The valuation premium comes from the proprietary dataset and pipeline. Microsoft paid $19.7bn for Nuance (~35× ARR). Flowen\'s acquirers are buying the data moat, not a subscription business.',
+    body: 'Speech-tech M&A has commanded a valuation premium: Microsoft paid $19.7bn for Nuance (~35× ARR), largely for clinical-workflow integration and decades of enterprise ASR data — a sector comp, not a claim that Flowen holds an equivalent dataset. Flowen\'s premium case rests on a different asset: a proprietary, purpose-built acoustic detection engine and an NHS-compliant clinical position competitors would need years to replicate.',
     stat: '30–40×',
     statColor: C.amber,
     grid: [
@@ -170,9 +170,9 @@ const SLIDES: Slide[] = [
       { label: 'Savings vs private therapy', value: '95%', color: C.teal },
     ],
     bullets: [
-      { text: 'Nuance → Microsoft: $19.7bn ~35× ARR (data pipeline acquisition)', color: C.amber },
-      { text: 'Speechify Series A: $175m ~35× ARR', color: C.gold },
-      { text: 'Target exit multiple: 30–40× ARR from strategic acquirer', color: C.amber },
+      { text: 'Nuance -> Microsoft: $19.7bn ~35× ARR [4] (sector comp: clinical ASR + enterprise data)', color: C.amber },
+      { text: 'ElevenLabs: $500m raised at $11bn valuation, Feb 2026 [5]', color: C.gold },
+      { text: 'Target exit multiple: 30–40× ARR, on the strength of the acoustic pipeline + clinical position', color: C.amber },
     ],
     accentColor: C.amber,
   },
@@ -192,8 +192,8 @@ const SLIDES: Slide[] = [
   },
   {
     num: '11',
-    title: 'Execution Roadmap: 5-Year Path — UK Anchor → Global → Vocali Scale',
-    body: 'Compressed execution: NHS beachhead → Tier 1 international → Vocali launch in Tier 3/4 → 20% UK + global penetration.',
+    title: 'Execution Roadmap: 5-Year Path — UK Anchor -> Global -> Vocali Scale',
+    body: 'Compressed execution: NHS beachhead -> Tier 1 international -> Vocali launch in Tier 3/4 -> 20% UK + global penetration.',
     bullets: [
       { text: 'FY1 (2026): £120k ARR · 10K users · NHS pilot (1 ICB) · organic only', color: C.teal },
       { text: 'FY2 (2027): £480k ARR · 200–400 users · 3 ICBs + SLP portal launch', color: C.teal },
@@ -206,10 +206,10 @@ const SLIDES: Slide[] = [
   {
     num: '12',
     title: 'Founder Obsession: Lived Experience. Relentless Shipping. Deep Tech from Day 1.',
-    body: 'Stuttering onset at 18 months. 30+ years of lived experience driving product depth no outside team can replicate. Built the proprietary ASR pipeline, the clinical safety framework, and the founding member model independently — shipping continuously.',
+    body: 'Stuttering onset at 18 months. 30+ years of lived experience driving product depth no outside team can replicate. Built the proprietary acoustic biofeedback pipeline, the clinical safety framework, and the founding member model independently — 452 commits in 6 weeks, solo [6], shipping continuously.',
     bullets: [
       { text: 'Founder-market fit: unmatched clinical intuition and community trust', color: C.amber },
-      { text: 'Deep tech architect: built the ASR pipeline and data infrastructure from scratch', color: C.violet },
+      { text: 'Deep tech architect: built the acoustic biofeedback pipeline and clinical data infrastructure from scratch', color: C.violet },
       { text: 'PWS community: 30+ years of personal contacts = organic distribution', color: C.teal },
       { text: 'Clinician relationships: SLT network = direct institutional pull', color: C.teal },
     ],
@@ -217,21 +217,103 @@ const SLIDES: Slide[] = [
   },
   {
     num: '13',
-    title: 'The Partner Ask: £250k Pre-Seed · SEIS Eligible · 30× Exit Target',
-    body: 'Seeking capital with health-tech, deep-tech, and global distribution density. Use of funds: clinical validation 35% · ASR pipeline & data infrastructure 30% · regulatory UKCA/CE 15% · market access 12% · operations 8%.',
+    title: 'The Partner Ask: £350k Pre-Seed · SEIS Eligible · 30× Exit Target',
+    body: 'Seeking capital with health-tech, deep-tech, and global distribution density. Use of funds: clinical validation 35% · acoustic pipeline & clinical data infrastructure 30% · regulatory UKCA/CE 15% · market access 12% · operations 8%.',
     bullets: [
       { text: 'SEIS eligible: 50% income tax relief + CGT exemption for qualifying investors', color: C.teal },
-      { text: 'Exit thesis: proprietary dataset + pipeline at 30–40× ARR from strategic acquirer', color: C.amber },
+      { text: 'Exit thesis: proprietary acoustic pipeline + clinical compliance position at 30–40× ARR from strategic acquirer', color: C.amber },
       { text: 'Acquirer types: NHS digital supplier · speech tech group · global mental health platform', color: C.lav },
       { text: 'Flowen + Vocali = complete global speech platform · Vocali upside optionality', color: C.violet },
     ],
     grid: [
-      { label: 'Raise', value: '£250k', color: C.amber },
+      { label: 'Raise', value: '£350k', color: C.amber },
       { label: 'Combined TAM', value: '£8.84bn', color: C.teal },
       { label: 'Exit target', value: '30–40× ARR', color: C.amber },
       { label: 'Tax relief', value: '50% SEIS', color: C.teal },
     ],
     accentColor: C.teal,
+  },
+  {
+    num: '14',
+    title: 'Traction So Far: Early, Real, Honestly Reported',
+    body: 'Pre-launch, founder-funded, six weeks into building. These are the real numbers today — not a projection, and not the Year 1 target on Slide 8.',
+    stat: '26',
+    statColor: C.teal,
+    grid: [
+      { label: 'Signups', value: '10', color: C.teal },
+      { label: 'Waitlist', value: '9', color: C.teal },
+      { label: 'Sessions logged', value: '26', color: C.teal },
+      { label: 'Investor / grant convos', value: '3 / 1', color: C.amber },
+    ],
+    bullets: [
+      { text: 'NHS contacts to date: 0 — an honest, real gap, not yet an achievement', color: C.rose },
+    ],
+    accentColor: C.teal,
+  },
+  {
+    num: '15',
+    title: 'Competitive Landscape: No One Else Owns Real-Time + Clinical Safety',
+    body: 'Stammering-specific apps exist. None combine real-time on-device acoustic biofeedback with an NHS clinical-safety-first architecture (DCB0129/DTAC) built in from day one.',
+    bullets: [
+      { text: 'Stamurai — 50k+ users, 180 countries [7]. Exercise library + community, not real-time acoustic detection.', color: C.lav },
+      { text: 'SpeechAgain (Berlin) — cloud AI speech analysis; not positioned for NHS clinical-safety procurement.', color: C.lav },
+      { text: 'Iyaso (India, 2023) — early-stage, communication-skills focused.', color: C.lav },
+      { text: 'DAF Pro — delayed auditory feedback only; a single fixed technique, no adaptive detection.', color: C.lav },
+    ],
+    accentColor: C.amber,
+  },
+  {
+    num: '16',
+    title: 'Built · De-Risked · Still Need',
+    body: 'Six weeks solo. A real product, not a deck.',
+    bullets: [
+      { text: 'BUILT: full acoustic biofeedback pipeline (pitch/tension/onset), 3D viseme avatar, 5-stage practice ladder, clinician portal, billing, admin/ops stack — 452 commits, 25 Jul-5 Sep 2026 [6].', color: C.teal },
+      { text: 'DE-RISKED: formal DCB0129 hazard log, 8 hazards tracked, 6 mitigated; compliance active across 5 frameworks (DCB0129, DTAC, DSPT, MHRA, WCAG), 39 tracked items [3].', color: C.violet },
+      { text: 'STILL NEED: capital to complete formal DTAC/DCB0129/DSPT sign-off, first NHS ICB pilot conversation, clinical evidence at scale, SEIS advance assurance completion.', color: C.amber },
+    ],
+    accentColor: C.teal,
+  },
+  {
+    num: '17',
+    title: 'Risk Register & Mitigations: Disclosed, Not Hidden',
+    body: '8 formal clinical hazards logged under DCB0129 — 6 mitigated to low residual risk, 2 open with active mitigation in progress [3].',
+    bullets: [
+      { text: 'Open: clinical boundary confusion — mitigated via explicit "supplementary tool" messaging', color: C.lav },
+      { text: 'Open: over-reliance on app — mitigated via SLT hand-off design', color: C.lav },
+      { text: 'Mitigated: false positive/negative detection, psychological harm, data breach, device failure, ASR unavailability', color: C.teal },
+      { text: 'Business risks: single-founder key-person risk · third-party API dependency (OpenAI Whisper, Agora) · pre-revenue runway · slow NHS procurement cycles', color: C.amber },
+    ],
+    accentColor: C.rose,
+  },
+  {
+    num: '18',
+    title: 'Beyond Stammering: Cross-Sell & Licensing Potential',
+    body: 'The real-time amplitude/pitch/voice-tension pipeline isn\'t stammering-specific by construction. Optionality we haven\'t pursued yet, not signed deals.',
+    bullets: [
+      { text: 'Broader SLT caseload adherence monitoring (voice disorders beyond stammering)', color: C.violet },
+      { text: 'Call-centre agent vocal-strain/fatigue monitoring', color: C.violet },
+      { text: 'Voice-quality research tooling, licensed to universities/clinics', color: C.violet },
+      { text: 'Singing/vocal-coach training feedback', color: C.violet },
+    ],
+    accentColor: C.violet,
+  },
+  {
+    num: '19',
+    title: 'Hypergrowth Scenario: If NHS + International Land Early',
+    body: 'Illustrative upside scenario, not a forecast: if ICB pilots convert faster than the base case and Tier-1 international expansion overlaps with Vocali\'s launch instead of following it, the FY5 ARR path (Slide 11) compresses meaningfully — the constraint is clinical evidence and NHS procurement cycles, not product readiness or demand.',
+    accentColor: C.amber,
+  },
+  {
+    num: '20',
+    title: 'Founder\'s Pledge: Why I\'m Building This',
+    body: 'I\'ve stammered since I was 18 months old. I\'ve spent 30+ years navigating a system that too often has nothing to offer between appointments. I built Flowen because I needed it, and because I refuse to accept that the only options are an 18-week wait or £200/hour. Whatever happens with this raise, I\'m not stopping — but the right capital, from the right partner, lets this reach the people who need it faster and more safely. That\'s the pledge: the mission comes before the exit.\n\n[Placeholder draft — to be personalised and approved by the founder before this deck is shared.]',
+    accentColor: C.gold,
+  },
+  {
+    num: '21',
+    title: 'References & Sources',
+    body: '[1] ~1%/~80M global stuttering prevalence — Bloodstein & Ratner; Stuttering Foundation (stutteringhelp.org/prevalence). Some recent reviews report 0.6-0.7% adult prevalence.\n[2] NHS adult stammering wait times vary by trust (reported: 2-6 weeks to several months); coverage gaps exist in some areas — STAMMA (stamma.org).\n[3] Flowen internal DCB0129 hazard log and compliance tracker, as of Sep 2026.\n[4] Microsoft/Nuance, $19.7bn, announced Apr 2021, closed Mar 2022 — Bloomberg, GeekWire, SEC filings.\n[5] ElevenLabs, $500m raised at $11bn valuation, Feb 2026 — public reporting.\n[6] Flowen internal git history: 452 commits, 25 Jul-5 Sep 2026, single founder.\n[7] Stamurai — company self-reported figures (CB Insights, stamurai.com).',
+    accentColor: C.lav,
   },
 ];
 
@@ -373,10 +455,15 @@ function renderSlide(doc: PDFKit.PDFDocument, slide: Slide, slideNum: number, to
   let y = 58;
   const accent = slide.accentColor ?? C.teal;
 
-  // Title
+  // Title — reserve space for the stat badge (drawn top-right, same y) so a
+  // long title wraps around it instead of running underneath it. Only the
+  // body width accounted for this before; any slide with both a long-ish
+  // title and a stat badge could overlap them (caught while re-rendering
+  // after lengthening slide 03's title during an accuracy pass).
+  const titleW = slide.stat ? CONTENT_W - 200 : CONTENT_W;
   const titleSize = slide.title.length > 120 ? 16 : slide.title.length > 80 ? 18 : 20;
-  text(doc, slide.title, MARGIN, y, { color: C.paper, font: 'Helvetica-Bold', size: titleSize, width: CONTENT_W, lineGap: 3 });
-  y += doc.heightOfString(slide.title, { width: CONTENT_W, lineGap: 3 }) + 10;
+  text(doc, slide.title, MARGIN, y, { color: C.paper, font: 'Helvetica-Bold', size: titleSize, width: titleW, lineGap: 3 });
+  y += doc.heightOfString(slide.title, { width: titleW, lineGap: 3 }) + 10;
 
   // Accent line under title
   const [ar, ag, ab] = hexToRgb(accent);
@@ -420,7 +507,7 @@ function renderCover(doc: PDFKit.PDFDocument) {
   drawLogo(doc, W / 2 - 28, 100, 2.2);
 
   // Tagline
-  text(doc, 'FLOWEN', W / 2 - 60, 160, { color: C.paper, font: 'Helvetica-Bold', size: 40, width: 120, align: 'center' });
+  text(doc, 'FLOWEN', W / 2 - 100, 160, { color: C.paper, font: 'Helvetica-Bold', size: 40, width: 200, align: 'center' });
   text(doc, 'Fluency & Language Optimization With Empathic Neurofeedback', MARGIN, 208, { color: C.lav, font: 'Helvetica', size: 10, width: CONTENT_W, align: 'center' });
 
   // Divider
@@ -428,15 +515,15 @@ function renderCover(doc: PDFKit.PDFDocument) {
   doc.moveTo(W / 2 - 100, 232).lineTo(W / 2 + 100, 232).lineWidth(1).strokeColor([tr, tg, tb]).stroke();
 
   // Subtitles
-  text(doc, 'DEEP TECH · DATA PROCESSING · DUAL-BRAND GLOBAL SPEECH PLATFORM', MARGIN, 244, { color: C.amber, font: 'Helvetica-Bold', size: 8.5, width: CONTENT_W, align: 'center' });
-  text(doc, 'Proprietary Disfluent ASR Pipeline · Flowen (Tier 1/2) + Vocali (Tier 3/4) · £8.84bn Combined TAM', MARGIN, 260, { color: C.lavdim, font: 'Helvetica', size: 8, width: CONTENT_W, align: 'center' });
+  text(doc, 'DEEP TECH · REAL-TIME ACOUSTIC BIOFEEDBACK · DUAL-BRAND GLOBAL SPEECH PLATFORM', MARGIN, 244, { color: C.amber, font: 'Helvetica-Bold', size: 8.5, width: CONTENT_W, align: 'center' });
+  text(doc, 'Proprietary Real-Time Acoustic Pipeline · Flowen (Tier 1/2) + Vocali (Tier 3/4) · £8.84bn Combined TAM', MARGIN, 260, { color: C.lavdim, font: 'Helvetica', size: 8, width: CONTENT_W, align: 'center' });
 
   // Key stats row
   const stats = [
     { v: '80M+', l: 'Global PWS' },
     { v: '£8.84bn', l: 'Combined TAM' },
     { v: '30–40×', l: 'Exit Target' },
-    { v: '£250k', l: 'Pre-Seed SEIS' },
+    { v: '£350k', l: 'Pre-Seed SEIS' },
   ];
   const statW = 140;
   const statStart = W / 2 - (stats.length * statW) / 2;
@@ -482,7 +569,7 @@ export function buildPitchPDF(): Promise<Buffer> {
           Title:   'Flowen — Investor Pitch Deck',
           Author:  'Flowen Technologies Ltd',
           Subject: 'Pre-Seed Investment Opportunity',
-          Keywords: 'Flowen Vocali ASR speech stammer deep tech SEIS',
+          Keywords: 'Flowen Vocali speech stammer acoustic biofeedback deep tech SEIS',
           Creator: 'Flowen Technologies',
         },
         compress: true,

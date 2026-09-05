@@ -32,8 +32,10 @@ import type { DisfluencyEvent, VoicedSegment, SpeakerBaseline } from './types';
 
 /** Frames are 10ms each (160 samples @ 16kHz). */
 const FRAME_MS                 = 10;
-/** RMS below this → silence (matches PCM worklet VAD_THRESHOLD + 20% margin). */
-const SILENCE_RMS              = 0.006;
+/** RMS below this → silence (matches PCM worklet VAD_THRESHOLD + 20% margin).
+ *  Exported so other consumers of the same raw frames (AcousticFeatureTracker)
+ *  agree with RuleEngine on what counts as voiced. */
+export const SILENCE_RMS       = 0.006;
 /** Silence frames before transitioning from SILENCE_PENDING → SILENCE. */
 const HYSTERESIS_FRAMES        = 5;   // 50 ms
 /** Minimum pre-vocalic silence to declare a hard block. */

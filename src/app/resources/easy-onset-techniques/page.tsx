@@ -177,26 +177,23 @@ export default function EasyOnsetPage() {
 
       <DocH2 id="flowen-impl">How Flowen operationalises these techniques</DocH2>
       <DocP>
-        Flowen's biofeedback engine analyses incoming audio in real time — at approximately 30 samples per second — and derives the following signals relevant to fluency-shaping technique practice:
+        Flowen's biofeedback engine analyses incoming audio in real time — amplitude at 100 frames per second, pitch and tension at 25 analysis blocks per second — and derives the following signals relevant to fluency-shaping technique practice:
       </DocP>
       <DocTable
         headers={['Signal', 'What it measures', 'Technique it supports']}
         rows={[
-          ['Amplitude onset slope',        'Rate of vocal amplitude increase at utterance start',  'Easy onset'],
-          ['F0 perturbation at onset',     'Pitch fluctuation at speech initiation',               'Easy onset'],
-          ['Sub-breath pause detection',   'Whether speaker has inhaled before beginning',         'Diaphragmatic breathing'],
-          ['Mean speech rate (SPM)',        'Syllables per minute across the utterance',            'Prolonged speech'],
-          ['Pause duration distribution',  'Frequency and length of within-utterance pauses',      'Prolonged speech'],
-          ['Breathiness index',            'H1–H2 harmonic difference (measure of vocal tension)', 'Easy onset, prolonged speech'],
+          ['Amplitude (RMS)',       'Vocal loudness, measured every 10ms; also drives silence/onset detection', 'Easy onset, prolonged speech'],
+          ['Fundamental frequency', 'Pitch, estimated via real-time autocorrelation',                          'Easy onset'],
+          ['Voice-tension index',   'A 0–100 proxy combining pitch-period jitter and amplitude shimmer',        'Easy onset'],
         ]}
       />
       <DocP>
         These signals are processed by Flowen's audio pipeline — a WebAudio API implementation running client-side — and the results are used to drive three types of feedback:
       </DocP>
       <DocUL>
-        <DocLI><strong className="text-slate-200">Visual waveform feedback:</strong> Real-time amplitude envelope display showing the user their onset quality and speech rate</DocLI>
-        <DocLI><strong className="text-slate-200">Colour-coded cues:</strong> Traffic-light system indicating whether the current technique quality is within target range</DocLI>
-        <DocLI><strong className="text-slate-200">Post-utterance scoring:</strong> After each practice phrase, a technique score is displayed with specific feedback on which elements were successful</DocLI>
+        <DocLI><strong className="text-slate-200">Visual waveform feedback:</strong> Real-time amplitude display showing the user their onset quality</DocLI>
+        <DocLI><strong className="text-slate-200">Colour-coded tension cue:</strong> The voice-tension index bar shifts from blue to amber to orange as it rises toward the threshold that triggers an easy-onset prompt</DocLI>
+        <DocLI><strong className="text-slate-200">AI voice coach:</strong> A spoken coaching prompt, triggered by natural pauses in speech or by a high tension reading, giving specific technique feedback during the session rather than only afterward</DocLI>
       </DocUL>
 
       <DocH2 id="evidence-summary">Evidence summary</DocH2>

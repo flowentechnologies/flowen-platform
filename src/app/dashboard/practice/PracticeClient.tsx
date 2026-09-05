@@ -331,6 +331,15 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         blocksRef.current += 1;
         setBlocks(b => b + 1);
       }
+
+      // Vibrotactile feedback — short pulse on a detected disfluency event.
+      // Feature-detected: no-op (not an error) on browsers/devices without
+      // the Vibration API (notably iOS Safari, which doesn't implement it —
+      // those users still get the visual/audio feedback, just not haptic).
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        const pattern = ev.type === 'BLOCK' ? [40] : ev.type === 'PROLONG' ? [25, 30, 25] : [20];
+        navigator.vibrate(pattern);
+      }
     },
   });
 
@@ -579,6 +588,41 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     } catch { /* silent — coach is best-effort */ }
   }, [stageId, getBestVoice]);
 
+  // Tension-triggered easy-onset prompt: a direct, local cue (no AI round
+  // trip — this is a safety/technique nudge, not conversational feedback)
+  // fired when the live jitter/shimmer-based tension index crosses a high
+  // threshold. This is what actually backs the FAQ's claim that "high LTI
+  // values are flagged to prompt easy-onset resets" — previously nothing
+  // in the codebase did this.
+  const lastTensionPromptRef = useRef(0);
+  useEffect(() => {
+    if (screen !== 'recording') return;
+    const tension = disfluency.tensionIndex;
+    if (tension == null || tension < 70) return;
+    if (!coachEnabledRef.current || coachSpeakingRef.current) return;
+
+    const now = Date.now();
+    if (now - lastTensionPromptRef.current < 20_000) return; // per-prompt cooldown
+    if (now - lastCoachTimeRef.current < 8_000) return;      // don't stack on another coach line
+
+    lastTensionPromptRef.current = now;
+    lastCoachTimeRef.current = now;
+
+    const message = 'Notice the tension building — ease into the next word with a soft onset.';
+    setCoachText(message);
+    setCoachSpeaking(true);
+
+    const utter = new SpeechSynthesisUtterance(message);
+    utter.rate = 0.9;
+    utter.pitch = 1.0;
+    utter.volume = 0.88;
+    const voice = getBestVoice();
+    if (voice) utter.voice = voice;
+    utter.onend = () => setCoachSpeaking(false);
+    utter.onerror = () => setCoachSpeaking(false);
+    window.speechSynthesis.speak(utter);
+  }, [disfluency.tensionIndex, screen, getBestVoice]);
+
   // Silence-based trigger: when the user has said enough words and then
   // goes quiet for 3 seconds, fire the coach (feels like natural turn-taking).
   useEffect(() => {
@@ -738,6 +782,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     coachCallCountRef.current = 0;
     lastCoachWordCountRef.current = 0;
     lastCoachTimeRef.current = 0;
+    lastTensionPromptRef.current = 0;
     stage1FiredRef.current = new Set();
 
     timerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
@@ -825,6 +870,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     coachCallCountRef.current = 0;
     lastCoachWordCountRef.current = 0;
     lastCoachTimeRef.current = 0;
+    lastTensionPromptRef.current = 0;
     stage1FiredRef.current = new Set();
 
     visemeDriverRef.current?.reset();
@@ -855,6 +901,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     coachCallCountRef.current = 0;
     lastCoachWordCountRef.current = 0;
     lastCoachTimeRef.current = 0;
+    lastTensionPromptRef.current = 0;
     setScreen('select');
   }, [stopCamera]);
 
@@ -1644,6 +1691,8 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
           isCalibrated={disfluency.isCalibrated}
           rms={audioPipeline.rms}
           isRecording={audioPipeline.isRecording}
+          pitchHz={disfluency.pitchHz}
+          tensionIndex={disfluency.tensionIndex}
         />
 
         {/* Stop button */}

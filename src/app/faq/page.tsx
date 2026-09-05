@@ -17,7 +17,7 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: 'What is Flowen?',
-        a: 'Flowen is a real-time neural biofeedback platform designed to support people who stutter (PWS). It processes your voice in under 80ms, detects laryngeal tension and disfluency patterns, and delivers immediate visual and vibrotactile feedback to guide easy-onset speech techniques.',
+        a: 'Flowen is a real-time neural biofeedback platform designed to support people who stutter (PWS). Its on-device audio pipeline — amplitude, pitch, and a voice-tension index — runs in under 80ms; block, prolongation, and repetition detection resolves within 300ms end-to-end. Feedback is visual and, on devices that support it, vibrotactile.',
       },
       {
         q: 'Who is Flowen for?',
@@ -38,7 +38,7 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: 'How does the biofeedback work?',
-        a: 'Your microphone captures raw PCM audio at 16kHz. Our on-device engine computes RMS amplitude, fundamental frequency (pitch), and a laryngeal tension index — all within a single 80ms processing frame. The results drive a 3D avatar (42 viseme states) and an easy-onset coaching overlay in real time.',
+        a: 'Your microphone captures raw PCM audio at 16kHz. Our on-device engine computes RMS amplitude in 10ms frames and a fundamental-frequency (pitch) and voice-tension estimate in 40ms analysis blocks — all well under the pipeline\'s 80ms budget. The results drive the live coaching overlay in real time. (The 3D avatar\'s lip movement is driven separately, by the AI voice it speaks with.)',
       },
       {
         q: 'What devices does Flowen work on?',
@@ -54,7 +54,7 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: 'What is the laryngeal tension index?',
-        a: 'The laryngeal tension index (LTI) is a proprietary Flowen metric — a normalised score between 0.0 and 1.0 — that approximates the degree of laryngeal constriction based on acoustic signatures (perturbation, shimmer, harmonic-to-noise ratio). High LTI values typically precede blocks and are flagged to prompt easy-onset resets.',
+        a: 'The laryngeal tension index (LTI) is a proprietary Flowen metric — a score from 0 to 100 — computed from pitch-period jitter and amplitude shimmer, both measured in real time from your voice. It\'s a proxy for vocal strain, not a diagnostic instrument. High LTI values prompt an easy-onset reset cue during practice.',
       },
     ],
   },
