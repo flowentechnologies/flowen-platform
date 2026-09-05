@@ -53,16 +53,23 @@ async function handle(req: NextRequest) {
     }
   }
 
-  const token     = process.env.META_ADS_ACCESS_TOKEN ?? process.env.META_ACCESS_TOKEN;
-  const accountId = process.env.META_AD_ACCOUNT_ID;
+  const token       = process.env.META_ADS_ACCESS_TOKEN ?? process.env.META_ACCESS_TOKEN;
+  const rawAccountId = process.env.META_AD_ACCOUNT_ID;
 
-  if (!token || !accountId) {
+  if (!token || !rawAccountId) {
     return NextResponse.json({
       error: 'Meta credentials not configured',
       hint:  'Set META_ADS_ACCESS_TOKEN (or META_ACCESS_TOKEN) and META_AD_ACCOUNT_ID in Vercel environment variables.',
       configured: false,
     }, { status: 422 });
   }
+
+  // The Insights endpoint requires the "act_" prefix (e.g. act_1234567890),
+  // not just the numeric ID — a classic Meta API gotcha, and the likely
+  // reason this returned a clean "synced: 0" with no error at all once the
+  // field-name bug was fixed: a malformed-but-syntactically-valid account
+  // reference can resolve to an empty result set rather than a 400.
+  const accountId = rawAccountId.startsWith('act_') ? rawAccountId : `act_${rawAccountId}`;
 
   const client  = adminDb();
   const now     = new Date();
