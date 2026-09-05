@@ -69,10 +69,17 @@ async function handle(req: NextRequest) {
   const since   = new Date(now.getTime() - 30 * 86400_000).toISOString().slice(0, 10);
   const until   = now.toISOString().slice(0, 10);
 
-  // Fields to fetch from Meta Insights API
+  // Fields to fetch from Meta Insights API. `creative` is NOT a valid
+  // Insights field (Insights returns performance metrics, not creative
+  // objects — this was a pre-existing bug, the actual reason this sync
+  // never once succeeded even before the token-name issue: Meta rejects
+  // the whole request with "(#100) creative is not valid for fields
+  // param"). Creative ID would need a separate call against the ad
+  // object itself; not worth the extra request for what this feeds
+  // (the consistency check only needs spend/leads/registrations).
   const fields = [
     'campaign_id', 'campaign_name', 'adset_id', 'adset_name',
-    'ad_id', 'ad_name', 'creative',
+    'ad_id', 'ad_name',
     'spend', 'impressions', 'reach', 'clicks', 'inline_link_clicks',
     'ctr', 'cpc', 'cpm', 'frequency', 'actions',
   ].join(',');
@@ -111,7 +118,7 @@ async function handle(req: NextRequest) {
   // Transform Meta rows → ad_platform_stats schema
   type MetaRow = {
     campaign_id?: string; campaign_name?: string; adset_id?: string; adset_name?: string;
-    ad_id?: string; ad_name?: string; creative?: { id?: string };
+    ad_id?: string; ad_name?: string;
     date_start?: string; spend?: string; impressions?: string; reach?: string;
     clicks?: string; inline_link_clicks?: string; ctr?: string; cpc?: string;
     cpm?: string; frequency?: string;
@@ -141,7 +148,7 @@ async function handle(req: NextRequest) {
     adset_name:     r.adset_name   ?? null,
     ad_id:          r.ad_id        ?? null,
     ad_name:        r.ad_name      ?? null,
-    creative_id:    r.creative?.id ?? null,
+    creative_id:    null, // Meta Insights doesn't return creative objects; would need a separate ad-object call
     spend_pence:    toPence(r.spend),
     impressions:    parseInt(r.impressions ?? '0'),
     reach:          parseInt(r.reach       ?? '0'),
