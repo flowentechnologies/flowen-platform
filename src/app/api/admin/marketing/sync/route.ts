@@ -186,6 +186,7 @@ async function handle(req: NextRequest) {
 
   // Upsert in batches of 100
   let synced = 0;
+  const upsertErrors: string[] = [];
   const BATCH = 100;
   for (let i = 0; i < upsertRows.length; i += BATCH) {
     const batch = upsertRows.slice(i, i + BATCH);
@@ -197,6 +198,7 @@ async function handle(req: NextRequest) {
       });
     if (error) {
       console.error('[marketing/sync] upsert error:', error.message);
+      upsertErrors.push(error.message);
     } else {
       synced += batch.length;
     }
@@ -204,6 +206,12 @@ async function handle(req: NextRequest) {
 
   return NextResponse.json({
     synced,
+    fetched: allRows.length,
+    // Surfaced instead of only console.error'd — this exact class of
+    // silent failure (a missing unique constraint made every upsert
+    // reject, while the response still reported a clean "success" with
+    // synced: 0) is what actually kept this table empty.
+    upsert_errors: upsertErrors.length ? upsertErrors.slice(0, 3) : undefined,
     dateRange: { since, until },
     platform: 'meta',
     note: 'Sync complete. Data-only read — no ad changes were made.',

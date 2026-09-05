@@ -192,6 +192,7 @@ async function handle(req: NextRequest) {
 
   // Upsert in batches of 100
   let synced = 0;
+  const upsertErrors: string[] = [];
   const client = adminDb();
   const BATCH  = 100;
   for (let i = 0; i < upsertRows.length; i += BATCH) {
@@ -204,6 +205,7 @@ async function handle(req: NextRequest) {
       });
     if (error) {
       console.error('[sync/google-ads] upsert error:', error.message);
+      upsertErrors.push(error.message);
     } else {
       synced += batch.length;
     }
@@ -211,6 +213,8 @@ async function handle(req: NextRequest) {
 
   return NextResponse.json({
     synced,
+    fetched: rawRows.length,
+    upsert_errors: upsertErrors.length ? upsertErrors.slice(0, 3) : undefined,
     dateRange: { since, until },
     platform:  'google',
     note:      'Sync complete. Data-only read — no Google Ads changes were made.',
