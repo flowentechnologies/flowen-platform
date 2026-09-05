@@ -256,9 +256,10 @@ export async function applyLabel(messageId: string, labelName: string): Promise<
  *  replies can go out looking like they came from security@, press@, etc.
  *  instead of admin@. Safe to call repeatedly — Gmail 409s on a duplicate,
  *  which is swallowed here. Call once after connecting (see callback route). */
-export async function ensureSendAsAliases(): Promise<{ created: string[]; skipped: string[] }> {
+export async function ensureSendAsAliases(): Promise<{ created: string[]; skipped: string[]; errors: Record<string, unknown> }> {
   const created: string[] = [];
   const skipped: string[] = [];
+  const errors: Record<string, unknown> = {};
 
   const existingRes = await gmailFetch('/settings/sendAs');
   const existingBody = await existingRes.json() as { sendAs?: { sendAsEmail: string }[] };
@@ -278,11 +279,19 @@ export async function ensureSendAsAliases(): Promise<{ created: string[]; skippe
         treatAsAlias: true,
       }),
     });
-    if (res.ok) created.push(alias);
-    else skipped.push(alias); // e.g. already pending verification from a prior attempt
+    if (res.ok) {
+      created.push(alias);
+    } else {
+      skipped.push(alias);
+      // Capture the real reason rather than silently swallowing it — a 403
+      // here (the actual, confirmed cause) means Gmail doesn't recognise
+      // this address as belonging to the account at all, which is a very
+      // different problem from "pending verification".
+      try { errors[email] = await res.json(); } catch { errors[email] = { status: res.status }; }
+    }
   }
 
-  return { created, skipped };
+  return { created, skipped, errors };
 }
 
 // ── Sending (reply or fresh outreach) — only ever called after admin approval ──

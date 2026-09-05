@@ -26,7 +26,7 @@ export async function GET(): Promise<NextResponse> {
 
   // Re-attempt creation first — cheap and idempotent, covers the "never
   // successfully created at connect-time" case.
-  let repair: { created: string[]; skipped: string[] } | null = null;
+  let repair: { created: string[]; skipped: string[]; errors: Record<string, unknown> } | null = null;
   try {
     repair = await ensureSendAsAliases();
   } catch (err) {
