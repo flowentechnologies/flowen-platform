@@ -65,6 +65,7 @@ export function CrmClient() {
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [openContactId, setOpenContactId] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const fetchContacts = useCallback(async (category?: string) => {
     const url = category ? `/api/admin/crm?category=${category}` : '/api/admin/crm';
@@ -97,11 +98,20 @@ export function CrmClient() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">CRM Pipeline</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Investors, grants, NHS partnerships, press, and affiliates — one pipeline, sourced automatically from inbox activity.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">CRM Pipeline</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Investors, grants, NHS partnerships, press, and affiliates — one pipeline, sourced automatically from inbox activity.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowAddModal(true)}
+          className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 transition-colors flex-shrink-0"
+        >
+          + Add contact
+        </button>
       </div>
 
       <div className="flex gap-2 flex-wrap">
@@ -178,6 +188,139 @@ export function CrmClient() {
           onUpdated={patch => setContacts(prev => prev.map(c => (c.id === openContact.id ? { ...c, ...patch } : c)))}
         />
       )}
+
+      {showAddModal && (
+        <AddContactModal
+          onClose={() => setShowAddModal(false)}
+          onCreated={contact => { setContacts(prev => [contact, ...prev]); setShowAddModal(false); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function AddContactModal({ onClose, onCreated }: {
+  onClose: () => void;
+  onCreated: (contact: Contact) => void;
+}) {
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
+  const [category, setCategory] = useState('other');
+  const [notes, setNotes] = useState('');
+  const [dealValue, setDealValue] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (!email.trim()) { setError('Email is required'); return; }
+    setSaving(true);
+    setError(null);
+    const res = await fetch('/api/admin/crm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.trim(),
+        name: name.trim() || undefined,
+        company: company.trim() || undefined,
+        category,
+        notes: notes.trim() || undefined,
+        deal_value_pence: dealValue.trim() ? Math.round(parseFloat(dealValue) * 100) : undefined,
+      }),
+    });
+    const data = await res.json() as { contact?: Contact; error?: string };
+    setSaving(false);
+    if (!res.ok || !data.contact) {
+      setError(data.error ?? 'Failed to create contact');
+      return;
+    }
+    onCreated(data.contact);
+  }
+
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/50" onClick={onClose}>
+      <div
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4"
+      >
+        <div className="flex items-center justify-between">
+          <p className="text-lg font-bold text-slate-900 dark:text-white">Add contact</p>
+          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-700 dark:hover:text-white">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 5l10 10M15 5L5 15" /></svg>
+          </button>
+        </div>
+
+        {error && <p className="text-xs text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">{error}</p>}
+
+        <div className="space-y-3">
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Email *</label>
+            <input
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="jane@example.com"
+              className="w-full mt-1 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Name</label>
+              <input
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full mt-1 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Company</label>
+              <input
+                value={company}
+                onChange={e => setCompany(e.target.value)}
+                className="w-full mt-1 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Category</label>
+              <select
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+                className="w-full mt-1 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-700 dark:text-slate-300"
+              >
+                {Object.entries(CATEGORY_LABEL).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Deal value (£)</label>
+              <input
+                value={dealValue}
+                onChange={e => setDealValue(e.target.value)}
+                placeholder="0.00"
+                className="w-full mt-1 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-900 dark:text-white"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Notes</label>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              rows={2}
+              className="w-full mt-1 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-slate-700 dark:text-slate-300 resize-y"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            Cancel
+          </button>
+          <button type="button" onClick={submit} disabled={saving} className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 disabled:opacity-50 transition-colors">
+            {saving ? 'Saving…' : 'Add contact'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
