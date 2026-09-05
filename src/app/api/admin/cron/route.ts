@@ -12,6 +12,7 @@ const JOB_PATHS: Record<string, string> = {
   'system-health':     '/api/cron/system-health',
   'gdpr-sweep':        '/api/cron/gdpr-sweep',
   'audit-archive':     '/api/cron/audit-archive',
+  'gmail-sync':        '/api/cron/gmail-sync',
 };
 
 // ── Handler ───────────────────────────────────────────────────────────────────

@@ -55,6 +55,8 @@ export function InboxClient() {
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [editing, setEditing] = useState<Record<string, { subject: string; body: string }>>({});
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   const fetchInbox = useCallback(async () => {
     const res = await fetch('/api/admin/inbox');
@@ -91,6 +93,40 @@ export function InboxClient() {
     }
   }
 
+  async function refresh() {
+    setSyncing(true);
+    setSyncMessage(null);
+    try {
+      const res = await fetch('/api/admin/cron', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'trigger_job', jobId: 'gmail-sync' }),
+      });
+      const data = await res.json() as {
+        run?: { status: string; result?: { scanned?: number; synced?: number; drafts?: number; errors?: string[] }; error?: string | null };
+        error?: string;
+      };
+
+      if (!res.ok || !data.run) {
+        setSyncMessage(`Sync failed: ${data.error ?? 'unknown error'}`);
+      } else if (data.run.status === 'failed') {
+        setSyncMessage(`Sync failed: ${data.run.error ?? 'unknown error'}`);
+      } else {
+        const r = data.run.result ?? {};
+        setSyncMessage(
+          r.synced
+            ? `Synced ${r.synced} new email${r.synced === 1 ? '' : 's'}${r.drafts ? ` — ${r.drafts} draft${r.drafts === 1 ? '' : 's'} ready` : ''}.`
+            : `Checked ${r.scanned ?? 0} recent messages — nothing new.`
+        );
+        await Promise.all([fetchInbox(), fetchDrafts()]);
+      }
+    } catch (err) {
+      setSyncMessage(`Sync failed: ${err instanceof Error ? err.message : 'network error'}`);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   async function reject(draftId: string) {
     const res = await fetch('/api/admin/drafts', {
       method: 'PATCH',
@@ -102,11 +138,27 @@ export function InboxClient() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Inbox</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          All @flowen.digital aliases, synced hourly from admin@ on Google Workspace.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Inbox</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            All @flowen.digital aliases, synced hourly from admin@ on Google Workspace.
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-1.5">
+          <button
+            type="button"
+            onClick={refresh}
+            disabled={syncing || connected === false}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className={syncing ? 'animate-spin' : ''}>
+              <path d="M17 10a7 7 0 1 1-2.05-4.95M17 3v4h-4" />
+            </svg>
+            {syncing ? 'Syncing…' : 'Refresh'}
+          </button>
+          {syncMessage && <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs text-right">{syncMessage}</p>}
+        </div>
       </div>
 
       {connected === false && (
