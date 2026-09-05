@@ -64,7 +64,19 @@ export async function GET(
     // name="pitch-token"> comment in the file) so its "Download PDF" button
     // can build the right /api/pitch/<token>/pdf URL without the static
     // file needing to know its own request URL.
-    const html = (await file.text()).replaceAll('__PITCH_TOKEN__', token);
+    //
+    // This targets the FULL `content="__PITCH_TOKEN__"` attribute pattern,
+    // not the bare placeholder word, and only replaces the first match.
+    // The bare word also appears a second time in the file, in the page's
+    // own JS as a sentinel string (`token === '__PITCH_TOKEN__'`, used to
+    // detect "this HTML was opened without going through this route" and
+    // fall back to a plain-text export). A blind replaceAll('__PITCH_TOKEN__', token)
+    // clobbered that JS string too, so after injection the sentinel
+    // comparison became `token === '<the real token>'` — always true — and
+    // the "Download PDF" button silently fell back to the .txt export on
+    // every real request. Scoping to the full attribute string leaves the
+    // JS sentinel untouched.
+    const html = (await file.text()).replace('content="__PITCH_TOKEN__"', `content="${token}"`);
     // The deck uses Tailwind CDN, Google Fonts, and FontAwesome — set a
     // permissive CSP scoped to this route only.  This overrides the site-wide
     // restrictive CSP set in next.config.ts for all other routes.
