@@ -102,24 +102,38 @@ async function handle(req: NextRequest) {
 
   let allRows: unknown[] = [];
   let nextUrl: string | null = `${META_API}/${accountId}/insights?${params}`;
+  let firstPageStatus: number | null = null;
+  let pages = 0;
 
   try {
     while (nextUrl) {
       const res  = await fetch(nextUrl);
+      if (firstPageStatus === null) firstPageStatus = res.status;
       const json = await res.json() as { data?: unknown[]; paging?: { next?: string }; error?: { message: string } };
       if (json.error) {
-        return NextResponse.json({ error: json.error.message, configured: true }, { status: 502 });
+        return NextResponse.json({ error: json.error.message, configured: true, account_id_used: accountId, http_status: res.status }, { status: 502 });
       }
       allRows = [...allRows, ...(json.data ?? [])];
       nextUrl = json.paging?.next ?? null;
+      pages++;
       if (allRows.length > 5000) break; // safety cap
     }
   } catch (e) {
-    return NextResponse.json({ error: 'Meta API request failed', detail: String(e) }, { status: 502 });
+    return NextResponse.json({ error: 'Meta API request failed', detail: String(e), account_id_used: accountId }, { status: 502 });
   }
 
   if (allRows.length === 0) {
-    return NextResponse.json({ synced: 0, note: 'No data returned from Meta for the date range.' });
+    // Diagnostic fields — not sensitive (an ad account ID, an HTTP status,
+    // a page count), added specifically to find why this returns cleanly
+    // with zero rows despite the account having real spend in this window.
+    return NextResponse.json({
+      synced: 0,
+      note: 'No data returned from Meta for the date range.',
+      account_id_used: accountId,
+      http_status: firstPageStatus,
+      pages_fetched: pages,
+      date_range: { since, until },
+    });
   }
 
   // Transform Meta rows → ad_platform_stats schema
