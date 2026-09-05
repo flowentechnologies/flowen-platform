@@ -23,12 +23,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { assertAdmin }               from '@/lib/admin/guard';
 import { adminDb }                   from '@/lib/supabase/admin';
 import { getGoogleAccessToken }      from '@/lib/google-oauth';
+import { verifyCronRequest }         from '@/lib/cron-auth';
 
 const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v18';
 
-export async function POST(_req: NextRequest) {
-  try { await assertAdmin(); } catch {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+// Accepts either an admin browser session (manual "Sync now" click) or the
+// cron secret (scheduled daily run, or /admin/cron's manual-trigger button)
+// — previously admin-session-only, which meant no cron could ever run this.
+// GET is required too: Vercel Cron always invokes via GET.
+export async function GET(req: NextRequest) {
+  return handle(req);
+}
+export async function POST(req: NextRequest) {
+  return handle(req);
+}
+
+async function handle(req: NextRequest) {
+  if (!verifyCronRequest(req.headers)) {
+    try { await assertAdmin(); } catch {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
   }
 
   const developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
@@ -79,6 +93,7 @@ export async function POST(_req: NextRequest) {
       metrics.average_cpc,
       metrics.average_cpm,
       metrics.interactions,
+      metrics.conversions,
       segments.date
     FROM ad_group_ad
     WHERE segments.date BETWEEN '${since}' AND '${until}'
@@ -142,6 +157,7 @@ export async function POST(_req: NextRequest) {
       ctr?: number;
       averageCpc?: string;          // micros
       averageCpm?: string;          // micros
+      conversions?: number;
     };
     segments?: { date?: string };
   };
@@ -169,6 +185,8 @@ export async function POST(_req: NextRequest) {
     cpc_pence:     microsToPence(r.metrics?.averageCpc),
     cpm_pence:     microsToPence(r.metrics?.averageCpm),
     frequency:     null,                        // not applicable in Google Ads
+    leads:         Math.round(r.metrics?.conversions ?? 0),
+    registrations: 0,                            // Google Ads reports one "conversions" metric, not separate lead/registration types
     synced_at:     new Date().toISOString(),
   }));
 

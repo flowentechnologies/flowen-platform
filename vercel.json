@@ -15,6 +15,9 @@
     { "path": "/api/cron/system-health",       "schedule": "0 * * * *" },
     { "path": "/api/cron/social-publish",      "schedule": "0 * * * *" },
     { "path": "/api/cron/pinterest-token-refresh", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/gmail-sync",          "schedule": "0 * * * *" }
+    { "path": "/api/cron/gmail-sync",          "schedule": "0 * * * *" },
+    { "path": "/api/admin/marketing/sync",     "schedule": "0 6 * * *" },
+    { "path": "/api/admin/marketing/sync/google-ads", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/consistency-check",   "schedule": "30 6 * * *" }
   ]
 }

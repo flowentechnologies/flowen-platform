@@ -5,9 +5,21 @@
  * and upserts into ad_platform_stats. Returns a summary of rows synced.
  *
  * Required env vars (add to Vercel):
- *   META_ADS_ACCESS_TOKEN  — long-lived system user access token with
- *                            ads_read + ads_management permissions
+ *   META_ADS_ACCESS_TOKEN or META_ACCESS_TOKEN — long-lived system user
+ *                            access token with ads_read + ads_management
+ *                            permissions. This route previously only
+ *                            checked META_ADS_ACCESS_TOKEN, which was never
+ *                            actually set — the token that *was* configured
+ *                            (META_ACCESS_TOKEN, already used elsewhere for
+ *                            CAPI/social publishing) is why this sync never
+ *                            ran successfully. Falls back to it now.
  *   META_AD_ACCOUNT_ID     — e.g. act_1234567890
+ *
+ * Also captures `actions` (Lead, CompleteRegistration, etc.) alongside
+ * spend/clicks — needed so /admin/consistency can compare what Meta reports
+ * as conversions against real signups in Flowen's own database, which is
+ * the exact "41 reported leads vs 8 real signups" gap this exists to catch
+ * automatically going forward.
  *
  * Safe to call multiple times — upsert is idempotent on (platform, stat_date,
  * campaign_id, adset_id, ad_id). Only syncs; never modifies ad spend, status,
@@ -17,23 +29,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { assertAdmin } from '@/lib/admin/guard';
 import { adminDb } from '@/lib/supabase/admin';
+import { verifyCronRequest } from '@/lib/cron-auth';
 
 const META_API = 'https://graph.facebook.com/v22.0';
 
-export async function POST(_req: NextRequest) {
-  try {
-    await assertAdmin();
-  } catch {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+// Accepts either an admin browser session (manual "Sync now" click) or the
+// cron secret (scheduled daily run, or /admin/cron's manual-trigger button)
+// — previously admin-session-only, which meant no cron could ever run this.
+// GET is required too: Vercel Cron always invokes via GET.
+export async function GET(req: NextRequest) {
+  return handle(req);
+}
+export async function POST(req: NextRequest) {
+  return handle(req);
+}
+
+async function handle(req: NextRequest) {
+  if (!verifyCronRequest(req.headers)) {
+    try {
+      await assertAdmin();
+    } catch {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
   }
 
-  const token     = process.env.META_ADS_ACCESS_TOKEN;
+  const token     = process.env.META_ADS_ACCESS_TOKEN ?? process.env.META_ACCESS_TOKEN;
   const accountId = process.env.META_AD_ACCOUNT_ID;
 
   if (!token || !accountId) {
     return NextResponse.json({
       error: 'Meta credentials not configured',
-      hint:  'Set META_ADS_ACCESS_TOKEN and META_AD_ACCOUNT_ID in Vercel environment variables.',
+      hint:  'Set META_ADS_ACCESS_TOKEN (or META_ACCESS_TOKEN) and META_AD_ACCOUNT_ID in Vercel environment variables.',
       configured: false,
     }, { status: 422 });
   }
@@ -48,7 +74,7 @@ export async function POST(_req: NextRequest) {
     'campaign_id', 'campaign_name', 'adset_id', 'adset_name',
     'ad_id', 'ad_name', 'creative',
     'spend', 'impressions', 'reach', 'clicks', 'inline_link_clicks',
-    'ctr', 'cpc', 'cpm', 'frequency',
+    'ctr', 'cpc', 'cpm', 'frequency', 'actions',
   ].join(',');
 
   const params = new URLSearchParams({
@@ -89,10 +115,22 @@ export async function POST(_req: NextRequest) {
     date_start?: string; spend?: string; impressions?: string; reach?: string;
     clicks?: string; inline_link_clicks?: string; ctr?: string; cpc?: string;
     cpm?: string; frequency?: string;
+    actions?: { action_type: string; value: string }[];
   };
 
   const toPence = (s: string | undefined) =>
     s ? Math.round(parseFloat(s) * 100) : 0;
+
+  // Meta's own conversion action types, distinct from landing_page_view
+  // (which is a page load, not a lead — the exact metric that got
+  // mistaken for "41 leads" before this existed).
+  const LEAD_ACTION_TYPES = ['lead', 'onsite_conversion.lead_grouped', 'offsite_conversion.fb_pixel_lead'];
+  const REGISTRATION_ACTION_TYPES = ['offsite_conversion.fb_pixel_complete_registration', 'complete_registration'];
+
+  function sumActions(actions: { action_type: string; value: string }[] | undefined, types: string[]): number {
+    if (!actions) return 0;
+    return actions.filter(a => types.includes(a.action_type)).reduce((sum, a) => sum + (parseInt(a.value) || 0), 0);
+  }
 
   const upsertRows = (allRows as MetaRow[]).map(r => ({
     platform:       'meta',
@@ -113,6 +151,8 @@ export async function POST(_req: NextRequest) {
     cpc_pence:      r.cpc       ? toPence(r.cpc)          : null,
     cpm_pence:      r.cpm       ? toPence(r.cpm)          : null,
     frequency:      r.frequency ? parseFloat(r.frequency) : null,
+    leads:          sumActions(r.actions, LEAD_ACTION_TYPES),
+    registrations:  sumActions(r.actions, REGISTRATION_ACTION_TYPES),
     synced_at:      new Date().toISOString(),
   }));
 

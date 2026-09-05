@@ -13,6 +13,9 @@ const JOB_PATHS: Record<string, string> = {
   'gdpr-sweep':        '/api/cron/gdpr-sweep',
   'audit-archive':     '/api/cron/audit-archive',
   'gmail-sync':        '/api/cron/gmail-sync',
+  'marketing-sync-meta':   '/api/admin/marketing/sync',
+  'marketing-sync-google': '/api/admin/marketing/sync/google-ads',
+  'consistency-check':     '/api/cron/consistency-check',
 };
 
 // ── Handler ───────────────────────────────────────────────────────────────────
