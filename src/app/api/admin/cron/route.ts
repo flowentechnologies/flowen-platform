@@ -75,7 +75,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         jobResult = await jobRes.json() as Record<string, unknown>;
       } else {
         jobStatus = 'failed';
-        jobError  = `HTTP ${jobRes.status}: ${jobRes.statusText}`;
+        // Surface the job's own error body instead of a bare status code —
+        // a route can return a non-2xx with a real, useful error message
+        // (e.g. an upstream API's own rejection reason) that a generic
+        // "HTTP 502: Bad Gateway" was silently discarding.
+        try {
+          const body = await jobRes.json() as Record<string, unknown>;
+          jobError = typeof body.error === 'string' ? body.error : JSON.stringify(body);
+        } catch {
+          jobError = `HTTP ${jobRes.status}: ${jobRes.statusText}`;
+        }
       }
     } catch (err) {
       jobStatus = 'failed';

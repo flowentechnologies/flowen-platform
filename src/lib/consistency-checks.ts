@@ -139,7 +139,13 @@ export async function checkVenture(): Promise<CheckResult> {
       dtac_10_updated_at: dtac?.updated_at ?? null,
     };
 
-    if (dtac && new Date(venture.updated_at) > new Date(dtac.updated_at)) {
+    // A 1-hour buffer, not a strict timestamp comparison — related tables
+    // updated together as part of the same edit will always differ by a
+    // few seconds (whichever UPDATE statement ran second), which isn't a
+    // real staleness signal. Only flag a gap wide enough to suggest
+    // venture_config genuinely moved on without the note being revisited.
+    const STALENESS_BUFFER_MS = 60 * 60_000;
+    if (dtac && new Date(venture.updated_at).getTime() - new Date(dtac.updated_at).getTime() > STALENESS_BUFFER_MS) {
       return {
         status: 'discrepancy',
         summary: 'venture_config was updated more recently than the DTAC compliance note (dtac_10) that cites its cash/runway figures — the note may now be stale relative to the live numbers.',
