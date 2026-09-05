@@ -12,6 +12,7 @@ interface InboxItem {
   snippet: string;
   received_at: string;
   category: string;
+  gmail_category: string | null;
   is_billing: boolean;
   status: string;
   ai_drafts: { id: string; status: string; confidence_pct: number }[];
@@ -41,6 +42,17 @@ const CATEGORY_COLOR: Record<string, string> = {
   affiliates: 'bg-pink-500/10 text-pink-400 border-pink-500/30',
 };
 
+// Gmail's own inbox-tab classification (Primary/Social/Promotions/Updates/
+// Forums, plus Spam) — distinct from CATEGORY_COLOR above, which is this
+// app's alias/vendor-driven category.
+const GMAIL_CATEGORY_LABEL: Record<string, string> = {
+  primary: 'Primary', social: 'Social', promotions: 'Promotions',
+  updates: 'Updates', forums: 'Forums', spam: 'Spam',
+};
+const GMAIL_CATEGORY_ICON: Record<string, string> = {
+  primary: '📥', social: '👥', promotions: '🏷️', updates: '🔔', forums: '💬', spam: '🚫',
+};
+
 function confidenceColor(pct: number): string {
   if (pct >= 85) return 'text-emerald-400';
   if (pct >= 60) return 'text-amber-400';
@@ -57,14 +69,26 @@ export function InboxClient() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [aliasFilter, setAliasFilter] = useState<string | null>(null);
+  const [gmailCategoryFilter, setGmailCategoryFilter] = useState<string | null>(null);
+  const [aliasCounts, setAliasCounts] = useState<Record<string, number>>({});
+  const [gmailCategoryCounts, setGmailCategoryCounts] = useState<Record<string, number>>({});
 
   const fetchInbox = useCallback(async () => {
-    const res = await fetch('/api/admin/inbox');
+    const params = new URLSearchParams();
+    if (aliasFilter) params.set('alias', aliasFilter);
+    if (gmailCategoryFilter) params.set('gmail_category', gmailCategoryFilter);
+    const res = await fetch(`/api/admin/inbox?${params.toString()}`);
     if (!res.ok) return;
-    const data = await res.json() as { items: InboxItem[]; gmail_connected: boolean };
+    const data = await res.json() as {
+      items: InboxItem[]; gmail_connected: boolean;
+      alias_counts: Record<string, number>; gmail_category_counts: Record<string, number>;
+    };
     setItems(data.items);
     setConnected(data.gmail_connected);
-  }, []);
+    setAliasCounts(data.alias_counts);
+    setGmailCategoryCounts(data.gmail_category_counts);
+  }, [aliasFilter, gmailCategoryFilter]);
 
   const fetchDrafts = useCallback(async () => {
     const res = await fetch('/api/admin/drafts?status=pending');
@@ -190,6 +214,59 @@ export function InboxClient() {
         </button>
       </div>
 
+      {tab === 'inbox' && (
+        <div className="space-y-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">By alias</p>
+            <div className="flex gap-1.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setAliasFilter(null)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${!aliasFilter ? 'bg-emerald-500 text-slate-950 border-emerald-500' : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}
+              >
+                All
+              </button>
+              {Object.entries(aliasCounts).sort((a, b) => b[1] - a[1]).map(([alias, count]) => (
+                <button
+                  key={alias}
+                  type="button"
+                  onClick={() => setAliasFilter(aliasFilter === alias ? null : alias)}
+                  className={`px-3 py-1 rounded-full text-xs font-mono font-semibold border transition-colors ${aliasFilter === alias ? 'bg-emerald-500 text-slate-950 border-emerald-500' : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}
+                >
+                  {alias}@ ({count})
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">By type (Gmail)</p>
+            <div className="flex gap-1.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setGmailCategoryFilter(null)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${!gmailCategoryFilter ? 'bg-emerald-500 text-slate-950 border-emerald-500' : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}
+              >
+                All
+              </button>
+              {Object.entries(GMAIL_CATEGORY_LABEL).map(([key, label]) => {
+                const count = gmailCategoryCounts[key] ?? 0;
+                if (count === 0) return null;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setGmailCategoryFilter(gmailCategoryFilter === key ? null : key)}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${gmailCategoryFilter === key ? 'bg-emerald-500 text-slate-950 border-emerald-500' : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}
+                  >
+                    {GMAIL_CATEGORY_ICON[key]} {label} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-sm text-slate-400">Loading…</p>
       ) : tab === 'inbox' ? (
@@ -204,6 +281,11 @@ export function InboxClient() {
                       {item.category}
                     </span>
                     <span className="text-[10px] font-mono text-slate-400">{item.alias}@flowen.digital</span>
+                    {item.gmail_category && (
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {GMAIL_CATEGORY_ICON[item.gmail_category]} {GMAIL_CATEGORY_LABEL[item.gmail_category]}
+                      </span>
+                    )}
                     {item.ai_drafts?.[0] && (
                       <span className={`text-[10px] font-mono ${confidenceColor(item.ai_drafts[0].confidence_pct)}`}>
                         draft: {item.ai_drafts[0].confidence_pct}% confidence

@@ -130,12 +130,34 @@ export interface GmailMessageMeta {
 /** Lists message IDs newer than the given Gmail history/query cursor.
  *  Uses a simple `after:` search rather than the history API for
  *  simplicity — fine at this mailbox's volume; revisit with history.list
- *  if sync volume ever grows large enough for search to lag. */
+ *  if sync volume ever grows large enough for search to lag.
+ *
+ *  Gmail search excludes Spam and Trash by default — `{in:inbox in:spam}`
+ *  (curly braces = OR) explicitly includes Spam too, since the admin wants
+ *  spam visible/categorised in /admin/inbox, not silently dropped. Trash
+ *  stays excluded — those were deliberately deleted, not worth surfacing. */
 export async function listRecentMessageIds(maxResults = 50): Promise<string[]> {
-  const res = await gmailFetch(`/messages?maxResults=${maxResults}&q=newer_than:2d`);
+  const q = encodeURIComponent('newer_than:2d {in:inbox in:spam}');
+  const res = await gmailFetch(`/messages?maxResults=${maxResults}&q=${q}`);
   if (!res.ok) throw new Error(`Gmail list failed: ${res.status}`);
   const body = await res.json() as { messages?: { id: string }[] };
   return (body.messages ?? []).map(m => m.id);
+}
+
+/** Maps Gmail's own system labels (the Primary/Social/Promotions/Updates/
+ *  Forums inbox tabs, plus Spam) to a simple category string. Deliberately
+ *  distinct from this app's own `category` column (billing/press/security/
+ *  etc., derived from alias + vendor domain) — this answers "what kind of
+ *  mail is this, per Gmail's own classifier", not "which business function". */
+export function resolveGmailCategory(labelIds: string[] | undefined): string | null {
+  if (!labelIds) return null;
+  if (labelIds.includes('SPAM')) return 'spam';
+  if (labelIds.includes('CATEGORY_SOCIAL')) return 'social';
+  if (labelIds.includes('CATEGORY_PROMOTIONS')) return 'promotions';
+  if (labelIds.includes('CATEGORY_UPDATES')) return 'updates';
+  if (labelIds.includes('CATEGORY_FORUMS')) return 'forums';
+  if (labelIds.includes('CATEGORY_PERSONAL')) return 'primary';
+  return null;
 }
 
 export async function getMessage(id: string): Promise<GmailMessageMeta> {

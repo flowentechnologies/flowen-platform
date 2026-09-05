@@ -2,16 +2,23 @@
  * POST /api/cron/gmail-sync
  *
  * The core inbox automation worker. Runs hourly:
- *   1. Lists recent Gmail messages, skips any already synced.
- *   2. Categorises each by alias + vendor-domain + keyword heuristics.
+ *   1. Lists recent Gmail messages (Spam included — Gmail search excludes
+ *      it by default; Trash stays excluded), skips any already synced.
+ *   2. Categorises each two ways: `category` by alias + vendor-domain +
+ *      keyword heuristics (which business function — billing/press/
+ *      security/...), and `gmail_category` from Gmail's own system labels
+ *      (primary/social/promotions/updates/forums/spam — the same
+ *      classification behind Gmail's own inbox tabs).
  *   3. Applies a "Flowen/<category>" label in Gmail itself.
- *   4. Billing mail -> extracts a vendor_invoices row.
- *   5. CRM-relevant mail (investors@, affiliates@, press@, *.nhs.uk) ->
+ *   4. Spam -> synced and labelled for visibility, otherwise left alone
+ *      entirely (no billing/CRM/draft/notification — see below).
+ *   5. Billing mail -> extracts a vendor_invoices row.
+ *   6. CRM-relevant mail (investors@, affiliates@, press@, *.nhs.uk) ->
  *      upserts a crm_contacts row.
- *   6. Drafts a suggested reply via Claude (skipped for billing mail —
- *      replying to a vendor invoice isn't useful) and queues it in
- *      ai_drafts with status='pending'.
- *   7. Raises an admin_notifications row for anything that needs eyes.
+ *   7. Drafts a suggested reply via Claude (skipped for billing and spam)
+ *      and queues it in ai_drafts with status='pending'.
+ *   8. Raises an admin_notifications row for anything that needs eyes
+ *      (skipped for spam — a notification per spam message would be noise).
  *
  * Nothing here ever sends mail. The only function anywhere in this codebase
  * that dispatches an email via Gmail is sendAs() in src/lib/gmail.ts, and
@@ -22,6 +29,7 @@ import { verifyCronRequest } from '@/lib/cron-auth';
 import { adminDb as db } from '@/lib/supabase/admin';
 import {
   listRecentMessageIds, getMessage, extractBodyText, getHeader, resolveAlias, applyLabel,
+  resolveGmailCategory,
 } from '@/lib/gmail';
 import { categorize, extractAmountPence } from '@/lib/inbox-categorize';
 import { generateReplyDraft } from '@/lib/inbox-draft';
@@ -52,7 +60,7 @@ async function handle(req: NextRequest): Promise<NextResponse> {
   }
 
   const supabase = db();
-  const results = { scanned: 0, synced: 0, billing: 0, crm: 0, drafts: 0, errors: [] as string[] };
+  const results = { scanned: 0, synced: 0, billing: 0, crm: 0, drafts: 0, spam: 0, errors: [] as string[] };
 
   let messageIds: string[];
   try {
@@ -83,10 +91,14 @@ async function handle(req: NextRequest): Promise<NextResponse> {
         : new Date().toISOString();
 
       const cat = categorize({ alias, fromAddress, subject, snippet: msg.snippet ?? '' });
+      const gmailCategory = resolveGmailCategory(msg.labelIds);
+      const isSpam = gmailCategory === 'spam';
 
       // ── CRM upsert (before inbox insert, so we can link crm_contact_id) ──
+      // Skipped for spam — a spoofed sender matching a CRM heuristic (e.g. a
+      // fake .nhs.uk domain) shouldn't create a pipeline contact.
       let crmContactId: string | null = null;
-      if (cat.crmCategory) {
+      if (cat.crmCategory && !isSpam) {
         const { data: crmRow } = await supabase
           .from('crm_contacts')
           .upsert({
@@ -118,6 +130,7 @@ async function handle(req: NextRequest): Promise<NextResponse> {
           body_text: bodyText,
           received_at: receivedAt,
           category: cat.category,
+          gmail_category: gmailCategory,
           is_billing: cat.isBilling,
           vendor_name: cat.vendorName,
           crm_contact_id: crmContactId,
@@ -136,7 +149,14 @@ async function handle(req: NextRequest): Promise<NextResponse> {
       try { await applyLabel(id, labelForCategory(cat.category)); } catch { /* non-fatal */ }
 
       // ── Billing ──────────────────────────────────────────────────────────
-      if (cat.isBilling) {
+      if (isSpam) {
+        // Synced and labelled (visible in /admin/inbox filtered to Spam) but
+        // otherwise left alone entirely — no billing extraction, no CRM, no
+        // AI draft, no notification. Drafting a reply to spam is pointless
+        // and a notification for every spam message would just be noise,
+        // defeating the point of the notification system.
+        results.spam++;
+      } else if (cat.isBilling) {
         const amount = extractAmountPence(`${subject} ${msg.snippet ?? ''}`);
         await supabase.from('vendor_invoices').insert({
           inbox_item_id: inboxRow.id,
@@ -148,7 +168,7 @@ async function handle(req: NextRequest): Promise<NextResponse> {
         results.billing++;
         await notify('vendor_invoice', `New invoice: ${cat.vendorName ?? fromAddress}`, subject, '/admin/vendor-invoices');
       } else {
-        // ── AI draft (skipped for billing) ──────────────────────────────────
+        // ── AI draft (skipped for billing and spam) ─────────────────────────
         const draft = await generateReplyDraft({
           alias, category: cat.category, fromName, fromAddress, subject, bodyText,
         });
