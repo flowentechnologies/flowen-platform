@@ -36,7 +36,17 @@ async function notify(type: string, title: string, body: string, link: string): 
   await db().from('admin_notifications').insert({ type, title, body, link });
 }
 
+// Vercel Cron always invokes via GET (with Authorization: Bearer CRON_SECRET);
+// /admin/cron's manual trigger uses POST (with x-cron-secret) — verifyCronRequest
+// accepts either, so both methods need to route to the same handler.
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  return handle(req);
+}
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  return handle(req);
+}
+
+async function handle(req: NextRequest): Promise<NextResponse> {
   if (!verifyCronRequest(req.headers)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
