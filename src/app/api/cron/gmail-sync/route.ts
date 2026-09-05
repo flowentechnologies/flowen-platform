@@ -1,0 +1,173 @@
+/**
+ * POST /api/cron/gmail-sync
+ *
+ * The core inbox automation worker. Runs hourly:
+ *   1. Lists recent Gmail messages, skips any already synced.
+ *   2. Categorises each by alias + vendor-domain + keyword heuristics.
+ *   3. Applies a "Flowen/<category>" label in Gmail itself.
+ *   4. Billing mail -> extracts a vendor_invoices row.
+ *   5. CRM-relevant mail (investors@, affiliates@, press@, *.nhs.uk) ->
+ *      upserts a crm_contacts row.
+ *   6. Drafts a suggested reply via Claude (skipped for billing mail —
+ *      replying to a vendor invoice isn't useful) and queues it in
+ *      ai_drafts with status='pending'.
+ *   7. Raises an admin_notifications row for anything that needs eyes.
+ *
+ * Nothing here ever sends mail. The only function anywhere in this codebase
+ * that dispatches an email via Gmail is sendAs() in src/lib/gmail.ts, and
+ * it is only ever called from the explicit admin-approval route.
+ */
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyCronRequest } from '@/lib/cron-auth';
+import { adminDb as db } from '@/lib/supabase/admin';
+import {
+  listRecentMessageIds, getMessage, extractBodyText, getHeader, resolveAlias, applyLabel,
+} from '@/lib/gmail';
+import { categorize, extractAmountPence } from '@/lib/inbox-categorize';
+import { generateReplyDraft } from '@/lib/inbox-draft';
+
+const LABEL_PREFIX = 'Flowen';
+
+function labelForCategory(category: string): string {
+  return `${LABEL_PREFIX}/${category.charAt(0).toUpperCase()}${category.slice(1)}`;
+}
+
+async function notify(type: string, title: string, body: string, link: string): Promise<void> {
+  await db().from('admin_notifications').insert({ type, title, body, link });
+}
+
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  if (!verifyCronRequest(req.headers)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const supabase = db();
+  const results = { scanned: 0, synced: 0, billing: 0, crm: 0, drafts: 0, errors: [] as string[] };
+
+  let messageIds: string[];
+  try {
+    messageIds = await listRecentMessageIds(50);
+  } catch (err) {
+    // Gmail not connected yet, or token refresh failed — not an error worth
+    // alerting on repeatedly; the /admin/inbox page surfaces connection status.
+    return NextResponse.json({ skipped: true, reason: String(err) });
+  }
+
+  for (const id of messageIds) {
+    results.scanned++;
+    try {
+      const { data: exists } = await supabase
+        .from('inbox_items').select('id').eq('gmail_message_id', id).maybeSingle();
+      if (exists) continue;
+
+      const msg = await getMessage(id);
+      const alias = resolveAlias(msg.payload);
+      const fromHeader = getHeader(msg.payload, 'From') ?? '';
+      const fromMatch = fromHeader.match(/^(?:"?([^"<]*)"?\s*)?<?([^<>\s]+@[^<>\s]+)>?$/);
+      const fromName = fromMatch?.[1]?.trim() || null;
+      const fromAddress = (fromMatch?.[2] ?? fromHeader).toLowerCase();
+      const subject = getHeader(msg.payload, 'Subject') ?? '(no subject)';
+      const bodyText = extractBodyText(msg.payload);
+      const receivedAt = msg.internalDate
+        ? new Date(Number(msg.internalDate)).toISOString()
+        : new Date().toISOString();
+
+      const cat = categorize({ alias, fromAddress, subject, snippet: msg.snippet ?? '' });
+
+      // ── CRM upsert (before inbox insert, so we can link crm_contact_id) ──
+      let crmContactId: string | null = null;
+      if (cat.crmCategory) {
+        const { data: crmRow } = await supabase
+          .from('crm_contacts')
+          .upsert({
+            email: fromAddress,
+            name: fromName,
+            category: cat.crmCategory,
+            source: `inbox:${alias}@`,
+            last_contact_at: receivedAt,
+          }, { onConflict: 'email', ignoreDuplicates: false })
+          .select('id, stage')
+          .single();
+        if (crmRow) {
+          crmContactId = crmRow.id;
+          results.crm++;
+        }
+      }
+
+      const { data: inboxRow, error: insertErr } = await supabase
+        .from('inbox_items')
+        .insert({
+          gmail_message_id: id,
+          gmail_thread_id: msg.threadId,
+          alias,
+          from_address: fromAddress,
+          from_name: fromName,
+          to_addresses: [getHeader(msg.payload, 'To') ?? ''],
+          subject,
+          snippet: msg.snippet ?? '',
+          body_text: bodyText,
+          received_at: receivedAt,
+          category: cat.category,
+          is_billing: cat.isBilling,
+          vendor_name: cat.vendorName,
+          crm_contact_id: crmContactId,
+          labels_applied: [labelForCategory(cat.category)],
+        })
+        .select('id')
+        .single();
+
+      if (insertErr || !inboxRow) {
+        results.errors.push(`insert ${id}: ${insertErr?.message}`);
+        continue;
+      }
+      results.synced++;
+
+      // Best-effort — a labelling failure shouldn't block the rest of sync.
+      try { await applyLabel(id, labelForCategory(cat.category)); } catch { /* non-fatal */ }
+
+      // ── Billing ──────────────────────────────────────────────────────────
+      if (cat.isBilling) {
+        const amount = extractAmountPence(`${subject} ${msg.snippet ?? ''}`);
+        await supabase.from('vendor_invoices').insert({
+          inbox_item_id: inboxRow.id,
+          vendor_name: cat.vendorName ?? fromAddress.split('@')[1],
+          amount_pence: amount?.amountPence ?? null,
+          currency: amount?.currency ?? 'gbp',
+          description: subject,
+        });
+        results.billing++;
+        await notify('vendor_invoice', `New invoice: ${cat.vendorName ?? fromAddress}`, subject, '/admin/vendor-invoices');
+      } else {
+        // ── AI draft (skipped for billing) ──────────────────────────────────
+        const draft = await generateReplyDraft({
+          alias, category: cat.category, fromName, fromAddress, subject, bodyText,
+        });
+        if (draft) {
+          await supabase.from('ai_drafts').insert({
+            draft_type: 'reply',
+            inbox_item_id: inboxRow.id,
+            crm_contact_id: crmContactId,
+            to_address: fromAddress,
+            from_alias: alias,
+            subject: draft.subject,
+            body_text: draft.body,
+            confidence_pct: draft.confidence,
+            model: 'claude-sonnet-4-6',
+          });
+          results.drafts++;
+          await notify('draft_pending', `Draft ready: ${subject}`, `${draft.confidence}% confidence`, '/admin/inbox');
+        }
+
+        if (crmContactId) {
+          await notify('crm_new', `New ${cat.crmCategory} contact`, fromAddress, '/admin/crm');
+        } else {
+          await notify('inbox_new', `New ${cat.category} email`, subject, '/admin/inbox');
+        }
+      }
+    } catch (err) {
+      results.errors.push(`${id}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  return NextResponse.json(results);
+}

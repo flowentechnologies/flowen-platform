@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logout } from '@/app/auth/actions';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { NotificationBell } from '@/components/admin/NotificationBell';
 
 export interface AdminUser {
   email:       string;
@@ -27,6 +28,15 @@ const NAV: NavSection[] = [
   {
     section: 'Overview',
     items: [{ label: 'Command Centre', href: '/admin/command-center' }],
+  },
+  {
+    section: 'Inbox & CRM',
+    items: [
+      { label: 'Inbox', href: '/admin/inbox' },
+      { label: 'Drafts Awaiting Approval', href: '/admin/inbox?tab=drafts', indent: true },
+      { label: 'CRM Pipeline', href: '/admin/crm' },
+      { label: 'Vendor Invoices', href: '/admin/vendor-invoices' },
+    ],
   },
   {
     section: 'Platform',
@@ -370,6 +380,7 @@ export default function AdminShell({ user, children }: { user: AdminUser; childr
             </span>
           </div>
 
+          <NotificationBell />
           <ThemeToggle />
           <AdminProfileButton user={user} />
         </header>
