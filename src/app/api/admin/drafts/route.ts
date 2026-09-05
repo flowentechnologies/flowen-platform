@@ -92,6 +92,16 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
       await supabase.from('inbox_items').update({ status: 'responded' }).eq('id', draft.inbox_item_id);
     }
 
+    if (draft.crm_contact_id) {
+      await supabase.from('crm_activities').insert({
+        crm_contact_id: draft.crm_contact_id,
+        type: 'email_outbound',
+        body: subject,
+        created_by: admin.id,
+      });
+      await supabase.from('crm_contacts').update({ last_contact_at: new Date().toISOString() }).eq('id', draft.crm_contact_id);
+    }
+
     await logAuditEvent({
       action: 'inbox.draft_sent', actor_id: admin.id,
       metadata: { draft_id: body.id, to: draft.to_address, from_alias: draft.from_alias, edited: wasEdited },

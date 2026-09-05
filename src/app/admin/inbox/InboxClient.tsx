@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface InboxItem {
   id: string;
+  gmail_thread_id: string;
   alias: string;
   from_address: string;
   from_name: string | null;
@@ -59,36 +60,80 @@ function confidenceColor(pct: number): string {
   return 'text-rose-400';
 }
 
+interface Thread {
+  threadId: string;
+  messages: InboxItem[]; // oldest first
+  latest: InboxItem;
+}
+
+/** Groups the currently-loaded page of items into threads by
+ *  gmail_thread_id. A thread whose messages span across a pagination
+ *  boundary would only show the messages actually loaded so far — an
+ *  acceptable tradeoff at this mailbox's volume (see PAGE_SIZE server
+ *  side), not worth a cross-page merge for now. */
+function groupThreads(items: InboxItem[]): Thread[] {
+  const byThread = new Map<string, InboxItem[]>();
+  for (const item of items) {
+    const list = byThread.get(item.gmail_thread_id) ?? [];
+    list.push(item);
+    byThread.set(item.gmail_thread_id, list);
+  }
+  const threads: Thread[] = [];
+  for (const [threadId, messages] of byThread) {
+    const sorted = [...messages].sort((a, b) => new Date(a.received_at).getTime() - new Date(b.received_at).getTime());
+    threads.push({ threadId, messages: sorted, latest: sorted[sorted.length - 1] });
+  }
+  return threads.sort((a, b) => new Date(b.latest.received_at).getTime() - new Date(a.latest.received_at).getTime());
+}
+
 export function InboxClient() {
   const searchParams = useSearchParams();
+  const deepLinkItem = searchParams.get('item');
   const [tab, setTab] = useState<'inbox' | 'drafts'>(searchParams.get('tab') === 'drafts' ? 'drafts' : 'inbox');
   const [connected, setConnected] = useState<boolean | null>(null);
   const [items, setItems] = useState<InboxItem[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [total, setTotal] = useState(0);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [editing, setEditing] = useState<Record<string, { subject: string; body: string }>>({});
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [aliasFilter, setAliasFilter] = useState<string | null>(null);
   const [gmailCategoryFilter, setGmailCategoryFilter] = useState<string | null>(null);
   const [aliasCounts, setAliasCounts] = useState<Record<string, number>>({});
   const [gmailCategoryCounts, setGmailCategoryCounts] = useState<Record<string, number>>({});
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const fetchInbox = useCallback(async () => {
+  // Debounce the search box so we don't refetch on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput.trim()), 350);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const fetchInbox = useCallback(async (offset = 0, append = false) => {
     const params = new URLSearchParams();
     if (aliasFilter) params.set('alias', aliasFilter);
     if (gmailCategoryFilter) params.set('gmail_category', gmailCategoryFilter);
+    if (search) params.set('q', search);
+    if (offset) params.set('offset', String(offset));
     const res = await fetch(`/api/admin/inbox?${params.toString()}`);
     if (!res.ok) return;
     const data = await res.json() as {
-      items: InboxItem[]; gmail_connected: boolean;
+      items: InboxItem[]; gmail_connected: boolean; has_more: boolean; total: number;
       alias_counts: Record<string, number>; gmail_category_counts: Record<string, number>;
     };
-    setItems(data.items);
+    setItems(prev => (append ? [...prev, ...data.items] : data.items));
     setConnected(data.gmail_connected);
+    setHasMore(data.has_more);
+    setTotal(data.total);
     setAliasCounts(data.alias_counts);
     setGmailCategoryCounts(data.gmail_category_counts);
-  }, [aliasFilter, gmailCategoryFilter]);
+  }, [aliasFilter, gmailCategoryFilter, search]);
 
   const fetchDrafts = useCallback(async () => {
     const res = await fetch('/api/admin/drafts?status=pending');
@@ -99,8 +144,45 @@ export function InboxClient() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchInbox(), fetchDrafts()]).finally(() => setLoading(false));
+    Promise.all([fetchInbox(0, false), fetchDrafts()]).finally(() => setLoading(false));
   }, [fetchInbox, fetchDrafts]);
+
+  const threads = useMemo(() => groupThreads(items), [items]);
+
+  // Deep-link: expand and scroll to the thread containing ?item=<id> once
+  // it's loaded.
+  useEffect(() => {
+    if (!deepLinkItem || loading) return;
+    const thread = threads.find(t => t.messages.some(m => m.id === deepLinkItem));
+    if (!thread) return;
+    setExpandedThreads(prev => new Set(prev).add(thread.threadId));
+    setTab('inbox');
+    const el = itemRefs.current[deepLinkItem];
+    if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  }, [deepLinkItem, loading, threads]);
+
+  async function loadMore() {
+    setLoadingMore(true);
+    await fetchInbox(items.length, true);
+    setLoadingMore(false);
+  }
+
+  async function archive(id: string) {
+    setItems(prev => prev.filter(i => i.id !== id));
+    await fetch('/api/admin/inbox', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status: 'archived' }),
+    });
+  }
+
+  function toggleThread(threadId: string) {
+    setExpandedThreads(prev => {
+      const next = new Set(prev);
+      if (next.has(threadId)) next.delete(threadId); else next.add(threadId);
+      return next;
+    });
+  }
 
   async function approve(draftId: string) {
     const edit = editing[draftId];
@@ -142,7 +224,7 @@ export function InboxClient() {
             ? `Synced ${r.synced} new email${r.synced === 1 ? '' : 's'}${r.drafts ? ` — ${r.drafts} draft${r.drafts === 1 ? '' : 's'} ready` : ''}.`
             : `Checked ${r.scanned ?? 0} recent messages — nothing new.`
         );
-        await Promise.all([fetchInbox(), fetchDrafts()]);
+        await Promise.all([fetchInbox(0, false), fetchDrafts()]);
       }
     } catch (err) {
       setSyncMessage(`Sync failed: ${err instanceof Error ? err.message : 'network error'}`);
@@ -203,7 +285,7 @@ export function InboxClient() {
           onClick={() => setTab('inbox')}
           className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${tab === 'inbox' ? 'border-emerald-500 text-slate-900 dark:text-white' : 'border-transparent text-slate-500 dark:text-slate-400'}`}
         >
-          All Mail ({items.length})
+          All Mail ({total})
         </button>
         <button
           type="button"
@@ -216,6 +298,17 @@ export function InboxClient() {
 
       {tab === 'inbox' && (
         <div className="space-y-3">
+          <div className="relative max-w-sm">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <circle cx="9" cy="9" r="6" /><path d="M17 17l-4-4" />
+            </svg>
+            <input
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              placeholder="Search subject, sender, or body…"
+              className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white placeholder:text-slate-400"
+            />
+          </div>
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">By alias</p>
             <div className="flex gap-1.5 flex-wrap">
@@ -271,36 +364,90 @@ export function InboxClient() {
         <p className="text-sm text-slate-400">Loading…</p>
       ) : tab === 'inbox' ? (
         <div className="space-y-2">
-          {items.length === 0 && <p className="text-sm text-slate-400">No mail synced yet.</p>}
-          {items.map(item => (
-            <div key={item.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${CATEGORY_COLOR[item.category] ?? CATEGORY_COLOR.general}`}>
-                      {item.category}
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-400">{item.alias}@flowen.digital</span>
-                    {item.gmail_category && (
-                      <span className="text-[10px] font-mono text-slate-400">
-                        {GMAIL_CATEGORY_ICON[item.gmail_category]} {GMAIL_CATEGORY_LABEL[item.gmail_category]}
-                      </span>
-                    )}
-                    {item.ai_drafts?.[0] && (
-                      <span className={`text-[10px] font-mono ${confidenceColor(item.ai_drafts[0].confidence_pct)}`}>
-                        draft: {item.ai_drafts[0].confidence_pct}% confidence
-                      </span>
-                    )}
+          {threads.length === 0 && <p className="text-sm text-slate-400">No mail synced yet.</p>}
+          {threads.map(thread => {
+            const isExpanded = expandedThreads.has(thread.threadId) || thread.messages.length === 1;
+            const item = thread.latest;
+            return (
+              <div key={thread.threadId} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                <div
+                  className={`p-4 cursor-pointer ${thread.messages.length === 1 && item.id === deepLinkItem ? 'bg-emerald-50 dark:bg-emerald-500/10 ring-1 ring-emerald-400' : ''}`}
+                  onClick={() => thread.messages.length > 1 && toggleThread(thread.threadId)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${CATEGORY_COLOR[item.category] ?? CATEGORY_COLOR.general}`}>
+                          {item.category}
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-400">{item.alias}@flowen.digital</span>
+                        {item.gmail_category && (
+                          <span className="text-[10px] font-mono text-slate-400">
+                            {GMAIL_CATEGORY_ICON[item.gmail_category]} {GMAIL_CATEGORY_LABEL[item.gmail_category]}
+                          </span>
+                        )}
+                        {thread.messages.length > 1 && (
+                          <span className="text-[10px] font-mono font-bold text-slate-400">{thread.messages.length} messages</span>
+                        )}
+                        {item.ai_drafts?.[0] && (
+                          <span className={`text-[10px] font-mono ${confidenceColor(item.ai_drafts[0].confidence_pct)}`}>
+                            draft: {item.ai_drafts[0].confidence_pct}% confidence
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{item.subject}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {item.from_name ?? item.from_address} — {item.snippet}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-[10px] text-slate-400 whitespace-nowrap">{new Date(item.received_at).toLocaleDateString('en-GB')}</span>
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); archive(item.id); }}
+                        title="Archive"
+                        className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="4" width="14" height="3" rx="1" /><path d="M4 8h12v8H4z" /><path d="M8 11h4" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{item.subject}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                    {item.from_name ?? item.from_address} — {item.snippet}
-                  </p>
                 </div>
-                <span className="text-[10px] text-slate-400 whitespace-nowrap">{new Date(item.received_at).toLocaleDateString('en-GB')}</span>
+                {isExpanded && thread.messages.length > 1 && (
+                  <div className="border-t border-slate-100 dark:border-slate-800/60 divide-y divide-slate-100 dark:divide-slate-800/60">
+                    {thread.messages.map(m => (
+                      <div
+                        key={m.id}
+                        ref={el => { itemRefs.current[m.id] = el; }}
+                        className={`p-3 pl-6 flex items-start justify-between gap-3 ${m.id === deepLinkItem ? 'bg-emerald-50 dark:bg-emerald-500/10 ring-1 ring-emerald-400' : ''}`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{m.from_name ?? m.from_address}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{m.snippet}</p>
+                        </div>
+                        <span className="text-[10px] text-slate-400 whitespace-nowrap">{new Date(m.received_at).toLocaleString('en-GB')}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {thread.messages.length === 1 && (
+                  <div ref={el => { itemRefs.current[item.id] = el; }} />
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
+          {hasMore && (
+            <button
+              type="button"
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="w-full py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+            >
+              {loadingMore ? 'Loading…' : `Load more (${total - items.length} remaining)`}
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">

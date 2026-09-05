@@ -92,3 +92,23 @@ export function extractAmountPence(text: string): { amountPence: number; currenc
   const amount = parseFloat(match[2].replace(',', '.'));
   return { amountPence: Math.round(amount * 100), currency };
 }
+
+export type NotificationPriority = 'high' | 'normal' | 'low';
+
+/** Differentiates urgency so a security report and a promotions-tab email
+ *  don't look identical in the notification bell. Security and billing
+ *  (money) mail is always high regardless of Gmail's own tab; an investor/
+ *  NHS-partner CRM contact is high (a fundraising or NHS lead is
+ *  time-sensitive); anything Gmail itself filed as Social/Promotions is
+ *  low even if it landed in a business-relevant category; everything else
+ *  is normal. */
+export function computeNotificationPriority(opts: {
+  category: Categorization['category'];
+  crmCategory?: Categorization['crmCategory'] | null;
+  gmailCategory?: string | null;
+}): NotificationPriority {
+  if (opts.category === 'security' || opts.category === 'billing') return 'high';
+  if (opts.crmCategory === 'investor' || opts.crmCategory === 'nhs_partner') return 'high';
+  if (opts.gmailCategory === 'social' || opts.gmailCategory === 'promotions') return 'low';
+  return 'normal';
+}

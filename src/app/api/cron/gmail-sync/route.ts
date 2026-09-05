@@ -14,11 +14,14 @@
  *      entirely (no billing/CRM/draft/notification — see below).
  *   5. Billing mail -> extracts a vendor_invoices row.
  *   6. CRM-relevant mail (investors@, affiliates@, press@, *.nhs.uk) ->
- *      upserts a crm_contacts row.
+ *      upserts a crm_contacts row and logs a crm_activities entry (every
+ *      inbound email from a known contact is a timeline entry, not just a
+ *      silently-updated last_contact_at timestamp).
  *   7. Drafts a suggested reply via Claude (skipped for billing and spam)
  *      and queues it in ai_drafts with status='pending'.
  *   8. Raises an admin_notifications row for anything that needs eyes
- *      (skipped for spam — a notification per spam message would be noise).
+ *      (skipped for spam), with a priority (high/normal/low — see
+ *      computeNotificationPriority) and a deep link to the specific item.
  *
  * Nothing here ever sends mail. The only function anywhere in this codebase
  * that dispatches an email via Gmail is sendAs() in src/lib/gmail.ts, and
@@ -31,7 +34,7 @@ import {
   listRecentMessageIds, getMessage, extractBodyText, getHeader, resolveAlias, applyLabel,
   resolveGmailCategory,
 } from '@/lib/gmail';
-import { categorize, extractAmountPence } from '@/lib/inbox-categorize';
+import { categorize, extractAmountPence, computeNotificationPriority, type Categorization } from '@/lib/inbox-categorize';
 import { generateReplyDraft } from '@/lib/inbox-draft';
 
 const LABEL_PREFIX = 'Flowen';
@@ -40,8 +43,16 @@ function labelForCategory(category: string): string {
   return `${LABEL_PREFIX}/${category.charAt(0).toUpperCase()}${category.slice(1)}`;
 }
 
-async function notify(type: string, title: string, body: string, link: string): Promise<void> {
-  await db().from('admin_notifications').insert({ type, title, body, link });
+async function notify(opts: {
+  type: string; title: string; body: string; link: string;
+  category: Categorization['category'];
+  crmCategory?: Categorization['crmCategory'] | null;
+  gmailCategory?: string | null;
+}): Promise<void> {
+  const priority = computeNotificationPriority(opts);
+  await db().from('admin_notifications').insert({
+    type: opts.type, title: opts.title, body: opts.body, link: opts.link, priority,
+  });
 }
 
 // Vercel Cron always invokes via GET (with Authorization: Bearer CRON_SECRET);
@@ -113,6 +124,15 @@ async function handle(req: NextRequest): Promise<NextResponse> {
         if (crmRow) {
           crmContactId = crmRow.id;
           results.crm++;
+          // Every inbound email from a CRM contact is a timeline entry, not
+          // just a silently-updated timestamp — this is what makes the
+          // contact's activity history in /admin/crm actually mean something.
+          await supabase.from('crm_activities').insert({
+            crm_contact_id: crmContactId,
+            type: 'email_inbound',
+            body: subject,
+            occurred_at: receivedAt,
+          });
         }
       }
 
@@ -166,7 +186,13 @@ async function handle(req: NextRequest): Promise<NextResponse> {
           description: subject,
         });
         results.billing++;
-        await notify('vendor_invoice', `New invoice: ${cat.vendorName ?? fromAddress}`, subject, '/admin/vendor-invoices');
+        await notify({
+          type: 'vendor_invoice',
+          title: `New invoice: ${cat.vendorName ?? fromAddress}`,
+          body: subject,
+          link: '/admin/vendor-invoices',
+          category: cat.category, gmailCategory: gmailCategory,
+        });
       } else {
         // ── AI draft (skipped for billing and spam) ─────────────────────────
         const draft = await generateReplyDraft({
@@ -185,13 +211,31 @@ async function handle(req: NextRequest): Promise<NextResponse> {
             model: 'claude-sonnet-4-6',
           });
           results.drafts++;
-          await notify('draft_pending', `Draft ready: ${subject}`, `${draft.confidence}% confidence`, '/admin/inbox');
+          await notify({
+            type: 'draft_pending',
+            title: `Draft ready: ${subject}`,
+            body: `${draft.confidence}% confidence`,
+            link: `/admin/inbox?item=${inboxRow.id}`,
+            category: cat.category, crmCategory: cat.crmCategory, gmailCategory: gmailCategory,
+          });
         }
 
         if (crmContactId) {
-          await notify('crm_new', `New ${cat.crmCategory} contact`, fromAddress, '/admin/crm');
+          await notify({
+            type: 'crm_new',
+            title: `New ${cat.crmCategory} contact`,
+            body: fromAddress,
+            link: `/admin/crm?contact=${crmContactId}`,
+            category: cat.category, crmCategory: cat.crmCategory, gmailCategory: gmailCategory,
+          });
         } else {
-          await notify('inbox_new', `New ${cat.category} email`, subject, '/admin/inbox');
+          await notify({
+            type: 'inbox_new',
+            title: `New ${cat.category} email`,
+            body: subject,
+            link: `/admin/inbox?item=${inboxRow.id}`,
+            category: cat.category, gmailCategory: gmailCategory,
+          });
         }
       }
     } catch (err) {
