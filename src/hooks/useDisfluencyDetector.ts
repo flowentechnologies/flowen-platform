@@ -23,7 +23,8 @@
  * log (e.g., between practice sessions).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { RuleEngine }                              from '@/lib/disfluency/RuleEngine';
+import { RuleEngine, SILENCE_RMS }                 from '@/lib/disfluency/RuleEngine';
+import { AcousticFeatureTracker }                  from '@/lib/disfluency/AcousticFeatures';
 import type { DisfluencyEvent, SpeakerBaseline }  from '@/lib/disfluency/types';
 import type { UseAudioPipelineReturn }             from '@/lib/hooks/useAudioPipeline';
 
@@ -31,6 +32,10 @@ import type { UseAudioPipelineReturn }             from '@/lib/hooks/useAudioPip
 
 const DEFAULT_MIN_CONFIDENCE = 0.65;
 const MAX_EVENT_HISTORY      = 30;  // keep last 30 events in state
+// Pitch/tension change fast, but syncing every 10ms frame into React state
+// would force a re-render at ~100Hz for no perceptible benefit — sync every
+// FEATURE_SYNC_FRAMES frames instead (matches the cadence baseline uses).
+const FEATURE_SYNC_FRAMES    = 5;   // 50ms
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -58,7 +63,11 @@ export interface UseDisfluencyDetectorReturn {
   isCalibrated: boolean;
   /** Counts of each event type since last reset. */
   eventCounts: Record<DisfluencyEvent['type'], number>;
-  /** Wipe all events and reset the speaker baseline. */
+  /** Real-time fundamental-frequency estimate in Hz, or null when unvoiced/unreliable. */
+  pitchHz: number | null;
+  /** 0–100 jitter/shimmer-based voice-tension proxy, or null until enough voiced history exists. */
+  tensionIndex: number | null;
+  /** Wipe all events, reset the speaker baseline, and clear pitch/tension history. */
   resetSession: () => void;
 }
 
@@ -71,6 +80,7 @@ export function useDisfluencyDetector(
   const { onEvent, minConfidence = DEFAULT_MIN_CONFIDENCE } = opts;
 
   const engineRef   = useRef<RuleEngine>(new RuleEngine());
+  const featuresRef = useRef<AcousticFeatureTracker>(new AcousticFeatureTracker());
   const onEventRef  = useRef(onEvent);
   // Keep ref fresh without triggering re-subscribe. Previously written directly
   // during render (react-hooks/refs flags mutating a ref outside an effect —
@@ -87,13 +97,18 @@ export function useDisfluencyDetector(
   const [baseline, setBaseline] = useState<SpeakerBaseline>({
     segmentCount: 0, mean: 0, stddev: 0, isCalibrated: false,
   });
+  const [pitchHz, setPitchHz]           = useState<number | null>(null);
+  const [tensionIndex, setTensionIndex] = useState<number | null>(null);
 
   // Subscribe to audio frames
   useEffect(() => {
-    const engine = engineRef.current;
+    const engine   = engineRef.current;
+    const features = featuresRef.current;
 
-    const unsubscribe = pipeline.onFrame((_frame, rms) => {
+    const unsubscribe = pipeline.onFrame((frame, rms) => {
+      const isVoiced = rms > SILENCE_RMS;
       const newEvents = engine.processFrame(rms);
+      const sample = features.processFrame(frame, rms, isVoiced);
 
       // Filter by confidence and emit accepted events
       for (const ev of newEvents) {
@@ -107,11 +122,15 @@ export function useDisfluencyDetector(
         });
       }
 
-      // Periodically sync baseline into React state (every ~20 frames = 200ms)
+      // Periodically sync baseline + pitch/tension into React state.
       // We use the engine's internal frame count via a closure counter
       frameCount.current++;
       if (frameCount.current % 20 === 0) {
         setBaseline({ ...engine.speakerBaseline });
+      }
+      if (frameCount.current % FEATURE_SYNC_FRAMES === 0) {
+        setPitchHz(sample.pitchHz);
+        setTensionIndex(sample.tensionIndex);
       }
     });
 
@@ -124,8 +143,11 @@ export function useDisfluencyDetector(
 
   const resetSession = useCallback(() => {
     engineRef.current.reset();
+    featuresRef.current.reset();
     setEvents([]);
     setBaseline({ segmentCount: 0, mean: 0, stddev: 0, isCalibrated: false });
+    setPitchHz(null);
+    setTensionIndex(null);
     // frameCount is a private bookkeeping counter (gates how often the
     // baseline syncs into state, line ~104) — it's never read for rendering,
     // so resetting it from this explicit, user-triggered action is correct.
@@ -148,6 +170,8 @@ export function useDisfluencyDetector(
     baseline,
     isCalibrated: baseline.isCalibrated,
     eventCounts,
+    pitchHz,
+    tensionIndex,
     resetSession,
   };
 }

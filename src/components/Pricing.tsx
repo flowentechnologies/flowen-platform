@@ -166,7 +166,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
             </div>
             {/* Feature list */}
             <ul className="mt-4 space-y-2 text-sm text-slate-300">
-              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Sub-80ms real-time speech biofeedback</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Real-time speech biofeedback (sub-80ms audio pipeline)</li>
               <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>3D avatar & viseme alignment</li>
               <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Personal fluency progress metrics</li>
               <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>NHS & Access to Work eligible</li>

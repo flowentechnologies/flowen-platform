@@ -46,6 +46,10 @@ interface Props {
   /** Current RMS amplitude in [0, 1] for the voice meter bar */
   rms:          number;
   isRecording:  boolean;
+  /** Real-time fundamental-frequency estimate in Hz, or null when unvoiced. */
+  pitchHz?:      number | null;
+  /** 0–100 jitter/shimmer-based voice-tension proxy, or null until calibrated. */
+  tensionIndex?: number | null;
 }
 
 export function DisfluencyHUD({
@@ -55,6 +59,8 @@ export function DisfluencyHUD({
   isCalibrated,
   rms,
   isRecording,
+  pitchHz,
+  tensionIndex,
 }: Props) {
   const feedRef = useRef<HTMLDivElement>(null);
 
@@ -129,6 +135,32 @@ export function DisfluencyHUD({
                     {(rms * 100).toFixed(0)}
                   </span>
                 )}
+              </div>
+
+              {/* Pitch + tension proxy — autocorrelation F0 estimate and a
+                  jitter/shimmer composite (see AcousticFeatureTracker).
+                  Only rendered once a value exists; both go blank on silence
+                  or an unreliable estimate rather than showing a stale number. */}
+              <div className="flex items-center gap-3 mt-1.5">
+                <span className="text-[10px] font-mono text-slate-500 w-5">F0</span>
+                <span className="text-[10px] font-mono tabular-nums text-slate-400">
+                  {pitchHz != null ? `${Math.round(pitchHz)} Hz` : '—'}
+                </span>
+                <span className="text-[10px] font-mono text-slate-500 ml-2">tension</span>
+                <div className="flex-1 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  {tensionIndex != null && (
+                    <div
+                      className="h-full rounded-full transition-all duration-150"
+                      style={{
+                        width: `${tensionIndex}%`,
+                        background: tensionIndex > 66 ? '#f97316' : tensionIndex > 33 ? '#eab308' : '#38bdf8',
+                      }}
+                    />
+                  )}
+                </div>
+                <span className="text-[10px] font-mono tabular-nums text-slate-400 w-6 text-right">
+                  {tensionIndex != null ? Math.round(tensionIndex) : '—'}
+                </span>
               </div>
             </div>
           )}

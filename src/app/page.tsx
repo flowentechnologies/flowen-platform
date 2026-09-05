@@ -73,7 +73,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-lg font-bold text-white mb-2">Acoustic Biofeedback Engine</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                We detect the exact moment you begin speaking so we can tell you immediately whether your onset was gentle or tense. Vocal tension (H1–H2 harmonic difference), amplitude slope, and fundamental frequency are all measured per-frame and streamed in real time.
+                We detect the exact moment you begin speaking so we can tell you immediately whether your onset was gentle or tense. Amplitude, fundamental frequency, and a jitter/shimmer-based vocal tension index are all measured and streamed in real time.
               </p>
               <div className="mt-5 flex items-center gap-2">
                 <span className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs font-mono text-emerald-400">&lt;80ms latency</span>
@@ -155,7 +155,7 @@ export default function LandingPage() {
                 </div>
                 <p className="text-xs text-slate-400 mt-1">From £19.96/mo billed annually · Price locked for early adopters.</p>
                 <ul className="mt-6 space-y-3 text-sm text-slate-300">
-                  <li className="flex items-center">✓ Full sub-80ms speech biofeedback</li>
+                  <li className="flex items-center">✓ Real-time speech biofeedback (sub-80ms audio pipeline)</li>
                   <li className="flex items-center">✓ 3D avatar &amp; viseme alignment</li>
                   <li className="flex items-center">✓ Personal fluency progress metrics</li>
                 </ul>
@@ -281,7 +281,7 @@ export default function LandingPage() {
                 Viseme Alignment
                 <span className="text-emerald-500/60 group-hover:text-emerald-400 transition-colors text-xs">↗</span>
               </div>
-              <div className="text-slate-400 text-sm">ARKit viseme avatar driven by acoustic phoneme prediction — explore all states</div>
+              <div className="text-slate-400 text-sm">ARKit viseme avatar driven by real-time frequency analysis of the AI's spoken audio — explore all states</div>
             </a>
             <div className="bg-slate-900/60 border border-slate-800 rounded-xl px-5 py-4">
               <div className="text-emerald-400 text-xs font-mono font-bold uppercase tracking-wider mb-1">Session Analytics</div>

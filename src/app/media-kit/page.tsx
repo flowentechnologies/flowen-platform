@@ -26,10 +26,10 @@ const BRAND_COLOURS = [
 ];
 
 const KEY_POINTS = [
-  'Flowen is the UK\'s first sub-80ms neural biofeedback platform purpose-built for stuttering therapy.',
+  'Flowen is a neural biofeedback platform purpose-built for stuttering therapy, with a sub-80ms on-device audio processing pipeline.',
   'The platform operates within NHS Digital\'s DCB0129 Clinical Safety Standard — eligible for NHS, Access to Work, and DSA funding.',
   'Flowen does not store raw audio. All voice biomarkers are computed on-device and retained as anonymised aggregate metrics.',
-  'The technology stack uses WebRTC AudioContext, 16kHz PCM capture, and a proprietary laryngeal tension index for real-time disfluency detection.',
+  'The technology stack uses the Web Audio API (AudioWorklet), 16kHz PCM capture, and a proprietary voice-tension index computed in real time alongside a rule-based detector for blocks, prolongations, and repetitions.',
   'Flowen targets three markets: individual PWS subscribers, clinical SLT practices, and NHS/public-sector block contracts.',
   'The company is registered in the United Kingdom. All user data is held under UK GDPR (DPA 2018) within UK-GBR data centres.',
 ];

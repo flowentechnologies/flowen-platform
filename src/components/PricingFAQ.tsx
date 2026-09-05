@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: 'How does the AI actually work?',
-    a: "Flowen captures your voice in real time, analyses acoustic patterns associated with fluency disruption — laryngeal tension, airflow irregularities, block onset — and gives you sub-80ms feedback through audio tones and 3D visual cues. You practise targeted speech techniques with the AI responding to every syllable. It's the equivalent of having a biofeedback instrument available 24/7, without a clinic visit.",
+    a: "Flowen captures your voice in real time, analyses acoustic patterns associated with fluency disruption — voice tension, block onset, prolongations, repetitions — through a sub-80ms audio pipeline, with pattern detection resolving within 300ms end-to-end. You practise targeted speech techniques with the AI responding as you speak. It's the equivalent of having a biofeedback instrument available 24/7, without a clinic visit.",
   },
   {
     q: 'What devices does it work on?',

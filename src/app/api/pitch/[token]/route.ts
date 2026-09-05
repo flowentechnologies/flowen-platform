@@ -60,7 +60,11 @@ export async function GET(
       .from('pitch-deck')
       .download('deck.html');
     if (storageError || !file) throw storageError ?? new Error('deck.html not found');
-    const html = await file.text();
+    // deck.html embeds a `__PITCH_TOKEN__` placeholder (see the <meta
+    // name="pitch-token"> comment in the file) so its "Download PDF" button
+    // can build the right /api/pitch/<token>/pdf URL without the static
+    // file needing to know its own request URL.
+    const html = (await file.text()).replaceAll('__PITCH_TOKEN__', token);
     // The deck uses Tailwind CDN, Google Fonts, and FontAwesome — set a
     // permissive CSP scoped to this route only.  This overrides the site-wide
     // restrictive CSP set in next.config.ts for all other routes.

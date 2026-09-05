@@ -205,7 +205,7 @@ export default function CliniciansPage() {
       <section className="border-y border-slate-800/60 bg-slate-900/30">
         <div className="max-w-5xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            { value: 'Sub-80ms', label: 'acoustic feedback latency' },
+            { value: 'Sub-80ms', label: 'audio pipeline latency' },
             { value: '5 stages', label: 'evidence-based programme' },
             { value: '10 exercises', label: 'per stage, auto-rotated' },
             { value: '10 patients', label: 'per SLT, free in beta' },
@@ -251,7 +251,7 @@ export default function CliniciansPage() {
             <ul className="space-y-4">
               {[
                 'Real-time acoustic biofeedback reinforces technique on every practice repetition — not just in the clinic.',
-                'The app detects blocks, prolongations, and repetitions at sub-80ms latency and responds immediately.',
+                'The app runs a sub-80ms audio pipeline and surfaces detected blocks, prolongations, and repetitions within 300ms end-to-end.',
                 'You see the telemetry — fluency scores, event counts, session duration — for every home practice session.',
                 'Missed practice triggers an alert to you before it becomes a missed appointment.',
               ].map(item => (
