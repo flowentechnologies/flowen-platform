@@ -112,3 +112,24 @@ export function computeNotificationPriority(opts: {
   if (opts.gmailCategory === 'social' || opts.gmailCategory === 'promotions') return 'low';
   return 'normal';
 }
+
+const AUTOMATED_SENDER_LOCAL_PARTS = [
+  'noreply', 'no-reply', 'donotreply', 'do-not-reply', 'mailer-daemon',
+  'notifications', 'system', 'postmaster',
+];
+
+/** True for mail that structurally can't/shouldn't get a drafted reply:
+ *  bounce notifications, "confirm this alias" system mail, and bulk
+ *  marketing/updates Gmail itself already tagged as such. Found by
+ *  actually trying the feature — the AI correctly recognised these as
+ *  "no reply needed" and said so in the draft body, but that judgement
+ *  call still landed in the same send-approval queue as a real draft,
+ *  which is the wrong place for it. Skipping generation entirely (rather
+ *  than trusting the model to self-report) means the drafts queue only
+ *  ever contains things actually worth an admin's attention. */
+export function isAutomatedMail(opts: { fromAddress: string; gmailCategory?: string | null }): boolean {
+  const localPart = opts.fromAddress.split('@')[0]?.toLowerCase() ?? '';
+  if (AUTOMATED_SENDER_LOCAL_PARTS.some(p => localPart.includes(p))) return true;
+  if (opts.gmailCategory === 'updates' || opts.gmailCategory === 'promotions' || opts.gmailCategory === 'social') return true;
+  return false;
+}

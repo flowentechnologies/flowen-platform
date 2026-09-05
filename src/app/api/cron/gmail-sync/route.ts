@@ -34,7 +34,7 @@ import {
   listRecentMessageIds, getMessage, extractBodyText, getHeader, resolveAlias, applyLabel,
   resolveGmailCategory,
 } from '@/lib/gmail';
-import { categorize, extractAmountPence, computeNotificationPriority, type Categorization } from '@/lib/inbox-categorize';
+import { categorize, extractAmountPence, computeNotificationPriority, isAutomatedMail, type Categorization } from '@/lib/inbox-categorize';
 import { generateReplyDraft } from '@/lib/inbox-draft';
 
 const LABEL_PREFIX = 'Flowen';
@@ -194,8 +194,11 @@ async function handle(req: NextRequest): Promise<NextResponse> {
           category: cat.category, gmailCategory: gmailCategory,
         });
       } else {
-        // ── AI draft (skipped for billing and spam) ─────────────────────────
-        const draft = await generateReplyDraft({
+        // ── AI draft (skipped for billing, spam, and automated mail —
+        // bounces, "confirm this alias" system mail, and bulk marketing
+        // Gmail itself already tagged Updates/Promotions/Social) ──────────
+        const automated = isAutomatedMail({ fromAddress, gmailCategory });
+        const draft = automated ? null : await generateReplyDraft({
           alias, category: cat.category, fromName, fromAddress, subject, bodyText,
         });
         if (draft) {
