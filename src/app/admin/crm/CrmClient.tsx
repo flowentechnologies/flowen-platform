@@ -58,6 +58,21 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
+interface Overview {
+  total_contacts: number;
+  by_category: Record<string, number>;
+  by_stage: Record<string, number>;
+  deal_value_by_category_pence: Record<string, number>;
+  vendor_spend_30d_pence: number;
+  vendor_spend_by_vendor_pence: Record<string, number>;
+  venture: { cash_in_bank_pence: number | null; monthly_burn_pence: number | null; target_raise_pence: number | null; committed_pence: number | null } | null;
+}
+
+function gbp(pence: number | null | undefined): string {
+  if (pence == null) return '—';
+  return (pence / 100).toLocaleString('en-GB', { style: 'currency', currency: 'GBP' });
+}
+
 export function CrmClient() {
   const searchParams = useSearchParams();
   const deepLinkContact = searchParams.get('contact');
@@ -66,6 +81,51 @@ export function CrmClient() {
   const [loading, setLoading] = useState(true);
   const [openContactId, setOpenContactId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [overview, setOverview] = useState<Overview | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [scanMessage, setScanMessage] = useState<string | null>(null);
+  const [recommendations, setRecommendations] = useState<string | null>(null);
+  const [generatingRecs, setGeneratingRecs] = useState(false);
+
+  const fetchOverview = useCallback(async () => {
+    const res = await fetch('/api/admin/crm/overview');
+    if (!res.ok) return;
+    setOverview(await res.json() as Overview);
+  }, []);
+
+  useEffect(() => { fetchOverview(); }, [fetchOverview]);
+
+  async function scanInbox() {
+    setScanning(true);
+    setScanMessage(null);
+    try {
+      const res = await fetch('/api/admin/crm/scan', { method: 'POST' });
+      const data = await res.json() as { scanned?: number; added?: number; skipped?: number; error?: string };
+      if (!res.ok) {
+        setScanMessage(`Scan failed: ${data.error ?? 'unknown error'}`);
+      } else {
+        setScanMessage(`Scanned ${data.scanned} senders — added ${data.added}, skipped ${data.skipped}.`);
+        await Promise.all([fetchContacts(categoryFilter || undefined), fetchOverview()]);
+      }
+    } catch (err) {
+      setScanMessage(`Scan failed: ${err instanceof Error ? err.message : 'network error'}`);
+    } finally {
+      setScanning(false);
+    }
+  }
+
+  async function generateRecommendations() {
+    setGeneratingRecs(true);
+    try {
+      const res = await fetch('/api/admin/crm/overview', { method: 'POST' });
+      const data = await res.json() as { recommendations?: string; error?: string };
+      setRecommendations(res.ok ? (data.recommendations ?? null) : `Failed: ${data.error ?? 'unknown error'}`);
+    } catch (err) {
+      setRecommendations(`Failed: ${err instanceof Error ? err.message : 'network error'}`);
+    } finally {
+      setGeneratingRecs(false);
+    }
+  }
 
   const fetchContacts = useCallback(async (category?: string) => {
     const url = category ? `/api/admin/crm?category=${category}` : '/api/admin/crm';
@@ -105,14 +165,85 @@ export function CrmClient() {
             Investors, grants, NHS partnerships, press, and affiliates — one pipeline, sourced automatically from inbox activity.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowAddModal(true)}
-          className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 transition-colors flex-shrink-0"
-        >
-          + Add contact
-        </button>
+        <div className="flex flex-col items-end gap-1.5">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={scanInbox}
+              disabled={scanning}
+              className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+            >
+              {scanning ? 'Scanning…' : 'Scan inbox for contacts'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAddModal(true)}
+              className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 transition-colors flex-shrink-0"
+            >
+              + Add contact
+            </button>
+          </div>
+          {scanMessage && <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs text-right">{scanMessage}</p>}
+        </div>
       </div>
+
+      {overview && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <p className="text-sm font-bold text-slate-900 dark:text-white">Overview</p>
+            <button
+              type="button"
+              onClick={generateRecommendations}
+              disabled={generatingRecs}
+              className="px-3 py-1.5 rounded-lg bg-violet-500 hover:bg-violet-400 text-xs font-bold text-white disabled:opacity-50 transition-colors"
+            >
+              {generatingRecs ? 'Thinking…' : '✨ Recommended next steps'}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">{overview.total_contacts}</p>
+              <p className="text-[11px] text-slate-400">Total contacts</p>
+            </div>
+            <div>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">{overview.by_category.investor ?? 0}</p>
+              <p className="text-[11px] text-slate-400">Investors</p>
+            </div>
+            <div>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">{overview.by_category.nhs_partner ?? 0}</p>
+              <p className="text-[11px] text-slate-400">NHS / ICB partners</p>
+            </div>
+            <div>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">{overview.by_category.grant ?? 0}</p>
+              <p className="text-[11px] text-slate-400">Grant contacts</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+            <div>
+              <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{gbp(Object.values(overview.deal_value_by_category_pence).reduce((a, b) => a + b, 0))}</p>
+              <p className="text-[11px] text-slate-400">Total deal value tracked</p>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-amber-600 dark:text-amber-400">{gbp(overview.vendor_spend_30d_pence)}</p>
+              <p className="text-[11px] text-slate-400">Vendor spend (30d)</p>
+            </div>
+            {overview.venture && (
+              <div>
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  {gbp(overview.venture.committed_pence)} / {gbp(overview.venture.target_raise_pence)}
+                </p>
+                <p className="text-[11px] text-slate-400">Round committed / target</p>
+              </div>
+            )}
+          </div>
+          {recommendations && (
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-violet-500 mb-2">Recommended next steps</p>
+              <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{recommendations}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-2 flex-wrap">
         <button

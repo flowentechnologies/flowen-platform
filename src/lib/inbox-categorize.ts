@@ -36,6 +36,15 @@ const BILLING_KEYWORDS = [
 
 const NHS_DOMAIN_HINT = /\.nhs\.uk$/i;
 
+// 'grant' was a valid crmCategory with no code path that ever assigned it —
+// nothing auto-detected grant-related correspondence (SBRI, Innovate UK,
+// funding bodies) at all until this.
+const GRANT_KEYWORDS = [
+  'grant', 'sbri', 'innovate uk', 'innovateuk', 'funding award', 'funding call',
+  'competition brief', 'phase 1 application', 'phase 2 application', 'nihr',
+];
+const GRANT_DOMAIN_HINT = /\.(gov\.uk|innovateuk\.gov\.uk|iuk\.ktn-uk\.org|ukri\.org)$/i;
+
 const ALIAS_CATEGORY_MAP: Record<string, string> = {
   security:   'security',
   press:      'press',
@@ -77,6 +86,7 @@ export function categorize(opts: {
   else if (opts.alias === 'affiliates') crmCategory = 'affiliate';
   else if (opts.alias === 'press') crmCategory = 'press';
   else if (NHS_DOMAIN_HINT.test(domain)) crmCategory = 'nhs_partner';
+  else if (GRANT_DOMAIN_HINT.test(domain) || GRANT_KEYWORDS.some(k => text.includes(k))) crmCategory = 'grant';
 
   return { category, isBilling: false, vendorName, crmCategory };
 }
