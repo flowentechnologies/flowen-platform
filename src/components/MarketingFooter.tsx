@@ -20,9 +20,31 @@ export default function MarketingFooter() {
               </svg>
               <span className="text-white font-bold text-lg group-hover:text-emerald-400 transition-colors">FLOWEN</span>
             </Link>
-            <p className="text-slate-400 text-xs leading-relaxed">
+            <p className="text-slate-400 text-xs leading-relaxed mb-4">
               Real-time acoustic biofeedback for fluency practice — for individuals, clinicians, and funded programmes.
             </p>
+            <div className="flex items-center gap-3">
+              <a href="https://www.instagram.com/flowenspeech" target="_blank" rel="noopener noreferrer" aria-label="Flowen on Instagram" className="text-slate-500 hover:text-emerald-400 transition-colors">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                  <path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 2 .3 2.4.5.6.2 1 .5 1.5 1 .4.4.7.9 1 1.5.2.5.4 1.2.5 2.4.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 2-.5 2.4-.2.6-.5 1-1 1.5-.4.4-.9.7-1.5 1-.5.2-1.2.4-2.4.5-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-2-.3-2.4-.5-.6-.2-1-.5-1.5-1-.4-.4-.7-.9-1-1.5-.2-.5-.4-1.2-.5-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-2 .5-2.4.2-.6.5-1 1-1.5.4-.4.9-.7 1.5-1 .5-.2 1.2-.4 2.4-.5C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.1-1 .1-1.6.2-1.9.4-.5.2-.8.4-1.2.7-.3.3-.6.7-.7 1.2-.1.3-.3.9-.4 1.9-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c.1 1 .2 1.6.4 1.9.2.5.4.8.7 1.2.3.3.7.6 1.2.7.3.1.9.3 1.9.4 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1-.1 1.6-.2 1.9-.4.5-.2.8-.4 1.2-.7.3-.3.6-.7.7-1.2.1-.3.3-.9.4-1.9.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1-.2-1.6-.4-1.9-.2-.5-.4-.8-.7-1.2-.3-.3-.7-.6-1.2-.7-.3-.1-.9-.3-1.9-.4-1.2-.1-1.6-.1-4.7-.1zm0 3.6a5.4 5.4 0 110 10.8 5.4 5.4 0 010-10.8zm0 1.8a3.6 3.6 0 100 7.2 3.6 3.6 0 000-7.2zm5.6-3.9a1.26 1.26 0 110 2.52 1.26 1.26 0 010-2.52z" />
+                </svg>
+              </a>
+              <a href="https://www.snapchat.com/add/flowenspeech" target="_blank" rel="noopener noreferrer" aria-label="Flowen on Snapchat" className="text-slate-500 hover:text-emerald-400 transition-colors">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                  <path d="M12.03 2c3.7 0 5.24 2.9 5.36 5.14.06 1.1-.01 2.02.06 2.53.06.4.2.5.5.68.28.16 1.02.4 1.3.53.42.2.62.42.6.72-.03.4-.5.66-1.01.86-.36.14-.8.24-1 .5-.1.14-.1.35-.03.6.24.9 1.05 1.5 1.9 1.78.34.11.63.34.5.7-.1.28-.5.42-.86.5-.3.08-.66.1-.86.32-.16.18-.13.4-.1.66.05.4.05.72-.42.86-.34.1-.75.02-1.1.12-.5.14-.72.55-1.1.9-.6.55-1.4.9-2.24.9-.6 0-1.13-.16-1.66-.34-.5-.17-1-.34-1.55-.34-.55 0-1.05.17-1.55.34-.53.18-1.06.34-1.66.34-.84 0-1.64-.35-2.24-.9-.38-.35-.6-.76-1.1-.9-.35-.1-.76-.02-1.1-.12-.47-.14-.47-.46-.42-.86.03-.26.06-.48-.1-.66-.2-.22-.56-.24-.86-.32-.36-.08-.76-.22-.86-.5-.13-.36.16-.59.5-.7.85-.28 1.66-.88 1.9-1.78.07-.25.07-.46-.03-.6-.2-.26-.64-.36-1-.5-.5-.2-.98-.46-1.01-.86-.02-.3.18-.52.6-.72.28-.13 1.02-.37 1.3-.53.3-.18.44-.28.5-.68.07-.51 0-1.43.06-2.53C6.79 4.9 8.33 2 12.03 2z" />
+                </svg>
+              </a>
+              <a href="https://www.facebook.com/flowenspeech" target="_blank" rel="noopener noreferrer" aria-label="Flowen on Facebook" className="text-slate-500 hover:text-emerald-400 transition-colors">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                  <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.23.2 2.23.2v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.91h-2.34V22c4.78-.79 8.44-4.94 8.44-9.94z" />
+                </svg>
+              </a>
+              <a href="https://www.linkedin.com/company/flowen-technologies/" target="_blank" rel="noopener noreferrer" aria-label="Flowen on LinkedIn" className="text-slate-500 hover:text-emerald-400 transition-colors">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                  <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zM7.12 20.45H3.56V9h3.56v11.45z" />
+                </svg>
+              </a>
+            </div>
           </div>
 
           <div>
