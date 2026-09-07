@@ -9,6 +9,7 @@ import { JsonLd } from '@/components/JsonLd';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import PostHogProvider from '@/components/PostHogProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { ImageLightbox } from '@/components/ImageLightbox';
 import { adminDb as db } from '@/lib/supabase/admin';
 
 // Inline script evaluated synchronously before first paint — prevents flash of
@@ -156,6 +157,7 @@ export default async function RootLayout({
           <AnalyticsTracker />
           <CookieConsent />
           <TrackingScripts providers={trackingProviders} />
+          <ImageLightbox />
         </ThemeProvider>
         <Analytics />
       </body>
