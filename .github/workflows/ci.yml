@@ -1,0 +1,42 @@
+name: CI
+
+# Type-check and unit-test every push/PR against main. Deliberately does NOT
+# run `next build` — that needs a long list of runtime secrets (Supabase,
+# Stripe, Agora, ...) that aren't configured here, and would make this
+# workflow fail on missing config rather than real code problems. Vercel's
+# own preview-deployment build already covers the full build step on every
+# PR.
+#
+# Also deliberately does NOT run lint here, for two separate reasons found
+# while wiring this up:
+#   1. `npm run lint` (`next lint`) is itself broken on this Next.js 16 fork
+#      — it errors with "Invalid project directory provided, no such
+#      directory: lint", confirmed pre-existing (unrelated to any change in
+#      this PR). This project's own workflow has used `npx eslint <files>`
+#      directly all along instead.
+#   2. Running eslint across the whole repo today surfaces a real amount of
+#      pre-existing lint debt scattered across many files (mostly
+#      react-hooks/set-state-in-effect) — enough that a repo-wide lint step
+#      would fail on day one for reasons unrelated to whatever a given PR
+#      actually changed. A permanently-red required check trains people to
+#      ignore CI status, which is worse than no CI. Scoping lint to only a
+#      PR's changed files, or fixing the accumulated debt, is a separate
+#      piece of work.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test
