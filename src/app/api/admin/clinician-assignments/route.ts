@@ -36,8 +36,7 @@ export async function GET() {
 
   const [assignmentsRes, cliniciansRes, patientsRes] = await Promise.all([
     client.from('slp_assignments').select('*').order('assigned_at', { ascending: false }),
-    // Include both 'slp' (SLT portal) and legacy 'clinician' role
-    client.from('profiles').select('id, display_name, email').in('role', ['slp', 'clinician']),
+    client.from('profiles').select('id, display_name, email').eq('role', 'clinician'),
     client.from('profiles').select('id, display_name, email').eq('role', 'patient'),
   ]);
 

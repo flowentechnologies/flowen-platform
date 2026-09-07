@@ -63,7 +63,6 @@ const BACKUP_TABLES = [
   'nhs_icb_contacts',
   'nhs_slp_signups',
   'nhs_block_pledges',
-  'slp_beta_applications',
   'consent_audit_log',
   'gdpr_requests',
   'nps_responses',
