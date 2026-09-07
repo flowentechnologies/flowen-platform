@@ -31,9 +31,14 @@ export default async function CronPage() {
   const [allRunsRes, failed7dRes] = await Promise.all([
     db
       .from('cron_runs')
+      // 1000, not 200: two of the 20 jobs (the Explee syncs) now log every
+      // 10 minutes (~288 rows/day combined) — at the old limit their own
+      // volume alone would push a low-frequency daily job's most recent
+      // run out of this "most recent overall" window within a single day,
+      // making it look like it had never run at all.
       .select('id,job_id,status,triggered_by,duration_ms,result,error,started_at,finished_at')
       .order('started_at', { ascending: false })
-      .limit(200),
+      .limit(1000),
     db
       .from('cron_runs')
       .select('*', { count: 'exact', head: true })
@@ -67,7 +72,7 @@ export default async function CronPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Total Jobs</p>
-          <p className="text-4xl font-black text-slate-900 dark:text-white">5</p>
+          <p className="text-4xl font-black text-slate-900 dark:text-white">20</p>
         </div>
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
           <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Last Run</p>

@@ -16,6 +16,20 @@ const JOB_PATHS: Record<string, string> = {
   'marketing-sync-meta':   '/api/admin/marketing/sync',
   'marketing-sync-google': '/api/admin/marketing/sync/google-ads',
   'consistency-check':     '/api/cron/consistency-check',
+  // Added for full parity once every scheduled job got real cron_runs
+  // logging (see src/lib/cron-logging.ts) — these previously had no
+  // manual-trigger entry point at all.
+  'practice-reminders':      '/api/cron/practice-reminders',
+  'trial-emails':            '/api/cron/trial-emails',
+  'weekly-digest':           '/api/cron/weekly-digest',
+  'workflows':               '/api/cron/workflows',
+  'slp-inactivity':          '/api/cron/slp-inactivity',
+  'notifications-cron':     '/api/admin/notifications/cron',
+  'backup':                 '/api/cron/backup',
+  'social-publish':         '/api/cron/social-publish',
+  'pinterest-token-refresh': '/api/cron/pinterest-token-refresh',
+  'explee-hot-leads':        '/api/cron/explee-hot-leads',
+  'explee-outreach-sync':    '/api/cron/explee-outreach-sync',
 };
 
 // ── Handler ───────────────────────────────────────────────────────────────────
