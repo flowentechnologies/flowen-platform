@@ -6,8 +6,10 @@ import { usePathname } from 'next/navigation';
 import { FlowenLogo } from '@/components/FlowenLogo';
 import { logout } from '@/app/auth/actions';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ClinicianNotificationBell } from '@/components/dashboard/ClinicianNotificationBell';
 
 export interface UserProfile {
+  id: string;
   email: string;
   displayName: string | null;
   tier: string | null;
@@ -272,8 +274,9 @@ export function DashboardNav({ user }: { user: UserProfile }) {
           )}
         </nav>
 
-        {/* Right side: theme toggle + profile */}
+        {/* Right side: notifications + theme toggle + profile */}
         <div className="flex items-center gap-2 shrink-0">
+          {user.role === 'clinician' && <ClinicianNotificationBell userId={user.id} />}
           <ThemeToggle className="hidden sm:flex" />
 
           {/* Profile button */}

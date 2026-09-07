@@ -68,6 +68,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .maybeSingle();
 
   const user: UserProfile = {
+    id:           authUser.id,
     email:        authUser.email ?? '',
     displayName:  profile?.display_name ?? null,
     tier:         profile?.tier ?? null,
