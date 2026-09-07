@@ -13,16 +13,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronRequest } from '@/lib/cron-auth';
 import { adminDb as db } from '@/lib/supabase/admin';
 import { checkBilling, checkMarketing, checkVenture, type CheckResult } from '@/lib/consistency-checks';
+import { withCronLogging } from '@/lib/cron-logging';
 
 // Vercel Cron always invokes via GET (with Authorization: Bearer CRON_SECRET);
 // /admin/cron's manual trigger uses POST (with x-cron-secret) — verifyCronRequest
 // accepts either, so both methods need to route to the same handler.
-export async function GET(req: NextRequest): Promise<NextResponse> {
-  return handle(req);
-}
-export async function POST(req: NextRequest): Promise<NextResponse> {
-  return handle(req);
-}
+export const GET = withCronLogging('consistency-check', handle);
+export const POST = withCronLogging('consistency-check', handle);
 
 async function handle(req: NextRequest): Promise<NextResponse> {
   if (!verifyCronRequest(req.headers)) {

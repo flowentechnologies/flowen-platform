@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronRequest } from '@/lib/cron-auth';
 import { runChecks } from '../route';
+import { withCronLogging } from '@/lib/cron-logging';
 
-export async function GET(req: NextRequest): Promise<NextResponse> {
+async function handle(req: NextRequest): Promise<NextResponse> {
   if (!verifyCronRequest(req.headers)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -18,3 +19,5 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     );
   }
 }
+
+export const GET = withCronLogging('notifications-cron', handle);

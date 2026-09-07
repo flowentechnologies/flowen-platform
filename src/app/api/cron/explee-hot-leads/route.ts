@@ -31,6 +31,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronRequest } from '@/lib/cron-auth';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { withCronLogging } from '@/lib/cron-logging';
 
 const EXPLEE_BASE = 'https://api.explee.com';
 const EXPLEE_PROJECT_ID = 33901;
@@ -212,9 +213,5 @@ async function handle(req: NextRequest): Promise<NextResponse> {
 // Vercel Cron always invokes via GET (Authorization: Bearer CRON_SECRET);
 // a manual trigger from /admin uses POST (x-cron-secret) — same as every
 // other cron route in this app.
-export async function GET(req: NextRequest): Promise<NextResponse> {
-  return handle(req);
-}
-export async function POST(req: NextRequest): Promise<NextResponse> {
-  return handle(req);
-}
+export const GET = withCronLogging('explee-hot-leads', handle);
+export const POST = withCronLogging('explee-hot-leads', handle);

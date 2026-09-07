@@ -23,16 +23,13 @@ import { verifyCronRequest } from '@/lib/cron-auth';
 import { adminDb as db } from '@/lib/supabase/admin';
 import { isMetaConfigured, publishToInstagram, publishToFacebook } from '@/lib/social/meta-publish';
 import { isPinterestConfigured, publishToPinterest } from '@/lib/social/pinterest-publish';
+import { withCronLogging } from '@/lib/cron-logging';
 
 const MAX_ATTEMPTS = 3;
 const BATCH_LIMIT = 10; // safety cap per run — this cron fires hourly, calendar posts 1-3x/day
 
-export async function GET(req: NextRequest): Promise<NextResponse> {
-  return handle(req);
-}
-export async function POST(req: NextRequest): Promise<NextResponse> {
-  return handle(req);
-}
+export const GET = withCronLogging('social-publish', handle);
+export const POST = withCronLogging('social-publish', handle);
 
 async function handle(req: NextRequest): Promise<NextResponse> {
   if (!verifyCronRequest(req.headers)) {

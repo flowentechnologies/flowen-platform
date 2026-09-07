@@ -13,15 +13,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronRequest } from '@/lib/cron-auth';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { withCronLogging } from '@/lib/cron-logging';
 
 const API_BASE = 'https://api.pinterest.com/v5';
 
-export async function GET(req: NextRequest): Promise<NextResponse> {
-  return handle(req);
-}
-export async function POST(req: NextRequest): Promise<NextResponse> {
-  return handle(req);
-}
+export const GET = withCronLogging('pinterest-token-refresh', handle);
+export const POST = withCronLogging('pinterest-token-refresh', handle);
 
 async function handle(req: NextRequest): Promise<NextResponse> {
   if (!verifyCronRequest(req.headers)) {
