@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronRequest } from '@/lib/cron-auth';
 import { sendPracticeReminders } from '@/lib/practice-reminders';
+import { withCronLogging } from '@/lib/cron-logging';
 
-export async function GET(req: NextRequest) {
+async function handle(req: NextRequest): Promise<NextResponse> {
   if (!verifyCronRequest(req.headers)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -14,3 +15,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
   }
 }
+
+export const GET = withCronLogging('practice-reminders', handle);

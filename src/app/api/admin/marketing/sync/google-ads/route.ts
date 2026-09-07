@@ -24,6 +24,7 @@ import { assertAdmin }               from '@/lib/admin/guard';
 import { adminDb }                   from '@/lib/supabase/admin';
 import { getGoogleAccessToken }      from '@/lib/google-oauth';
 import { verifyCronRequest }         from '@/lib/cron-auth';
+import { withCronLogging }           from '@/lib/cron-logging';
 
 const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v18';
 
@@ -31,12 +32,8 @@ const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v18';
 // cron secret (scheduled daily run, or /admin/cron's manual-trigger button)
 // — previously admin-session-only, which meant no cron could ever run this.
 // GET is required too: Vercel Cron always invokes via GET.
-export async function GET(req: NextRequest) {
-  return handle(req);
-}
-export async function POST(req: NextRequest) {
-  return handle(req);
-}
+export const GET = withCronLogging('marketing-sync-google', handle);
+export const POST = withCronLogging('marketing-sync-google', handle);
 
 async function handle(req: NextRequest) {
   if (!verifyCronRequest(req.headers)) {

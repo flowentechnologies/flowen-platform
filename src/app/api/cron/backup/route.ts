@@ -20,6 +20,7 @@ import { createClient as createAdmin } from '@supabase/supabase-js';
 import { gzipSync }                   from 'node:zlib';
 import { verifyCronRequest }          from '@/lib/cron-auth';
 import { sendEmail, FROM, ADMIN_INBOX } from '@/lib/email';
+import { withCronLogging }            from '@/lib/cron-logging';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -174,7 +175,7 @@ async function pruneOldBackups(admin: ReturnType<typeof db>): Promise<number> {
 
 // ── Handler ───────────────────────────────────────────────────────────────────
 
-export async function POST(req: NextRequest): Promise<NextResponse> {
+async function handle(req: NextRequest): Promise<NextResponse> {
   if (!verifyCronRequest(req.headers)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -303,6 +304,5 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 }
 
 // Allow manual GET trigger from admin dashboard (same auth)
-export async function GET(req: NextRequest): Promise<NextResponse> {
-  return POST(req);
-}
+export const POST = withCronLogging('backup', handle);
+export const GET = withCronLogging('backup', handle);

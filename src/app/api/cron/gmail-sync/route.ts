@@ -36,6 +36,7 @@ import {
 } from '@/lib/gmail';
 import { categorize, extractAmountPence, computeNotificationPriority, isAutomatedMail, type Categorization } from '@/lib/inbox-categorize';
 import { generateReplyDraft } from '@/lib/inbox-draft';
+import { withCronLogging } from '@/lib/cron-logging';
 
 const LABEL_PREFIX = 'Flowen';
 
@@ -58,12 +59,8 @@ async function notify(opts: {
 // Vercel Cron always invokes via GET (with Authorization: Bearer CRON_SECRET);
 // /admin/cron's manual trigger uses POST (with x-cron-secret) — verifyCronRequest
 // accepts either, so both methods need to route to the same handler.
-export async function GET(req: NextRequest): Promise<NextResponse> {
-  return handle(req);
-}
-export async function POST(req: NextRequest): Promise<NextResponse> {
-  return handle(req);
-}
+export const GET = withCronLogging('gmail-sync', handle);
+export const POST = withCronLogging('gmail-sync', handle);
 
 async function handle(req: NextRequest): Promise<NextResponse> {
   if (!verifyCronRequest(req.headers)) {
