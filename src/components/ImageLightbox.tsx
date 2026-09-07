@@ -32,16 +32,23 @@ interface LightboxState {
  *   - Images inside a link or button (`closest('a, button, [role="button"]')`)
  *     — clicking those already does something real (navigate, submit);
  *     this must not hijack that click.
+ *   - Images inside any `[role="dialog"]` — most importantly, the
+ *     lightbox's OWN zoomed image. React attaches its delegated click
+ *     listener and this component's own `document.addEventListener`
+ *     listener on the same node; calling `stopPropagation()` inside a
+ *     React onClick only stops the event moving to the NEXT node in the
+ *     bubble path, it does not stop other listeners already registered
+ *     on that SAME node. Without this exclusion, clicking the zoomed
+ *     image to toggle it also re-triggers this listener's "open a fresh
+ *     lightbox" branch on the very same click, which calls
+ *     `setZoomed(false)` and silently undoes the toggle in the same
+ *     render. Found by testing the toggle directly against the deployed
+ *     site rather than assuming stopPropagation alone was enough.
  *   - Small images (natural size under 48px either dimension) — icons,
  *     logo marks, small avatars. There's nothing meaningful to view larger
  *     for a 24px icon, and popping a full-screen modal for one would be
  *     irritating, not useful.
  *   - Anything explicitly opted out via a data-no-lightbox attribute.
- *   - Anywhere a component's own onClick already calls stopPropagation —
- *     native bubbling means this listener (attached on `document`, so it
- *     fires last) never sees that click at all, which is exactly the
- *     right behaviour: an image with its own deliberate click handler
- *     keeps it, undisturbed.
  */
 export function ImageLightbox() {
   const [active, setActive] = useState<LightboxState | null>(null);
@@ -51,7 +58,7 @@ export function ImageLightbox() {
     function onClick(e: MouseEvent) {
       const target = e.target;
       if (!(target instanceof HTMLImageElement)) return;
-      if (target.closest('a, button, [role="button"], [data-no-lightbox]')) return;
+      if (target.closest('a, button, [role="button"], [role="dialog"], [data-no-lightbox]')) return;
       if (target.naturalWidth < 48 || target.naturalHeight < 48) return;
 
       setZoomed(false); // always open fresh in the fit-to-screen view
