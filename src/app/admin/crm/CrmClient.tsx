@@ -15,6 +15,15 @@ interface Contact {
   notes: string | null;
   deal_value_pence: number | null;
   deal_currency: string | null;
+  // Enrichment fields — populated for leads synced in from Explee; null for
+  // contacts sourced elsewhere (inbox scan, manual).
+  job_title: string | null;
+  company_domain: string | null;
+  linkedin_url: string | null;
+  country: string | null;
+  phone: string | null;
+  why_hot: string | null;
+  became_hot_at: string | null;
 }
 
 interface Activity {
@@ -39,7 +48,7 @@ const STAGE_LABEL: Record<string, string> = {
 };
 const CATEGORY_LABEL: Record<string, string> = {
   investor: 'Investor', grant: 'Grant', nhs_partner: 'NHS Partner', press: 'Press',
-  affiliate: 'Affiliate', vendor: 'Vendor', other: 'Other',
+  affiliate: 'Affiliate', vendor: 'Vendor', sales_lead: 'Sales Lead', other: 'Other',
 };
 const ACTIVITY_ICON: Record<string, string> = {
   email_inbound: '📥', email_outbound: '📤', call: '📞', meeting: '🤝', note: '📝', stage_change: '🔀',
@@ -546,6 +555,29 @@ function ContactDetail({ contact, onClose, onUpdated }: {
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 5l10 10M15 5L5 15" /></svg>
           </button>
         </div>
+
+        {contact.category === 'sales_lead' && (
+          <div className="bg-emerald-50/50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-3 space-y-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+              🔥 Hot lead — synced from Explee{contact.became_hot_at ? ` · ${new Date(contact.became_hot_at).toLocaleString('en-GB')}` : ''}
+            </p>
+            {contact.job_title && <p className="text-xs text-slate-700 dark:text-slate-300">{contact.job_title}</p>}
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+              {contact.phone && <span>📞 {contact.phone}</span>}
+              {contact.country && <span>🌍 {contact.country}</span>}
+              {contact.linkedin_url && (
+                <a href={contact.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-sky-600 dark:text-sky-400 hover:underline">
+                  LinkedIn ↗
+                </a>
+              )}
+            </div>
+            {contact.why_hot && (
+              <p className="text-xs text-slate-600 dark:text-slate-300 italic border-l-2 border-emerald-400 dark:border-emerald-500/40 pl-2 mt-1.5">
+                &ldquo;{contact.why_hot}&rdquo;
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <div>

@@ -1,0 +1,238 @@
+/**
+ * /api/cron/explee-outreach-sync
+ *
+ * Pulls the FULL Explee outreach picture into Flowen — not just hot leads
+ * (that's /api/cron/explee-hot-leads, which feeds the CRM pipeline) but
+ * campaign performance, every person contacted, and every email/reply in
+ * each conversation. Answers "what about the emails sent — gather all data
+ * from Explee to enrich the platform." Surfaced at /admin/outreach.
+ *
+ * Runs every 10 minutes (vercel.json), same cadence as the hot-leads sync,
+ * scoped to the same project (33901). Each run:
+ *   1. Lists the project's campaigns, upserts explee_campaigns + their
+ *      lifetime analytics (small table, ~10 rows — always fully refreshed).
+ *   2. Pages through each campaign's inbox (every contacted person, not
+ *      just hot ones) and upserts explee_contacts.
+ *   3. For any contact whose latest_sent_at/latest_reply_at moved since
+ *      last sync — i.e. something new happened on that thread — fetches
+ *      the full conversation and stores any messages we don't already
+ *      have. This avoids re-fetching hundreds of unchanged threads every
+ *      10 minutes as the contact list grows.
+ *   4. Links explee_contacts.crm_contact_id by email where that person is
+ *      already a CRM contact (read-only link — this job never creates or
+ *      edits crm_contacts; that's the hot-leads job's job).
+ *   5. Records a project-analytics snapshot, but only when the numbers
+ *      actually moved since the last one, so the trend log stays
+ *      meaningful rather than 144 identical rows a day.
+ */
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyCronRequest } from '@/lib/cron-auth';
+import { adminDb as db } from '@/lib/supabase/admin';
+
+const EXPLEE_BASE = 'https://api.explee.com';
+const EXPLEE_PROJECT_ID = 33901;
+const PAGE_LIMIT = 200;
+
+function expleeHeaders(): HeadersInit {
+  const key = process.env.EXPLEE_API_KEY;
+  if (!key) throw new Error('EXPLEE_API_KEY not configured');
+  return { 'X-API-Key': key };
+}
+
+async function expleeGet<T>(path: string): Promise<T> {
+  const res = await fetch(`${EXPLEE_BASE}${path}`, { headers: expleeHeaders() });
+  if (!res.ok) throw new Error(`Explee ${path} -> ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<T>;
+}
+
+interface ExpleeCampaign { id: number; project_id: number; name: string }
+
+interface CampaignAnalytics {
+  campaign_id: number; name: string; status: string; status_reason: string | null;
+  daily_budget_usd: number; emails_sent: number; total_replies: number; reply_rate_pct: number;
+  hot_leads: number; spend_usd: number; cost_per_lead_usd: number;
+  leads_pool_used: number; leads_pool_total: number; leads_pool_pending: number;
+  collected_leads_total: number; cold_lost: number; manual_status_counts: Record<string, number>;
+}
+
+interface InboxContactItem {
+  person_id: string | null; email: string | null; name: string | null;
+  latest_subject: string | null; latest_sent_at: string | null; latest_reply_at: string | null;
+  latest_intent: string | null; sent_count: number; reply_count: number;
+}
+interface InboxContactsResponse { contacts: InboxContactItem[]; has_more: boolean; next_offset: number | null }
+
+interface ThreadMessage {
+  type: 'sent' | 'reply'; message_id: string | null; from_email: string | null; to_email: string | null;
+  subject: string | null; body_text: string | null; intent: string | null; status: string | null;
+  in_reply_to: string | null; ts: string | null;
+}
+interface ThreadResponse { messages: ThreadMessage[] }
+
+interface ProjectAnalytics {
+  project_id: number; total_emails_sent: number; total_replies: number; total_auto_replies: number;
+  overall_reply_rate_pct: number; total_hot_leads: number; total_spend_usd: number;
+}
+
+async function paginateInbox(campaignId: number): Promise<InboxContactItem[]> {
+  const all: InboxContactItem[] = [];
+  let offset = 0;
+  for (;;) {
+    const data = await expleeGet<InboxContactsResponse>(
+      `/public/api/v1/autogtm/campaigns/${campaignId}/inbox?limit=${PAGE_LIMIT}&offset=${offset}`,
+    );
+    all.push(...data.contacts);
+    if (!data.has_more || data.next_offset === null) break;
+    offset = data.next_offset;
+  }
+  return all;
+}
+
+async function handle(req: NextRequest): Promise<NextResponse> {
+  if (!verifyCronRequest(req.headers)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+  const supabase = db();
+
+  // ── 1. Campaigns + analytics ─────────────────────────────────────────
+  const { campaigns } = await expleeGet<{ campaigns: ExpleeCampaign[] }>(
+    `/public/api/v1/autogtm/campaigns?project_id=${EXPLEE_PROJECT_ID}`,
+  );
+
+  const analyticsByCampaign = new Map<number, CampaignAnalytics>();
+  for (const c of campaigns) {
+    const a = await expleeGet<CampaignAnalytics>(`/public/api/v1/autogtm/campaigns/${c.id}/analytics?period=all`);
+    analyticsByCampaign.set(c.id, a);
+    await supabase.from('explee_campaigns').upsert({
+      id: c.id, project_id: c.project_id, name: c.name,
+      status: a.status, status_reason: a.status_reason, daily_budget_usd: a.daily_budget_usd,
+      emails_sent: a.emails_sent, total_replies: a.total_replies, reply_rate_pct: a.reply_rate_pct,
+      hot_leads: a.hot_leads, spend_usd: a.spend_usd, cost_per_lead_usd: a.cost_per_lead_usd,
+      leads_pool_used: a.leads_pool_used, leads_pool_total: a.leads_pool_total,
+      leads_pool_pending: a.leads_pool_pending, collected_leads_total: a.collected_leads_total,
+      cold_lost: a.cold_lost, manual_status_counts: a.manual_status_counts,
+      synced_at: new Date().toISOString(),
+    }, { onConflict: 'id' });
+  }
+
+  // ── 2. Contacts (everyone emailed, not just hot leads) ──────────────
+  let contactsUpserted = 0;
+  let messagesStored = 0;
+  let threadsFetched = 0;
+
+  for (const c of campaigns) {
+    const inboxContacts = await paginateInbox(c.id);
+    const withPersonId = inboxContacts.filter((x): x is InboxContactItem & { person_id: string } => !!x.person_id);
+    if (withPersonId.length === 0) continue;
+
+    // Compare against what we already have, so we only re-fetch full
+    // threads for contacts whose activity actually moved since last sync.
+    const { data: existingRows } = await supabase
+      .from('explee_contacts')
+      .select('person_id, latest_sent_at, latest_reply_at')
+      .eq('campaign_id', c.id)
+      .in('person_id', withPersonId.map(x => x.person_id));
+    const existingByPerson = new Map((existingRows ?? []).map(r => [r.person_id as string, r]));
+
+    const changedPersonIds: string[] = [];
+    for (const contact of withPersonId) {
+      const prior = existingByPerson.get(contact.person_id);
+      const changed = !prior
+        || prior.latest_sent_at !== contact.latest_sent_at
+        || prior.latest_reply_at !== contact.latest_reply_at;
+      if (changed) changedPersonIds.push(contact.person_id);
+
+      const { error } = await supabase.from('explee_contacts').upsert({
+        campaign_id: c.id, person_id: contact.person_id,
+        email: contact.email, name: contact.name, latest_subject: contact.latest_subject,
+        latest_sent_at: contact.latest_sent_at, latest_reply_at: contact.latest_reply_at,
+        latest_intent: contact.latest_intent, sent_count: contact.sent_count, reply_count: contact.reply_count,
+        synced_at: new Date().toISOString(),
+      }, { onConflict: 'campaign_id,person_id' });
+      if (!error) contactsUpserted++;
+    }
+
+    // ── 3. Fetch + store new messages for changed threads only ────────
+    for (const personId of changedPersonIds) {
+      threadsFetched++;
+      const thread = await expleeGet<ThreadResponse>(
+        `/public/api/v1/autogtm/campaigns/${c.id}/inbox/${encodeURIComponent(personId)}`,
+      );
+      if (thread.messages.length === 0) continue;
+
+      const { data: storedMsgs } = await supabase
+        .from('explee_messages')
+        .select('message_id, sent_at, type, subject')
+        .eq('campaign_id', c.id).eq('person_id', personId);
+      const storedIds = new Set((storedMsgs ?? []).filter(m => m.message_id).map(m => m.message_id));
+      // Fallback dedupe key for the rare message with no message_id.
+      const storedFallback = new Set((storedMsgs ?? []).filter(m => !m.message_id)
+        .map(m => `${m.sent_at ?? ''}|${m.type}|${m.subject ?? ''}`));
+
+      const newMessages = thread.messages.filter(m => {
+        if (m.message_id) return !storedIds.has(m.message_id);
+        return !storedFallback.has(`${m.ts ?? ''}|${m.type}|${m.subject ?? ''}`);
+      });
+      if (newMessages.length === 0) continue;
+
+      const { error } = await supabase.from('explee_messages').insert(newMessages.map(m => ({
+        campaign_id: c.id, person_id: personId, message_id: m.message_id, type: m.type,
+        from_email: m.from_email, to_email: m.to_email, subject: m.subject, body_text: m.body_text,
+        intent: m.intent, status: m.status, in_reply_to: m.in_reply_to, sent_at: m.ts,
+      })));
+      if (!error) messagesStored += newMessages.length;
+    }
+  }
+
+  // ── 4. Link known emails back to the CRM (read-only link) ──────────
+  const { data: contactsWithEmail } = await supabase
+    .from('explee_contacts').select('id, email').is('crm_contact_id', null).not('email', 'is', null);
+  if (contactsWithEmail && contactsWithEmail.length > 0) {
+    const { data: crmMatches } = await supabase
+      .from('crm_contacts').select('id, email')
+      .in('email', contactsWithEmail.map(c => c.email as string));
+    const crmByEmail = new Map((crmMatches ?? []).map(m => [(m.email as string).toLowerCase(), m.id as string]));
+    for (const contact of contactsWithEmail) {
+      const crmId = crmByEmail.get((contact.email as string).toLowerCase());
+      if (crmId) await supabase.from('explee_contacts').update({ crm_contact_id: crmId }).eq('id', contact.id);
+    }
+  }
+
+  // ── 5. Project analytics snapshot — only when numbers moved ────────
+  const projectAnalytics = await expleeGet<ProjectAnalytics>(
+    `/public/api/v1/autogtm/projects/${EXPLEE_PROJECT_ID}/analytics?period=all`,
+  );
+  const { data: lastSnapshot } = await supabase
+    .from('explee_analytics_snapshots').select('*')
+    .eq('project_id', EXPLEE_PROJECT_ID).order('captured_at', { ascending: false }).limit(1).maybeSingle();
+  const movedSinceLast = !lastSnapshot
+    || lastSnapshot.total_emails_sent !== projectAnalytics.total_emails_sent
+    || lastSnapshot.total_replies !== projectAnalytics.total_replies
+    || lastSnapshot.total_hot_leads !== projectAnalytics.total_hot_leads
+    || lastSnapshot.total_spend_usd !== projectAnalytics.total_spend_usd;
+  if (movedSinceLast) {
+    await supabase.from('explee_analytics_snapshots').insert({
+      project_id: EXPLEE_PROJECT_ID,
+      total_emails_sent: projectAnalytics.total_emails_sent,
+      total_replies: projectAnalytics.total_replies,
+      total_auto_replies: projectAnalytics.total_auto_replies,
+      overall_reply_rate_pct: projectAnalytics.overall_reply_rate_pct,
+      total_hot_leads: projectAnalytics.total_hot_leads,
+      total_spend_usd: projectAnalytics.total_spend_usd,
+    });
+  }
+
+  return NextResponse.json({
+    ok: true, campaigns: campaigns.length, contacts_upserted: contactsUpserted,
+    threads_fetched: threadsFetched, messages_stored: messagesStored, snapshot_recorded: movedSinceLast,
+  });
+}
+
+// Vercel Cron always invokes via GET (Authorization: Bearer CRON_SECRET);
+// a manual trigger from /admin uses POST (x-cron-secret) — same as every
+// other cron route in this app.
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  return handle(req);
+}
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  return handle(req);
+}
