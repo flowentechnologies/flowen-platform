@@ -35,6 +35,7 @@ const NAV: NavSection[] = [
       { label: 'Inbox', href: '/admin/inbox' },
       { label: 'Drafts Awaiting Approval', href: '/admin/inbox?tab=drafts', indent: true },
       { label: 'CRM Pipeline', href: '/admin/crm' },
+      { label: 'Outreach (Explee)', href: '/admin/outreach' },
       { label: 'Vendor Invoices', href: '/admin/vendor-invoices' },
       { label: 'Consistency Checks', href: '/admin/consistency' },
     ],
