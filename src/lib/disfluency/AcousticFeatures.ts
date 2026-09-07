@@ -179,13 +179,25 @@ function estimatePeriod(buf: Float32Array): number | null {
     scores[lag - MIN_LAG] = denom > 0 ? cross / denom : 0;
   }
 
+  // Only consider lags with two REAL neighbours on both sides — MIN_LAG and
+  // MAX_LAG themselves are excluded from the local-peak search (they fall
+  // through to the global-max fallback below if needed). Without this, a
+  // low-pitched voice (F0 well under ~90Hz, comfortably inside this
+  // tracker's own documented 60-500Hz range) reliably mis-detects: the
+  // autocorrelation is still on its natural decline away from lag=0 at
+  // lag=MIN_LAG, but the missing left neighbour there was defaulted to
+  // -Infinity, which trivially satisfies `s >= prev` regardless of the
+  // actual shape — so MIN_LAG got accepted as "the" pitch period purely
+  // because it had nothing real to compare against, not because it was a
+  // genuine peak. Found via AcousticFeatures.test.ts: a clean 65Hz tone was
+  // coming back as ~530Hz.
   let bestLag = -1;
   let bestScore = 0;
-  for (let lag = MIN_LAG; lag <= MAX_LAG; lag++) {
+  for (let lag = MIN_LAG + 1; lag < MAX_LAG; lag++) {
     const s = scores[lag - MIN_LAG];
     if (s < VOICING_THRESHOLD) continue;
-    const prev = lag > MIN_LAG ? scores[lag - MIN_LAG - 1] : -Infinity;
-    const next = lag < MAX_LAG ? scores[lag - MIN_LAG + 1] : -Infinity;
+    const prev = scores[lag - MIN_LAG - 1];
+    const next = scores[lag - MIN_LAG + 1];
     if (s >= prev && s >= next) { bestLag = lag; bestScore = s; break; } // first local peak
   }
 
