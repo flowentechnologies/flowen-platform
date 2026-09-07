@@ -176,17 +176,30 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   );
 
   // getUser() refreshes the session cookie internally. When the stored refresh
-  // token has been revoked or expired Supabase throws AuthApiError. We catch
-  // that here so a stale cookie never crashes the proxy for the whole request;
+  // token has been revoked, expired, or already consumed by a concurrent
+  // request, Supabase either returns or throws AuthApiError. We catch that
+  // here so a stale cookie never crashes the proxy for the whole request;
   // the user is simply treated as unauthenticated and redirected to login if
   // they try to access a protected route.
+  //
+  // This originally only recognised the 'refresh_token_not_found' code, but
+  // production logs showed 'refresh_token_already_used' just as often (a
+  // concurrent-request race: two requests both try to redeem the same
+  // refresh token, the loser gets this code) — and that code fell through
+  // to neither branch, so staleCookies never got set and the broken cookie
+  // was never cleared. The browser kept resending the same dead token on
+  // every request, which fails the same way forever until it happens to
+  // expire naturally or the user clears cookies manually. Any 400-level
+  // AuthApiError from getUser() means the stored refresh token is unusable
+  // one way or another, so treat the whole class the same way rather than
+  // pattern-matching individual error codes.
   let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null;
   let staleCookies = false;
   try {
     const { data, error } = await supabase.auth.getUser();
     if (!error) {
       user = data.user;
-    } else if (error.status === 400 && (error as { code?: string }).code === 'refresh_token_not_found') {
+    } else if (error.status === 400) {
       staleCookies = true;
     }
   } catch {
