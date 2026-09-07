@@ -53,6 +53,36 @@ const ENV_MANIFEST = [
   { name: 'CRON_SECRET',                       label: 'Cron Secret',              category: 'App',         required: true  },
 ];
 
+// ── CI / test suite status ────────────────────────────────────────────────────
+
+interface CiRun {
+  id: number;
+  status: string;       // 'completed' | 'in_progress' | 'queued'
+  conclusion: string | null; // 'success' | 'failure' | null (while running)
+  head_sha: string;
+  created_at: string;
+  html_url: string;
+}
+
+/** flowentechnologies/flowen-platform is a public repo, so its Actions runs
+ * are readable via the REST API with no token — same data `gh run list`
+ * shows, fetched server-side so this page loads instantly regardless of
+ * GitHub's own latency. Fails soft (returns null) rather than breaking the
+ * whole /admin/system page if GitHub is unreachable or rate-limits us. */
+async function getCiRuns(): Promise<CiRun[] | null> {
+  try {
+    const res = await fetch(
+      'https://api.github.com/repos/flowentechnologies/flowen-platform/actions/workflows/ci.yml/runs?per_page=5&branch=main',
+      { headers: { Accept: 'application/vnd.github+json' }, next: { revalidate: 60 } },
+    );
+    if (!res.ok) return null;
+    const data = await res.json() as { workflow_runs: CiRun[] };
+    return data.workflow_runs;
+  } catch {
+    return null;
+  }
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmtDate(iso: string) {
@@ -86,6 +116,7 @@ export default async function SystemPage() {
     webhooksRes,
     auditSummaryRes,
     totalWebhooksRes,
+    ciRuns,
   ] = await Promise.all([
     db.from('system_error_logs').select('*', { count: 'exact', head: true }),
     db.from('system_error_logs').select('*', { count: 'exact', head: true }).eq('resolved', false),
@@ -95,7 +126,9 @@ export default async function SystemPage() {
     db.from('processed_webhook_events').select('event_id,event_type,processed_at').order('processed_at', { ascending: false }).limit(25),
     db.from('audit_logs').select('severity,category').gte('timestamp', sevenDaysAgo),
     db.from('processed_webhook_events').select('*', { count: 'exact', head: true }),
+    getCiRuns(),
   ]);
+  const latestCiRun = ciRuns?.[0] ?? null;
   const dbLatencyMs = Date.now() - t0;
 
   // ── Derived metrics ────────────────────────────────────────────────────────
@@ -190,7 +223,7 @@ export default async function SystemPage() {
       )}
 
       {/* Service health cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {[
           {
             label:  'Supabase',
@@ -216,17 +249,57 @@ export default async function SystemPage() {
             detail: process.env.SENTRY_ORG ? `org: ${process.env.SENTRY_ORG}` : 'DSN only',
             ok:     Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN),
           },
-        ].map(svc => (
-          <div key={svc.label} className={`bg-white dark:bg-slate-900 border rounded-2xl p-5 ${svc.ok ? 'border-slate-200 dark:border-slate-800' : 'border-amber-500/30'}`}>
-            <div className="flex items-center gap-2 mb-3">
-              <div className={`w-2 h-2 rounded-full ${svc.ok ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
-              <p className="text-xs font-mono text-slate-400 uppercase tracking-wide">{svc.label}</p>
-            </div>
-            <p className={`text-sm font-bold ${svc.ok ? 'text-slate-900 dark:text-white' : 'text-amber-400'}`}>{svc.status}</p>
-            <p className="text-[10px] text-slate-500 mt-1">{svc.detail}</p>
-          </div>
-        ))}
+          {
+            label:  'CI / Tests',
+            status: !latestCiRun ? 'UNKNOWN'
+              : latestCiRun.status !== 'completed' ? 'RUNNING'
+              : latestCiRun.conclusion === 'success' ? 'PASSING' : 'FAILING',
+            detail: latestCiRun ? `${fmtDate(latestCiRun.created_at)} · ${latestCiRun.head_sha.slice(0, 7)}` : 'GitHub unreachable',
+            ok:     !latestCiRun || latestCiRun.status !== 'completed' ? true : latestCiRun.conclusion === 'success',
+            href:   latestCiRun?.html_url,
+          },
+        ].map(svc => {
+          const Wrapper = svc.href ? 'a' : 'div';
+          return (
+            <Wrapper
+              key={svc.label}
+              {...(svc.href ? { href: svc.href, target: '_blank', rel: 'noopener noreferrer' } : {})}
+              className={`bg-white dark:bg-slate-900 border rounded-2xl p-5 ${svc.ok ? 'border-slate-200 dark:border-slate-800' : 'border-amber-500/30'} ${svc.href ? 'hover:border-slate-300 dark:hover:border-slate-700 transition-colors' : ''}`}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div className={`w-2 h-2 rounded-full ${svc.ok ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
+                <p className="text-xs font-mono text-slate-400 uppercase tracking-wide">{svc.label}</p>
+              </div>
+              <p className={`text-sm font-bold ${svc.ok ? 'text-slate-900 dark:text-white' : 'text-amber-400'}`}>{svc.status}</p>
+              <p className="text-[10px] text-slate-500 mt-1">{svc.detail}</p>
+            </Wrapper>
+          );
+        })}
       </div>
+
+      {/* CI recent runs — last 5, so a single flaky/failed run doesn't read
+          as "the test suite is broken" without the trend around it */}
+      {ciRuns && ciRuns.length > 0 && (
+        <div className="flex items-center gap-2 -mt-2 px-1">
+          <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wide shrink-0">Recent CI runs</span>
+          <div className="flex items-center gap-1.5">
+            {ciRuns.map(run => {
+              const dotColor = run.status !== 'completed' ? 'bg-blue-400 animate-pulse'
+                : run.conclusion === 'success' ? 'bg-emerald-400' : 'bg-red-400';
+              return (
+                <a
+                  key={run.id}
+                  href={run.html_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={`${run.conclusion ?? run.status} · ${fmtDate(run.created_at)} · ${run.head_sha.slice(0, 7)}`}
+                  className={`w-2.5 h-2.5 rounded-full ${dotColor} hover:scale-125 transition-transform`}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Error summary row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
