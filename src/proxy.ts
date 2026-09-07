@@ -227,10 +227,9 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const isAdminRoute      = pathname.startsWith('/admin');
   const isPortalRoute     = pathname.startsWith('/portal');
   const isOnboardingRoute = pathname.startsWith('/onboarding');
-  const isSlpRoute        = pathname.startsWith('/slp');
 
   // 4. Auth gates — unauthenticated users bounce to login
-  if ((isDashboardRoute || isAdminRoute || isPortalRoute || isOnboardingRoute || isSlpRoute) && !user) {
+  if ((isDashboardRoute || isAdminRoute || isPortalRoute || isOnboardingRoute) && !user) {
     const loginUrl = new URL('/auth/login', request.url);
     loginUrl.searchParams.set('next', pathname);
     return NextResponse.redirect(loginUrl);

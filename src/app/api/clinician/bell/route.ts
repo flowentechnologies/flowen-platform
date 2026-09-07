@@ -23,7 +23,7 @@ async function requireClinician() {
 
   const admin = db();
   const { data: profile } = await admin.from('profiles').select('role, is_admin').eq('id', user.id).single();
-  if (!profile || (profile.role !== 'clinician' && profile.role !== 'slp' && !profile.is_admin)) return null;
+  if (!profile || (profile.role !== 'clinician' && !profile.is_admin)) return null;
 
   return user;
 }

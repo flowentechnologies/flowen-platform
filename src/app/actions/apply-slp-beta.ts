@@ -27,22 +27,32 @@ export async function applySlpBeta(
   const normalised = email.toLowerCase().trim();
 
   try {
+    // Logged into the CRM (category='clinician_lead') rather than a
+    // dedicated applications table — the role='slp' portal this used to
+    // feed (an approval flow that set role='slp' on the applicant's
+    // profile) has been retired, since it never got a single real
+    // applicant or promoted user. Routing into crm_contacts means a real
+    // submission through this still-live public form surfaces somewhere
+    // a human actually looks, instead of a dead end behind a removed
+    // admin review page.
+    const notesParts = [
+      `Caseload size: ${caseload_size}`,
+      `Client group: ${client_group}`,
+      motivation?.trim() ? `Motivation: ${motivation.trim()}` : null,
+    ].filter(Boolean);
+
     const { error } = await adminClient()
-      .from('slp_beta_applications')
-      .insert({
-        name:          name.trim(),
-        email:         normalised,
-        organisation:  organisation.trim(),
-        caseload_size,
-        client_group,
-        motivation:    motivation?.trim() || null,
-      });
+      .from('crm_contacts')
+      .upsert({
+        name:     name.trim(),
+        email:    normalised,
+        company:  organisation.trim(),
+        category: 'clinician_lead',
+        source:   'clinicians_page_apply',
+        notes:    notesParts.join('\n'),
+      }, { onConflict: 'email', ignoreDuplicates: true });
 
     if (error) {
-      if (error.code === '23505') {
-        // Already applied — don't reveal this, return success silently
-        return { success: true, message: 'Application received!' };
-      }
       console.error('[apply-slp-beta] insert error:', error.message);
       return { success: false, message: 'Unable to submit right now. Please try again.' };
     }

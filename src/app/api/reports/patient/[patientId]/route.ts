@@ -25,13 +25,19 @@ export async function GET(
     .eq('id', user.id)
     .single();
 
-  const isSLP   = callerProfile?.role === 'slp';
+  // Was gated on role==='slp' — the /slp/* portal that role belonged to
+  // has been retired (zero real profiles ever had it), which meant the
+  // real, in-use clinician system's own callers (e.g.
+  // dashboard/clinician/[patientId]/PatientClient.tsx) could never
+  // actually pass this check themselves, only admins could. Fixed to
+  // check the role real clinicians actually have.
+  const isClinician = callerProfile?.role === 'clinician';
   const isAdmin = callerProfile?.is_admin === true;
 
-  if (!isSLP && !isAdmin) return new Response('Forbidden', { status: 403 });
+  if (!isClinician && !isAdmin) return new Response('Forbidden', { status: 403 });
 
-  // SLPs can only download reports for their own assigned patients
-  if (isSLP && !isAdmin) {
+  // Clinicians can only download reports for their own assigned patients
+  if (isClinician && !isAdmin) {
     const { data: assignment } = await admin
       .from('slp_assignments')
       .select('id')
@@ -54,8 +60,8 @@ export async function GET(
       .eq('patient_user_id', patientId)
       .eq('active', true)
       .maybeSingle(),
-    // Clinical notes for this patient — from the requesting SLP (or all SLPs for admins)
-    isSLP
+    // Clinical notes for this patient — from the requesting clinician (or all clinicians for admins)
+    isClinician
       ? admin
           .from('slp_session_notes')
           .select('note, created_at')
@@ -74,7 +80,7 @@ export async function GET(
   // Resolve the responsible clinician's name and email
   let slpName: string | null  = null;
   let slpEmail: string | null = null;
-  const slpUserId = planRes.data?.slp_user_id ?? (isSLP ? user.id : null);
+  const slpUserId = planRes.data?.slp_user_id ?? (isClinician ? user.id : null);
   if (slpUserId) {
     const { data: slp } = await admin
       .from('profiles')

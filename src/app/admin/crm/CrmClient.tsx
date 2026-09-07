@@ -48,7 +48,8 @@ const STAGE_LABEL: Record<string, string> = {
 };
 const CATEGORY_LABEL: Record<string, string> = {
   investor: 'Investor', grant: 'Grant', nhs_partner: 'NHS Partner', press: 'Press',
-  affiliate: 'Affiliate', vendor: 'Vendor', sales_lead: 'Sales Lead', other: 'Other',
+  affiliate: 'Affiliate', vendor: 'Vendor', sales_lead: 'Sales Lead',
+  clinician_lead: 'Clinician Lead', other: 'Other',
 };
 const ACTIVITY_ICON: Record<string, string> = {
   email_inbound: '📥', email_outbound: '📤', call: '📞', meeting: '🤝', note: '📝', stage_change: '🔀',
