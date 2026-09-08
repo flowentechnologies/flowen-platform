@@ -27,7 +27,10 @@ interface NavSection {
 const NAV: NavSection[] = [
   {
     section: 'Overview',
-    items: [{ label: 'Command Centre', href: '/admin/command-center' }],
+    items: [
+      { label: 'Command Centre', href: '/admin/command-center' },
+      { label: 'To-Do', href: '/admin/todo' },
+    ],
   },
   {
     section: 'Inbox & CRM',
