@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { bridgeAttribution } from "@/lib/attribution";
+import { SESSION_STARTED_COOKIE, sessionStartedCookieOptions } from "@/lib/auth/session-policy";
 
 async function getSupabaseClient() {
   const cookieStore = await cookies();
@@ -55,6 +56,12 @@ export async function login(formData: FormData) {
   const anonId = cookieStore.get('flowen_anon_id')?.value;
   await bridgeAttribution(anonId, authData.user.id, 'signup');
 
+  // Marks the start of the absolute session lifetime — proxy.ts forces
+  // re-login once this cookie is older than MAX_SESSION_AGE_MS, independent
+  // of the idle timeout and independent of how many times the access token
+  // itself gets silently refreshed in between.
+  cookieStore.set(SESSION_STARTED_COOKIE, String(Date.now()), sessionStartedCookieOptions());
+
   revalidatePath("/", "layout");
   if (profile?.is_admin) redirect("/admin");
   else if (!profile?.onboarding_complete) redirect("/onboarding");
@@ -92,6 +99,22 @@ export async function signup(formData: FormData) {
 export async function logout() {
   const supabase = await getSupabaseClient();
   await supabase.auth.signOut();
+  (await cookies()).delete(SESSION_STARTED_COOKIE);
   revalidatePath("/", "layout");
   redirect("/auth/login");
+}
+
+/**
+ * Same sign-out as logout(), but for the cases where *why* matters enough to
+ * tell the user: IdleTimeoutGuard calling this directly (not via a form, so
+ * logout()'s implicit FormData argument isn't available here) after 15
+ * minutes of inactivity, or proxy.ts redirecting here after the 7-day
+ * absolute session cap is hit. Login page reads `message` to show which.
+ */
+export async function logoutForReason(reason: 'idle' | 'session_expired') {
+  const supabase = await getSupabaseClient();
+  await supabase.auth.signOut();
+  (await cookies()).delete(SESSION_STARTED_COOKIE);
+  revalidatePath("/", "layout");
+  redirect(`/auth/login?message=${reason === 'idle' ? 'signed_out_idle' : 'session_expired'}`);
 }

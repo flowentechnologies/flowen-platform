@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { applyIdentityGuard } from '@/middleware/identity-guard';
 import { applyAffiliateReferral } from '@/middleware/affiliate-referral';
 import { checkProxyRateLimit } from '@/lib/rate-limit';
+import { SESSION_STARTED_COOKIE, sessionStartedCookieOptions, checkSessionAge } from '@/lib/auth/session-policy';
 
 // ── Analytics constants ───────────────────────────────────────────────────────
 
@@ -221,6 +222,38 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     }
   }
 
+  // 2b. Stale-session cap — forces re-login after MAX_SESSION_AGE_MS
+  //     regardless of activity. Independent of the idle timeout, which is
+  //     client-side only (IdleTimeoutGuard) and trivially bypassed by a
+  //     modified or JS-disabled client — this is the actual security
+  //     boundary. Needs its own cookie rather than the access token's own
+  //     iat/exp, which reset on every silent token refresh throughout an
+  //     active session and would make an "absolute" cap meaningless.
+  let forcedStaleLogout = false;
+  if (user) {
+    const ageCheck = checkSessionAge(request.cookies.get(SESSION_STARTED_COOKIE)?.value, Date.now());
+    if (ageCheck === 'stale') {
+      await supabase.auth.signOut();
+      for (const cookie of request.cookies.getAll()) {
+        if (
+          cookie.name.startsWith('sb-') ||
+          cookie.name.includes('-auth-token') ||
+          cookie.name === 'supabase-auth-token' ||
+          cookie.name === SESSION_STARTED_COOKIE
+        ) {
+          response.cookies.delete(cookie.name);
+        }
+      }
+      user = null;
+      forcedStaleLogout = true;
+    } else if (ageCheck === 'seed') {
+      // No cookie yet — a session that predates this feature. Start the
+      // clock now rather than force-logging-out every already-signed-in
+      // user the moment this deploys.
+      response.cookies.set(SESSION_STARTED_COOKIE, String(Date.now()), sessionStartedCookieOptions());
+    }
+  }
+
   // 3. Route classification
   const isAuthRoute       = pathname.startsWith('/auth');
   const isDashboardRoute  = pathname.startsWith('/dashboard');
@@ -232,6 +265,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   if ((isDashboardRoute || isAdminRoute || isPortalRoute || isOnboardingRoute) && !user) {
     const loginUrl = new URL('/auth/login', request.url);
     loginUrl.searchParams.set('next', pathname);
+    if (forcedStaleLogout) loginUrl.searchParams.set('message', 'session_expired');
     return NextResponse.redirect(loginUrl);
   }
 
