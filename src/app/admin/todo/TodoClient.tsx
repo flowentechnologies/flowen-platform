@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import type { FailingJob, FlaggedPullRequest } from '@/lib/admin/todo';
 import { toggleActionItem, createActionItem, deleteActionItem } from '@/app/actions/todo-actions';
 
@@ -13,6 +14,25 @@ export interface ActionItem {
   created_at:  string;
   resolved_at: string | null;
   resolved_by: string | null;
+}
+
+export interface PendingDraft {
+  id:          string;
+  to_address:  string;
+  subject:     string;
+  created_at:  string;
+  from_name:   string | null;
+  alias:       string | null;
+}
+
+export interface NewLead {
+  id:            string;
+  name:          string | null;
+  company:       string | null;
+  email:         string | null;
+  why_hot:       string | null;
+  became_hot_at: string | null;
+  source:        string | null;
 }
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -130,6 +150,101 @@ function OpenPRsSection({ prs }: { prs: FlaggedPullRequest[] | null }) {
           </a>
         ))}
       </div>
+    </section>
+  );
+}
+
+// ── Pending email drafts ─────────────────────────────────────────────────────
+
+function ageLabel(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (days <= 0) return 'today';
+  if (days === 1) return '1 day waiting';
+  return `${days} days waiting`;
+}
+
+function PendingDraftsSection({ drafts }: { drafts: PendingDraft[] }) {
+  if (drafts.length === 0) {
+    return (
+      <section>
+        <SectionHeader title="Pending email drafts" count={0} tone="slate" />
+        <p className="text-sm text-slate-400 dark:text-slate-600 italic">No AI-drafted replies waiting on approval.</p>
+      </section>
+    );
+  }
+  const oldest = drafts[0];
+  const stale = (Date.now() - new Date(oldest.created_at).getTime()) / 86_400_000 >= 2;
+  return (
+    <section>
+      <SectionHeader title="Pending email drafts" count={drafts.length} tone={stale ? 'amber' : 'slate'} />
+      <div className="space-y-2">
+        {drafts.slice(0, 8).map(d => (
+          <a
+            key={d.id}
+            href="/admin/inbox?tab=drafts"
+            className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+          >
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                {d.alias && <span className="font-mono text-[10px] text-slate-400 uppercase">{d.alias}</span>}
+                <span className="text-[10px] font-mono text-slate-400">{ageLabel(d.created_at)}</span>
+              </div>
+              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{d.subject || '(no subject)'}</p>
+              <p className="text-xs text-slate-400 truncate">to {d.from_name ?? d.to_address}</p>
+            </div>
+            <span className="text-slate-300 dark:text-slate-700 shrink-0">→</span>
+          </a>
+        ))}
+      </div>
+      {drafts.length > 8 && (
+        <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-2">
+          +{drafts.length - 8} more — see <a href="/admin/inbox?tab=drafts" className="underline hover:text-slate-600 dark:hover:text-slate-400">Drafts Awaiting Approval</a>.
+        </p>
+      )}
+    </section>
+  );
+}
+
+// ── New outreach leads (Explee etc.) ─────────────────────────────────────────
+
+function NewLeadsSection({ leads }: { leads: NewLead[] }) {
+  if (leads.length === 0) {
+    return (
+      <section>
+        <SectionHeader title="New outreach leads" count={0} tone="slate" />
+        <p className="text-sm text-slate-400 dark:text-slate-600 italic">No hot leads waiting to be triaged.</p>
+      </section>
+    );
+  }
+  return (
+    <section>
+      <SectionHeader title="New outreach leads" count={leads.length} tone="amber" />
+      <div className="space-y-2">
+        {leads.slice(0, 8).map(lead => (
+          <a
+            key={lead.id}
+            href="/admin/crm"
+            className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+          >
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                {lead.source && <span className="font-mono text-[10px] text-slate-400 uppercase">{lead.source}</span>}
+                {lead.became_hot_at && <span className="text-[10px] font-mono text-slate-400">{ageLabel(lead.became_hot_at)}</span>}
+              </div>
+              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                {lead.name ?? lead.email ?? 'Unnamed contact'}{lead.company ? ` · ${lead.company}` : ''}
+              </p>
+              {lead.why_hot && <p className="text-xs text-slate-400 truncate">{lead.why_hot}</p>}
+            </div>
+            <span className="text-slate-300 dark:text-slate-700 shrink-0">→</span>
+          </a>
+        ))}
+      </div>
+      {leads.length > 8 && (
+        <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-2">
+          +{leads.length - 8} more — see <a href="/admin/crm" className="underline hover:text-slate-600 dark:hover:text-slate-400">CRM Pipeline</a>.
+        </p>
+      )}
     </section>
   );
 }
@@ -261,41 +376,64 @@ function TrackedItemsSection({ items }: { items: ActionItem[] }) {
 
 // ── Root ──────────────────────────────────────────────────────────────────────
 
+function SummaryTile({ label, value, warn }: { label: string; value: number | string; warn: boolean }) {
+  return (
+    <div className={`rounded-2xl border p-5 ${warn ? 'border-amber-500/30' : 'border-slate-200 dark:border-slate-800'}`}>
+      <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">{label}</p>
+      <p className={`text-3xl font-black ${warn ? 'text-amber-500' : 'text-slate-900 dark:text-white'}`}>{value}</p>
+    </div>
+  );
+}
+
 export function TodoClient({
-  failingJobs, flaggedPRs, initialItems,
+  failingJobs, flaggedPRs, initialItems, pendingDrafts, newLeads,
 }: {
-  failingJobs:  FailingJob[];
-  flaggedPRs:   FlaggedPullRequest[] | null;
-  initialItems: ActionItem[];
+  failingJobs:   FailingJob[];
+  flaggedPRs:    FlaggedPullRequest[] | null;
+  initialItems:  ActionItem[];
+  pendingDrafts: PendingDraft[];
+  newLeads:      NewLead[];
 }) {
-  const totalOpen = failingJobs.length + (flaggedPRs?.length ?? 0) + initialItems.filter(i => i.status === 'open').length;
+  const router = useRouter();
+  const [refreshing, startRefresh] = useTransition();
+
+  const openTracked = initialItems.filter(i => i.status === 'open').length;
+  const totalOpen = failingJobs.length + (flaggedPRs?.length ?? 0) + openTracked + pendingDrafts.length + newLeads.length;
 
   return (
     <div className="space-y-8">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-bold font-mono uppercase tracking-wide text-slate-500 dark:text-slate-400">Summary</h2>
+        <button
+          type="button"
+          disabled={refreshing}
+          onClick={() => startRefresh(() => router.refresh())}
+          className="flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-700 dark:hover:text-slate-200 transition-colors disabled:opacity-50"
+        >
+          <span className={refreshing ? 'animate-spin' : ''}>↻</span>
+          {refreshing ? 'Refreshing…' : 'Refresh'}
+        </button>
+      </div>
+
       {totalOpen === 0 ? (
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 text-center">
           <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">Nothing outstanding</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">All cron jobs healthy, no open PRs, no tracked items.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Cron healthy, no open PRs, inbox clear, no new leads, no tracked items.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className={`rounded-2xl border p-6 ${failingJobs.length > 0 ? 'border-red-500/30' : 'border-slate-200 dark:border-slate-800'}`}>
-            <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Failing Jobs</p>
-            <p className={`text-4xl font-black ${failingJobs.length > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{failingJobs.length}</p>
-          </div>
-          <div className={`rounded-2xl border p-6 ${flaggedPRs?.some(p => p.stale) ? 'border-amber-500/30' : 'border-slate-200 dark:border-slate-800'}`}>
-            <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Open PRs</p>
-            <p className="text-4xl font-black text-slate-900 dark:text-white">{flaggedPRs?.length ?? '—'}</p>
-          </div>
-          <div className={`rounded-2xl border p-6 ${initialItems.some(i => i.status === 'open') ? 'border-amber-500/30' : 'border-slate-200 dark:border-slate-800'}`}>
-            <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wide mb-2">Tracked Items</p>
-            <p className="text-4xl font-black text-slate-900 dark:text-white">{initialItems.filter(i => i.status === 'open').length}</p>
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <SummaryTile label="Failing Jobs" value={failingJobs.length} warn={failingJobs.length > 0} />
+          <SummaryTile label="Open PRs" value={flaggedPRs?.length ?? '—'} warn={!!flaggedPRs?.some(p => p.stale)} />
+          <SummaryTile label="Email Drafts" value={pendingDrafts.length} warn={pendingDrafts.length > 0} />
+          <SummaryTile label="New Leads" value={newLeads.length} warn={newLeads.length > 0} />
+          <SummaryTile label="Tracked Items" value={openTracked} warn={openTracked > 0} />
         </div>
       )}
 
       <FailingJobsSection jobs={failingJobs} />
       <OpenPRsSection prs={flaggedPRs} />
+      <PendingDraftsSection drafts={pendingDrafts} />
+      <NewLeadsSection leads={newLeads} />
       <TrackedItemsSection items={initialItems} />
     </div>
   );
