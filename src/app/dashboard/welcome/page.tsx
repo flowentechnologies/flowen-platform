@@ -2,10 +2,59 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { getStripeClient } from '@/lib/stripe';
+import { buildPurchaseEventPayload, type PurchaseEventPayload } from '@/lib/analytics/purchase-event';
+import { PurchaseEventTracker } from '@/components/analytics/PurchaseEventTracker';
 
 export const metadata = { title: 'Welcome to Flowen' };
 
-export default async function WelcomePage() {
+/**
+ * Stripe redirects here with ?session_id={CHECKOUT_SESSION_ID} — see
+ * success_url in /api/stripe/checkout. Resolves the real transaction for
+ * GA4's purchase event (src/lib/analytics/purchase-event.ts) rather than
+ * reporting nothing, or static/hardcoded values, on the one page in the app
+ * whose entire job is confirming a purchase.
+ *
+ * Verifies the session's own email matches the signed-in user before using
+ * it for anything — a session_id is a plausible thing to see turn up as a
+ * copy-pasted or replayed query param, and this is a live Stripe API call
+ * against whatever id is handed to it.
+ */
+async function resolvePurchaseEvent(
+  sessionId: string | undefined,
+  userEmail: string | null | undefined,
+): Promise<PurchaseEventPayload | null> {
+  if (!sessionId || !userEmail) return null;
+
+  try {
+    const { client } = await getStripeClient();
+    const session = await client.checkout.sessions.retrieve(sessionId, {
+      expand: ['line_items', 'line_items.data.price.product'],
+    });
+
+    if (session.customer_details?.email?.toLowerCase() !== userEmail.toLowerCase()) {
+      return null;
+    }
+
+    const lineItems = session.line_items?.data ?? [];
+    if (lineItems.length === 0) return null;
+
+    return buildPurchaseEventPayload(session.id, session.currency, lineItems);
+  } catch (err) {
+    // A dead/invalid/already-expired session id must never break the
+    // welcome page itself — worst case, this one purchase goes untracked.
+    console.error('[dashboard/welcome] failed to resolve checkout session for GA4 purchase event:', err);
+    return null;
+  }
+}
+
+export default async function WelcomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session_id?: string }>;
+}) {
+  const { session_id } = await searchParams;
+
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,17 +65,17 @@ export default async function WelcomePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login');
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name')
-    .eq('id', user.id)
-    .maybeSingle();
+  const [{ data: profile }, purchaseEvent] = await Promise.all([
+    supabase.from('profiles').select('display_name').eq('id', user.id).maybeSingle(),
+    resolvePurchaseEvent(session_id, user.email),
+  ]);
 
   const firstName = (profile?.display_name ?? user.email?.split('@')[0] ?? 'there')
     .split(' ')[0];
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-6 py-12">
+      {purchaseEvent && <PurchaseEventTracker payload={purchaseEvent} />}
       <div className="max-w-lg w-full space-y-10 text-center">
 
         {/* Celebration */}

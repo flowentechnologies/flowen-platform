@@ -75,7 +75,12 @@ export async function POST(req: Request) {
       // 7-day free trial — card is collected upfront so the trial-to-paid
       // conversion is automatic. Stripe won't charge until day 8.
       subscription_data: { trial_period_days: 7 },
-      success_url: `${baseUrl}/dashboard/welcome`,
+      // {CHECKOUT_SESSION_ID} is a literal Stripe placeholder — Stripe
+      // substitutes the real session id into the redirect URL itself. The
+      // welcome page uses it to fetch the real transaction for GA4's
+      // purchase event (transaction_id/value/currency) — see
+      // src/lib/analytics/purchase-event.ts.
+      success_url: `${baseUrl}/dashboard/welcome?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing`,
     });
 
