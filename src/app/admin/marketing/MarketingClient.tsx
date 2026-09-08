@@ -308,12 +308,13 @@ function PaidMediaTab({ active }: { active: boolean }) {
               <h4 className="font-semibold text-slate-900 dark:text-white capitalize">{p.platform}</h4>
               <Badge label="Active" color="green" />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
               {[
                 { label: 'Spend',       value: `£${p.spendGBP}` },
                 { label: 'Impressions', value: p.impressions.toLocaleString() },
                 { label: 'Reach',       value: p.reach.toLocaleString() },
                 { label: 'Clicks',      value: p.clicks.toLocaleString() },
+                { label: 'Link Clicks', value: p.linkClicks.toLocaleString() },
                 { label: 'CTR',         value: p.ctr ? `${p.ctr}%` : '—' },
                 { label: 'CPC',         value: p.cpcGBP ? `£${p.cpcGBP}` : '—' },
                 { label: 'CPM',         value: p.cpmGBP ? `£${p.cpmGBP}` : '—' },
@@ -405,7 +406,7 @@ type AttributionData = {
   byCampaign: { campaign: string; clicks: number; conversions: number }[];
   recentSamples: {
     source: string | null; medium: string | null; campaign: string | null;
-    hasClickId: boolean; landingPage: string | null; firstSeen: string;
+    hasClickId: boolean; landingPage: string | null; referrer: string | null; firstSeen: string;
     converted: boolean; conversionType: string | null; linked: boolean;
   }[];
   utmCoveragePercent: number | null;
@@ -626,11 +627,13 @@ function AttributionTab({ active }: { active: boolean }) {
                   <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-mono uppercase text-slate-400">
                     <th className="px-4 py-2 text-left">First seen</th>
                     <th className="px-4 py-2 text-left">Source</th>
+                    <th className="px-4 py-2 text-left">Medium</th>
                     <th className="px-4 py-2 text-left">Campaign</th>
                     <th className="px-4 py-2 text-left">Landing</th>
+                    <th className="px-4 py-2 text-left">Referrer</th>
                     <th className="px-4 py-2 text-center">Click ID</th>
                     <th className="px-4 py-2 text-center">Linked</th>
-                    <th className="px-4 py-2 text-center">Converted</th>
+                    <th className="px-4 py-2 text-left">Converted</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -638,11 +641,17 @@ function AttributionTab({ active }: { active: boolean }) {
                     <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                       <td className="px-4 py-2 font-mono whitespace-nowrap">{new Date(s.firstSeen).toLocaleDateString('en-GB')}</td>
                       <td className="px-4 py-2 font-mono">{s.source ?? '—'}</td>
+                      <td className="px-4 py-2 font-mono text-slate-400">{s.medium ?? '—'}</td>
                       <td className="px-4 py-2 max-w-[160px] truncate">{s.campaign ?? '—'}</td>
                       <td className="px-4 py-2 max-w-[120px] truncate text-slate-400">{s.landingPage ?? '—'}</td>
+                      <td className="px-4 py-2 max-w-[140px] truncate text-slate-400">{s.referrer ?? '—'}</td>
                       <td className="px-4 py-2 text-center">{s.hasClickId ? '✓' : '—'}</td>
                       <td className="px-4 py-2 text-center">{s.linked ? <span className="text-emerald-500">✓</span> : '—'}</td>
-                      <td className="px-4 py-2 text-center">{s.converted ? <span className="text-emerald-500">✓</span> : '—'}</td>
+                      <td className="px-4 py-2">
+                        {s.converted
+                          ? <span className="text-emerald-500 font-medium">✓ {s.conversionType ?? ''}</span>
+                          : '—'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -805,7 +814,9 @@ function CampaignsTab({ active }: { active: boolean }) {
                     <th className="px-5 py-3 text-left">Platform</th>
                     <th className="px-5 py-3 text-right">Spend</th>
                     <th className="px-5 py-3 text-right">Impr.</th>
+                    <th className="px-5 py-3 text-right">Reach</th>
                     <th className="px-5 py-3 text-right">Clicks</th>
+                    <th className="px-5 py-3 text-right">Link Clicks</th>
                     <th className="px-5 py-3 text-right">CTR</th>
                     <th className="px-5 py-3 text-right">CPC</th>
                     <th className="px-5 py-3 text-right">CPM</th>
@@ -821,7 +832,9 @@ function CampaignsTab({ active }: { active: boolean }) {
                       <td className="px-5 py-3 capitalize text-slate-500">{c.platform}</td>
                       <td className="px-5 py-3 text-right font-mono">£{c.spendGBP}</td>
                       <td className="px-5 py-3 text-right font-mono">{c.impressions.toLocaleString()}</td>
+                      <td className="px-5 py-3 text-right font-mono">{c.reach.toLocaleString()}</td>
                       <td className="px-5 py-3 text-right font-mono">{c.clicks.toLocaleString()}</td>
+                      <td className="px-5 py-3 text-right font-mono">{c.linkClicks.toLocaleString()}</td>
                       <td className="px-5 py-3 text-right font-mono">{c.ctr ?? '—'}</td>
                       <td className="px-5 py-3 text-right font-mono">{c.cpcGBP ? `£${c.cpcGBP}` : '—'}</td>
                       <td className="px-5 py-3 text-right font-mono">{c.cpmGBP ? `£${c.cpmGBP}` : '—'}</td>
@@ -928,6 +941,7 @@ function CreativesTab({ active }: { active: boolean }) {
                 <th className="px-5 py-3 text-right">Spend</th>
                 <th className="px-5 py-3 text-right">Impr.</th>
                 <th className="px-5 py-3 text-right">Clicks</th>
+                <th className="px-5 py-3 text-right">Link Clicks</th>
                 <th className="px-5 py-3 text-right">CTR</th>
                 <th className="px-5 py-3 text-right">CPC</th>
               </tr>
@@ -940,6 +954,7 @@ function CreativesTab({ active }: { active: boolean }) {
                   <td className="px-5 py-3 text-right font-mono">£{c.spendGBP}</td>
                   <td className="px-5 py-3 text-right font-mono">{c.impressions.toLocaleString()}</td>
                   <td className="px-5 py-3 text-right font-mono">{c.clicks.toLocaleString()}</td>
+                  <td className="px-5 py-3 text-right font-mono">{c.linkClicks.toLocaleString()}</td>
                   <td className="px-5 py-3 text-right font-mono">{c.ctr ?? '—'}</td>
                   <td className="px-5 py-3 text-right font-mono">{c.cpcGBP ? `£${c.cpcGBP}` : '—'}</td>
                 </tr>
