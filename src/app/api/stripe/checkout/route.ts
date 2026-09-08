@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getUserWithRetry } from '@/lib/supabase/get-user-with-retry';
 import { getStripeClient } from '@/lib/stripe';
 import { checkCheckoutRateLimit } from '@/lib/rate-limit';
 
@@ -42,8 +43,15 @@ export async function POST(req: Request) {
   // (get_user_id_by_email RPC) or the customers table. Without a known email,
   // checkout.session.completed throws "Cannot resolve user" and the subscription
   // is never activated. Reject unauthenticated requests up-front.
+  // getUserWithRetry rather than a bare getUser() call: a genuinely signed-in
+  // user clicking "Start trial" can lose a benign refresh-token-rotation race
+  // against some other concurrent request (nav prefetch, background polling)
+  // and get a spurious 400 here. Treating that as "not logged in" bounced
+  // them to /auth/login and, since they're actually still signed in, straight
+  // back to this same page — where clicking the button again could lose the
+  // same race again, looping. See src/lib/supabase/get-user-with-retry.ts.
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUserWithRetry(supabase);
   if (!user?.email) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
