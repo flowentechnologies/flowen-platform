@@ -129,7 +129,7 @@ export function PracticePaywall({ sessionsUsed, freeLimit, streak, daysActive, b
         {/* CTAs */}
         <div className="space-y-3">
           <Link
-            href="/pricing"
+            href="/dashboard/upgrade"
             className="block w-full text-center rounded-xl px-6 py-4 font-bold text-sm bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 transition-colors shadow-lg shadow-emerald-500/20"
           >
             Start 7-day free trial →
