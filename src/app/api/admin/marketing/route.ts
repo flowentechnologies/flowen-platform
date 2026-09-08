@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { assertAdmin } from '@/lib/admin/guard';
 import { adminDb } from '@/lib/supabase/admin';
+import { resolveAttributionSource } from '@/lib/marketing/attribution-source';
 
 const db = adminDb;
 
@@ -274,7 +275,7 @@ async function attribution(client: ReturnType<typeof adminDb>) {
   // Source breakdown
   const bySource: Record<string, { source: string; clicks: number; conversions: number }> = {};
   for (const r of rows) {
-    const src = r.utm_source ?? r.fbclid ? 'meta' : r.gclid ? 'google' : 'direct';
+    const src = resolveAttributionSource(r.utm_source, r.fbclid, r.gclid);
     if (!bySource[src]) bySource[src] = { source: src, clicks: 0, conversions: 0 };
     bySource[src].clicks++;
     if (r.converted_at) bySource[src].conversions++;
@@ -309,6 +310,7 @@ async function attribution(client: ReturnType<typeof adminDb>) {
       campaign:        r.utm_campaign,
       hasClickId:      !!(r.fbclid || r.gclid),
       landingPage:     r.landing_page,
+      referrer:        r.referrer,
       firstSeen:       r.first_seen_at,
       converted:       !!r.converted_at,
       conversionType:  r.conversion_type,
@@ -494,15 +496,21 @@ async function trackingHealth(client: ReturnType<typeof adminDb>) {
       .order('synced_at', { ascending: false })
       .limit(1)
       .single(),
-    // Tracking providers config — active platforms only
+    // Every configured tracking provider — previously hardcoded to just
+    // ['meta', 'ga4'], which silently hid GTM, LinkedIn, Snapchat, and
+    // anything else live in this table (e.g. GTM was enabled the same
+    // session this filter was fixed — it would never have shown up here).
     client.from('tracking_providers')
-      .select('provider_key, enabled, pixel_id, server_config')
-      .in('provider_key', ['meta', 'ga4']),
+      .select('provider_key, enabled, pixel_id, head_html, server_config')
+      .order('sort_order', { ascending: true }),
   ]);
 
   type VisitorRow  = { utm_source: string | null; created_at: string };
   type AttrRow     = { user_id: string | null; utm_source: string | null; utm_campaign: string | null; converted_at: string | null };
-  type TrackingRow = { provider_key: string; enabled: boolean; pixel_id: string | null; server_config: Record<string,unknown> };
+  type TrackingRow = {
+    provider_key: string; enabled: boolean; pixel_id: string | null;
+    head_html: string | null; server_config: Record<string, unknown> | null;
+  };
 
   const totalUsers  = profilesRes.count ?? 0;
   const attrRows    = (attrRes.data    ?? []) as AttrRow[];
@@ -524,16 +532,16 @@ async function trackingHealth(client: ReturnType<typeof adminDb>) {
     ? Math.round((linkedAttr / totalUsers) * 100)
     : null;
 
-  // Provider status — Meta Pixel + GA4 are the active tracking integrations
-  const providerStatus = (['meta', 'ga4'] as const).map(key => {
-    const p = providers.find(r => r.provider_key === key);
-    return {
-      provider: key,
-      enabled:  p?.enabled ?? false,
-      hasPixel: !!(p?.pixel_id),
-      hasCapiToken: !!(p?.server_config?.capi_token),
-    };
-  });
+  // Provider status — every row in tracking_providers, not just Meta/GA4.
+  // hasPixel covers the pixel_id-based providers (gtm/ga4/meta/tiktok/
+  // linkedin/twitter/hotjar/clarity); 'custom' has no pixel_id by design, so
+  // head_html presence is what "configured" means for it instead.
+  const providerStatus = providers.map(p => ({
+    provider:     p.provider_key,
+    enabled:      p.enabled,
+    hasPixel:     !!(p.pixel_id || p.head_html),
+    hasCapiToken: !!(p.server_config?.capi_token),
+  }));
 
   const events = [
     { event: 'Ad click → attribution row',    status: attrRows.length > 0 ? 'ok' : 'no_data' },
