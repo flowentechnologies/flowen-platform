@@ -242,7 +242,7 @@ function PlanBanner({ tier, sub }: { tier: string | null; sub: SubscriptionInfo 
         {/* Primary CTA */}
         <div className="shrink-0 flex flex-col gap-2">
           <Link
-            href="/pricing"
+            href="/dashboard/upgrade"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-bold transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 whitespace-nowrap"
           >
             Upgrade now →

@@ -236,7 +236,7 @@ function ManageBillingCard({ hasSubscription, stripeCustomerId }: Pick<BillingPr
       </div>
 
       <a
-        href="/pricing"
+        href="/dashboard/upgrade"
         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-slate-950 text-sm font-bold hover:bg-emerald-400 transition-colors"
       >
         View plans &rarr;
