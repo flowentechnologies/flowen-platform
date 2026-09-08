@@ -969,6 +969,11 @@ type SocialData = {
   hasSyncedData: boolean;
 };
 
+// Platforms with a real, configured Graph API connection (social-stats-sync
+// cron) rather than manual Supabase Table Editor entry — see
+// src/lib/social/meta-stats.ts.
+const AUTO_SYNCED_PLATFORMS = new Set(['instagram', 'facebook']);
+
 const PLATFORM_META: Record<string, { label: string; icon: string; color: string }> = {
   instagram: { label: 'Instagram', icon: '📸', color: 'violet' },
   facebook:  { label: 'Facebook',  icon: '👤', color: 'slate' },
@@ -989,7 +994,10 @@ function SocialTab({ active }: { active: boolean }) {
     <div className="space-y-8">
       {!data.hasSyncedData && (
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-4 text-sm text-slate-400">
-          No social data yet. Social stats are entered manually via the Supabase Table Editor or via platform API integrations when configured. Supported platforms: Instagram, Facebook, TikTok, LinkedIn, YouTube, X.
+          No social data yet. <strong className="text-slate-500 dark:text-slate-300">Instagram and Facebook sync automatically</strong> once
+          {' '}<code className="text-xs">META_PAGE_ACCESS_TOKEN</code>, <code className="text-xs">META_PAGE_ID</code>, and <code className="text-xs">META_IG_USER_ID</code> are
+          set — the same Meta Graph API connection already used for auto-publishing (<code className="text-xs">/api/cron/social-stats-sync</code>, daily). TikTok, LinkedIn,
+          YouTube, and X have no API integration configured in this app yet — those stay entered manually via the Supabase Table Editor.
         </div>
       )}
 
@@ -1003,6 +1011,11 @@ function SocialTab({ active }: { active: boolean }) {
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{meta.icon}</span>
                   <span className="font-semibold text-sm text-slate-900 dark:text-white">{meta.label}</span>
+                  {AUTO_SYNCED_PLATFORMS.has(p.platform) && (
+                    <span title="Synced daily via Meta Graph API" className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      AUTO
+                    </span>
+                  )}
                 </div>
                 {s
                   ? <span className="text-[9px] font-mono text-slate-400">{s.stat_date}</span>
