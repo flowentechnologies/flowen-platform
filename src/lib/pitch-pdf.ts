@@ -1,7 +1,10 @@
 /**
  * Flowen Investor Pitch Deck — PDF generator
  *
- * Generates a 13-slide A4-landscape PDF using pdfkit.
+ * Generates an A4-landscape PDF using pdfkit, in one of two variants
+ * (see buildPitchPDF's `variant` param): 'detailed', the full data-heavy
+ * deck (SLIDES), or 'simple', a plain-language six-slide explainer
+ * (SIMPLE_SLIDES) matching deck.html's "Simple View" toggle content.
  * All content is hard-coded here so the document is self-contained
  * and renderable without a browser / headless Chrome.
  *
@@ -14,6 +17,7 @@
 
 import PDFDocument from 'pdfkit';
 import { patchPdfkitStandardFonts } from './pdfkit-fonts-patch';
+import type { DeckVariant } from './pitch/deck-variant';
 
 patchPdfkitStandardFonts();
 
@@ -321,6 +325,55 @@ const SLIDES: Slide[] = [
   },
 ];
 
+// ── Simple-variant slide data ────────────────────────────────────────────────
+// Plain-language content, word-for-word the same six cards as deck.html's
+// #simpleView toggle — kept in sync by hand since one lives in HTML/JS and
+// the other in pdfkit draw calls. Whichever an investor was sent opens to
+// the same story either way (see buildPitchPDF's variant param).
+const SIMPLE_SLIDES: Slide[] = [
+  {
+    num: '1',
+    title: 'What is Flowen?',
+    body: 'Flowen helps people who stammer learn to talk more easily. It listens while you speak and tells you right away how you\'re doing — like having a coach standing next to you, all the time.',
+    accentColor: C.amber,
+  },
+  {
+    num: '2',
+    title: 'The Problem',
+    body: '80 million people around the world stammer. Getting help can take a long time, and it can cost a lot of money — sometimes £200 for just one hour. Most people practise alone, with nothing to guide them.',
+    accentColor: C.rose,
+  },
+  {
+    num: '3',
+    title: 'How Flowen Helps',
+    body: 'Flowen listens while you talk. The moment it notices you might be getting stuck, it helps — with a picture, a gentle buzz, or a kind voice — so you can keep going. It reacts faster than the blink of an eye.',
+    accentColor: C.violet,
+  },
+  {
+    num: '4',
+    title: 'What We\'ve Built So Far',
+    body: 'One person built all of this, alone, in just six weeks. It\'s real and working today — not just an idea.',
+    grid: [
+      { label: 'people signed up', value: '10', color: C.teal },
+      { label: 'practice sessions', value: '26', color: C.teal },
+      { label: 'weeks, one person', value: '6', color: C.amber },
+    ],
+    accentColor: C.teal,
+  },
+  {
+    num: '5',
+    title: 'What We\'re Asking For',
+    body: 'We\'re asking for £350,000. This money makes Flowen safe enough for the NHS to recommend, and helps more people find it.',
+    accentColor: C.teal,
+  },
+  {
+    num: '6',
+    title: 'Why I\'m Building This',
+    body: 'I\'ve stammered my whole life. I built Flowen because I needed something like it — and now I want it to help everyone else who needs it too.',
+    accentColor: C.gold,
+  },
+];
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -500,6 +553,71 @@ function renderSlide(doc: PDFKit.PDFDocument, slide: Slide, slideNum: number, to
   slideFooter(doc, slideNum, total);
 }
 
+// ── Simple-variant slide ─────────────────────────────────────────────────────
+// Deliberately its own renderer rather than a reuse of renderSlide with
+// smaller options: the detailed slide's dense mono header ("SLIDE 04 //
+// CONFIDENTIAL"), small justified body text, and left-aligned bullets are
+// exactly the density this variant exists to avoid. Big centred type, one
+// idea per page, plain footer.
+function renderSimpleSlide(doc: PDFKit.PDFDocument, slide: Slide, slideNum: number, total: number) {
+  fillBg(doc, C.bg);
+  const accent = slide.accentColor ?? C.teal;
+  fillRect(doc, 0, 0, 5, H, accent);
+  drawLogo(doc, W / 2 - 26, 50, 1.4);
+
+  let y = 130;
+  text(doc, slide.title, MARGIN + 40, y, {
+    color: C.paper, font: 'Helvetica-Bold', size: 30, width: CONTENT_W - 80, align: 'center', lineGap: 4,
+  });
+  y += doc.heightOfString(slide.title, { width: CONTENT_W - 80, lineGap: 4 }) + 16;
+
+  const [ar, ag, ab] = hexToRgb(accent);
+  doc.moveTo(W / 2 - 40, y).lineTo(W / 2 + 40, y).lineWidth(3).strokeColor([ar, ag, ab]).stroke();
+  y += 28;
+
+  text(doc, slide.body, MARGIN + 70, y, {
+    color: C.lav, font: 'Helvetica', size: 15, width: CONTENT_W - 140, align: 'center', lineGap: 5,
+  });
+  y += doc.heightOfString(slide.body, { width: CONTENT_W - 140, lineGap: 5 }) + 26;
+
+  if (slide.grid && slide.grid.length > 0) {
+    const items = slide.grid;
+    const cellW = 140, gap = 20;
+    const totalW = items.length * cellW + (items.length - 1) * gap;
+    const startX = W / 2 - totalW / 2;
+    items.forEach((item, i) => {
+      const cx = startX + i * (cellW + gap);
+      const [r, g, b] = hexToRgb(item.color);
+      doc.font('Helvetica-Bold').fontSize(30).fillColor([r, g, b]).text(item.value, cx, y, { width: cellW, align: 'center' });
+      const [lr, lg, lb] = hexToRgb(C.lavdim);
+      doc.font('Helvetica').fontSize(9).fillColor([lr, lg, lb]).text(item.label, cx, y + 38, { width: cellW, align: 'center' });
+    });
+  }
+
+  const [fr, fg, fb] = hexToRgb(C.lavdim);
+  doc.font('Helvetica').fontSize(8).fillColor([fr, fg, fb])
+    .text(`Flowen · ${slideNum} of ${total}`, MARGIN, H - 24, { width: CONTENT_W, align: 'center' });
+}
+
+// ── Simple-variant cover ─────────────────────────────────────────────────────
+function renderSimpleCover(doc: PDFKit.PDFDocument) {
+  fillBg(doc, C.bg);
+  fillRect(doc, 0, 0, 5, H, C.amber);
+  drawLogo(doc, W / 2 - 28, 190, 2.2);
+
+  text(doc, 'FLOWEN', W / 2 - 150, 250, { color: C.paper, font: 'Helvetica-Bold', size: 44, width: 300, align: 'center' });
+  text(doc, 'Helping people who stammer talk more easily', MARGIN, 302, {
+    color: C.lav, font: 'Helvetica', size: 13, width: CONTENT_W, align: 'center',
+  });
+
+  const [tr, tg, tb] = hexToRgb(C.teal);
+  doc.moveTo(W / 2 - 90, 330).lineTo(W / 2 + 90, 330).lineWidth(1.5).strokeColor([tr, tg, tb]).stroke();
+
+  const [lr, lg, lb] = hexToRgb(C.lavdim);
+  doc.font('Helvetica').fontSize(8).fillColor([lr, lg, lb])
+    .text('CONFIDENTIAL — NOT FOR DISTRIBUTION · flowen.digital', MARGIN, H - 24, { width: CONTENT_W, align: 'center' });
+}
+
 // ── Cover page ────────────────────────────────────────────────────────────────
 function renderCover(doc: PDFKit.PDFDocument) {
   fillBg(doc, C.bg);
@@ -563,16 +681,19 @@ function renderCover(doc: PDFKit.PDFDocument) {
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
-export function buildPitchPDF(): Promise<Buffer> {
+export function buildPitchPDF(variant: DeckVariant = 'detailed'): Promise<Buffer> {
+  const isSimple = variant === 'simple';
+  const slides = isSimple ? SIMPLE_SLIDES : SLIDES;
+
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({
         size: [W, H],   // A4 landscape
         margin: 0,
         info: {
-          Title:   'Flowen — Investor Pitch Deck',
+          Title:   isSimple ? 'Flowen — Explained Simply' : 'Flowen — Investor Pitch Deck',
           Author:  'Flowen Technologies Ltd',
-          Subject: 'Pre-Seed Investment Opportunity',
+          Subject: isSimple ? 'What Flowen does, in plain language' : 'Pre-Seed Investment Opportunity',
           Keywords: 'Flowen Vocali speech stammer acoustic biofeedback deep tech SEIS',
           Creator: 'Flowen Technologies',
         },
@@ -584,14 +705,19 @@ export function buildPitchPDF(): Promise<Buffer> {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      // Cover
-      renderCover(doc);
-
-      // 13 content slides
-      SLIDES.forEach((slide, i) => {
-        doc.addPage({ size: [W, H], margin: 0 });
-        renderSlide(doc, slide, i + 1, SLIDES.length);
-      });
+      if (isSimple) {
+        renderSimpleCover(doc);
+        SIMPLE_SLIDES.forEach((slide, i) => {
+          doc.addPage({ size: [W, H], margin: 0 });
+          renderSimpleSlide(doc, slide, i + 1, slides.length);
+        });
+      } else {
+        renderCover(doc);
+        SLIDES.forEach((slide, i) => {
+          doc.addPage({ size: [W, H], margin: 0 });
+          renderSlide(doc, slide, i + 1, slides.length);
+        });
+      }
 
       doc.end();
     } catch (err) {

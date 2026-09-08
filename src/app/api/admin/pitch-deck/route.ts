@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/admin/guard';
 import { randomBytes } from 'crypto';
 import { logAuditEvent } from '@/lib/admin/audit';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { resolveDeckVariant } from '@/lib/pitch/deck-variant';
 
 export interface DeckInvite {
   id: string;
@@ -15,6 +16,7 @@ export interface DeckInvite {
   view_count: number;
   last_viewed_at: string | null;
   firm: string | null;
+  variant: 'detailed' | 'simple';
 }
 
 export async function GET() {
@@ -40,21 +42,23 @@ export async function POST(request: Request) {
   const client = db();
 
   if (action === 'create') {
-    const { investor_name, investor_email, firm, expires_days } = body;
+    const { investor_name, investor_email, firm, expires_days, variant } = body;
     if (!investor_name) return NextResponse.json({ error: 'investor_name required' }, { status: 400 });
 
     const token = randomBytes(24).toString('base64url');
     const expires_at = expires_days
       ? new Date(Date.now() + Number(expires_days) * 86400_000).toISOString()
       : null;
+    const deckVariant = resolveDeckVariant(variant);
 
     const { data, error } = await client.from('deck_invites').insert({
       investor_name, investor_email: investor_email || null,
       firm: firm || null, token, expires_at, view_count: 0, revoked: false,
+      variant: deckVariant,
     }).select().single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'deck.invite_created', resource_type: 'deck_invite', resource_id: data.id, metadata: { investor_name, investor_email: investor_email || null }, severity: 'info' });
+    void logAuditEvent({ actor_email: admin.email, actor_id: admin.id, action: 'deck.invite_created', resource_type: 'deck_invite', resource_id: data.id, metadata: { investor_name, investor_email: investor_email || null, variant: deckVariant }, severity: 'info' });
     return NextResponse.json({ invite: data });
   }
 

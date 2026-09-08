@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { resolveDeckVariant } from '@/lib/pitch/deck-variant';
 
 export async function GET(
   _request: Request,
@@ -11,7 +12,7 @@ export async function GET(
 
   const { data: invite, error } = await client
     .from('deck_invites')
-    .select('id, revoked, expires_at, view_count')
+    .select('id, revoked, expires_at, view_count, variant')
     .eq('token', token)
     .single();
 
@@ -76,7 +77,9 @@ export async function GET(
     // the "Download PDF" button silently fell back to the .txt export on
     // every real request. Scoping to the full attribute string leaves the
     // JS sentinel untouched.
-    const html = (await file.text()).replace('content="__PITCH_TOKEN__"', `content="${token}"`);
+    const html = (await file.text())
+      .replace('content="__PITCH_TOKEN__"', `content="${token}"`)
+      .replace('content="__PITCH_VARIANT__"', `content="${resolveDeckVariant(invite.variant)}"`);
     // The deck uses Tailwind CDN, Google Fonts, and FontAwesome — set a
     // permissive CSP scoped to this route only.  This overrides the site-wide
     // restrictive CSP set in next.config.ts for all other routes.

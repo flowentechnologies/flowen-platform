@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb as db } from '@/lib/supabase/admin';
 import { buildPitchPDF } from '@/lib/pitch-pdf';
+import { resolveDeckVariant } from '@/lib/pitch/deck-variant';
 
 export async function GET(
   _request: Request,
@@ -11,7 +12,7 @@ export async function GET(
 
   const { data: invite, error } = await client
     .from('deck_invites')
-    .select('id, revoked, expires_at')
+    .select('id, revoked, expires_at, variant')
     .eq('token', token)
     .single();
 
@@ -28,13 +29,15 @@ export async function GET(
   }
 
   try {
-    const pdf = await buildPitchPDF();
+    const variant = resolveDeckVariant(invite.variant);
+    const pdf = await buildPitchPDF(variant);
+    const filename = variant === 'simple' ? 'Flowen-Explained-Simply.pdf' : 'Flowen-Investor-Deck.pdf';
 
     return new NextResponse(pdf.buffer as ArrayBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="Flowen-Investor-Deck.pdf"',
+        'Content-Disposition': `attachment; filename="${filename}"`,
         'Cache-Control': 'private, no-store',
         'X-Robots-Tag': 'noindex, nofollow',
         'Content-Length': String(pdf.length),
