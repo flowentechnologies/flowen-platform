@@ -137,6 +137,13 @@ const CRON_JOBS: CronJobDef[] = [
     apiPath:     '/api/cron/social-publish',
   },
   {
+    id:          'social-stats-sync',
+    label:       'Social Stats Sync',
+    description: 'Pull follower/reach stats for Instagram + Facebook via Graph API (no-ops if Meta isn\'t configured)',
+    schedule:    'Daily 07:20',
+    apiPath:     '/api/cron/social-stats-sync',
+  },
+  {
     id:          'pinterest-token-refresh',
     label:       'Pinterest Token Refresh',
     description: 'Refresh the Pinterest OAuth access token',
