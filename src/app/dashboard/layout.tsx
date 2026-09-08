@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { DashboardNav, MobileBottomNav, type UserProfile } from '@/components/dashboard/DashboardNav';
 import FeedbackWidget from '@/components/dashboard/FeedbackWidget';
+import IdleTimeoutGuard from '@/components/auth/IdleTimeoutGuard';
 import { adminDb } from '@/lib/supabase/admin';
 
 export const metadata: Metadata = {
@@ -85,6 +86,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </main>
       <MobileBottomNav user={user} />
       <FeedbackWidget />
+      <IdleTimeoutGuard />
     </>
   );
 }

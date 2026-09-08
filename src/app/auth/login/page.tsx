@@ -86,6 +86,16 @@ function LoginForm() {
           Password updated successfully. Sign in below.
         </div>
       )}
+      {urlMessage === 'signed_out_idle' && (
+        <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
+          You were signed out after 15 minutes of inactivity. Sign in again to continue.
+        </div>
+      )}
+      {urlMessage === 'session_expired' && (
+        <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
+          Your session expired for security. Sign in again to continue.
+        </div>
+      )}
 
       {/* Google OAuth */}
       <button

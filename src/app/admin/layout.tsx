@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { assertAdmin } from '@/lib/admin/guard';
 import AdminShell, { type AdminUser } from '@/components/admin/AdminShell';
+import IdleTimeoutGuard from '@/components/auth/IdleTimeoutGuard';
 
 export const metadata: Metadata = {
   title: 'Admin | Flowen',
@@ -30,5 +31,10 @@ async function getAdminUser(): Promise<AdminUser> {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await assertAdmin();
   const user = await getAdminUser();
-  return <AdminShell user={user}>{children}</AdminShell>;
+  return (
+    <>
+      <AdminShell user={user}>{children}</AdminShell>
+      <IdleTimeoutGuard />
+    </>
+  );
 }

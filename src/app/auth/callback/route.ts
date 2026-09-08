@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { bridgeAttribution } from '@/lib/attribution';
 import { adminDb } from '@/lib/supabase/admin';
+import { SESSION_STARTED_COOKIE, sessionStartedCookieOptions } from '@/lib/auth/session-policy';
 
 const VS_COOKIE = '__vs';
 
@@ -77,6 +78,11 @@ export async function GET(request: NextRequest) {
         // Returning user: honour the `next` param (already validated as relative).
         redirectTo = next;
       }
+      // Marks the start of the absolute session lifetime — see login() in
+      // auth/actions.ts for why this is set independently at every place a
+      // session can begin (password login, magic link, and OAuth all land here).
+      response.cookies.set(SESSION_STARTED_COOKIE, String(Date.now()), sessionStartedCookieOptions());
+
       // Mutate the Location header on the existing `response` so the session
       // cookies Supabase wrote into it are preserved on the redirect.
       response.headers.set('Location', new URL(redirectTo, origin).toString());
