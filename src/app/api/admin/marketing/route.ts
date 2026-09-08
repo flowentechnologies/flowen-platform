@@ -432,8 +432,11 @@ async function creatives(client: ReturnType<typeof adminDb>) {
 
 async function social(client: ReturnType<typeof adminDb>) {
   const [statsRes, postsRes] = await Promise.all([
-    client.from('social_platform_stats').select('*').order('stat_date', { ascending: false }).limit(300),
-    client.from('social_posts').select('*').order('published_at', { ascending: false }).limit(100),
+    // 90 days x 6 platforms — the Social tab's period selector goes up to
+    // 90 days, so this needs enough headroom to cover that per platform
+    // even if every one of them eventually has daily rows.
+    client.from('social_platform_stats').select('*').order('stat_date', { ascending: false }).limit(600),
+    client.from('social_posts').select('*').order('published_at', { ascending: false }).limit(200),
   ]);
 
   type StatRow = {
@@ -462,7 +465,7 @@ async function social(client: ReturnType<typeof adminDb>) {
     platforms: supportedPlatforms.map(p => ({
       platform: p,
       latest:   latestByPlatform[p] ?? null,
-      history:  stats.filter(s => s.platform === p).slice(0, 30),
+      history:  stats.filter(s => s.platform === p).slice(0, 90),
     })),
     posts,
     hasSyncedData: stats.length > 0,

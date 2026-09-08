@@ -20,6 +20,7 @@ import {
   RadialBarChart, RadialBar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine, Legend,
 } from 'recharts';
+import { PERIOD_OPTIONS, type PeriodDays, filterByPeriod, rankPosts, splitStories, engagementScore } from '@/lib/social/social-analytics';
 
 // ── Tab definitions ───────────────────────────────────────────────────────────
 
@@ -953,19 +954,24 @@ function CreativesTab({ active }: { active: boolean }) {
 
 // ── Tab: Social ───────────────────────────────────────────────────────────────
 
+type StatSnapshot = {
+  stat_date: string; followers: number | null; follower_delta: number | null;
+  reach: number | null; impressions: number | null; views: number | null;
+  likes: number | null; comments: number | null; shares: number | null;
+  saves: number | null; engagement_rate: number | null;
+  website_clicks: number | null; attributed_waitlist: number | null;
+};
+
+type SocialPost = {
+  platform?: string; content_type?: string; hook?: string; creator_type?: string;
+  published_at?: string; views?: number; reach?: number; impressions?: number;
+  likes?: number; comments?: number; shares?: number; saves?: number;
+  attributed_waitlist?: number;
+};
+
 type SocialData = {
-  platforms: {
-    platform: string;
-    latest: {
-      stat_date: string; followers: number | null; follower_delta: number | null;
-      reach: number | null; impressions: number | null; views: number | null;
-      likes: number | null; comments: number | null; shares: number | null;
-      saves: number | null; engagement_rate: number | null;
-      website_clicks: number | null; attributed_waitlist: number | null;
-    } | null;
-    history: unknown[];
-  }[];
-  posts: Record<string, unknown>[];
+  platforms: { platform: string; latest: StatSnapshot | null; history: StatSnapshot[] }[];
+  posts: SocialPost[];
   hasSyncedData: boolean;
 };
 
@@ -983,15 +989,82 @@ const PLATFORM_META: Record<string, { label: string; icon: string; color: string
   x:         { label: 'X / Twitter', icon: '𝕏', color: 'slate' },
 };
 
+function fmtNum(v: number | null | undefined): string {
+  return typeof v === 'number' ? v.toLocaleString() : '—';
+}
+
+function PeriodSelector({ days, onChange }: { days: PeriodDays; onChange: (d: PeriodDays) => void }) {
+  return (
+    <div className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+      {PERIOD_OPTIONS.map(d => (
+        <button
+          key={d}
+          type="button"
+          onClick={() => onChange(d)}
+          className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+            days === d
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+          }`}
+        >
+          {d}d
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function PostRow({ p }: { p: SocialPost }) {
+  return (
+    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+      <td className="px-4 py-2 capitalize">{p.platform ?? '—'}</td>
+      <td className="px-4 py-2 capitalize">{p.content_type ?? '—'}</td>
+      <td className="px-4 py-2 max-w-[200px] truncate">{p.hook ?? '—'}</td>
+      <td className="px-4 py-2 text-right">{fmtNum(p.reach)}</td>
+      <td className="px-4 py-2 text-right">{fmtNum(p.impressions)}</td>
+      <td className="px-4 py-2 text-right">{fmtNum(p.views)}</td>
+      <td className="px-4 py-2 text-right">{fmtNum(p.likes)}</td>
+      <td className="px-4 py-2 text-right">{fmtNum(p.comments)}</td>
+      <td className="px-4 py-2 text-right">{fmtNum(p.shares)}</td>
+      <td className="px-4 py-2 text-right text-emerald-600 dark:text-emerald-400">{fmtNum(p.attributed_waitlist)}</td>
+    </tr>
+  );
+}
+
 function SocialTab({ active }: { active: boolean }) {
   const { data, loading, error } = useSection<SocialData>('social', active);
+  const [days, setDays] = useState<PeriodDays>(30);
 
   if (loading) return <Spinner />;
   if (error)   return <SectionError msg={error} />;
   if (!data)   return null;
 
+  const periodPosts = filterByPeriod(data.posts, p => p.published_at, days);
+  const { stories, other } = splitStories(periodPosts);
+  const topPosts   = rankPosts(other, 8);
+  const topStories = rankPosts(stories, 8);
+
+  // Combined Reach + Impressions trend across the auto-synced platforms,
+  // for the selected window — the one place history (fetched but otherwise
+  // unused) actually gets read.
+  const trendByDate = new Map<string, { date: string; reach: number; impressions: number }>();
+  for (const p of data.platforms) {
+    for (const row of filterByPeriod(p.history, r => r.stat_date, days)) {
+      const entry = trendByDate.get(row.stat_date) ?? { date: row.stat_date, reach: 0, impressions: 0 };
+      entry.reach       += row.reach ?? 0;
+      entry.impressions += row.impressions ?? 0;
+      trendByDate.set(row.stat_date, entry);
+    }
+  }
+  const trendData = Array.from(trendByDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+
   return (
     <div className="space-y-8">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Social performance</h2>
+        <PeriodSelector days={days} onChange={setDays} />
+      </div>
+
       {!data.hasSyncedData && (
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-4 text-sm text-slate-400">
           No social data yet. <strong className="text-slate-500 dark:text-slate-300">Instagram and Facebook sync automatically</strong> once
@@ -1022,16 +1095,17 @@ function SocialTab({ active }: { active: boolean }) {
                   : <Badge label="No data" color="slate" />}
               </div>
               {s ? (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {[
-                    { label: 'Followers', value: s.followers?.toLocaleString() ?? '—', delta: s.follower_delta },
-                    { label: 'Reach',     value: s.reach?.toLocaleString()     ?? '—' },
-                    { label: 'Views',     value: s.views?.toLocaleString()     ?? '—' },
-                    { label: 'Eng. Rate', value: s.engagement_rate != null ? `${s.engagement_rate}%` : '—' },
-                    { label: 'Likes',     value: s.likes?.toLocaleString()     ?? '—' },
-                    { label: 'Shares',    value: s.shares?.toLocaleString()    ?? '—' },
-                    { label: 'Comments',  value: s.comments?.toLocaleString()  ?? '—' },
-                    { label: 'Saves',     value: s.saves?.toLocaleString()     ?? '—' },
+                    { label: 'Followers',   value: fmtNum(s.followers), delta: s.follower_delta },
+                    { label: 'Reach',       value: fmtNum(s.reach) },
+                    { label: 'Impressions', value: fmtNum(s.impressions) },
+                    { label: 'Views',       value: fmtNum(s.views) },
+                    { label: 'Eng. Rate',   value: s.engagement_rate != null ? `${s.engagement_rate}%` : '—' },
+                    { label: 'Likes',       value: fmtNum(s.likes) },
+                    { label: 'Comments',    value: fmtNum(s.comments) },
+                    { label: 'Shares',      value: fmtNum(s.shares) },
+                    { label: 'Saves',       value: fmtNum(s.saves) },
                   ].map(({ label, value, delta }) => (
                     <div key={label}>
                       <p className="text-[9px] font-mono uppercase text-slate-400">{label}</p>
@@ -1053,6 +1127,31 @@ function SocialTab({ active }: { active: boolean }) {
           );
         })}
       </div>
+
+      {/* Reach & impressions trend — the only place `history` (fetched per
+          platform, previously never read) actually gets used. */}
+      {trendData.length > 1 && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Reach &amp; impressions — last {days} days</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={trendData} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" strokeOpacity={0.07} />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={d => d.slice(5)} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : String(v)} />
+              <Tooltip
+                formatter={(v) => [typeof v === 'number' ? v.toLocaleString() : v]}
+                contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+              />
+              <Area type="monotone" dataKey="reach"       name="Reach"       stroke="#10b981" fill="#10b981" fillOpacity={0.15} />
+              <Area type="monotone" dataKey="impressions" name="Impressions" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} />
+            </AreaChart>
+          </ResponsiveContainer>
+          <div className="flex items-center gap-5 text-[11px]">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />Reach</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-indigo-500 inline-block" />Impressions</span>
+          </div>
+        </div>
+      )}
 
       {/* Engagement by platform — grouped bar */}
       {data.hasSyncedData && (() => {
@@ -1095,54 +1194,84 @@ function SocialTab({ active }: { active: boolean }) {
         );
       })()}
 
-      {/* Top posts by views — horizontal bar */}
-      {data.posts.length > 0 && (() => {
-        const postsWithViews = data.posts
-          .filter(p => typeof p.views === 'number' && (p.views as number) > 0)
-          .sort((a, b) => (b.views as number) - (a.views as number))
-          .slice(0, 8)
-          .map((p, i) => ({
-            label: (p.hook && String(p.hook).length > 0)
-              ? String(p.hook).slice(0, 32) + (String(p.hook).length > 32 ? '…' : '')
-              : `Post ${i + 1}`,
-            views:   (p.views as number) ?? 0,
-            likes:   (p.likes as number) ?? 0,
-            platform: String(p.platform ?? ''),
-          }));
-        if (postsWithViews.length === 0) return null;
+      {/* Top performing posts — ranked by views when a platform reports it,
+          engagement score otherwise (real Meta post data today: likes/
+          comments/shares/reach, no views — see rankPosts). */}
+      {topPosts.length > 0 && (() => {
+        const chartData = topPosts.map((p, i) => ({
+          label: (p.hook && p.hook.length > 0) ? p.hook.slice(0, 32) + (p.hook.length > 32 ? '…' : '') : `Post ${i + 1}`,
+          reach:      p.reach ?? 0,
+          engagement: engagementScore(p),
+        }));
         return (
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Top posts by views</h3>
-            <ResponsiveContainer width="100%" height={Math.max(160, postsWithViews.length * 36)}>
-              <BarChart
-                layout="vertical"
-                data={postsWithViews}
-                margin={{ top: 0, right: 60, left: 140, bottom: 0 }}
-              >
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Top performing posts — last {days} days</h3>
+            <ResponsiveContainer width="100%" height={Math.max(160, chartData.length * 36)}>
+              <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 60, left: 140, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="currentColor" strokeOpacity={0.07} />
                 <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : String(v)} />
                 <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={136} />
                 <Tooltip
-                  formatter={(v, name) => [typeof v === 'number' ? v.toLocaleString() : v, name === 'views' ? 'Views' : 'Likes']}
+                  formatter={(v, name) => [typeof v === 'number' ? v.toLocaleString() : v, name === 'reach' ? 'Reach' : 'Engagement']}
                   contentStyle={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
                 />
-                <Bar dataKey="views" fill="#10b981" radius={[0, 4, 4, 0]} barSize={14} />
-                <Bar dataKey="likes" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={14} />
+                <Bar dataKey="reach"      fill="#10b981" radius={[0, 4, 4, 0]} barSize={14} />
+                <Bar dataKey="engagement" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={14} />
               </BarChart>
             </ResponsiveContainer>
             <div className="flex items-center gap-5 text-[11px]">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />Views</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-indigo-500 inline-block" />Likes</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />Reach</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-indigo-500 inline-block" />Engagement (likes + 2×comments + 3×shares + 2×saves)</span>
             </div>
           </div>
         );
       })()}
 
-      {/* Posts table */}
-      {data.posts.length > 0 && (
+      {/* Top Stories — separated from feed/Reel content since Stories are a
+          distinct, ephemeral format with their own engagement pattern. */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Top Stories — last {days} days</h3>
+        </div>
+        {topStories.length === 0 ? (
+          <p className="px-5 py-6 text-xs text-slate-400">
+            No Stories tracked in this window. Instagram Stories sync automatically once posted (social-stats-sync, daily) — Facebook has no equivalent Story data available through its standard Page API.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-mono uppercase text-slate-400">
+                  <th className="px-4 py-2 text-left">Platform</th>
+                  <th className="px-4 py-2 text-left">Posted</th>
+                  <th className="px-4 py-2 text-right">Reach</th>
+                  <th className="px-4 py-2 text-right">Likes</th>
+                  <th className="px-4 py-2 text-right">Comments</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {topStories.map((p, i) => (
+                  <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                    <td className="px-4 py-2 capitalize">{p.platform ?? '—'}</td>
+                    <td className="px-4 py-2 font-mono text-[10px]">{p.published_at ? p.published_at.slice(0, 10) : '—'}</td>
+                    <td className="px-4 py-2 text-right">{fmtNum(p.reach)}</td>
+                    <td className="px-4 py-2 text-right">{fmtNum(p.likes)}</td>
+                    <td className="px-4 py-2 text-right">{fmtNum(p.comments)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Full content table — every post/Reel/Story in the selected window,
+          feed and Story content together, with the full metric set
+          (impressions included, not just views/likes/shares). */}
+      {periodPosts.length > 0 && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Content performance</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Content performance — last {days} days</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -1151,26 +1280,17 @@ function SocialTab({ active }: { active: boolean }) {
                   <th className="px-4 py-2 text-left">Platform</th>
                   <th className="px-4 py-2 text-left">Type</th>
                   <th className="px-4 py-2 text-left">Hook</th>
-                  <th className="px-4 py-2 text-left">Creator</th>
+                  <th className="px-4 py-2 text-right">Reach</th>
+                  <th className="px-4 py-2 text-right">Impressions</th>
                   <th className="px-4 py-2 text-right">Views</th>
                   <th className="px-4 py-2 text-right">Likes</th>
+                  <th className="px-4 py-2 text-right">Comments</th>
                   <th className="px-4 py-2 text-right">Shares</th>
                   <th className="px-4 py-2 text-right">Waitlist</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {data.posts.map((p: Record<string, unknown>, i) => (
-                  <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                    <td className="px-4 py-2 capitalize">{String(p.platform ?? '—')}</td>
-                    <td className="px-4 py-2">{String(p.content_type ?? '—')}</td>
-                    <td className="px-4 py-2 max-w-[160px] truncate">{String(p.hook ?? '—')}</td>
-                    <td className="px-4 py-2">{String(p.creator_type ?? '—')}</td>
-                    <td className="px-4 py-2 text-right">{p.views != null ? String(p.views) : '—'}</td>
-                    <td className="px-4 py-2 text-right">{p.likes != null ? String(p.likes) : '—'}</td>
-                    <td className="px-4 py-2 text-right">{p.shares != null ? String(p.shares) : '—'}</td>
-                    <td className="px-4 py-2 text-right text-emerald-600 dark:text-emerald-400">{p.attributed_waitlist != null ? String(p.attributed_waitlist) : '—'}</td>
-                  </tr>
-                ))}
+                {periodPosts.map((p, i) => <PostRow key={i} p={p} />)}
               </tbody>
             </table>
           </div>
