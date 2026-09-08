@@ -210,7 +210,27 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
   // Clear any stale Supabase session cookies so the browser isn't stuck in a
   // loop of failed refreshes. This eliminates the AuthApiError Sentry noise.
-  if (staleCookies) {
+  //
+  // EXCEPT for prefetch requests. A page with many <Link>s (the admin nav
+  // alone has ~40) makes Next.js fire a prefetch for every one of them at
+  // once — all hitting this same refresh-token rotation simultaneously.
+  // Supabase's rotation only lets ONE request actually redeem a given
+  // refresh token; every other concurrent one gets a completely benign
+  // 'refresh_token_already_used' (a sibling request simply won the race and
+  // already has the fresh token) — but before this check, that was treated
+  // identically to "this session is actually dead," and the loser's
+  // Set-Cookie: (delete sb-*) would wipe the browser's still-perfectly-valid
+  // session the moment the browser applied it. One person's real
+  // navigation could end up logged out purely because a background prefetch
+  // lost a race that a sibling request won on their behalf. A prefetch's
+  // own result is discarded and replaced by the real navigation moments
+  // later anyway, so there is nothing to protect by clearing cookies here —
+  // only something to break.
+  const isPrefetch =
+    request.headers.get('next-router-prefetch') === '1' ||
+    request.headers.get('purpose') === 'prefetch';
+
+  if (staleCookies && !isPrefetch) {
     for (const cookie of request.cookies.getAll()) {
       if (
         cookie.name.startsWith('sb-') ||
