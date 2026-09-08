@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getStripeClient } from '@/lib/stripe';
 import { adminDb } from '@/lib/supabase/admin';
+import { getUserWithRetry } from '@/lib/supabase/get-user-with-retry';
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.flowen.digital';
 
@@ -21,9 +22,12 @@ export async function POST() {
       }
     );
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // getUserWithRetry, not a bare getUser() — see
+    // src/lib/supabase/get-user-with-retry.ts: a signed-in user managing
+    // their subscription can otherwise lose a benign refresh-token race
+    // against some other concurrent request and get bounced to login for a
+    // moment they were never actually logged out.
+    const user = await getUserWithRetry(supabase);
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
