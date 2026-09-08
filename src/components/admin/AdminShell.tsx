@@ -218,6 +218,7 @@ function SidebarContent({ pathname, onLinkClick }: SidebarContentProps) {
                     <Link
                       href={item.href}
                       onClick={onLinkClick}
+                      prefetch={false}
                       className={`flex items-center rounded-lg text-xs font-medium transition-colors duration-150 ${
                         item.indent ? 'pl-6 pr-3 py-1.5' : 'px-3 py-1.5'
                       } ${
