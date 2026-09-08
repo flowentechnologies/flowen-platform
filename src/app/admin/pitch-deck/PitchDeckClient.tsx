@@ -49,7 +49,7 @@ function StatusBadge({ invite }: { invite: DeckInvite }) {
 function CreateInvitePanel({ siteUrl, onCreated }: { siteUrl: string; onCreated: (invite: DeckInvite) => void }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [form, setForm] = useState({ investor_name: '', investor_email: '', firm: '', expires_days: '30' });
+  const [form, setForm] = useState({ investor_name: '', investor_email: '', firm: '', expires_days: '30', variant: 'detailed' as 'detailed' | 'simple' });
   const [newLink, setNewLink] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
@@ -64,7 +64,7 @@ function CreateInvitePanel({ siteUrl, onCreated }: { siteUrl: string; onCreated:
       if (invite) {
         onCreated(invite);
         setNewLink(`${siteUrl}/api/pitch/${invite.token}`);
-        setForm({ investor_name: '', investor_email: '', firm: '', expires_days: '30' });
+        setForm({ investor_name: '', investor_email: '', firm: '', expires_days: '30', variant: 'detailed' });
       }
     });
   }
@@ -110,6 +110,20 @@ function CreateInvitePanel({ siteUrl, onCreated }: { siteUrl: string; onCreated:
                 <label className="text-[10px] font-mono text-slate-500 block mb-1">Email (optional)</label>
                 <input type="email" value={form.investor_email} onChange={e => setForm(f => ({ ...f, investor_email: e.target.value }))}
                   className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:border-amber-500 outline-none" />
+              </div>
+              <div>
+                <label className="text-[10px] font-mono text-slate-500 block mb-1">Opens to</label>
+                <div className="flex rounded-lg border border-slate-300 dark:border-slate-700 overflow-hidden w-fit">
+                  {(['detailed', 'simple'] as const).map(v => (
+                    <button key={v} type="button" onClick={() => setForm(f => ({ ...f, variant: v }))}
+                      className={`px-3 py-1.5 text-[10px] font-mono font-semibold transition-colors ${form.variant === v ? 'bg-amber-500 text-slate-950' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
+                      {v === 'detailed' ? 'Detailed' : 'Simple'}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[9px] text-slate-600 font-mono mt-1">
+                  {form.variant === 'simple' ? 'Plain-language explainer — 6 cards, no jargon or financials.' : 'Full data-heavy investor canvas.'} Either way the link can switch views once opened, and the PDF download matches this choice.
+                </p>
               </div>
               <div>
                 <label className="text-[10px] font-mono text-slate-500 block mb-1">Expires in (days, leave 0 = never)</label>
@@ -229,6 +243,9 @@ export function PitchDeckClient({ initialInvites, recentViews, siteUrl }: Props)
                       <span className="text-sm font-bold text-slate-900 dark:text-white">{invite.investor_name}</span>
                       {invite.firm && <span className="text-[10px] font-mono text-slate-500">{invite.firm}</span>}
                       <StatusBadge invite={invite} />
+                      {invite.variant === 'simple' && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-violet-500/10 text-violet-400 border border-violet-500/30">Simple</span>
+                      )}
                     </div>
                     {invite.investor_email && (
                       <p className="text-[10px] font-mono text-slate-600 mt-0.5">{invite.investor_email}</p>
@@ -297,7 +314,7 @@ export function PitchDeckClient({ initialInvites, recentViews, siteUrl }: Props)
           <span className="text-[10px] font-mono text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">Ready</span>
         </div>
         <p className="text-[10px] font-mono text-slate-600 mt-2">
-          Interactive 11-slide investor canvas · ASR latency demo · TAM/ARR calculator · Served at <code className="text-slate-500">/api/pitch/[token]</code>
+          Interactive investor canvas · ASR latency demo · TAM/ARR calculator · a Simple View toggle for plain-language reads · Served at <code className="text-slate-500">/api/pitch/[token]</code>
         </p>
       </div>
 
