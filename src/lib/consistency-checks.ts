@@ -16,6 +16,7 @@
 
 import { stripe } from '@/lib/stripe';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { findFailingSyncPlatforms, latestRunPerJob } from '@/lib/marketing/sync-health';
 
 export interface CheckResult {
   status: 'ok' | 'discrepancy' | 'error';
@@ -78,6 +79,29 @@ export async function checkMarketing(): Promise<CheckResult> {
       .from('waitlist_signups')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', new Date(Date.now() - 30 * 86400_000).toISOString());
+
+    // A platform-specific sync failure (Google Ads' OAuth client going
+    // invalid, say) must keep getting flagged for as long as it stays
+    // broken — not just on the day every platform happened to be down at
+    // once. Checked ahead of the "no data at all" branch below so a
+    // healthy Meta sync can no longer mask an ongoing Google failure.
+    const { data: recentRuns } = await supabase
+      .from('cron_runs')
+      .select('job_id, status, error')
+      .in('job_id', ['marketing-sync-meta', 'marketing-sync-google'])
+      .order('started_at', { ascending: false })
+      .limit(20);
+
+    const failingPlatforms = findFailingSyncPlatforms(latestRunPerJob(recentRuns ?? []));
+    if (failingPlatforms.length > 0) {
+      return {
+        status: 'error',
+        summary: failingPlatforms
+          .map(p => `${p.platform} ad sync's last run failed: ${p.error ?? 'unknown error'}.`)
+          .join(' '),
+        details: { failing_platforms: failingPlatforms, real_signups: realSignups ?? 0 },
+      };
+    }
 
     if (!stats || stats.length === 0) {
       return {
