@@ -29,7 +29,7 @@ import { withCronLogging } from '@/lib/cron-logging';
 import { isMetaConfigured } from '@/lib/social/meta-publish';
 import {
   fetchInstagramStats, fetchFacebookStats, fetchInstagramPosts, fetchFacebookPosts,
-  computeFollowerDelta, type PlatformStats, type SocialPostRow,
+  computeFollowerDelta, summarizeInsightHealth, type PlatformStats, type SocialPostRow,
 } from '@/lib/social/meta-stats';
 
 export const GET = withCronLogging('social-stats-sync', handle);
@@ -38,6 +38,14 @@ export const POST = withCronLogging('social-stats-sync', handle);
 const STATS_FETCHERS: Record<string, () => Promise<PlatformStats>> = {
   instagram: fetchInstagramStats,
   facebook:  fetchFacebookStats,
+};
+
+// How many insight metrics each fetcher attempts — see summarizeInsightHealth.
+// instagram: reach, impressions, profile_views, website_clicks. facebook:
+// page_impressions, page_impressions_unique.
+const INSIGHT_METRICS_ATTEMPTED: Record<string, number> = {
+  instagram: 4,
+  facebook:  2,
 };
 
 const POST_FETCHERS: Record<string, () => Promise<SocialPostRow[]>> = {
@@ -84,7 +92,9 @@ async function handle(req: NextRequest): Promise<NextResponse> {
         updated_at:     new Date().toISOString(),
       }, { onConflict: 'platform,stat_date' });
 
-      results[`${platform}_stats`] = error ? `error: ${error.message}` : 'ok';
+      results[`${platform}_stats`] = error
+        ? `error: ${error.message}`
+        : summarizeInsightHealth(stats.insightErrors, INSIGHT_METRICS_ATTEMPTED[platform] ?? 0);
     } catch (err) {
       // One platform's Graph API hiccup must not take the other down with it.
       results[`${platform}_stats`] = `error: ${err instanceof Error ? err.message : String(err)}`;

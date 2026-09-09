@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeFollowerDelta } from './meta-stats';
+import { computeFollowerDelta, summarizeInsightHealth } from './meta-stats';
 
 describe('computeFollowerDelta', () => {
   it('returns the difference when both values are known', () => {
@@ -24,5 +24,27 @@ describe('computeFollowerDelta', () => {
 
   it('returns null when both are unknown', () => {
     expect(computeFollowerDelta(null, null)).toBeNull();
+  });
+});
+
+describe('summarizeInsightHealth', () => {
+  it('reports "ok" when nothing failed', () => {
+    expect(summarizeInsightHealth(undefined, 4)).toBe('ok');
+    expect(summarizeInsightHealth([], 4)).toBe('ok');
+  });
+
+  it('reports a real error when every attempted metric failed — the actual bug this exists to catch: reach/impressions/profile_visits/website_clicks all silently null every day, previously indistinguishable from success', () => {
+    const result = summarizeInsightHealth(
+      ['reach: (#10) permission denied', 'impressions: (#10) permission denied'],
+      2,
+    );
+    expect(result).toMatch(/^error:/);
+    expect(result).toContain('all 2 insight metrics failed');
+  });
+
+  it('reports a degraded-but-ok status when only some metrics failed', () => {
+    const result = summarizeInsightHealth(['impressions: not supported for this account type'], 4);
+    expect(result).not.toMatch(/^error:/);
+    expect(result).toContain('1/4 insights degraded');
   });
 });

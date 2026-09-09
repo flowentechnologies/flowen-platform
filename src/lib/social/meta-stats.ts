@@ -22,6 +22,13 @@ export interface PlatformStats {
   impressions:   number | null;
   profileVisits: number | null;
   websiteClicks: number | null;
+  // Populated only when one or more insight metrics below failed to fetch —
+  // see safeDailyInsight. A previous version of this file swallowed these
+  // completely (a bare `catch { return null }`, no logging at all), which is
+  // exactly how every insight metric silently returning null for weeks — a
+  // real permission/config problem, not per-metric unavailability — went
+  // unnoticed: the sync kept reporting "ok" since nothing ever threw.
+  insightErrors?: string[];
 }
 
 export interface SocialPostRow {
@@ -63,7 +70,7 @@ async function graphGet<T>(path: string, params: Record<string, string>): Promis
  * this swallows the error and reports the metric as unavailable (null)
  * rather than throwing.
  */
-async function safeDailyInsight(objectId: string, metric: string, accessToken: string): Promise<number | null> {
+async function safeDailyInsight(objectId: string, metric: string, accessToken: string, errors?: string[]): Promise<number | null> {
   try {
     const data = await graphGet<{ data: Array<{ values: Array<{ value: number }> }> }>(
       `${objectId}/insights`,
@@ -71,7 +78,10 @@ async function safeDailyInsight(objectId: string, metric: string, accessToken: s
     );
     const values = data.data?.[0]?.values;
     return values?.length ? values[values.length - 1].value : null;
-  } catch {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[meta-stats] insight '${metric}' failed for ${objectId}:`, message);
+    errors?.push(`${metric}: ${message}`);
     return null;
   }
 }
@@ -92,7 +102,8 @@ async function safeMediaInsight(mediaId: string, metric: string, accessToken: st
     if (!row) return null;
     if (row.total_value) return row.total_value.value;
     return row.values?.length ? row.values[row.values.length - 1].value : null;
-  } catch {
+  } catch (err) {
+    console.error(`[meta-stats] media insight '${metric}' failed for ${mediaId}:`, err instanceof Error ? err.message : String(err));
     return null;
   }
 }
@@ -100,32 +111,35 @@ async function safeMediaInsight(mediaId: string, metric: string, accessToken: st
 export async function fetchInstagramStats(): Promise<PlatformStats> {
   const igUserId = process.env.META_IG_USER_ID!;
   const accessToken = process.env.META_PAGE_ACCESS_TOKEN!;
+  const insightErrors: string[] = [];
 
   const [profile, reach, impressions, profileVisits, websiteClicks] = await Promise.all([
     graphGet<{ followers_count?: number }>(igUserId, { fields: 'followers_count', access_token: accessToken }),
-    safeDailyInsight(igUserId, 'reach', accessToken),
+    safeDailyInsight(igUserId, 'reach', accessToken, insightErrors),
     // Deprecated at the account/day level for some newer IG account types —
     // attempted anyway rather than assumed unavailable; degrades to null on
     // this specific account/API-version combination if it really isn't there.
-    safeDailyInsight(igUserId, 'impressions', accessToken),
-    safeDailyInsight(igUserId, 'profile_views', accessToken),
-    safeDailyInsight(igUserId, 'website_clicks', accessToken),
+    safeDailyInsight(igUserId, 'impressions', accessToken, insightErrors),
+    safeDailyInsight(igUserId, 'profile_views', accessToken, insightErrors),
+    safeDailyInsight(igUserId, 'website_clicks', accessToken, insightErrors),
   ]);
 
   return {
     followers: profile.followers_count ?? null,
     reach, impressions, profileVisits, websiteClicks,
+    insightErrors: insightErrors.length ? insightErrors : undefined,
   };
 }
 
 export async function fetchFacebookStats(): Promise<PlatformStats> {
   const pageId = process.env.META_PAGE_ID!;
   const accessToken = process.env.META_PAGE_ACCESS_TOKEN!;
+  const insightErrors: string[] = [];
 
   const [profile, impressions, reach] = await Promise.all([
     graphGet<{ followers_count?: number; fan_count?: number }>(pageId, { fields: 'followers_count,fan_count', access_token: accessToken }),
-    safeDailyInsight(pageId, 'page_impressions', accessToken),
-    safeDailyInsight(pageId, 'page_impressions_unique', accessToken),
+    safeDailyInsight(pageId, 'page_impressions', accessToken, insightErrors),
+    safeDailyInsight(pageId, 'page_impressions_unique', accessToken, insightErrors),
   ]);
 
   return {
@@ -133,6 +147,7 @@ export async function fetchFacebookStats(): Promise<PlatformStats> {
     impressions, reach,
     profileVisits: null,
     websiteClicks: null,
+    insightErrors: insightErrors.length ? insightErrors : undefined,
   };
 }
 
@@ -240,4 +255,20 @@ export async function fetchFacebookPosts(limit = 25): Promise<SocialPostRow[]> {
 export function computeFollowerDelta(todayFollowers: number | null, yesterdayFollowers: number | null): number | null {
   if (todayFollowers === null || yesterdayFollowers === null) return null;
   return todayFollowers - yesterdayFollowers;
+}
+
+/**
+ * Turns a platform's insightErrors into the same 'ok' | 'error: ...' string
+ * shape the cron route already uses to decide whether a run failed — pulled
+ * out specifically so "every single insight metric failed" (a real problem:
+ * a bad token scope, a revoked permission) reads as a failure the same way
+ * an upsert error does, rather than being indistinguishable from "one
+ * metric genuinely isn't available on this account" (fine, not an error).
+ */
+export function summarizeInsightHealth(insightErrors: string[] | undefined, metricsAttempted: number): string {
+  if (!insightErrors || insightErrors.length === 0) return 'ok';
+  if (insightErrors.length >= metricsAttempted) {
+    return `error: all ${metricsAttempted} insight metrics failed — ${insightErrors.join('; ')}`;
+  }
+  return `ok (${insightErrors.length}/${metricsAttempted} insights degraded: ${insightErrors.join('; ')})`;
 }
