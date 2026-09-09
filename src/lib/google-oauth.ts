@@ -27,9 +27,26 @@ export async function getGoogleAccessToken(): Promise<string> {
     }),
   });
 
-  const json = await res.json() as { access_token?: string; error?: string; error_description?: string };
+  // Read as text first, not res.json() directly — a non-OAuth-shaped error
+  // body (an HTML error page from a proxy/gateway in front of the token
+  // endpoint, say) would otherwise throw inside a generic try-less parse
+  // and surface as an opaque "Unexpected token <" with no HTTP status and
+  // no body to look at. Parsed manually so a malformed body degrades to
+  // the raw text instead of losing the failure entirely.
+  const raw = await res.text();
+  let json: { access_token?: string; error?: string; error_description?: string } = {};
+  try { json = JSON.parse(raw); } catch { /* fall through with body-less json — raw still gets logged below */ }
+
   if (!json.access_token) {
-    throw new Error(`Google token refresh failed: ${json.error_description ?? json.error ?? 'unknown'}`);
+    // Previously threw only `json.error_description ?? json.error ?? 'unknown'`
+    // — when Google's response isn't the expected OAuth error shape (e.g. a
+    // literal "Bad Request" with no error/error_description fields at all),
+    // that collapsed to a single uninformative word with no HTTP status and
+    // no way to see the real body without adding logging and redeploying
+    // again. Now includes both up front.
+    console.error(`[google-oauth] token refresh failed: HTTP ${res.status} ${res.statusText} — ${raw}`);
+    const detail = json.error_description ?? json.error ?? raw.slice(0, 300) ?? 'unknown';
+    throw new Error(`Google token refresh failed (HTTP ${res.status}): ${detail}`);
   }
   return json.access_token;
 }
