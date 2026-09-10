@@ -17,7 +17,7 @@
  *
  * Usage:
  *   <AgoraAvatarSession
- *     avatarUrl="https://models.readyplayer.me/[id].glb?morphTargets=ARKit"
+ *     avatarUrl="/models/facecap_clean.glb"
  *     systemPrompt="You are a speech therapy assistant..."
  *   />
  */
@@ -36,10 +36,23 @@ const RPMAvatarScene = dynamic(
   { ssr: false, loading: () => <AvatarSkeleton /> },
 );
 
-// ── Default avatar — Flowen branded RPM avatar (ARKit + Oculus Visemes) ──────
-const DEFAULT_AVATAR_URL =
-  'https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb' +
-  '?morphTargets=ARKit,Oculus%20Visemes&textureAtlas=512&lod=0';
+// ── Default avatar ────────────────────────────────────────────────────────────
+// Stopgap: Ready Player Me (the original source of this avatar) was acquired
+// by Netflix in Dec 2025 and fully shut down Jan 31 2026 — models.readyplayer.me
+// has no DNS records at all any more, so every session using that URL 404'd
+// at the network level before Three.js ever got a chance to load anything.
+// Self-hosting instead of depending on any live third-party avatar service
+// avoids this exact failure mode recurring.
+//
+// facecap_clean.glb is Three.js's own official demo asset (MIT licensed) —
+// already in this repo (public/models/), already proven to carry the full
+// 52 ARKit blend shapes that map 1:1 to VisemeBlends (see git history: it
+// briefly served the same role for the FaceAvatar calibration preview
+// before that component moved to a canvas-2D approach for unrelated
+// reasons). It's a face-only model with no shoulders/torso, so it's a
+// visual downgrade from the old RPM avatar — swap in a proper branded,
+// head-and-shoulders GLB (same ARKit blend-shape scheme) when one exists.
+const DEFAULT_AVATAR_URL = '/models/facecap_clean.glb';
 
 interface Props {
   avatarUrl?:    string;
