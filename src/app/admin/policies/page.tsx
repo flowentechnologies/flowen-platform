@@ -6,7 +6,7 @@ export const metadata: Metadata = {
 };
 
 const EFFECTIVE = '1 August 2026';
-const COMPANY = 'Flowen Technologies Ltd';
+const COMPANY = 'Flowen Group Ltd';
 const EMAIL = 'hello@flowen.digital';
 
 interface PolicyDoc {
@@ -32,14 +32,14 @@ ${COMPANY} | Version 1.0 | Effective ${EFFECTIVE}
 1. PURPOSE & SCOPE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This policy applies to all employees, contractors, consultants, and volunteers of Flowen Technologies Ltd ("Flowen") who have access to any personal data, special category health data, commercially sensitive information, or technical infrastructure. Compliance is a condition of continued engagement with Flowen.
+This policy applies to all employees, contractors, consultants, and volunteers of Flowen Group Ltd ("Flowen") who have access to any personal data, special category health data, commercially sensitive information, or technical infrastructure. Compliance is a condition of continued engagement with Flowen.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 2. DATA PROTECTION OBLIGATIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 2.1 ALL STAFF must:
-— Process personal data only for the purpose for which it was collected and only on the documented instruction of the Data Controller (Flowen Technologies Ltd)
+— Process personal data only for the purpose for which it was collected and only on the documented instruction of the Data Controller (Flowen Group Ltd)
 — Never access personal data beyond what is necessary for their specific role (need-to-know principle)
 — Keep personal data strictly confidential and not disclose it to any third party without express authorisation from the Data Protection contact
 — Immediately report any actual or suspected data breach, loss, or unauthorised access to ${EMAIL} with subject line [DATA INCIDENT]
@@ -141,7 +141,7 @@ ${COMPANY} | Version 1.0 | Effective ${EFFECTIVE}
 APPOINTMENT DETAILS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Data Controller: Flowen Technologies Ltd, London, United Kingdom
+Data Controller: Flowen Group Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
 Data Protection Contact: ${EMAIL}
 Effective Date: ${EFFECTIVE}
 
@@ -160,7 +160,7 @@ DESIGNATED RESPONSIBILITIES
 The designated Data Protection contact (or formally appointed DPO, once required) shall:
 
 1. INFORM AND ADVISE
-   — Advise Flowen Technologies Ltd and its staff of their obligations under UK GDPR, DPA 2018, and other applicable data protection legislation
+   — Advise Flowen Group Ltd and its staff of their obligations under UK GDPR, DPA 2018, and other applicable data protection legislation
    — Monitor compliance with UK GDPR and Flowen's data protection policies
 
 2. DATA PROTECTION IMPACT ASSESSMENTS
@@ -230,7 +230,7 @@ ${COMPANY} | Version 1.0 | Effective ${EFFECTIVE}
 1. PURPOSE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This policy establishes Flowen's framework for managing information assets in compliance with the UK GDPR, Data Protection Act 2018, NHS Data Security and Protection Toolkit (DSPT), and the DCB0129 Clinical Safety Standard. It applies to all information assets held, processed, or transmitted by Flowen Technologies Ltd.
+This policy establishes Flowen's framework for managing information assets in compliance with the UK GDPR, Data Protection Act 2018, NHS Data Security and Protection Toolkit (DSPT), and the DCB0129 Clinical Safety Standard. It applies to all information assets held, processed, or transmitted by Flowen Group Ltd.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 2. INFORMATION CLASSIFICATION
@@ -338,7 +338,7 @@ ${COMPANY} | Version 1.0 | Effective ${EFFECTIVE}
 1. PURPOSE & SCOPE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This plan covers Flowen Technologies Ltd's procedures for maintaining or restoring operations following a significant disruptive event. It applies to all production systems including the Flowen web platform (flowen.digital), the Supabase PostgreSQL database, and associated cloud infrastructure.
+This plan covers Flowen Group Ltd's procedures for maintaining or restoring operations following a significant disruptive event. It applies to all production systems including the Flowen web platform (flowen.digital), the Supabase PostgreSQL database, and associated cloud infrastructure.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 2. RECOVERY OBJECTIVES
@@ -470,7 +470,7 @@ ${COMPANY} | Version 1.0 | Effective ${EFFECTIVE}
 1. SCOPE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This policy governs the use of all Flowen Technologies Ltd information systems, networks, devices, and data by all staff, contractors, and authorised users. Acceptance of this policy is a condition of access to Flowen systems.
+This policy governs the use of all Flowen Group Ltd information systems, networks, devices, and data by all staff, contractors, and authorised users. Acceptance of this policy is a condition of access to Flowen systems.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 2. PERMITTED USE
@@ -544,7 +544,7 @@ DCB0129 Clinical Safety Standard — NHS England
 1. PURPOSE AND SCOPE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This Clinical Safety Management System (CSMS) establishes the framework by which Flowen Technologies Ltd manages clinical safety risk in the Flowen digital health platform throughout its lifecycle — from design and development through deployment, in-service operation, and decommissioning.
+This Clinical Safety Management System (CSMS) establishes the framework by which Flowen Group Ltd manages clinical safety risk in the Flowen digital health platform throughout its lifecycle — from design and development through deployment, in-service operation, and decommissioning.
 
 Flowen is a digital wellness and fluency practice platform for adults with persistent stammering. This CSMS is established in accordance with NHS Digital DCB0129: Clinical Risk Management: its Application in the Manufacture of Health IT Systems (Edition 4.1).
 
@@ -555,7 +555,7 @@ Scope: All versions of the Flowen platform (web application, APIs, ASR pipeline,
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Acting CSO: Howard Henry
-Title: Founder & CEO, Flowen Technologies Ltd
+Title: Founder & CEO, Flowen Group Ltd
 Contact: ${EMAIL}
 Appointment date: 1 August 2026
 
@@ -734,7 +734,7 @@ DTAC Requirement: Sustainability & Environmental Impact
 1. OVERVIEW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Flowen Technologies Ltd is committed to minimising the environmental impact of its digital health platform. This statement sets out our sustainability position in the context of DTAC assessment requirements and NHS Green Plan commitments.
+Flowen Group Ltd is committed to minimising the environmental impact of its digital health platform. This statement sets out our sustainability position in the context of DTAC assessment requirements and NHS Green Plan commitments.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 2. INFRASTRUCTURE & ENERGY
@@ -879,7 +879,7 @@ UK Medical Devices Regulations 2002 (as amended) | MHRA Guidance: Software and A
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Product Name: Flowen
-Manufacturer: Flowen Technologies Ltd, London, United Kingdom
+Manufacturer: Flowen Group Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
 Contact: ${EMAIL}
 Version assessed: Current production version (flowen.digital)
 Assessment date: ${EFFECTIVE}
@@ -939,7 +939,7 @@ This assessment will be repeated:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 UK Responsible Person: Howard Henry
-Organisation: Flowen Technologies Ltd
+Organisation: Flowen Group Ltd
 Address: London, United Kingdom
 Contact: ${EMAIL}
 Appointment date: ${EFFECTIVE}
@@ -977,7 +977,7 @@ MHRA SaMD PMS Requirements | DCB0129 In-Service Monitoring
 1. PURPOSE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This Post-Market Surveillance (PMS) Plan establishes the systematic activities by which Flowen Technologies Ltd monitors the performance and safety of the Flowen platform following deployment. It supports both DCB0129 in-service monitoring obligations and MHRA best-practice PMS requirements for wellness software.
+This Post-Market Surveillance (PMS) Plan establishes the systematic activities by which Flowen Group Ltd monitors the performance and safety of the Flowen platform following deployment. It supports both DCB0129 in-service monitoring obligations and MHRA best-practice PMS requirements for wellness software.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 2. SURVEILLANCE ACTIVITIES
@@ -1170,7 +1170,7 @@ This document is for information purposes only and does not constitute a prospec
 COMPANY OVERVIEW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Company: Flowen Technologies Ltd
+Company: Flowen Group Ltd
 Registered: England and Wales
 Business: AI-assisted speech fluency platform for people who stammer, with integrated clinical oversight for Speech & Language Therapists
 Stage: Pre-revenue / early commercial

@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
         registration_number: registration_number ?? null,
         renewal_date: renewal_date || null,
         estimated_value_pence: estimated_value_pence ?? null,
-        owner: owner ?? 'Flowen Technologies Ltd',
+        owner: owner ?? 'Flowen Group Ltd',
         notes: notes ?? null,
       })
       .select()

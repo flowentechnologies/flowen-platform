@@ -70,7 +70,7 @@ export function LegalPoliciesModal({ isOpen, initialTab = 'terms', onClose }: Pr
             <div className="space-y-4">
               <h3 className="text-lg font-bold text-white">1. Master Subscription Agreement</h3>
               <p>
-                This Binding Terms of Service Agreement (&quot;Agreement&quot;) governs the access to and use of software, neural models, and clinical telemetry services provided under the Flowen Group (&quot;Flowen Technologies&quot;, &quot;Vocali&quot;, &quot;we&quot;, &quot;us&quot;). By accessing or utilizing the platform, you agree to be bound by these terms.
+                This Binding Terms of Service Agreement (&quot;Agreement&quot;) governs the access to and use of software, neural models, and clinical telemetry services provided under Flowen Group Ltd (&quot;Flowen&quot;, &quot;Vocali&quot;, &quot;we&quot;, &quot;us&quot;). By accessing or utilizing the platform, you agree to be bound by these terms.
               </p>
 
               <h3 className="text-lg font-bold text-white">2. Commercial &amp; Public Sector Billing</h3>
