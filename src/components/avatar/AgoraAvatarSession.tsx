@@ -21,13 +21,15 @@
  *     systemPrompt="You are a speech therapy assistant..."
  *   />
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useAgora } from '@/hooks/useAgora';
 import { useAgoraConvoAI } from '@/hooks/useAgoraConvoAI';
 import { useLipSync } from '@/hooks/useLipSync';
 import type { RPMAvatarSceneHandle } from './RPMAvatarScene';
+import type { VisemeBlends } from '@/lib/viseme';
+import type { FaceHeadPose, ExtraBlends } from '@/lib/hooks/useFaceTracker';
 import { createBrowserClient } from '@supabase/ssr';
 
 // Three.js scene is SSR-unsafe — lazy-load it
@@ -45,13 +47,16 @@ const RPMAvatarScene = dynamic(
 // avoids this exact failure mode recurring.
 //
 // facecap_clean.glb is Three.js's own official demo asset (MIT licensed) —
-// already in this repo (public/models/), already proven to carry the full
-// 52 ARKit blend shapes that map 1:1 to VisemeBlends (see git history: it
-// briefly served the same role for the FaceAvatar calibration preview
-// before that component moved to a canvas-2D approach for unrelated
-// reasons). It's a face-only model with no shoulders/torso, so it's a
-// visual downgrade from the old RPM avatar — swap in a proper branded,
-// head-and-shoulders GLB (same ARKit blend-shape scheme) when one exists.
+// already in this repo (public/models/), and carries the full 52 ARKit
+// blend shapes VisemeBlends needs (see git history: it briefly served the
+// same role for the FaceAvatar calibration preview before that component
+// moved to a canvas-2D approach for unrelated reasons) — though under
+// Apple's raw underscore-suffix naming (browDown_L) rather than Ready
+// Player Me's camelCase convention (browDownLeft); RPMAvatarScene
+// normalizes this, see arkit-morph-names.ts. It's a face-only model with
+// no shoulders/torso, so it's a visual downgrade from the old RPM avatar —
+// swap in a proper branded, head-and-shoulders GLB (same ARKit blend-shape
+// scheme) when one exists.
 const DEFAULT_AVATAR_URL = '/models/facecap_clean.glb';
 
 interface Props {
@@ -76,13 +81,27 @@ const STATUS_CHIP: Record<string, string> = {
 
 type ProfileState = 'loading' | 'loaded' | 'error';
 
-export function AgoraAvatarSession({
-  avatarUrl    = DEFAULT_AVATAR_URL,
-  systemPrompt,
-  onSessionStart,
-  onSessionEnd,
-  onAmplitude,
-}: Props) {
+/**
+ * Lets a parent push avatar updates without re-rendering. Two independent
+ * paths, same as RPMAvatarSceneHandle: updateBlends drives mouth shapes
+ * (used for the self-recording exercise's own formant-based lipsync —
+ * ConvoAI sessions drive their own mouth shapes internally, from the
+ * agent's TTS audio via useLipSync); updateHeadAndExpression drives
+ * camera-tracked head pose + eye/brow shapes, always on top.
+ */
+export interface AgoraAvatarSessionHandle {
+  updateBlends(blends: VisemeBlends, speaking: boolean): void;
+  updateHeadAndExpression(pose: FaceHeadPose, extra: ExtraBlends): void;
+}
+
+export const AgoraAvatarSession = forwardRef<AgoraAvatarSessionHandle, Props>(
+  function AgoraAvatarSession({
+    avatarUrl    = DEFAULT_AVATAR_URL,
+    systemPrompt,
+    onSessionStart,
+    onSessionEnd,
+    onAmplitude,
+  }, ref) {
   const [sessionActive, setSessionActive] = useState(false);
   const [statusLabel, setStatusLabel]     = useState('Ready');
   const [statusKey, setStatusKey]         = useState('idle');
@@ -93,6 +112,18 @@ export function AgoraAvatarSession({
   const [voiceLabel, setVoiceLabel]             = useState('');
 
   const avatarRef = useRef<RPMAvatarSceneHandle | null>(null);
+
+  // Forward camera-tracked head pose + eye/brow expression straight to the
+  // 3D avatar, bypassing React state — same reasoning as the blends push
+  // below: this needs to happen at up to 60fps.
+  useImperativeHandle(ref, () => ({
+    updateBlends(b, speaking) {
+      avatarRef.current?.updateBlends(b, speaking);
+    },
+    updateHeadAndExpression(pose, extra) {
+      avatarRef.current?.updateHeadAndExpression(pose, extra);
+    },
+  }));
 
   const agora   = useAgora();
   const convoAI = useAgoraConvoAI();
@@ -334,8 +365,9 @@ export function AgoraAvatarSession({
         </p>
       )}
     </div>
-  );
-}
+    );
+  },
+);
 
 // ── Skeleton ─────────────────────────────────────────────────────────────────
 

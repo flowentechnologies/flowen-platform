@@ -6,8 +6,8 @@ import dynamic from 'next/dynamic';
 import { ZERO_BLENDS, extractFormants } from '@/lib/viseme';
 import type { VisemeBlends } from '@/lib/viseme';
 import { VisemeDriver } from '@/components/avatar/VisemeDriver';
-import type { FaceAvatarHandle } from '@/components/avatar/FaceAvatar';
-import { useFaceTracker, ZERO_EXTRA, ZERO_HEAD_POSE } from '@/lib/hooks/useFaceTracker';
+import type { AgoraAvatarSessionHandle } from '@/components/avatar/AgoraAvatarSession';
+import { useFaceTracker } from '@/lib/hooks/useFaceTracker';
 import type { FaceFrame } from '@/lib/hooks/useFaceTracker';
 import { CameraFeed } from '@/components/avatar/CameraFeed';
 import { ExercisePanel } from './ExercisePanel';
@@ -19,12 +19,6 @@ import posthog from 'posthog-js';
 // ── Avatar: Agora ConvoAI + Ready Player Me 3D (replaces Canvas 2D FaceAvatar)
 const AgoraAvatarSession = dynamic(
   () => import('@/components/avatar/AgoraAvatarSession').then(m => m.AgoraAvatarSession),
-  { ssr: false },
-);
-
-// Legacy FaceAvatar kept for calibration preview only
-const FaceAvatar = dynamic<React.ComponentPropsWithRef<typeof import('@/components/avatar/FaceAvatar').FaceAvatar>>(
-  () => import('@/components/avatar/FaceAvatar').then(m => m.FaceAvatar),
   { ssr: false },
 );
 
@@ -305,15 +299,21 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   const micStreamRef = useRef<MediaStream | null>(null);
 
   // Avatar — imperative handle avoids 60fps React re-renders
-  const avatarRef = useRef<FaceAvatarHandle | null>(null);
+  const avatarRef = useRef<AgoraAvatarSessionHandle | null>(null);
   const visemeDriverRef = useRef<VisemeDriver | null>(null);
 
-  // Face tracking — camera-driven blend shapes override audio formants when active
-  const faceTrackingActiveRef = useRef(false);
-
+  // Camera-driven head pose + eye/brow expression → the live avatar. This
+  // used to go nowhere: it targeted a FaceAvatarHandle ref that was never
+  // actually attached to a mounted component (FaceAvatar hasn't been
+  // rendered here since the Aug 19 swap to AgoraAvatarSession — "Legacy
+  // FaceAvatar kept for calibration preview" was aspirational, not real),
+  // so every camera-tracked frame was silently dropped. Mouth shapes are
+  // deliberately not included here — during a live ConvoAI session the
+  // avatar's mouth should reflect the AI's own speech (updateBlends,
+  // driven by useLipSync), not the user's face.
   const handleFaceBlends = useCallback(
     (frame: FaceFrame) => {
-      avatarRef.current?.updateFace(frame);
+      avatarRef.current?.updateHeadAndExpression(frame.headPose, frame.extraBlends);
     },
     [],
   );
@@ -513,9 +513,6 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   useEffect(() => { coachTextRef.current = coachText; }, [coachText]);
   useEffect(() => { transcriptRef.current = finalTranscript; }, [finalTranscript]);
 
-  // Sync face-tracking active flag so the audio tick loop can skip avatar updates
-  // when the camera is driving blend shapes at 60 fps instead.
-  useEffect(() => { faceTrackingActiveRef.current = faceStatus === 'active'; }, [faceStatus]);
 
   // ---------------------------------------------------------------------------
   // Voice coach
@@ -802,23 +799,17 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       for (let i = 0; i < 32; i++) bars.push(buf[i * step]);
       setFreqData(bars);
 
-      // Formant analysis → viseme driver → avatar (bypasses React state entirely).
-      // Skip avatar update when camera face tracking is active — useFaceTracker
-      // drives the avatar directly via handleFaceBlends at ~60 fps.
+      // Formant analysis → viseme driver → avatar mouth shapes (bypasses
+      // React state entirely). Head pose + eye/brow expression are a
+      // separate, always-on update path driven by camera tracking
+      // (handleFaceBlends) — the two don't conflict since they touch
+      // disjoint morph targets, so there's no longer a need to choose
+      // between "formant mouth" and "camera mouth".
       if (visemeDriverRef.current && ctx.sampleRate) {
         const { f1, f2 } = extractFormants(formantBuf, ctx.sampleRate);
         visemeDriverRef.current.updateFormants(f1, f2, rms); // rms gates formant blending
         visemeDriverRef.current.tick(Date.now());
-        if (!faceTrackingActiveRef.current) {
-          avatarRef.current?.updateFace({
-            blends:      visemeDriverRef.current.getBlends(),
-            extraBlends: ZERO_EXTRA,
-            speaking:    rms > 18,
-            headPose:    ZERO_HEAD_POSE,
-            landmarks:   null,
-            calibrating: false,
-          });
-        }
+        avatarRef.current?.updateBlends(visemeDriverRef.current.getBlends(), rms > 18);
       }
 
       const SPEECH_THRESH = 18;
@@ -1274,7 +1265,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
 
         {/* Avatar — Agora ConvoAI AI avatar (idle, session starts on click) */}
         <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-black/30">
-          <AgoraAvatarSession />
+          <AgoraAvatarSession ref={avatarRef} />
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
@@ -1432,6 +1423,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         {/* AI Avatar — Agora ConvoAI + RPM 3D (lip-sync from TTS audio) */}
         <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl shadow-black/40">
           <AgoraAvatarSession
+            ref={avatarRef}
             onAmplitude={(amp) => {
               // Feed Agora amplitude back into the existing block-detection pipeline
               // so the BPM meter and waveform continue to work as before
