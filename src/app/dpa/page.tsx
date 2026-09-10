@@ -13,15 +13,15 @@ const CLAUSES = [
     title: 'Definitions',
     content: `In this Agreement:
 
-"Controller" means the organisation (NHS trust, ICB, private clinic, educational institution, or other body) contracting with Flowen Technologies Ltd for access to the Flowen Platform.
+"Controller" means the organisation (NHS trust, ICB, private clinic, educational institution, or other body) contracting with Flowen Group Ltd for access to the Flowen Platform.
 
-"Processor" means Flowen Technologies Ltd, a company registered in England and Wales, operating the Flowen speech fluency platform at flowen.digital.
+"Processor" means Flowen Group Ltd (company number 17452036), a company registered in England and Wales, operating the Flowen speech fluency platform at flowen.digital.
 
 "Data Subject" means the individual (typically a patient or platform user) whose personal data is processed.
 
 "Personal Data", "Special Category Data", "Processing", "Data Breach", "Supervisory Authority", and other terms have the meanings given in the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018 (DPA 2018).
 
-"Sub-processor" means any third party engaged by Flowen Technologies Ltd to process Personal Data on behalf of the Controller.
+"Sub-processor" means any third party engaged by Flowen Group Ltd to process Personal Data on behalf of the Controller.
 
 "Services" means the Flowen speech fluency platform and associated clinical management tools provided under the commercial agreement between the parties.`,
   },
@@ -166,7 +166,7 @@ export default function DPAPage() {
           Data Processing Agreement
         </h1>
         <p className="text-slate-400 text-sm mt-3 leading-relaxed max-w-2xl">
-          Standard Data Processing Agreement (DPA) between Flowen Technologies Ltd (Processor) and NHS trusts,
+          Standard Data Processing Agreement (DPA) between Flowen Group Ltd (Processor) and NHS trusts,
           ICBs, private clinics, and institutional customers (Controller). Effective 1 August 2026.
         </p>
 

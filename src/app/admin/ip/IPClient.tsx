@@ -106,7 +106,7 @@ const BLANK_ASSET_FORM: AssetFormValues = {
   registration_number: '',
   renewal_date: '',
   estimated_value_pence: '',
-  owner: 'Flowen Technologies Ltd',
+  owner: 'Flowen Group Ltd',
   notes: '',
 };
 
@@ -197,7 +197,7 @@ function AssetForm({
           <input
             value={form.owner}
             onChange={e => field('owner', e.target.value)}
-            placeholder="Flowen Technologies Ltd"
+            placeholder="Flowen Group Ltd"
             className={inputCls}
           />
         </div>
@@ -448,7 +448,7 @@ function InvestorSummaryCard({ assets, versions }: { assets: IPAsset[]; versions
   const totalValuePence = assets.reduce((sum, a) => sum + (a.estimated_value_pence ?? 0), 0);
 
   function buildSummary() {
-    const lines: string[] = ['Flowen Technologies Ltd — IP Portfolio Summary', ''];
+    const lines: string[] = ['Flowen Group Ltd — IP Portfolio Summary', ''];
 
     if (trademarks.length > 0) {
       const names = trademarks.map(t => t.name).join(', ');
@@ -468,7 +468,7 @@ function InvestorSummaryCard({ assets, versions }: { assets: IPAsset[]; versions
     }
 
     lines.push('');
-    lines.push('Owner: Flowen Technologies Ltd');
+    lines.push('Owner: Flowen Group Ltd');
     lines.push(`As of: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}`);
 
     return lines.join('\n');
@@ -492,7 +492,7 @@ function InvestorSummaryCard({ assets, versions }: { assets: IPAsset[]; versions
               INVESTOR SUMMARY
             </span>
           </div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">IP Portfolio — Flowen Technologies Ltd</h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">IP Portfolio — Flowen Group Ltd</h3>
           <p className="text-xs text-slate-500 mt-0.5">Condensed view for investor conversations and diligence</p>
         </div>
         <button

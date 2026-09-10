@@ -692,10 +692,10 @@ export function buildPitchPDF(variant: DeckVariant = 'detailed'): Promise<Buffer
         margin: 0,
         info: {
           Title:   isSimple ? 'Flowen — Explained Simply' : 'Flowen — Investor Pitch Deck',
-          Author:  'Flowen Technologies Ltd',
+          Author:  'Flowen Group Ltd',
           Subject: isSimple ? 'What Flowen does, in plain language' : 'Pre-Seed Investment Opportunity',
           Keywords: 'Flowen Vocali speech stammer acoustic biofeedback deep tech SEIS',
-          Creator: 'Flowen Technologies',
+          Creator: 'Flowen',
         },
         compress: true,
       });

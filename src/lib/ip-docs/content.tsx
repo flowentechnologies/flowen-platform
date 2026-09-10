@@ -68,7 +68,7 @@ export const CONTENT: Record<string, ReactNode> = {
   'dcb0129-clinical-safety-case': (
     <>
       <Note>
-        DRAFT v1.0 — August 2026. This Clinical Safety Case has been prepared by Flowen Technologies Ltd in accordance with NHS England DCB0129 &quot;Clinical Risk Management by Manufacturers of Health IT Systems.&quot; It must be reviewed and signed off by a named Clinical Safety Officer (CSO) before submission to any NHS or NHS-adjacent organisation. This document does not constitute legal or regulatory advice.
+        DRAFT v1.0 — August 2026. This Clinical Safety Case has been prepared by Flowen Group Ltd in accordance with NHS England DCB0129 &quot;Clinical Risk Management by Manufacturers of Health IT Systems.&quot; It must be reviewed and signed off by a named Clinical Safety Officer (CSO) before submission to any NHS or NHS-adjacent organisation. This document does not constitute legal or regulatory advice.
       </Note>
 
       {/* ── 1. Document Information ── */}
@@ -80,10 +80,10 @@ export const CONTENT: Record<string, ReactNode> = {
             ['Document reference', 'FLOWEN-CSC-001'],
             ['Version', '1.0 (Draft)'],
             ['Date', 'August 2026'],
-            ['Prepared by', 'Flowen Technologies Ltd'],
+            ['Prepared by', 'Flowen Group Ltd'],
             ['Clinical Safety Officer (CSO)', '[ To be completed — must hold MBBS or equivalent clinical qualification ]'],
             ['CSO registration number', '[ GMC / HCPC / NMC registration number ]'],
-            ['Document owner', 'Flowen Technologies Ltd, England'],
+            ['Document owner', 'Flowen Group Ltd, England'],
             ['Review cycle', 'At each major software version; annually at minimum; on any adverse event'],
             ['Classification', 'Confidential — share only with named NHS procurement contacts under NDA'],
           ].map(([label, value], i, arr) => (
@@ -97,7 +97,7 @@ export const CONTENT: Record<string, ReactNode> = {
 
       {/* ── 2. Purpose and Scope ── */}
       <H>2. Purpose and Scope</H>
-      <P>This Clinical Safety Case (CSC) documents the clinical risk management activities undertaken by Flowen Technologies Ltd in the design, development, and deployment of the Flowen speech fluency platform, in accordance with NHS England standard DCB0129 Edition 2.1.</P>
+      <P>This Clinical Safety Case (CSC) documents the clinical risk management activities undertaken by Flowen Group Ltd in the design, development, and deployment of the Flowen speech fluency platform, in accordance with NHS England standard DCB0129 Edition 2.1.</P>
       <P>The purpose of this document is to demonstrate that:</P>
       <UL>
         <LI>Potential clinical hazards have been systematically identified</LI>
@@ -139,7 +139,7 @@ export const CONTENT: Record<string, ReactNode> = {
 
       {/* ── 4. Clinical Risk Management Approach ── */}
       <H>4. Clinical Risk Management Approach</H>
-      <P>Flowen Technologies Ltd has adopted a clinical risk management approach aligned with DCB0129 and ISO 14971 (medical device risk management). The following methodology was applied:</P>
+      <P>Flowen Group Ltd has adopted a clinical risk management approach aligned with DCB0129 and ISO 14971 (medical device risk management). The following methodology was applied:</P>
       <UL>
         <LI><Bold>Hazard identification:</Bold> Structured brainstorming by the development and clinical advisory team; review of analogous digital health systems; review of reported incidents in similar products</LI>
         <LI><Bold>Risk assessment:</Bold> Each hazard assessed against a 5×5 severity–likelihood matrix (see §5)</LI>
@@ -357,7 +357,7 @@ export const CONTENT: Record<string, ReactNode> = {
         <LI>Following any change in relevant regulation or guidance (NHS England DCB0129 revisions)</LI>
       </UL>
       <H3>9.2 Adverse Event Reporting</H3>
-      <P>Flowen Technologies Ltd maintains an adverse event log. Any adverse event or near-miss reported by a patient or SLT that may be attributable to the System shall be:</P>
+      <P>Flowen Group Ltd maintains an adverse event log. Any adverse event or near-miss reported by a patient or SLT that may be attributable to the System shall be:</P>
       <UL>
         <LI>Logged within 24 hours of notification</LI>
         <LI>Reviewed by the CSO within 5 working days</LI>
@@ -370,7 +370,7 @@ export const CONTENT: Record<string, ReactNode> = {
       {/* ── 10. Limitations and Exclusions ── */}
       <H>10. Limitations and Exclusions</H>
       <Warn>
-        The following uses are <Bold>outside the intended clinical scope</Bold> of this Clinical Safety Case. Use of the System in these contexts is not covered by this CSC and is not authorised by Flowen Technologies Ltd for NHS-pathway deployment without a separate risk assessment:
+        The following uses are <Bold>outside the intended clinical scope</Bold> of this Clinical Safety Case. Use of the System in these contexts is not covered by this CSC and is not authorised by Flowen Group Ltd for NHS-pathway deployment without a separate risk assessment:
       </Warn>
       <UL>
         <LI>Use with patients under 18 years of age</LI>
@@ -390,7 +390,7 @@ export const CONTENT: Record<string, ReactNode> = {
         <LI>I am satisfied that the clinical hazard identification process was systematic and thorough</LI>
         <LI>I am satisfied that the risk controls described are implemented or planned with clear owners</LI>
         <LI>I am satisfied that the residual clinical risk is acceptable for the intended clinical use described in §2</LI>
-        <LI>I accept clinical safety responsibility for this system on behalf of Flowen Technologies Ltd</LI>
+        <LI>I accept clinical safety responsibility for this system on behalf of Flowen Group Ltd</LI>
       </UL>
       <Field label="CSO name" />
       <Field label="Clinical qualification" />
@@ -416,9 +416,9 @@ export const CONTENT: Record<string, ReactNode> = {
         <div className="flex justify-between items-start gap-4 flex-wrap">
           <div className="space-y-0.5">
             <p className="text-slate-200 font-semibold">[Director / Authorised Signatory Name]</p>
-            <p className="text-slate-400">Flowen Technologies Limited</p>
-            <p className="text-slate-400">[Registered Office Address]</p>
-            <p className="text-slate-400">[Town, County, Postcode]</p>
+            <p className="text-slate-400">Flowen Group Ltd</p>
+            <p className="text-slate-400">71-75 Shelton Street, Covent Garden</p>
+            <p className="text-slate-400">London, WC2H 9JQ</p>
             <p className="text-slate-500 text-xs mt-1">flowenspeech@outlook.com</p>
           </div>
           <div className="space-y-0.5 text-right">
@@ -433,7 +433,7 @@ export const CONTENT: Record<string, ReactNode> = {
         </div>
         <div className="pt-2">
           <p className="text-slate-200 font-bold text-base">Re: Application for Advance Assurance — Seed Enterprise Investment Scheme (SEIS)</p>
-          <p className="text-slate-400 text-xs mt-1">Company: Flowen Technologies Limited &nbsp;|&nbsp; Co. No.: [XXXXXXXX] &nbsp;|&nbsp; UTR: [XXXXXXXXXX]</p>
+          <p className="text-slate-400 text-xs mt-1">Company: Flowen Group Ltd &nbsp;|&nbsp; Co. No.: 17452036 &nbsp;|&nbsp; UTR: [XXXXXXXXXX]</p>
         </div>
       </div>
 
@@ -441,11 +441,14 @@ export const CONTENT: Record<string, ReactNode> = {
         Dear Sir or Madam,
       </P>
       <P>
-        We write on behalf of <Bold>Flowen Technologies Limited</Bold> ("the Company") to apply for Advance Assurance under
+        We write on behalf of <Bold>Flowen Group Ltd</Bold> ("the Company") to apply for Advance Assurance under
         the Seed Enterprise Investment Scheme (SEIS) in accordance with the Income Tax Act 2007 (ITA 2007),
         Part 5A, as amended by the Finance Act 2023. We respectfully request that HMRC confirms whether
         the proposed share issue described below is likely to qualify for SEIS income tax relief.
       </P>
+      <Note>
+        The Company is the parent of a three-company qualifying group — see §1 and §3 below. The proposed share issue is at Company (Flowen Group Ltd) level; the group carries on its qualifying trade through Flowen Speech Technologies Ltd, using IP licensed from Flowen IP Ltd.
+      </Note>
 
       <H>1. Company Information</H>
 
@@ -458,17 +461,18 @@ export const CONTENT: Record<string, ReactNode> = {
         </thead>
         <tbody>
           {[
-            ['Full company name',               'Flowen Technologies Limited'],
-            ['Companies House number',           '[XXXXXXXX]'],
+            ['Full company name',               'Flowen Group Ltd'],
+            ['Companies House number',           '17452036'],
             ['Unique Taxpayer Reference (UTR)',  '[XXXXXXXXXX]'],
-            ['Registered office address',        '[Full registered address including postcode]'],
+            ['Registered office address',        '71-75 Shelton Street, Covent Garden, London, WC2H 9JQ'],
             ['Principal place of business',      '[If different from registered office]'],
             ['Correspondence address',           '[If different from registered office]'],
             ['Contact person',                   '[Director name] — flowenspeech@outlook.com'],
-            ['Date of incorporation',            '[DD Month YYYY]'],
+            ['Date of incorporation',            '10 September 2026'],
             ['Accounting reference date',        '[DD Month] annually'],
-            ['SIC code',                         '62012 — Business and Domestic Software Development'],
-            ['Nature of entity',                 'Private company limited by shares'],
+            ['SIC code',                         '64209 — Activities of Other Holding Companies N.E.C.'],
+            ['Nature of entity',                 'Private company limited by shares — parent holding company of a qualifying trading group'],
+            ['Qualifying subsidiaries',          'Flowen IP Ltd (Co. No. [XXXXXXXX]) — holds IP, licenses to the trading subsidiary; Flowen Speech Technologies Ltd (Co. No. [XXXXXXXX]) — carries on the qualifying trade; Flowen Labs Limited (Co. No. [XXXXXXXX]) — R&D. All three 100%-owned by the Company.'],
           ].map(([f, d]) => (
             <tr key={f}>
               <TD><span className="text-slate-300 font-medium text-xs">{f}</span></TD>
@@ -481,8 +485,11 @@ export const CONTENT: Record<string, ReactNode> = {
       <H>2. Description of the Qualifying Trade</H>
 
       <P>
-        The Company develops and operates <Bold>Flowen</Bold> — an AI-powered speech and language therapy support platform
-        for adults who stutter. The platform comprises:
+        The Company (Flowen Group Ltd) is a holding company and carries on no trade of its own. Its qualifying business
+        activity is carried on wholly through its qualifying subsidiary, <Bold>Flowen Speech Technologies Ltd</Bold>, which
+        develops and operates <Bold>Flowen</Bold> and <Bold>Vocali</Bold> — an AI-powered speech and language therapy
+        support platform for adults who stutter, marketed under two brands for different tiers of market. The platform
+        comprises:
       </P>
       <UL>
         <LI><Bold>iOS mobile application</Bold> — enables patients to complete evidence-based fluency shaping exercises
@@ -495,13 +502,19 @@ export const CONTENT: Record<string, ReactNode> = {
           disfluent speech datasets to detect and quantify stuttering events.</LI>
       </UL>
       <P>
-        The Company's trade is the <Bold>development and commercialisation of proprietary software and AI technology</Bold>.
-        Flowen is licensed to end users on a subscription basis (direct-to-consumer and via NHS/private SLT
-        practices). The Company's qualifying business activity commenced on <Bold>[Date trade first commenced]</Bold>.
+        The underlying software, models, and brand IP used in this trade are owned by another qualifying subsidiary,
+        <Bold> Flowen IP Ltd</Bold>, and licensed to Flowen Speech Technologies Ltd on arm's-length terms (see §3 below
+        for why this licensing does not disqualify the group's trade). <Bold>Flowen Labs Limited</Bold>, the third
+        qualifying subsidiary, carries on R&amp;D that feeds into the same trade.
+      </P>
+      <P>
+        The group's trade is the <Bold>development and commercialisation of proprietary software and AI technology</Bold>.
+        Flowen and Vocali are licensed to end users on a subscription basis (direct-to-consumer and via NHS/private SLT
+        practices). The qualifying business activity commenced on <Bold>[Date trade first commenced]</Bold>.
       </P>
       <P>
         This trade is a qualifying trade for the purposes of ITA 2007 s.192 and does not fall within any of the
-        excluded activities listed in ITA 2007 s.192(1) and Schedule 7B. In particular, the Company does not carry on
+        excluded activities listed in ITA 2007 s.192(1) and Schedule 7B. In particular, the group does not carry on
         any financial activities, property development, legal or accountancy services, or energy generation activities.
       </P>
 
@@ -515,24 +528,26 @@ export const CONTENT: Record<string, ReactNode> = {
         {[
           ['Not listed on a recognised stock exchange',
            'The Company is a private company limited by shares and is not listed or quoted on any recognised stock exchange, nor does it have any arrangement to become so listed.'],
-          ['No controlling interest in another company',
-           'The Company does not own or control any subsidiary that is not a qualifying subsidiary. The Company has no subsidiaries.'],
+          ['Qualifying subsidiaries only',
+           'The Company (Flowen Group Ltd) is the parent of three subsidiaries — Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Limited — each a wholly-owned (100%) qualifying subsidiary, with no arrangements in place for that ownership to change. The Company holds no interest in any other company.'],
           ['Not under control of another company',
-           'The Company is not a subsidiary of, nor is it under the control of, another company. It operates independently.'],
+           'The Company is not itself a subsidiary of, nor under the control of, any other company. It is the ultimate parent of the group and operates independently.'],
+          ['Group trade is not disqualified by intra-group IP licensing',
+           'Flowen IP Ltd (a qualifying subsidiary) holds the group\'s intellectual property and licenses it to Flowen Speech Technologies Ltd on arm\'s-length terms. This licence income is not an excluded activity under ITA 2007 Schedule 7B, because Flowen IP Ltd created the underlying IP itself rather than acquiring it — the self-created intangible-asset exemption to the royalties/licence-fee exclusion applies. [CONFIRM WITH ADVISER before submission — this is the one condition specific to the group structure worth HMRC addressing by name in its response.]'],
           ['UK permanent establishment',
            'The Company has a permanent establishment in the United Kingdom and carries on its qualifying trade wholly or mainly in the United Kingdom.'],
-          ['Gross assets do not exceed £350,000',
-           'The Company\'s total gross assets at the date of this letter do not exceed £350,000. [FILL IN: Current gross assets: £_______]. This will also be the case at the time of the share issue.'],
-          ['Fewer than 25 full-time equivalent employees',
-           'The Company currently has [FILL IN: __ full-time equivalent employees], which is fewer than 25. This includes all directors who are employed by the Company.'],
+          ['Gross assets do not exceed £350,000 — tested on a group-consolidated basis',
+           'Because the Company has qualifying subsidiaries, this test is applied to the group\'s consolidated gross assets (Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Limited combined, intra-group balances eliminated on consolidation) — not to Flowen Group Ltd\'s standalone balance sheet, which as a pure holding company has minimal assets of its own. [FILL IN: Current consolidated group gross assets: £_______]. This will also be the case at the time of the share issue.'],
+          ['Fewer than 25 full-time equivalent employees — tested group-wide',
+           'This test is also applied across the whole group, not to Flowen Group Ltd alone (which as a holding company is not expected to have any employees of its own). [FILL IN: Total full-time equivalent employees across Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Limited combined: __], which is fewer than 25. This includes all directors employed by any group company.'],
           ['Company age — within 3 years of first commercial sale',
-           'The Company\'s first commercial sale took place on [FILL IN: date]. This is within 3 years of the proposed date of share issue, satisfying the new qualifying business activity condition under ITA 2007 s.257DA as amended by Finance Act 2023.'],
+           '[CONFIRM WITH ADVISER: which entity\'s trading history is the relevant date here.] Flowen Group Ltd itself carries on no trade and has no trading history of its own — the qualifying trade is carried on by Flowen Speech Technologies Ltd. The first commercial sale of the Flowen/Vocali platform took place on [FILL IN: date, referencing the product\'s actual trading history, not Flowen Speech Technologies Ltd\'s incorporation date if the trade pre-dates the current corporate structure]. This is within 3 years of the proposed date of share issue, satisfying the new qualifying business activity condition under ITA 2007 s.257DA as amended by Finance Act 2023.'],
           ['No previous SEIS investment',
            'The Company has not previously received any investment under SEIS, and no SEIS compliance statement (SEIS3) has been issued in respect of the Company.'],
           ['No disqualifying EIS/VCT investment prior to this SEIS issue',
            '[FILL IN: The Company has not received any EIS or VCT investment prior to this SEIS issue / OR: The Company has previously received EIS/VCT investment as follows: ______.] The Company confirms that any prior EIS/VCT investment does not disqualify the proposed SEIS issue.'],
-          ['Shares are newly issued ordinary shares',
-           'The shares to be issued will be new ordinary shares, carrying no preferential rights to dividends or to assets on a winding-up, and no rights of redemption. They will rank pari passu with all existing ordinary shares.'],
+          ['Shares are newly issued, full-risk ordinary shares',
+           'The shares to be issued to investors will be new ordinary shares, carrying no preferential rights to dividends or to assets on a winding-up, and no rights of redemption. [IF the Company adopts a multi-class structure: these Investor Ordinary shares rank pari passu with each other and, in economic rights, with the Founder\'s Ordinary shares — the only difference between classes is voting/governance rights attached to the Founder class, which does not constitute a dividend or capital preference for SEIS/EIS purposes and does not disqualify these shares. Confirm this analysis with an adviser before relying on it.]'],
           ['Minimum three-year holding period will be observed',
            'The Company will not take any action within the three years following the share issue that would cause the SEIS conditions to be breached, including making a disqualifying arrangement or returning value to investors.'],
         ].map(([title, body], i) => (
@@ -558,7 +573,7 @@ export const CONTENT: Record<string, ReactNode> = {
         <tbody>
           {[
             ['Total amount to be raised under SEIS',  '[£______] (maximum £250,000 under SEIS — Finance Act 2023)'],
-            ['Class of shares',                        'Ordinary shares of [£0.001 / £0.01] nominal value each'],
+            ['Class of shares',                        'Ordinary shares of £0.0001 nominal value each (or £0.01 if a lower-precision statement of capital was filed)'],
             ['Number of new shares to be issued',      '[_______ shares]'],
             ['Issue price per share',                  '[£_____] per share'],
             ['Proposed date of share issue',           '[DD Month YYYY — or "on or before [date]"]'],
@@ -575,6 +590,10 @@ export const CONTENT: Record<string, ReactNode> = {
       </TblWrap>
 
       <H>5. Use of Investment Proceeds</H>
+
+      <Note>
+        Flowen Group Ltd, as a holding company, does not itself spend this money — it will be passed down to Flowen Speech Technologies Ltd (and Flowen Labs Limited, for R&amp;D spend) via intercompany funding (structured as further share subscriptions or intercompany loans on arm&apos;s-length terms — to be confirmed with an accountant). [CONFIRM WITH ADVISER: the intercompany funding mechanism itself must not compromise the &quot;wholly for the purposes of the qualifying business activity&quot; test below.]
+      </Note>
 
       <P>
         The investment will be used wholly for the purposes of the qualifying business activity in accordance
@@ -757,7 +776,7 @@ export const CONTENT: Record<string, ReactNode> = {
       <div className="mt-6 space-y-3">
         <Field label="Signature" />
         <Field label="Name" />
-        <Field label="Director, Flowen Technologies Limited" />
+        <Field label="Director, Flowen Group Ltd" />
       </div>
 
       <div className="mt-10 p-5 border border-slate-800 rounded-xl bg-slate-900/20">
@@ -787,13 +806,14 @@ export const CONTENT: Record<string, ReactNode> = {
     <>
       <Warn>DRAFT TEMPLATE — REQUIRES REVIEW BY A QUALIFIED UK SOLICITOR BEFORE SIGNING. This template is provided for internal planning only and does not constitute legal advice.</Warn>
       <H>Deed of Assignment of Intellectual Property</H>
+      <Note>Assignee is <Bold>Flowen IP Ltd</Bold>, not the trading company or the group holding company. Flowen IP Ltd is the wholly-owned subsidiary of Flowen Group Ltd established specifically to hold the group&apos;s intellectual property and license it to Flowen Speech Technologies Ltd — ring-fencing the core IP asset from the trading company&apos;s operational and product-liability risk. Sign this on or after Flowen IP Ltd&apos;s incorporation, not before.</Note>
       <P><Bold>Parties</Bold></P>
       <Field label="Assignor (Founder)" />
       <Field label="Assignor address" />
       <Field label="Assignee (Company)" />
-      <P>Flowen Technologies Ltd, a company registered in England and Wales under company number <Blank />, whose registered office is at <Blank /> (the <Bold>&quot;Company&quot;</Bold>).</P>
+      <P>Flowen IP Ltd, a company registered in England and Wales under company number <Blank />, whose registered office is at <Blank /> (the <Bold>&quot;Company&quot;</Bold>), a wholly-owned subsidiary of Flowen Group Ltd.</P>
       <H>Background</H>
-      <P>The Assignor has created, developed, or contributed to intellectual property relating to the Flowen speech technology platform, including but not limited to: the disfluency detection method, the dual-waveform biofeedback visualisation method, the ASR model architecture, and the platform software (the <Bold>&quot;Background IP&quot;</Bold>).</P>
+      <P>The Assignor has created, developed, or contributed to intellectual property relating to the Flowen speech technology platform, including but not limited to: the disfluency detection method, the dual-waveform biofeedback visualisation method, the ASR model architecture, the platform software and its full git commit history, the flowen.digital domain and any other domains registered in connection with the platform, the Flowen and Vocali brand names and marks (registered or unregistered), and any provisional trademark filings (the <Bold>&quot;Background IP&quot;</Bold>).</P>
       <H>Assignment</H>
       <P>In consideration of <Blank /> and other good and valuable consideration (receipt of which is acknowledged), the Assignor hereby assigns to the Company, with full title guarantee, all right, title, and interest — present and future — in and to the Background IP, including:</P>
       <UL>
@@ -801,10 +821,14 @@ export const CONTENT: Record<string, ReactNode> = {
         <LI>All copyright and related rights in the platform source code, documentation, and models</LI>
         <LI>All database rights in training datasets and corpora</LI>
         <LI>All rights in trade secrets, know-how, and confidential information relating to the platform</LI>
+        <LI>All rights in the Flowen and Vocali brand names, marks, and associated goodwill</LI>
+        <LI>All domain name registrations relating to the platform</LI>
         <LI>All goodwill associated with the above rights</LI>
         <LI>The right to apply for, and claim priority from, any patent or registration worldwide</LI>
         <LI>The right to sue for past infringements of any of the above rights</LI>
       </UL>
+      <H>Licence-Back for Group Use</H>
+      <P>The parties acknowledge that the Company intends to license the Background IP to Flowen Speech Technologies Ltd (and, where relevant, Flowen Labs Limited) under a separate arm&apos;s-length IP Licence Agreement, so that the wider group may continue to operate, develop, and commercialise the platform following this assignment.</P>
       <H>Moral Rights</H>
       <P>To the fullest extent permitted by law, the Assignor irrevocably waives all moral rights in the Background IP in favour of the Company and its successors.</P>
       <H>Further Assurance</H>
@@ -825,7 +849,7 @@ export const CONTENT: Record<string, ReactNode> = {
     <>
       <Warn>DRAFT TEMPLATE — REQUIRES REVIEW BY A QUALIFIED UK EMPLOYMENT SOLICITOR. Ensure clauses comply with the Patents Act 1977 §39 (employee inventions) and UK copyright law before use.</Warn>
       <H>Employment Contract — IP Addendum Clauses</H>
-      <P>The following clauses are designed to be inserted into or appended to Flowen Technologies Ltd standard employment contracts. They supplement — and do not replace — any existing IP provisions.</P>
+      <P>The following clauses are designed to be inserted into or appended to Flowen Group Ltd standard employment contracts. They supplement — and do not replace — any existing IP provisions.</P>
       <H>1. Definitions</H>
       <P>&quot;<Bold>Company IP</Bold>&quot; means all inventions, developments, discoveries, software, algorithms, models, data, databases, know-how, methods, processes, and works created or contributed to by the Employee in the course of their employment with the Company, whether or not such creations are in the field of the Company&apos;s current or anticipated business.</P>
       <H>2. Ownership of Company IP</H>
@@ -845,7 +869,7 @@ export const CONTENT: Record<string, ReactNode> = {
     <>
       <Warn>DRAFT TEMPLATE — REQUIRES REVIEW BY A QUALIFIED UK SOLICITOR BEFORE USE.</Warn>
       <H>Adviser / Consultant IP &amp; Confidentiality Agreement</H>
-      <P>Between <Bold>Flowen Technologies Ltd</Bold> (&quot;the Company&quot;) and <Blank /> (&quot;the Adviser&quot;).</P>
+      <P>Between <Bold>Flowen Group Ltd</Bold> (&quot;the Company&quot;) and <Blank /> (&quot;the Adviser&quot;).</P>
       <H>1. Services</H>
       <P>The Adviser agrees to provide advisory or consultancy services to the Company in the field of <Blank /> (&quot;the Services&quot;) commencing <Blank />.</P>
       <H>2. IP Ownership</H>
@@ -902,7 +926,7 @@ export const CONTENT: Record<string, ReactNode> = {
       <UL>
         <LI><Bold>Source:</Bold> User-consented session recordings (opt-in)</LI>
         <LI><Bold>Volume:</Bold> 100,000+ audio clips, approx. 800 hours</LI>
-        <LI><Bold>Licence:</Bold> Proprietary — owned by Flowen Technologies Ltd</LI>
+        <LI><Bold>Licence:</Bold> Proprietary — owned by Flowen Group Ltd</LI>
         <LI><Bold>Consent basis:</Bold> Explicit GDPR Article 9(2)(a) consent at onboarding</LI>
         <LI><Bold>IP risk:</Bold> Low — internally generated, users waive IP claims in ToS §12</LI>
       </UL>
@@ -990,7 +1014,7 @@ export const CONTENT: Record<string, ReactNode> = {
       <H>AI Model Version Control &amp; Audit Trail Policy</H>
       <P><Bold>Owner:</Bold> Engineering Lead &nbsp;·&nbsp; <Bold>Classification:</Bold> Internal &nbsp;·&nbsp; <Bold>Review cycle:</Bold> Quarterly</P>
       <H>Purpose</H>
-      <P>This policy establishes how Flowen Technologies Ltd records, versions, and audits all production and experimental AI model artefacts. The goal is to ensure reproducibility, support investor IP due diligence, and enable clinical safety auditing under DCB0129.</P>
+      <P>This policy establishes how Flowen Group Ltd records, versions, and audits all production and experimental AI model artefacts. The goal is to ensure reproducibility, support investor IP due diligence, and enable clinical safety auditing under DCB0129.</P>
       <H>Scope</H>
       <P>Applies to all ML model weights, tokenisers, configuration files, training scripts, evaluation benchmarks, and ONNX/WASM exports associated with the Flowen ASR disfluency detection pipeline.</P>
       <H>Version Naming</H>
@@ -1018,7 +1042,7 @@ export const CONTENT: Record<string, ReactNode> = {
     <>
       <Warn>DRAFT TEMPLATE — REQUIRES REVIEW BY A QUALIFIED UK SOLICITOR. Use for all freelance/contractor engagements where IP could otherwise vest in the contractor.</Warn>
       <H>Contractor IP Assignment Agreement</H>
-      <P>This Agreement is between <Bold>Flowen Technologies Ltd</Bold> (&quot;the Company&quot;) and <Blank /> (&quot;the Contractor&quot;) dated <Blank />.</P>
+      <P>This Agreement is between <Bold>Flowen Group Ltd</Bold> (&quot;the Company&quot;) and <Blank /> (&quot;the Contractor&quot;) dated <Blank />.</P>
       <H>1. Work Made for Hire / Assignment</H>
       <P>All work product, code, designs, documentation, and other deliverables created by the Contractor in connection with services provided to the Company (&quot;Deliverables&quot;) are works made for hire to the fullest extent permitted by applicable law. To the extent any Deliverable does not qualify as a work made for hire, the Contractor hereby irrevocably assigns all right, title, and interest in such Deliverables to the Company.</P>
       <H>2. Pre-Existing IP</H>
@@ -1042,7 +1066,7 @@ export const CONTENT: Record<string, ReactNode> = {
         <LI>Document the creation date of the codebase using earliest Git commit timestamps</LI>
       </UL>
       <H>Step 2: Create a Copyright Notice</H>
-      <P>Add to all source files: <code className="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">// Copyright © 2026 Flowen Technologies Ltd. All rights reserved.</code></P>
+      <P>Add to all source files: <code className="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">// Copyright © 2026 Flowen Group Ltd. All rights reserved.</code></P>
       <H>Step 3: Evidence of Authorship (UK)</H>
       <P>Unlike the US Copyright Office, the UK IPO does not have a software copyright registration system. The recommended approach for evidencing authorship is:</P>
       <UL>
@@ -1071,7 +1095,7 @@ export const CONTENT: Record<string, ReactNode> = {
       <H>Flowen Trade Secret Protection Policy</H>
       <P><Bold>Version:</Bold> 1.0 &nbsp;·&nbsp; <Bold>Owner:</Bold> CEO &nbsp;·&nbsp; <Bold>Effective:</Bold> August 2026</P>
       <H>1. Purpose</H>
-      <P>This policy sets out how Flowen Technologies Ltd identifies, protects, and enforces its trade secrets. The primary trade secrets are the disfluency detection algorithm, ASR model architecture and weights, proprietary training corpus, and commercially sensitive business information.</P>
+      <P>This policy sets out how Flowen Group Ltd identifies, protects, and enforces its trade secrets. The primary trade secrets are the disfluency detection algorithm, ASR model architecture and weights, proprietary training corpus, and commercially sensitive business information.</P>
       <H>2. What Constitutes a Trade Secret</H>
       <P>Under the Trade Secrets (Enforcement, etc.) Regulations 2018 (implementing EU Directive 2016/943 into UK law — retained post-Brexit), a trade secret is information that: (a) is secret; (b) has commercial value because it is secret; and (c) has been subject to reasonable steps to keep it secret. Flowen designates the following as trade secrets:</P>
       <UL>
@@ -1099,7 +1123,7 @@ export const CONTENT: Record<string, ReactNode> = {
     <>
       <Warn>DRAFT TEMPLATE — REQUIRES REVIEW BY A QUALIFIED UK SOLICITOR BEFORE USE.</Warn>
       <H>Mutual Non-Disclosure Agreement</H>
-      <P>This Agreement is entered into as of <Blank /> between <Bold>Flowen Technologies Ltd</Bold> (&quot;Flowen&quot;) and <Blank /> (&quot;the Recipient&quot;).</P>
+      <P>This Agreement is entered into as of <Blank /> between <Bold>Flowen Group Ltd</Bold> (&quot;Flowen&quot;) and <Blank /> (&quot;the Recipient&quot;).</P>
       <H>1. Confidential Information</H>
       <P>&quot;Confidential Information&quot; means any technical, commercial, or strategic information disclosed by Flowen to the Recipient in connection with <Blank />, including but not limited to: source code, model weights, training data, business plans, financial projections, customer data, and any information marked CONFIDENTIAL.</P>
       <H>2. Obligations</H>
@@ -1145,7 +1169,7 @@ export const CONTENT: Record<string, ReactNode> = {
         <LI>Access restricted to Flowen engineering team — no third-party access without signed DPA + NDA</LI>
         <LI>Speaker identity separated from audio via one-way hash before any model training batch</LI>
         <LI>Database right applies under UK law (CDPA 1988) — substantial investment in selection and arrangement</LI>
-        <LI>Copyright in the compilation vests in Flowen Technologies Ltd</LI>
+        <LI>Copyright in the compilation vests in Flowen Group Ltd</LI>
       </UL>
       <H>Consent Framework Reference</H>
       <P>Consent for training use is collected at onboarding (explicit GDPR Art. 9(2)(a)) and stored in the <code className="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">profiles.opt_in_telemetry</code> column. Users who withdraw consent have their recordings excluded from subsequent training batches within 30 days.</P>
@@ -1190,7 +1214,7 @@ export const CONTENT: Record<string, ReactNode> = {
       <H>Definition</H>
       <P>&quot;Synthetic data&quot; means audio generated programmatically rather than recorded from human speakers, including: TTS (text-to-speech) augmentation, data augmentation (pitch shift, noise injection, speed perturbation), voice cloning or voice conversion outputs, and GAN/diffusion-model generated speech.</P>
       <H>Ownership</H>
-      <P>Synthetic data generated using Flowen tooling or on Flowen compute, from Flowen-owned inputs, vests in Flowen Technologies Ltd as a database right and/or as a copyright work (to the extent it involves original creative choices in selection or arrangement). The IP Assignment Deeds of relevant employees and contractors cover synthetic data generation as part of their AI model contributions.</P>
+      <P>Synthetic data generated using Flowen tooling or on Flowen compute, from Flowen-owned inputs, vests in Flowen Group Ltd as a database right and/or as a copyright work (to the extent it involves original creative choices in selection or arrangement). The IP Assignment Deeds of relevant employees and contractors cover synthetic data generation as part of their AI model contributions.</P>
       <H>Third-Party Synthesis Tools</H>
       <P>Where synthetic data is generated using third-party TTS or voice synthesis tools, the engineering team must verify:</P>
       <UL>
@@ -1276,7 +1300,7 @@ export const CONTENT: Record<string, ReactNode> = {
   'trademark-filing-tracker': (
     <>
       <H>Flowen Trademark Portfolio — Filing Tracker</H>
-      <P>All UK trademark applications and registrations for Flowen Technologies Ltd. Updated August 2026.</P>
+      <P>All UK trademark applications and registrations for Flowen Group Ltd. Updated August 2026.</P>
       <div className="rounded-xl border border-slate-800 overflow-x-auto mb-8">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-slate-800 bg-slate-900/60">

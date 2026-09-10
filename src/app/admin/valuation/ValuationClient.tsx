@@ -355,7 +355,7 @@ function ConsensusHero({ consensus, methods, kpis, onSnapshot }: {
 
   function copyForInvestor() {
     const lines = [
-      `Flowen Technologies Ltd — Valuation Estimate`,
+      `Flowen Group Ltd — Valuation Estimate`,
       `As of: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}`,
       '',
       `CONSENSUS PRE-MONEY VALUATION`,
@@ -1223,7 +1223,7 @@ function BusinessPlanSection() {
               </div>
             </div>
             <div className="bg-amber-500/8 border border-amber-500/20 rounded-xl p-4 text-[11px] font-mono text-amber-300/80">
-              <span className="font-bold">SEIS eligibility:</span> Flowen Technologies Ltd qualifies for SEIS (Seed Enterprise Investment Scheme) —
+              <span className="font-bold">SEIS eligibility:</span> Flowen Group Ltd qualifies for SEIS (Seed Enterprise Investment Scheme) —
               investors benefit from 50% income tax relief + CGT exemption on qualifying shares.
             </div>
           </div>

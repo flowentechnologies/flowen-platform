@@ -1,5 +1,5 @@
 export const MASTER_POLICIES = {
-  company: "Flowen Technologies Ltd",
+  company: "Flowen Group Ltd",
   jurisdiction: "England and Wales",
   contactEmail: "hello@flowen.digital",
   effectiveDate: "1 August 2026",
@@ -13,13 +13,13 @@ Effective Date: 1 August 2026
 1. WHO WE ARE AND HOW TO CONTACT US
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Flowen Technologies Ltd ("Flowen", "we", "us", "our") is a company registered in England and Wales. We operate the Flowen speech fluency platform, available at flowen.digital and associated subdomains (the "Platform").
+Flowen Group Ltd ("Flowen", "we", "us", "our") is a company registered in England and Wales. We operate the Flowen speech fluency platform, available at flowen.digital and associated subdomains (the "Platform").
 
-For the purposes of UK data protection law, Flowen Technologies Ltd is the Data Controller.
+For the purposes of UK data protection law, Flowen Group Ltd is the Data Controller.
 
 Data Protection Contact
 Email: hello@flowen.digital
-Write to: Data Protection, Flowen Technologies Ltd, London, United Kingdom
+Write to: Data Protection, Flowen Group Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
 
 We are committed to protecting your personal data in accordance with the UK General Data Protection Regulation (UK GDPR), the Data Protection Act 2018 (DPA 2018), and the Data (Use and Access) Act 2025.
 
@@ -252,7 +252,7 @@ Effective Date: 1 August 2026
 1. AGREEMENT TO TERMS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-By accessing or using the Flowen Platform (flowen.digital and associated subdomains), creating an account, or purchasing a subscription, you ("User", "you") agree to be bound by these Terms of Service ("Terms") and our Privacy Policy. These Terms constitute a legally binding agreement between you and Flowen Technologies Ltd ("Flowen", "we", "us").
+By accessing or using the Flowen Platform (flowen.digital and associated subdomains), creating an account, or purchasing a subscription, you ("User", "you") agree to be bound by these Terms of Service ("Terms") and our Privacy Policy. These Terms constitute a legally binding agreement between you and Flowen Group Ltd ("Flowen", "we", "us").
 
 If you are accessing the Platform on behalf of an organisation (e.g., an NHS trust, private clinic, or educational institution), you represent and warrant that you have authority to bind that organisation and that these Terms apply to that organisation.
 
@@ -268,7 +268,7 @@ Flowen is an AI-assisted speech fluency practice platform designed to support pe
 IMPORTANT MEDICAL DISCLAIMER
 Flowen is NOT a medical device. Flowen does NOT provide medical diagnosis, clinical treatment, or licensed speech-language pathology services directly. The automated analysis and programme recommendations on the Platform are supportive tools and must not be relied upon as a substitute for professional clinical assessment.
 
-If you have been assigned a clinical SLP through the Platform, your treatment relationship is with that clinician, not with Flowen Technologies Ltd. Flowen provides the technical infrastructure for their clinical practice.
+If you have been assigned a clinical SLP through the Platform, your treatment relationship is with that clinician, not with Flowen Group Ltd. Flowen provides the technical infrastructure for their clinical practice.
 
 Always seek the advice of a qualified healthcare professional with any questions you may have regarding your health condition. Never disregard professional medical advice or delay seeking it because of content you have read on or received through the Platform.
 
@@ -343,7 +343,7 @@ Violation of this section may result in immediate account suspension and legal a
 7. INTELLECTUAL PROPERTY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-All software, algorithms, machine learning models, user interface designs, visual elements (including the Flowen dual-waveform logomark), text content, audio processing methods, and documentation are the exclusive intellectual property of Flowen Technologies Ltd or its licensors, protected by copyright, trade mark, and other applicable laws.
+All software, algorithms, machine learning models, user interface designs, visual elements (including the Flowen dual-waveform logomark), text content, audio processing methods, and documentation are the exclusive intellectual property of Flowen Group Ltd or its licensors, protected by copyright, trade mark, and other applicable laws.
 
 We grant you a limited, non-exclusive, non-transferable, revocable licence to access and use the Platform for your personal or professional therapeutic purposes in accordance with these Terms. This licence does not include any right to copy, modify, distribute, sell, or create derivative works of any Platform content.
 
@@ -383,7 +383,7 @@ Nothing in these Terms excludes or limits our liability for death or personal in
 11. INDEMNIFICATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-You agree to indemnify, defend, and hold harmless Flowen Technologies Ltd and its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or in any way connected with: (a) your access to or use of the Platform in violation of these Terms; (b) your breach of any representation or warranty in these Terms; or (c) your violation of any applicable law or the rights of any third party.
+You agree to indemnify, defend, and hold harmless Flowen Group Ltd and its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or in any way connected with: (a) your access to or use of the Platform in violation of these Terms; (b) your breach of any representation or warranty in these Terms; or (c) your violation of any applicable law or the rights of any third party.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 12. TERM, SUSPENSION & TERMINATION
@@ -414,7 +414,7 @@ We may revise these Terms from time to time. Material changes will be communicat
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 For questions about these Terms: hello@flowen.digital
-Flowen Technologies Ltd, London, United Kingdom
+Flowen Group Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
   `,
 
   clinicalCompliance: `
@@ -426,11 +426,11 @@ Version: 1.2
 1. OVERVIEW & APPLICABILITY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This statement describes Flowen Technologies Ltd's compliance with NHS Digital Standard DCB0129: Clinical Risk Management for Manufacturers of Health IT (Version 4.2). DCB0129 applies to any organisation manufacturing, developing, or deploying health IT systems that may be used in NHS or NHS-commissioned clinical environments.
+This statement describes Flowen Group Ltd's compliance with NHS Digital Standard DCB0129: Clinical Risk Management for Manufacturers of Health IT (Version 4.2). DCB0129 applies to any organisation manufacturing, developing, or deploying health IT systems that may be used in NHS or NHS-commissioned clinical environments.
 
 System: Flowen Speech Fluency Platform (flowen.digital)
 Clinical Safety Officer: Designated — contact hello@flowen.digital
-Clinical Safety Manager: Flowen Technologies Ltd
+Clinical Safety Manager: Flowen Group Ltd
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 2. CLINICAL SAFETY OFFICER
@@ -521,7 +521,7 @@ NHS organisations deploying the Flowen Platform must comply with DCB0160 (Clinic
 — Conduct a local hazard assessment for their clinical environment
 — Ensure clinical staff complete appropriate training before use
 — Establish a local incident reporting pathway to Flowen's Clinical Safety Officer
-— Agree a Data Processing Agreement with Flowen Technologies Ltd
+— Agree a Data Processing Agreement with Flowen Group Ltd
 
 Flowen will provide full DCB0129 documentation pack, training materials, and a named clinical safety contact upon contracting.
 
@@ -556,7 +556,7 @@ Last Updated: 1 August 2026
 GOVERNING LAW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-These Terms of Service, Privacy Policy, and all other policies and agreements between you and Flowen Technologies Ltd are governed by, and shall be construed in accordance with, the laws of England and Wales, without regard to conflict of law principles.
+These Terms of Service, Privacy Policy, and all other policies and agreements between you and Flowen Group Ltd are governed by, and shall be construed in accordance with, the laws of England and Wales, without regard to conflict of law principles.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 JURISDICTION
@@ -585,7 +585,7 @@ Nothing in these Terms affects your statutory rights as a consumer under English
 CONTACT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Flowen Technologies Ltd
+Flowen Group Ltd
 London, United Kingdom
 hello@flowen.digital
 flowen.digital
@@ -600,7 +600,7 @@ Effective Date: 1 August 2026
 1. ABOUT THIS POLICY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This Cookie Policy explains exactly which cookies and similar storage mechanisms Flowen Technologies Ltd ("Flowen", "we", "us") sets when you visit flowen.digital, and why. It supplements our Privacy Policy and forms part of our PECR 2003 compliance documentation.
+This Cookie Policy explains exactly which cookies and similar storage mechanisms Flowen Group Ltd ("Flowen", "we", "us") sets when you visit flowen.digital, and why. It supplements our Privacy Policy and forms part of our PECR 2003 compliance documentation.
 
 A "cookie" is a small text file placed on your device. We also use sessionStorage and localStorage for temporary, in-browser state — those are never sent to our servers and are not covered by PECR.
 
@@ -744,6 +744,6 @@ We will update this policy if we add new cookies or change how existing ones are
 
 For any questions about our use of cookies:
 Email: hello@flowen.digital
-Write to: Data Protection, Flowen Technologies Ltd, London, United Kingdom
+Write to: Data Protection, Flowen Group Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
   `
 };
