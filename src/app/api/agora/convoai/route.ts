@@ -15,6 +15,7 @@ import { NextResponse } from 'next/server';
 import { createClient as createAdmin } from '@supabase/supabase-js';
 import { getUserFromRequest } from '@/lib/supabase/from-request';
 import { buildConvoAIJoinPayload } from '@/lib/agora/convoai-payload';
+import { DEFAULT_CONVOAI_BASE_URL, buildConvoAIJoinUrl, buildConvoAILeaveUrl } from '@/lib/agora/convoai-urls';
 
 function getConvoAIHeaders() {
   const customerId = process.env.AGORA_CUSTOMER_ID;
@@ -67,11 +68,9 @@ export async function POST(req: Request) {
     const appId = process.env.AGORA_APP_ID;
     // Agora ConvoAI REST API endpoint.
     // Override AGORA_CONVOAI_BASE_URL if using a non-US region, e.g.:
-    //   EU: https://api-eu.agora.io/api/conversational-ai
-    //   AP: https://api-ap.agora.io/api/conversational-ai
-    const baseUrl = (process.env.AGORA_CONVOAI_BASE_URL ?? 'https://api.agora.io/api/conversational-ai')
-      // Strip trailing slash so URL construction is consistent
-      .replace(/\/$/, '');
+    //   EU: https://api-eu.agora.io/api/conversational-ai-agent
+    //   AP: https://api-ap.agora.io/api/conversational-ai-agent
+    const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? DEFAULT_CONVOAI_BASE_URL;
     if (!appId) return NextResponse.json({ error: 'Agora not configured' }, { status: 503 });
 
     const agentUid = body.agentUid ?? 9999;
@@ -98,7 +97,7 @@ export async function POST(req: Request) {
         : { vendor: 'openai', apiKey: process.env.OPENAI_API_KEY ?? '' },
     });
 
-    const joinUrl = `${baseUrl}/v1/projects/${appId}/join`;
+    const joinUrl = buildConvoAIJoinUrl(baseUrl, appId);
     const res = await fetch(joinUrl, {
       method: 'POST',
       headers: getConvoAIHeaders(),
@@ -107,9 +106,11 @@ export async function POST(req: Request) {
 
     const data = await res.json() as { agent_id?: string; error?: string; message?: string };
     if (!res.ok) {
-      // "no Route matched with those values" → ConvoAI add-on not enabled for
-      // this App ID, or wrong regional endpoint. Log the URL (no credentials)
-      // so it's visible in Vercel runtime logs without exposing secrets.
+      // "no Route matched with those values" → either the URL is wrong (was
+      // the actual cause here for a long time — see convoai-urls.ts) or the
+      // ConvoAI add-on isn't enabled for this App ID / the regional endpoint
+      // is wrong. Log the URL (no credentials) so it's visible in Vercel
+      // runtime logs without exposing secrets.
       console.error('[convoai] join error:', data, '| url:', joinUrl, '| status:', res.status);
       const message = data.message ?? data.error ?? 'Agent start failed';
       const isNotFound = res.status === 404 || message.toLowerCase().includes('no route');
@@ -147,10 +148,11 @@ export async function DELETE(req: Request) {
     }
 
     const appId = process.env.AGORA_APP_ID;
-    const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? 'https://api.agora.io/api/conversational-ai';
+    if (!appId) return NextResponse.json({ error: 'Agora not configured' }, { status: 503 });
+    const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? DEFAULT_CONVOAI_BASE_URL;
 
     const res = await fetch(
-      `${baseUrl}/v1/projects/${appId}/leave/${body.agentId}`,
+      buildConvoAILeaveUrl(baseUrl, appId, body.agentId),
       {
         method: 'DELETE',
         headers: getConvoAIHeaders(),
