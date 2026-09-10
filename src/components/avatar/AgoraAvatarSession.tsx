@@ -209,6 +209,20 @@ export function AgoraAvatarSession({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Also stop the agent on a hard tab close/refresh — the unmount cleanup
+  // above only fires on in-app navigation (a React unmount), not this.
+  // That gap is exactly what leaves a stale agent blocking the next join
+  // (see convoai-conflict.ts): close the tab mid-session and Agora still
+  // considers that agent "running" under this user's deterministic name
+  // until it eventually times out on its own. keepalive on stopAgent's
+  // fetch (useAgoraConvoAI.ts) gives this a real chance of completing
+  // before the page is actually gone.
+  useEffect(() => {
+    const handlePageHide = () => { void convoAI.stopAgent(); };
+    window.addEventListener('pagehide', handlePageHide);
+    return () => window.removeEventListener('pagehide', handlePageHide);
+  }, [convoAI]);
+
   return (
     <div className="flex flex-col items-center gap-4 w-full">
       {/* ── Avatar canvas ─────────────────────────────────────────────────── */}

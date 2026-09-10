@@ -39,6 +39,7 @@ export function useAgoraConvoAI(): UseAgoraConvoAIReturn {
   const [agentUid, setAgentUid] = useState<number | null>(null);
 
   const agentIdRef = useRef<string | null>(null);
+  const channelRef = useRef<string | null>(null);
 
   const startAgent = useCallback(async (opts: StartAgentOptions) => {
     setStatus('starting');
@@ -66,6 +67,7 @@ export function useAgoraConvoAI(): UseAgoraConvoAIReturn {
     }
 
     agentIdRef.current = data.agentId;
+    channelRef.current = opts.channel;
     setAgentId(data.agentId);
     setAgentUid(data.agentUid ?? 9999);
     setStatus('active');
@@ -80,16 +82,23 @@ export function useAgoraConvoAI(): UseAgoraConvoAIReturn {
     setStatus('stopping');
 
     try {
+      // channel is required for the route's ownership check — without it,
+      // that check was silently skipped (body.channel was always undefined).
+      // keepalive lets this survive a tab close/refresh mid-session (see
+      // AgoraAvatarSession's pagehide handler) instead of being aborted
+      // with the rest of the page's in-flight requests.
       await fetch('/api/agora/convoai', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId: id }),
+        body: JSON.stringify({ agentId: id, channel: channelRef.current }),
+        keepalive: true,
       });
     } catch (err) {
       console.warn('[useAgoraConvoAI] stopAgent error (non-fatal):', err);
     }
 
     agentIdRef.current = null;
+    channelRef.current = null;
     setAgentId(null);
     setAgentUid(null);
     setStatus('idle');

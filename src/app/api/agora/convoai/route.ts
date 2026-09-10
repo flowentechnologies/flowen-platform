@@ -16,6 +16,7 @@ import { createClient as createAdmin } from '@supabase/supabase-js';
 import { getUserFromRequest } from '@/lib/supabase/from-request';
 import { buildConvoAIJoinPayload } from '@/lib/agora/convoai-payload';
 import { DEFAULT_CONVOAI_BASE_URL, buildConvoAIJoinUrl, buildConvoAILeaveUrl } from '@/lib/agora/convoai-urls';
+import { conflictingAgentId } from '@/lib/agora/convoai-conflict';
 
 function getConvoAIHeaders() {
   const customerId = process.env.AGORA_CUSTOMER_ID;
@@ -98,13 +99,36 @@ export async function POST(req: Request) {
     });
 
     const joinUrl = buildConvoAIJoinUrl(baseUrl, appId);
-    const res = await fetch(joinUrl, {
+    let res = await fetch(joinUrl, {
       method: 'POST',
       headers: getConvoAIHeaders(),
       body: JSON.stringify(payload),
     });
+    let data = await res.json() as { agent_id?: string; error?: string; message?: string; reason?: string };
 
-    const data = await res.json() as { agent_id?: string; error?: string; message?: string };
+    // The agent name (and the channel) are deterministic per user, not per
+    // session — a user only ever has one active session by design. That
+    // means any session that ends without a clean DELETE (a closed tab,
+    // a network drop, a crash) leaves an agent Agora still considers
+    // running under that exact name, and the next join attempt 409s.
+    // Agora's own error body names the blocking agent, so force-stop it
+    // and retry once rather than surfacing an opaque conflict to the user.
+    const staleAgentId = conflictingAgentId(res.status, data);
+    if (staleAgentId) {
+      console.warn(`[convoai] stale agent ${staleAgentId} blocking a new join — stopping it and retrying`);
+      await fetch(buildConvoAILeaveUrl(baseUrl, appId, staleAgentId), {
+        method: 'DELETE',
+        headers: getConvoAIHeaders(),
+      }).catch((err) => console.warn('[convoai] failed to stop stale agent (continuing to retry anyway):', err));
+
+      res = await fetch(joinUrl, {
+        method: 'POST',
+        headers: getConvoAIHeaders(),
+        body: JSON.stringify(payload),
+      });
+      data = await res.json() as typeof data;
+    }
+
     if (!res.ok) {
       // "no Route matched with those values" → either the URL is wrong (was
       // the actual cause here for a long time — see convoai-urls.ts) or the
