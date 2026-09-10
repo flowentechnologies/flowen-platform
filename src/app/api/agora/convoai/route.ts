@@ -14,6 +14,7 @@
 import { NextResponse } from 'next/server';
 import { createClient as createAdmin } from '@supabase/supabase-js';
 import { getUserFromRequest } from '@/lib/supabase/from-request';
+import { buildConvoAIJoinPayload } from '@/lib/agora/convoai-payload';
 
 function getConvoAIHeaders() {
   const customerId = process.env.AGORA_CUSTOMER_ID;
@@ -75,61 +76,27 @@ export async function POST(req: Request) {
 
     const agentUid = body.agentUid ?? 9999;
 
-    const payload = {
-      name: `flowen-agent-${user.id.slice(0, 8)}`,
-      properties: {
-        channel:        body.channel,
-        token:          body.token,
-        agent_rtc_uid:  String(agentUid),
-        remote_rtc_uids: ['*'], // respond to any user in channel
-        idle_timeout:   120,
-        max_history:    32,
-        asr: {
-          language: 'en-US',
-        },
-        llm: {
-          url:   process.env.AGORA_LLM_URL ?? 'https://api.openai.com/v1/chat/completions',
-          api_key: process.env.OPENAI_API_KEY ?? '',
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: 'system',
-              // Clamp to prevent token-bomb attacks; slice at a word boundary
-              content: (body.systemPrompt ?? [
-                'You are Flowen, a warm and encouraging AI speech therapy assistant.',
-                'You help people who stutter practise fluency techniques including easy onset,',
-                'light articulatory contacts, prolongation, and paced speech.',
-                'Keep responses concise (2–3 sentences), supportive, and clinically appropriate.',
-                'Celebrate progress and gently redirect when the user struggles.',
-              ].join(' ')).slice(0, MAX_SYSTEM_PROMPT_CHARS),
-            },
-          ],
-        },
-        tts: storedVoiceCloneId
-          // ── User has a cloned voice — use the DB-stored voice ID ──────────────
-          ? {
-              vendor: 'elevenlabs',
-              params: {
-                api_key:  process.env.ELEVENLABS_API_KEY ?? '',
-                voice_id: storedVoiceCloneId,
-                model_id: 'eleven_turbo_v2_5', // lowest latency, real-time suitable
-                stability:         0.45,
-                similarity_boost:  0.80,
-                use_speaker_boost: true,
-              },
-            }
-          // ── No clone yet — fall back to OpenAI nova ───────────────────────
-          : {
-              vendor: 'openai',
-              params: {
-                api_key: process.env.OPENAI_API_KEY ?? '',
-                model:   'tts-1',
-                voice:   'nova',
-                speed:   1.0,
-              },
-            },
-      },
-    };
+    const defaultSystemPrompt = [
+      'You are Flowen, a warm and encouraging AI speech therapy assistant.',
+      'You help people who stutter practise fluency techniques including easy onset,',
+      'light articulatory contacts, prolongation, and paced speech.',
+      'Keep responses concise (2–3 sentences), supportive, and clinically appropriate.',
+      'Celebrate progress and gently redirect when the user struggles.',
+    ].join(' ');
+
+    const payload = buildConvoAIJoinPayload({
+      userId:       user.id,
+      channel:      body.channel,
+      token:        body.token,
+      agentUid,
+      // Clamp to prevent token-bomb attacks; slice at a word boundary
+      systemPrompt: (body.systemPrompt ?? defaultSystemPrompt).slice(0, MAX_SYSTEM_PROMPT_CHARS),
+      llmUrl:       process.env.AGORA_LLM_URL ?? 'https://api.openai.com/v1/chat/completions',
+      llmApiKey:    process.env.OPENAI_API_KEY ?? '',
+      voice: storedVoiceCloneId
+        ? { vendor: 'elevenlabs', apiKey: process.env.ELEVENLABS_API_KEY ?? '', voiceId: storedVoiceCloneId }
+        : { vendor: 'openai', apiKey: process.env.OPENAI_API_KEY ?? '' },
+    });
 
     const joinUrl = `${baseUrl}/v1/projects/${appId}/join`;
     const res = await fetch(joinUrl, {
