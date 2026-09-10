@@ -19,6 +19,7 @@
  */
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import type { VisemeBlends } from '@/lib/viseme';
+import { computeFitCamera } from '@/lib/avatar/camera-fit';
 
 // ── ARKit morph target name → VisemeBlends key mapping ───────────────────────
 // RPM avatars with ?morphTargets=ARKit expose these exact blend shape names.
@@ -161,11 +162,22 @@ export const RPMAvatarScene = forwardRef<RPMAvatarSceneHandle, Props>(
             }
           });
 
-          // Position avatar so head is centered in frame
+          // Frame the camera from the model's actual bounding box — not a
+          // hardcoded eye-level fraction tuned for one specific model's
+          // proportions (that assumption broke outright when facecap_clean.glb,
+          // a head-only model at a totally different scale, replaced the old
+          // Ready Player Me half-body avatar: the camera ended up looking at
+          // empty space above the model, only the scalp visible at the
+          // bottom edge). This frames whatever GLB is loaded, so it keeps
+          // working if the model changes again.
           const box = new THREE.Box3().setFromObject(gltf.scene);
-          const headY = box.max.y * 0.88; // approximate eye level
-          camera.position.set(0, headY, 1.5);
-          camera.lookAt(0, headY * 0.95, 0);
+          const { position, lookAt } = computeFitCamera(
+            [box.min.x, box.min.y, box.min.z],
+            [box.max.x, box.max.y, box.max.z],
+            camera.fov,
+          );
+          camera.position.set(...position);
+          camera.lookAt(...lookAt);
         } catch (err) {
           console.error('[RPMAvatarScene] GLB load error:', err);
         }
