@@ -1,16 +1,18 @@
 'use client';
 
 /**
- * RPMAvatarScene — Three.js 3D avatar scene using a Ready Player Me GLB model.
+ * RPMAvatarScene — Three.js 3D avatar scene, named for its original source
+ * (Ready Player Me GLB models) but generic: it loads any GLB whose meshes
+ * carry ARKit-named morph targets, not anything RPM-specific at runtime.
+ * Ready Player Me itself shut down Jan 31 2026 (see AgoraAvatarSession's
+ * DEFAULT_AVATAR_URL comment) — avatarUrl now points at a self-hosted GLB.
  *
- * Loads a GLB file that includes ARKit blend shapes (request with
- * ?morphTargets=ARKit,Oculus%20Visemes for full compatibility).
  * Updates mouth morph targets every frame from VisemeBlends without triggering
  * React re-renders — all mutations happen directly on Three.js objects.
  *
  * Usage:
  *   <RPMAvatarScene
- *     avatarUrl="https://models.readyplayer.me/[id].glb?morphTargets=ARKit"
+ *     avatarUrl="/models/facecap_clean.glb"
  *     blends={blends}
  *     isSpeaking={isSpeaking}
  *   />
