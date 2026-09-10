@@ -141,6 +141,7 @@ export function useFaceTracker(
   const streamRef     = useRef<MediaStream | null>(null);
   const rafRef        = useRef<number | null>(null);
   const calTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastDetectErrorLogRef = useRef(0);
 
   // Calibration buffers
   const calBlendsRef    = useRef<VisemeBlends[]>([]);
@@ -202,6 +203,20 @@ export function useFaceTracker(
   // ── start ──────────────────────────────────────────────────────────────────
 
   const start = useCallback(async () => {
+    // Guard against running twice concurrently — e.g. a double-click on
+    // Enable, or a re-render re-firing whatever calls start(). Without
+    // this, a second call spins up its own getUserMedia stream and its
+    // own detect() rAF loop against the SAME shared landmarkerRef
+    // instance (only ever created once — see the `if (!landmarkerRef
+    // .current)` below). MediaPipe's detectForVideo requires strictly
+    // increasing timestamps per instance; two interleaved loops calling
+    // it violate that on essentially every frame, throwing on every
+    // single detection attempt — which look exactly like "stuck on Not
+    // calibrated forever" from the outside, even with a perfectly
+    // centred, well-lit face, since calibration's 10-frames-in-3s check
+    // never once succeeds.
+    if (statusRef.current !== 'idle' && statusRef.current !== 'denied' && statusRef.current !== 'error') return;
+
     setErrorMsg(null);
     try {
       // 1. Load MediaPipe
@@ -312,7 +327,21 @@ export function useFaceTracker(
               });
             }
           }
-        } catch { /* per-frame failures are non-fatal */ }
+        } catch (err) {
+          // Was fully silent before — a real per-frame exception here (e.g.
+          // detectForVideo's "timestamp must be monotonically increasing"
+          // if two detect() loops ever end up running against the same
+          // landmarker instance) would explain calibration getting stuck
+          // at "Not calibrated" forever with zero visible cause: every
+          // single frame fails before ever reaching the ≥10-frames-in-3s
+          // check, and nothing ever surfaced that. Throttled to avoid
+          // flooding the console at up to 60fps.
+          const now = Date.now();
+          if (now - lastDetectErrorLogRef.current > 2000) {
+            lastDetectErrorLogRef.current = now;
+            console.error('[useFaceTracker] detectForVideo failed:', err);
+          }
+        }
 
         rafRef.current = requestAnimationFrame(detect);
       }
