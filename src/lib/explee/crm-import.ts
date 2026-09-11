@@ -24,13 +24,19 @@ export interface UnlinkedExpleeContact {
   name:            string | null;
   person_id:       string;
   latest_sent_at:  string | null;
+  latest_intent:   string | null;
+  sent_count:      number;
+  reply_count:     number;
 }
 
 export interface CrmImportPlan {
   /** explee_contacts.id -> crm_contacts.id, to write back as crm_contact_id */
   toLink: { expleeContactId: string; crmContactId: string }[];
   /** New crm_contacts rows to insert, keyed by the explee_contacts.id they came from */
-  toCreate: { expleeContactId: string; email: string; name: string | null; personId: string; lastContactAt: string | null }[];
+  toCreate: {
+    expleeContactId: string; email: string; name: string | null; personId: string; lastContactAt: string | null;
+    intent: string | null; sentCount: number; replyCount: number;
+  }[];
 }
 
 export function planCrmImport(
@@ -52,6 +58,9 @@ export function planCrmImport(
         name: contact.name,
         personId: contact.person_id,
         lastContactAt: contact.latest_sent_at,
+        intent: contact.latest_intent,
+        sentCount: contact.sent_count,
+        replyCount: contact.reply_count,
       });
     }
   }

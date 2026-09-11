@@ -41,6 +41,11 @@ interface Contact {
   why_hot: string | null;
   became_hot_at: string | null;
   explee_person_id: string | null;
+  // Whether stage is still being kept in sync with Explee's own outreach
+  // signals (explee-outreach-sync's stage re-sync step) — flips to false
+  // for good the moment a human sets a stage by hand, so this is only
+  // ever meaningful for source='explee' contacts.
+  stage_auto_managed: boolean;
   // Real outreach context for every source='explee' contact, hot or not —
   // which campaign(s), what Explee's own AI classified their reply as,
   // how many touches. Null/empty for non-Explee contacts.
@@ -218,7 +223,10 @@ export function CrmClient() {
   }, [deepLinkContact, loading]);
 
   async function moveStage(id: string, stage: string) {
-    setContacts(prev => prev.map(c => (c.id === id ? { ...c, stage } : c)));
+    // A manual move takes the contact out of Explee's auto-sorting for
+    // good (the PATCH route does the same flip server-side) — reflect
+    // that immediately rather than waiting on a refetch.
+    setContacts(prev => prev.map(c => (c.id === id ? { ...c, stage, stage_auto_managed: false } : c)));
     await fetch('/api/admin/crm', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -798,6 +806,14 @@ function ContactDetail({ contact, onClose, onUpdated }: {
             <p className="text-sm text-slate-700 dark:text-slate-300 mt-1.5">{CATEGORY_LABEL[contact.category] ?? contact.category}</p>
           </div>
         </div>
+
+        {contact.source === 'explee' && (
+          <p className="text-[10px] text-slate-400 -mt-2">
+            {contact.stage_auto_managed
+              ? '🔄 Stage auto-sorted from Explee replies — moving it by hand takes over for good.'
+              : '✋ Stage set manually — no longer auto-sorted by Explee.'}
+          </p>
+        )}
 
         <div>
           <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Notes</label>

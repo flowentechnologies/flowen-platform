@@ -5,6 +5,7 @@ function contact(overrides: Partial<UnlinkedExpleeContact> = {}): UnlinkedExplee
   return {
     id: 'ec-1', email: 'jane@example.com', name: 'Jane Doe',
     person_id: 'p-1', latest_sent_at: '2026-09-01T00:00:00Z',
+    latest_intent: null, sent_count: 1, reply_count: 0,
     ...overrides,
   };
 }
@@ -25,6 +26,7 @@ describe('planCrmImport', () => {
     expect(plan.toCreate).toEqual([{
       expleeContactId: 'ec-1', email: 'jane@example.com', name: 'Jane Doe',
       personId: 'p-1', lastContactAt: '2026-09-01T00:00:00Z',
+      intent: null, sentCount: 1, replyCount: 0,
     }]);
   });
 
@@ -42,6 +44,14 @@ describe('planCrmImport', () => {
     const plan = planCrmImport([contact({ name: null, latest_sent_at: null })], new Map());
     expect(plan.toCreate[0].name).toBeNull();
     expect(plan.toCreate[0].lastContactAt).toBeNull();
+  });
+
+  it('carries intent/sent/reply counts through to the create plan — feeds deriveExpleeStage so a new import lands in the right Kanban column immediately, not always "new"', () => {
+    const plan = planCrmImport(
+      [contact({ latest_intent: 'hot_lead', sent_count: 2, reply_count: 1 })],
+      new Map(),
+    );
+    expect(plan.toCreate[0]).toMatchObject({ intent: 'hot_lead', sentCount: 2, replyCount: 1 });
   });
 
   it('returns empty plans for an empty batch', () => {

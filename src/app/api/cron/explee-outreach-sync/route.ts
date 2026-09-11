@@ -21,12 +21,20 @@
  *   4. Imports every emailed contact into the CRM: links
  *      explee_contacts.crm_contact_id by email where that person is
  *      already a CRM contact, and creates a new crm_contacts row
- *      (category='sales_lead', stage='new', source='explee') when
- *      they're not — never touching category/stage/notes on an
- *      existing row, so a human's own triage is never overwritten.
- *      explee-hot-leads (separate cron) enriches the subset of these
- *      that Explee itself flags as hot with job title/company/LinkedIn.
- *   5. Records a project-analytics snapshot, but only when the numbers
+ *      (category='sales_lead', source='explee', stage derived from
+ *      their actual sent/reply/intent — see stage-mapping.ts, not
+ *      hardcoded 'new') when they're not — never touching
+ *      category/notes on an existing row, so a human's own triage is
+ *      never overwritten. explee-hot-leads (separate cron) enriches
+ *      the subset of these that Explee itself flags as hot with job
+ *      title/company/LinkedIn.
+ *   5. Re-derives stage for every source='explee' contact whose stage
+ *      is still auto-managed (crm_contacts.stage_auto_managed), so the
+ *      Kanban keeps reflecting reality as replies come in — moving to
+ *      "in_discussion" on a hot reply, "lost" on an explicit no. Stops
+ *      touching a contact for good the moment a human sets its stage
+ *      by hand via the CRM UI.
+ *   6. Records a project-analytics snapshot, but only when the numbers
  *      actually moved since the last one, so the trend log stays
  *      meaningful rather than 144 identical rows a day.
  *
@@ -55,6 +63,7 @@ import { adminDb as db } from '@/lib/supabase/admin';
 import { withCronLogging } from '@/lib/cron-logging';
 import { isContactChanged, hasTimeBudget } from '@/lib/explee/outreach-sync';
 import { planCrmImport, type UnlinkedExpleeContact } from '@/lib/explee/crm-import';
+import { deriveExpleeStage } from '@/lib/explee/stage-mapping';
 import { mapWithConcurrency } from '@/lib/async/concurrency';
 
 const EXPLEE_BASE = 'https://api.explee.com';
@@ -271,18 +280,22 @@ async function handle(req: NextRequest): Promise<NextResponse> {
 
   // ── 4. Import every emailed contact into the CRM ────────────────────
   // Used to only ever link — an explee_contacts row with no matching CRM
-  // email was silently skipped forever. That meant the ~1,150+ contacts
-  // Explee has emailed but never flagged as a "hot lead" (the separate,
-  // much narrower explee-hot-leads cron) never made it into the CRM at
-  // all. There is no "loaded but not yet emailed" list anywhere in
-  // Explee's API (confirmed by probing it directly — every /inbox entry
-  // already has sent_count >= 1), so this covers the full real scope:
-  // every contact Explee has ever sent an email to, hot or not.
+  // email was silently skipped forever. That meant every contact Explee
+  // has emailed but never flagged as a "hot lead" (the separate, much
+  // narrower explee-hot-leads cron) never made it into the CRM at all.
+  // There is no "loaded but not yet emailed" list anywhere in Explee's
+  // API (confirmed by probing it directly — every /inbox entry already
+  // has sent_count >= 1), so this covers the full real scope: every
+  // contact Explee has ever sent an email to, hot or not. In practice
+  // most of Explee's own /inbox rows have no email on file at all (a
+  // real data-quality fact on Explee's side, confirmed live: only ~2%
+  // of synced contacts have one) — those are skipped here, same as
+  // they always have been in explee-hot-leads.
   let crmImported = 0;
   try {
     const { data: unlinkedRows } = await supabase
       .from('explee_contacts')
-      .select('id, email, name, person_id, latest_sent_at')
+      .select('id, email, name, person_id, latest_sent_at, latest_intent, sent_count, reply_count')
       .is('crm_contact_id', null).not('email', 'is', null);
     const unlinked = (unlinkedRows ?? []) as UnlinkedExpleeContact[];
 
@@ -312,8 +325,14 @@ async function handle(req: NextRequest): Promise<NextResponse> {
       }
 
       for (const c of byEmail.values()) {
+        // Initial stage reflects reality from the moment the contact
+        // exists in the CRM — a reply-less send lands in "contacted", a
+        // hot-classified reply in "in_discussion" — instead of every
+        // single import starting at "new" regardless of how far along
+        // the conversation already was.
+        const initialStage = deriveExpleeStage([{ intent: c.intent, sentCount: c.sentCount, replyCount: c.replyCount }]);
         const { data: created, error } = await supabase.from('crm_contacts').insert({
-          email: c.email, name: c.name, category: 'sales_lead', stage: 'new', source: 'explee',
+          email: c.email, name: c.name, category: 'sales_lead', stage: initialStage, source: 'explee',
           explee_person_id: c.personId, last_contact_at: c.lastContactAt,
         }).select('id').single();
 
@@ -343,7 +362,47 @@ async function handle(req: NextRequest): Promise<NextResponse> {
     console.error('[explee-outreach-sync] CRM import failed:', err);
   }
 
-  // ── 5. Project analytics snapshot — only when numbers moved ────────
+  // ── 5. Re-sort existing Explee contacts as their outreach evolves ──
+  // A contact's stage used to only ever get set once, at creation. If
+  // they later reply and Explee reclassifies them (silence -> hot_lead,
+  // or a fresh not_interested), nothing moved their CRM stage — every
+  // contact imported before this shipped would stay wherever it started
+  // forever. Re-derives from the current linked explee_contacts data
+  // every run, but only while stage_auto_managed is still true — the
+  // moment a human sets a stage by hand (PATCH /api/admin/crm), this
+  // stops touching that contact for good.
+  let stageResynced = 0;
+  try {
+    const { data: autoManaged } = await supabase
+      .from('crm_contacts')
+      .select('id, stage, explee_contacts(latest_intent, sent_count, reply_count)')
+      .eq('source', 'explee').eq('stage_auto_managed', true);
+
+    for (const row of (autoManaged ?? []) as unknown as {
+      id: string; stage: string;
+      explee_contacts: { latest_intent: string | null; sent_count: number; reply_count: number }[] | null;
+    }[]) {
+      const threads = (row.explee_contacts ?? []).map(t => ({
+        intent: t.latest_intent, sentCount: t.sent_count, replyCount: t.reply_count,
+      }));
+      if (threads.length === 0) continue;
+
+      const derivedStage = deriveExpleeStage(threads);
+      if (derivedStage === row.stage) continue;
+
+      await supabase.from('crm_contacts').update({
+        stage: derivedStage, updated_at: new Date().toISOString(),
+      }).eq('id', row.id);
+      await supabase.from('crm_activities').insert({
+        crm_contact_id: row.id, type: 'stage_change', body: `${row.stage} → ${derivedStage} (auto, Explee)`,
+      });
+      stageResynced++;
+    }
+  } catch (err) {
+    console.error('[explee-outreach-sync] stage re-sync failed:', err);
+  }
+
+  // ── 6. Project analytics snapshot — only when numbers moved ────────
   let movedSinceLast = false;
   try {
     const projectAnalytics = await expleeGet<ProjectAnalytics>(
@@ -376,6 +435,7 @@ async function handle(req: NextRequest): Promise<NextResponse> {
     ok: true, partial, campaigns: campaigns.length, contacts_upserted: contactsUpserted,
     threads_fetched: threadsFetched, messages_stored: messagesStored, snapshot_recorded: movedSinceLast,
     campaign_errors: campaignErrors, thread_fetch_errors: threadFetchErrors, crm_imported: crmImported,
+    stage_resynced: stageResynced,
   });
 }
 
