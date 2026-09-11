@@ -83,7 +83,12 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
 
   const supabase = db();
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  if (body.stage) update.stage = body.stage;
+  // A human explicitly setting a stage takes it out of Explee's automatic
+  // sorting for good — otherwise the next sync would derive a stage from
+  // Explee's own signals and silently bounce a deliberate "won"/"lost"
+  // call (or any manual move) back to whatever Explee last classified it
+  // as. See explee-outreach-sync's stage re-sync step.
+  if (body.stage) { update.stage = body.stage; update.stage_auto_managed = false; }
   if (body.notes !== undefined) update.notes = body.notes;
   if (body.company !== undefined) update.company = body.company;
   if (body.name !== undefined) update.name = body.name;
