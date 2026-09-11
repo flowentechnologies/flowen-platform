@@ -3,6 +3,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 
+// One row per campaign this contact has been emailed under — most
+// contacts have exactly one, but the same person can appear in more than
+// one Explee campaign.
+interface ExpleeContactSummary {
+  campaign_id: number;
+  latest_subject: string | null;
+  latest_intent: string | null;
+  latest_sent_at: string | null;
+  latest_reply_at: string | null;
+  sent_count: number;
+  reply_count: number;
+  explee_campaigns: { name: string } | null;
+}
+
 interface Contact {
   id: string;
   name: string | null;
@@ -15,8 +29,10 @@ interface Contact {
   notes: string | null;
   deal_value_pence: number | null;
   deal_currency: string | null;
-  // Enrichment fields — populated for leads synced in from Explee; null for
-  // contacts sourced elsewhere (inbox scan, manual).
+  // Enrichment fields — populated when Explee itself flags this contact as
+  // a hot lead (a much narrower set than "everyone Explee has emailed");
+  // null otherwise, including for the great majority of source='explee'
+  // contacts that were emailed but never flagged hot.
   job_title: string | null;
   company_domain: string | null;
   linkedin_url: string | null;
@@ -24,6 +40,45 @@ interface Contact {
   phone: string | null;
   why_hot: string | null;
   became_hot_at: string | null;
+  explee_person_id: string | null;
+  // Real outreach context for every source='explee' contact, hot or not —
+  // which campaign(s), what Explee's own AI classified their reply as,
+  // how many touches. Null/empty for non-Explee contacts.
+  explee_contacts: ExpleeContactSummary[] | null;
+}
+
+const SOURCE_LABEL: Record<string, string> = {
+  explee: 'Explee', manual: 'Manual', clinicians_page_apply: 'Clinicians page',
+};
+
+// Explee's own AI classifies every reply with one of these intents (plus
+// others we haven't seen yet) — color-coded so a 1,000+-contact list is
+// scannable at a glance instead of requiring a click per card.
+const INTENT_LABEL: Record<string, string> = {
+  hot_lead: '🔥 Hot lead', not_interested: 'Not interested', out_of_office: 'Out of office',
+  email_changed: 'Email changed', no_reply: 'No reply yet',
+};
+const INTENT_CLASS: Record<string, string> = {
+  hot_lead: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+  not_interested: 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400',
+  out_of_office: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  email_changed: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
+  no_reply: 'bg-slate-100 dark:bg-slate-800/60 text-slate-400',
+};
+
+/** The most recently active Explee campaign thread for this contact, if any. */
+function latestExpleeThread(contact: Contact): ExpleeContactSummary | null {
+  if (!contact.explee_contacts || contact.explee_contacts.length === 0) return null;
+  return [...contact.explee_contacts].sort(
+    (a, b) => new Date(b.latest_sent_at ?? 0).getTime() - new Date(a.latest_sent_at ?? 0).getTime(),
+  )[0];
+}
+
+function intentDisplay(thread: ExpleeContactSummary | null): { label: string; cls: string } | null {
+  if (!thread) return null;
+  const intent = thread.latest_intent ?? (thread.reply_count > 0 ? null : 'no_reply');
+  if (!intent) return null;
+  return { label: INTENT_LABEL[intent] ?? intent, cls: INTENT_CLASS[intent] ?? INTENT_CLASS.no_reply };
 }
 
 interface Activity {
@@ -87,7 +142,11 @@ export function CrmClient() {
   const searchParams = useSearchParams();
   const deepLinkContact = searchParams.get('contact');
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [sourceFilter, setSourceFilter] = useState<string>('');
+  const [intentFilter, setIntentFilter] = useState<string>('');
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [openContactId, setOpenContactId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -115,7 +174,7 @@ export function CrmClient() {
         setScanMessage(`Scan failed: ${data.error ?? 'unknown error'}`);
       } else {
         setScanMessage(`Scanned ${data.scanned} senders — added ${data.added}, skipped ${data.skipped}.`);
-        await Promise.all([fetchContacts(categoryFilter || undefined), fetchOverview()]);
+        await Promise.all([fetchContacts(), fetchOverview()]);
       }
     } catch (err) {
       setScanMessage(`Scan failed: ${err instanceof Error ? err.message : 'network error'}`);
@@ -137,18 +196,22 @@ export function CrmClient() {
     }
   }
 
-  const fetchContacts = useCallback(async (category?: string) => {
-    const url = category ? `/api/admin/crm?category=${category}` : '/api/admin/crm';
-    const res = await fetch(url);
+  const fetchContacts = useCallback(async () => {
+    const params = new URLSearchParams();
+    if (categoryFilter) params.set('category', categoryFilter);
+    if (sourceFilter) params.set('source', sourceFilter);
+    const qs = params.toString();
+    const res = await fetch(qs ? `/api/admin/crm?${qs}` : '/api/admin/crm');
     if (!res.ok) return;
-    const data = await res.json() as { contacts: Contact[] };
+    const data = await res.json() as { contacts: Contact[]; count?: number };
     setContacts(data.contacts);
-  }, []);
+    setTotalCount(data.count ?? null);
+  }, [categoryFilter, sourceFilter]);
 
   useEffect(() => {
     setLoading(true);
-    fetchContacts(categoryFilter || undefined).finally(() => setLoading(false));
-  }, [fetchContacts, categoryFilter]);
+    fetchContacts().finally(() => setLoading(false));
+  }, [fetchContacts]);
 
   useEffect(() => {
     if (deepLinkContact && !loading) setOpenContactId(deepLinkContact);
@@ -163,8 +226,27 @@ export function CrmClient() {
     });
   }
 
-  const byStage = STAGES.map(stage => ({ stage, contacts: contacts.filter(c => c.stage === stage) }));
+  // Search and intent are client-side filters over the already-fetched
+  // page — category/source are the two that actually narrow the query,
+  // since those are what the 1,000+-contact Explee import needs indexed
+  // filtering on; search/intent are cheap enough to do in the browser.
+  const searchLower = search.trim().toLowerCase();
+  const visibleContacts = contacts.filter(c => {
+    if (searchLower) {
+      const haystack = `${c.name ?? ''} ${c.email} ${c.company ?? ''}`.toLowerCase();
+      if (!haystack.includes(searchLower)) return false;
+    }
+    if (intentFilter) {
+      const thread = latestExpleeThread(c);
+      const intent = thread?.latest_intent ?? (thread && thread.reply_count === 0 ? 'no_reply' : null);
+      if (intent !== intentFilter) return false;
+    }
+    return true;
+  });
+
+  const byStage = STAGES.map(stage => ({ stage, contacts: visibleContacts.filter(c => c.stage === stage) }));
   const openContact = contacts.find(c => c.id === openContactId) ?? null;
+  const expleeContactCount = contacts.filter(c => c.source === 'explee').length;
 
   return (
     <div className="space-y-6">
@@ -255,6 +337,20 @@ export function CrmClient() {
         </div>
       )}
 
+      <div className="flex items-center gap-3 flex-wrap">
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search name, email, company…"
+          className="flex-1 min-w-[220px] text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-900 dark:text-white placeholder:text-slate-400"
+        />
+        {totalCount != null && (
+          <p className="text-[11px] text-slate-400 whitespace-nowrap">
+            Showing {visibleContacts.length} of {contacts.length}{totalCount > contacts.length ? ` (${totalCount} total — refine filters)` : ''}
+          </p>
+        )}
+      </div>
+
       <div className="flex gap-2 flex-wrap">
         <button
           type="button"
@@ -275,6 +371,49 @@ export function CrmClient() {
         ))}
       </div>
 
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Source</span>
+        <button
+          type="button"
+          onClick={() => setSourceFilter('')}
+          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${!sourceFilter ? 'bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-slate-900 dark:border-white' : 'border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}
+        >
+          All
+        </button>
+        {Object.entries(SOURCE_LABEL).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setSourceFilter(key)}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${sourceFilter === key ? 'bg-slate-800 text-white border-slate-800 dark:bg-white dark:text-slate-900 dark:border-white' : 'border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}
+          >
+            {label}{key === 'explee' && expleeContactCount > 0 ? ` (${expleeContactCount})` : ''}
+          </button>
+        ))}
+        {sourceFilter === 'explee' && (
+          <>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-2">Intent</span>
+            <button
+              type="button"
+              onClick={() => setIntentFilter('')}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${!intentFilter ? 'bg-violet-500 text-white border-violet-500' : 'border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}
+            >
+              All
+            </button>
+            {Object.entries(INTENT_LABEL).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setIntentFilter(key)}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${intentFilter === key ? 'bg-violet-500 text-white border-violet-500' : 'border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400'}`}
+              >
+                {label}
+              </button>
+            ))}
+          </>
+        )}
+      </div>
+
       {loading ? (
         <p className="text-sm text-slate-400">Loading…</p>
       ) : (
@@ -287,18 +426,36 @@ export function CrmClient() {
               <div className="space-y-2">
                 {stageContacts.map(c => {
                   const deal = formatDeal(c.deal_value_pence, c.deal_currency);
+                  const thread = latestExpleeThread(c);
+                  const intent = intentDisplay(thread);
                   return (
                     <div
                       key={c.id}
                       onClick={() => setOpenContactId(c.id)}
                       className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-500/50 transition-colors"
                     >
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{c.name ?? c.email}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{c.company ?? c.email}</p>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{c.name ?? c.email}</p>
+                        {c.linkedin_url && (
+                          <a
+                            href={c.linkedin_url} target="_blank" rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            className="text-sky-500 hover:text-sky-400 shrink-0" title="LinkedIn profile"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.85 0-2.14 1.45-2.14 2.94v5.66H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 11.02-4.12 2.06 2.06 0 01-.02 4.12zM7.11 20.45H3.56V9h3.55v11.45z"/></svg>
+                          </a>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {c.job_title ? `${c.job_title}${c.company ? ` · ${c.company}` : ''}` : (c.company ?? c.email)}
+                      </p>
                       <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
                         <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                           {CATEGORY_LABEL[c.category] ?? c.category}
                         </span>
+                        {intent && (
+                          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${intent.cls}`}>{intent.label}</span>
+                        )}
                         {deal && (
                           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                             {deal}
@@ -557,28 +714,71 @@ function ContactDetail({ contact, onClose, onUpdated }: {
           </button>
         </div>
 
-        {contact.category === 'sales_lead' && (
-          <div className="bg-emerald-50/50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-3 space-y-1.5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-              🔥 Hot lead — synced from Explee{contact.became_hot_at ? ` · ${new Date(contact.became_hot_at).toLocaleString('en-GB')}` : ''}
-            </p>
-            {contact.job_title && <p className="text-xs text-slate-700 dark:text-slate-300">{contact.job_title}</p>}
-            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-              {contact.phone && <span>📞 {contact.phone}</span>}
-              {contact.country && <span>🌍 {contact.country}</span>}
-              {contact.linkedin_url && (
-                <a href={contact.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-sky-600 dark:text-sky-400 hover:underline">
-                  LinkedIn ↗
+        {contact.source === 'explee' && (() => {
+          const isHot = !!(contact.why_hot || contact.became_hot_at);
+          const threads = contact.explee_contacts ?? [];
+          const primary = latestExpleeThread(contact);
+          const intent = intentDisplay(primary);
+          return (
+            <div className={`rounded-xl p-3 space-y-2 border ${
+              isHot
+                ? 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20'
+                : 'bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800'
+            }`}>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <p className={`text-[10px] font-bold uppercase tracking-widest ${isHot ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                  {isHot ? '🔥 Hot lead' : 'Explee outreach'}{contact.became_hot_at ? ` · ${new Date(contact.became_hot_at).toLocaleString('en-GB')}` : ''}
+                </p>
+                <a href="/admin/outreach" className="text-[10px] font-semibold text-sky-600 dark:text-sky-400 hover:underline">
+                  View in Outreach ↗
                 </a>
+              </div>
+
+              {contact.job_title && <p className="text-xs text-slate-700 dark:text-slate-300">{contact.job_title}</p>}
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                {contact.phone && <span>📞 {contact.phone}</span>}
+                {contact.country && <span>🌍 {contact.country}</span>}
+                {contact.linkedin_url && (
+                  <a href={contact.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-sky-600 dark:text-sky-400 hover:underline">
+                    LinkedIn ↗
+                  </a>
+                )}
+              </div>
+              {contact.why_hot && (
+                <p className="text-xs text-slate-600 dark:text-slate-300 italic border-l-2 border-emerald-400 dark:border-emerald-500/40 pl-2">
+                  &ldquo;{contact.why_hot}&rdquo;
+                </p>
+              )}
+
+              {threads.length > 0 && (
+                <div className="border-t border-slate-200 dark:border-slate-800 pt-2 space-y-1.5">
+                  {threads.map((t, i) => {
+                    const tIntent = intentDisplay(t);
+                    return (
+                      <div key={i} className="text-xs">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">
+                            {t.explee_campaigns?.name ?? `Campaign ${t.campaign_id}`}
+                          </span>
+                          {tIntent && <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${tIntent.cls}`}>{tIntent.label}</span>}
+                          <span className="text-slate-400">{t.sent_count} sent · {t.reply_count} replied</span>
+                        </div>
+                        {t.latest_subject && <p className="text-slate-500 dark:text-slate-400 truncate">&ldquo;{t.latest_subject}&rdquo;</p>}
+                        <p className="text-[10px] text-slate-400">
+                          {t.latest_sent_at && `Last sent ${new Date(t.latest_sent_at).toLocaleDateString('en-GB')}`}
+                          {t.latest_reply_at && ` · Last reply ${new Date(t.latest_reply_at).toLocaleDateString('en-GB')}`}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {intent && !threads.length && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">{intent.label}</p>
               )}
             </div>
-            {contact.why_hot && (
-              <p className="text-xs text-slate-600 dark:text-slate-300 italic border-l-2 border-emerald-400 dark:border-emerald-500/40 pl-2 mt-1.5">
-                &ldquo;{contact.why_hot}&rdquo;
-              </p>
-            )}
-          </div>
-        )}
+          );
+        })()}
 
         <div className="grid grid-cols-2 gap-3">
           <div>

@@ -18,9 +18,14 @@
  *      the full conversation and stores any messages we don't already
  *      have. This avoids re-fetching hundreds of unchanged threads every
  *      10 minutes as the contact list grows.
- *   4. Links explee_contacts.crm_contact_id by email where that person is
- *      already a CRM contact (read-only link — this job never creates or
- *      edits crm_contacts; that's the hot-leads job's job).
+ *   4. Imports every emailed contact into the CRM: links
+ *      explee_contacts.crm_contact_id by email where that person is
+ *      already a CRM contact, and creates a new crm_contacts row
+ *      (category='sales_lead', stage='new', source='explee') when
+ *      they're not — never touching category/stage/notes on an
+ *      existing row, so a human's own triage is never overwritten.
+ *      explee-hot-leads (separate cron) enriches the subset of these
+ *      that Explee itself flags as hot with job title/company/LinkedIn.
  *   5. Records a project-analytics snapshot, but only when the numbers
  *      actually moved since the last one, so the trend log stays
  *      meaningful rather than 144 identical rows a day.
@@ -49,6 +54,7 @@ import { verifyCronRequest } from '@/lib/cron-auth';
 import { adminDb as db } from '@/lib/supabase/admin';
 import { withCronLogging } from '@/lib/cron-logging';
 import { isContactChanged, hasTimeBudget } from '@/lib/explee/outreach-sync';
+import { planCrmImport, type UnlinkedExpleeContact } from '@/lib/explee/crm-import';
 import { mapWithConcurrency } from '@/lib/async/concurrency';
 
 const EXPLEE_BASE = 'https://api.explee.com';
@@ -263,22 +269,78 @@ async function handle(req: NextRequest): Promise<NextResponse> {
     });
   }
 
-  // ── 4. Link known emails back to the CRM (read-only link) ──────────
+  // ── 4. Import every emailed contact into the CRM ────────────────────
+  // Used to only ever link — an explee_contacts row with no matching CRM
+  // email was silently skipped forever. That meant the ~1,150+ contacts
+  // Explee has emailed but never flagged as a "hot lead" (the separate,
+  // much narrower explee-hot-leads cron) never made it into the CRM at
+  // all. There is no "loaded but not yet emailed" list anywhere in
+  // Explee's API (confirmed by probing it directly — every /inbox entry
+  // already has sent_count >= 1), so this covers the full real scope:
+  // every contact Explee has ever sent an email to, hot or not.
+  let crmImported = 0;
   try {
-    const { data: contactsWithEmail } = await supabase
-      .from('explee_contacts').select('id, email').is('crm_contact_id', null).not('email', 'is', null);
-    if (contactsWithEmail && contactsWithEmail.length > 0) {
-      const { data: crmMatches } = await supabase
-        .from('crm_contacts').select('id, email')
-        .in('email', contactsWithEmail.map(c => c.email as string));
-      const crmByEmail = new Map((crmMatches ?? []).map(m => [(m.email as string).toLowerCase(), m.id as string]));
-      for (const contact of contactsWithEmail) {
-        const crmId = crmByEmail.get((contact.email as string).toLowerCase());
-        if (crmId) await supabase.from('explee_contacts').update({ crm_contact_id: crmId }).eq('id', contact.id);
+    const { data: unlinkedRows } = await supabase
+      .from('explee_contacts')
+      .select('id, email, name, person_id, latest_sent_at')
+      .is('crm_contact_id', null).not('email', 'is', null);
+    const unlinked = (unlinkedRows ?? []) as UnlinkedExpleeContact[];
+
+    if (unlinked.length > 0) {
+      // Batch the lookup — .in() with 1,000+ values risks the practical
+      // query-size limit PostgREST enforces on GET request URLs.
+      const CRM_LOOKUP_BATCH = 200;
+      const existingCrmByEmail = new Map<string, string>();
+      for (let i = 0; i < unlinked.length; i += CRM_LOOKUP_BATCH) {
+        const batch = unlinked.slice(i, i + CRM_LOOKUP_BATCH).map(c => c.email);
+        const { data: matches } = await supabase.from('crm_contacts').select('id, email').in('email', batch);
+        for (const m of matches ?? []) existingCrmByEmail.set((m.email as string).toLowerCase(), m.id as string);
+      }
+
+      const plan = planCrmImport(unlinked, existingCrmByEmail);
+
+      for (const { expleeContactId, crmContactId } of plan.toLink) {
+        await supabase.from('explee_contacts').update({ crm_contact_id: crmContactId }).eq('id', expleeContactId);
+      }
+
+      // De-dupe by email within this run — the same person can appear
+      // under more than one campaign in the same batch.
+      const byEmail = new Map<string, (typeof plan.toCreate)[number]>();
+      for (const c of plan.toCreate) {
+        const key = c.email.toLowerCase();
+        if (!byEmail.has(key)) byEmail.set(key, c);
+      }
+
+      for (const c of byEmail.values()) {
+        const { data: created, error } = await supabase.from('crm_contacts').insert({
+          email: c.email, name: c.name, category: 'sales_lead', stage: 'new', source: 'explee',
+          explee_person_id: c.personId, last_contact_at: c.lastContactAt,
+        }).select('id').single();
+
+        let crmId: string | null = null;
+        if (!error && created) {
+          crmId = created.id as string;
+          crmImported++;
+        } else if (error?.code === '23505') {
+          // A concurrent run (or explee-hot-leads) created this email
+          // between our lookup and this insert — link to it instead of
+          // erroring out. Never touch its category/stage either way.
+          const { data: existing } = await supabase.from('crm_contacts').select('id').eq('email', c.email).maybeSingle();
+          crmId = (existing?.id as string) ?? null;
+        } else {
+          console.error(`[explee-outreach-sync] CRM insert failed for ${c.email}:`, error);
+        }
+
+        if (crmId) {
+          const idsForThisEmail = plan.toCreate
+            .filter(x => x.email.toLowerCase() === c.email.toLowerCase())
+            .map(x => x.expleeContactId);
+          await supabase.from('explee_contacts').update({ crm_contact_id: crmId }).in('id', idsForThisEmail);
+        }
       }
     }
   } catch (err) {
-    console.error('[explee-outreach-sync] CRM linking failed:', err);
+    console.error('[explee-outreach-sync] CRM import failed:', err);
   }
 
   // ── 5. Project analytics snapshot — only when numbers moved ────────
@@ -313,7 +375,7 @@ async function handle(req: NextRequest): Promise<NextResponse> {
   return NextResponse.json({
     ok: true, partial, campaigns: campaigns.length, contacts_upserted: contactsUpserted,
     threads_fetched: threadsFetched, messages_stored: messagesStored, snapshot_recorded: movedSinceLast,
-    campaign_errors: campaignErrors, thread_fetch_errors: threadFetchErrors,
+    campaign_errors: campaignErrors, thread_fetch_errors: threadFetchErrors, crm_imported: crmImported,
   });
 }
 
