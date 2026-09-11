@@ -18,15 +18,38 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(req.url);
   const category = searchParams.get('category');
   const stage = searchParams.get('stage');
+  const source = searchParams.get('source');
+  // Explee-sourced contacts went from a handful of hot leads to 1,000+
+  // once every emailed contact started importing (see
+  // explee-outreach-sync step 4) — the old fixed 500 silently truncated
+  // the list with no indication to the UI that more existed.
+  const limit = Math.min(Number(searchParams.get('limit')) || 2000, 5000);
+  const offset = Number(searchParams.get('offset')) || 0;
 
   const supabase = db();
-  let query = supabase.from('crm_contacts').select('*').order('last_contact_at', { ascending: false, nullsFirst: false }).limit(500);
+  // Embed each contact's linked explee_contacts row(s) — campaign,
+  // Explee's own intent classification, touch counts, latest subject —
+  // so the admin UI can show real outreach context without an N+1 fetch
+  // per card for what may be 1,000+ contacts.
+  let query = supabase
+    .from('crm_contacts')
+    .select(`
+      *,
+      explee_contacts (
+        campaign_id, latest_subject, latest_intent, latest_sent_at, latest_reply_at,
+        sent_count, reply_count,
+        explee_campaigns ( name )
+      )
+    `, { count: 'exact' })
+    .order('last_contact_at', { ascending: false, nullsFirst: false })
+    .range(offset, offset + limit - 1);
   if (category) query = query.eq('category', category);
   if (stage) query = query.eq('stage', stage);
+  if (source) query = query.eq('source', source);
 
-  const { data, error } = await query;
+  const { data, error, count } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ contacts: data });
+  return NextResponse.json({ contacts: data, has_more: (data?.length ?? 0) === limit, count: count ?? undefined });
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
