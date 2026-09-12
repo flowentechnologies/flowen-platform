@@ -30,3 +30,14 @@ export function buildConvoAIJoinUrl(baseUrl: string, appId: string): string {
 export function buildConvoAILeaveUrl(baseUrl: string, appId: string, agentId: string): string {
   return `${baseUrl.replace(/\/$/, '')}/v2/projects/${appId}/agents/${agentId}/leave`;
 }
+
+/**
+ * Lists every agent instance for this App ID, regardless of channel — used
+ * both for a lightweight ConvoAI reachability check (system-health) and to
+ * find stale RUNNING agents nobody ever cleanly stopped (agora-agent-sweep).
+ * Confirmed against the same OpenAPI spec as the join/leave paths above:
+ * GET /v2/projects/{appId}/agents.
+ */
+export function buildConvoAIListAgentsUrl(baseUrl: string, appId: string): string {
+  return `${baseUrl.replace(/\/$/, '')}/v2/projects/${appId}/agents`;
+}

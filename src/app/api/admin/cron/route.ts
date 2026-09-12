@@ -31,6 +31,7 @@ const JOB_PATHS: Record<string, string> = {
   'pinterest-token-refresh': '/api/cron/pinterest-token-refresh',
   'explee-hot-leads':        '/api/cron/explee-hot-leads',
   'explee-outreach-sync':    '/api/cron/explee-outreach-sync',
+  'agora-agent-sweep':       '/api/cron/agora-agent-sweep',
 };
 
 // ── Handler ───────────────────────────────────────────────────────────────────

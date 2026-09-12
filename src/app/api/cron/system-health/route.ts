@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { verifyCronRequest } from '@/lib/cron-auth';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { isMetaConfigured } from '@/lib/social/meta-publish';
+import { getConvoAIHeaders } from '@/lib/agora/convoai-auth';
+import { DEFAULT_CONVOAI_BASE_URL, buildConvoAIListAgentsUrl } from '@/lib/agora/convoai-urls';
+
+const GRAPH_VERSION = 'v21.0';
+const EXPLEE_BASE = 'https://api.explee.com';
+const EXPLEE_PROJECT_ID = 33901;
 
 // ── DB client ─────────────────────────────────────────────────────────────────
 
@@ -97,6 +104,100 @@ async function handle(req: NextRequest): Promise<NextResponse> {
       latencyMs: null,
       detail:    hasHost && hasUser ? 'Env vars present' : `Missing: ${!hasHost ? 'EMAIL_SERVER_HOST ' : ''}${!hasUser ? 'EMAIL_SERVER_USER' : ''}`.trim(),
     });
+  }
+
+  // ── Meta Graph API token ─────────────────────────────────────────────────
+  // Added after a real incident where META_PAGE_ACCESS_TOKEN silently expired
+  // and the first sign of it was social-stats-sync failing hours later — this
+  // catches an expired/revoked token within the hour instead.
+  {
+    const t0 = Date.now();
+    if (isMetaConfigured()) {
+      try {
+        const url = `https://graph.facebook.com/${GRAPH_VERSION}/me?fields=id&access_token=${process.env.META_PAGE_ACCESS_TOKEN}`;
+        const res = await fetch(url);
+        const body = await res.json() as { id?: string; error?: { message?: string } };
+        results.push({
+          name:      'meta-graph-api',
+          ok:        res.ok && !body.error,
+          latencyMs: Date.now() - t0,
+          detail:    body.error ? body.error.message ?? 'Graph API error' : 'Token valid',
+        });
+      } catch (err) {
+        results.push({
+          name:      'meta-graph-api',
+          ok:        false,
+          latencyMs: Date.now() - t0,
+          detail:    err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    } else {
+      results.push({ name: 'meta-graph-api', ok: false, latencyMs: null, detail: 'META_PAGE_ACCESS_TOKEN/META_PAGE_ID/META_IG_USER_ID not configured' });
+    }
+  }
+
+  // ── Agora ConvoAI reachability ───────────────────────────────────────────
+  // Added after a long-standing bug where join/leave were hitting a URL that
+  // no longer existed (see convoai-urls.ts) — every agent start had been
+  // 404ing silently from the user's point of view. A cheap list-agents call
+  // confirms both the base URL and the customer credentials are still good.
+  {
+    const t0 = Date.now();
+    const appId = process.env.AGORA_APP_ID;
+    const configured = Boolean(appId && process.env.AGORA_CUSTOMER_ID && process.env.AGORA_CUSTOMER_SECRET);
+    if (configured) {
+      try {
+        const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? DEFAULT_CONVOAI_BASE_URL;
+        const res = await fetch(buildConvoAIListAgentsUrl(baseUrl, appId!), { headers: getConvoAIHeaders() });
+        results.push({
+          name:      'agora-convoai',
+          ok:        res.ok,
+          latencyMs: Date.now() - t0,
+          detail:    res.ok ? 'List agents succeeded' : `${res.status}: ${await res.text()}`,
+        });
+      } catch (err) {
+        results.push({
+          name:      'agora-convoai',
+          ok:        false,
+          latencyMs: Date.now() - t0,
+          detail:    err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    } else {
+      results.push({ name: 'agora-convoai', ok: false, latencyMs: null, detail: 'AGORA_APP_ID/AGORA_CUSTOMER_ID/AGORA_CUSTOMER_SECRET not configured' });
+    }
+  }
+
+  // ── Explee API key ───────────────────────────────────────────────────────
+  // Both Explee crons (explee-hot-leads, explee-outreach-sync) run every 10
+  // minutes and would otherwise be the only place a revoked/expired
+  // EXPLEE_API_KEY ever surfaces — buried in a job that already runs 144
+  // times a day, easy to miss amongst routine "no changes" runs.
+  {
+    const t0 = Date.now();
+    const key = process.env.EXPLEE_API_KEY;
+    if (key) {
+      try {
+        const res = await fetch(`${EXPLEE_BASE}/public/api/v1/autogtm/campaigns?project_id=${EXPLEE_PROJECT_ID}`, {
+          headers: { 'X-API-Key': key },
+        });
+        results.push({
+          name:      'explee',
+          ok:        res.ok,
+          latencyMs: Date.now() - t0,
+          detail:    res.ok ? 'Campaigns fetch succeeded' : `${res.status}: ${await res.text()}`,
+        });
+      } catch (err) {
+        results.push({
+          name:      'explee',
+          ok:        false,
+          latencyMs: Date.now() - t0,
+          detail:    err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    } else {
+      results.push({ name: 'explee', ok: false, latencyMs: null, detail: 'EXPLEE_API_KEY not configured' });
+    }
   }
 
   const allOk       = results.every(r => r.ok);

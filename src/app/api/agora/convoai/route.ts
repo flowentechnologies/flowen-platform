@@ -17,16 +17,7 @@ import { getUserFromRequest } from '@/lib/supabase/from-request';
 import { buildConvoAIJoinPayload } from '@/lib/agora/convoai-payload';
 import { DEFAULT_CONVOAI_BASE_URL, buildConvoAIJoinUrl, buildConvoAILeaveUrl } from '@/lib/agora/convoai-urls';
 import { conflictingAgentId } from '@/lib/agora/convoai-conflict';
-
-function getConvoAIHeaders() {
-  const customerId = process.env.AGORA_CUSTOMER_ID;
-  const customerSecret = process.env.AGORA_CUSTOMER_SECRET;
-  if (!customerId || !customerSecret) throw new Error('Agora ConvoAI credentials not configured');
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Basic ${Buffer.from(`${customerId}:${customerSecret}`).toString('base64')}`,
-  };
-}
+import { getConvoAIHeaders } from '@/lib/agora/convoai-auth';
 
 function adminDb() {
   return createAdmin(
