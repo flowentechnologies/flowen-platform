@@ -41,11 +41,12 @@ const STATS_FETCHERS: Record<string, () => Promise<PlatformStats>> = {
 };
 
 // How many insight metrics each fetcher attempts — see summarizeInsightHealth.
-// instagram: reach, impressions, profile_views, website_clicks. facebook:
-// page_impressions, page_impressions_unique.
+// instagram: reach, views, profile_views, website_clicks. facebook: none —
+// page_impressions/page_impressions_unique were permanently sunset by Meta
+// (see fetchFacebookStats) and are no longer attempted at all.
 const INSIGHT_METRICS_ATTEMPTED: Record<string, number> = {
   instagram: 4,
-  facebook:  2,
+  facebook:  0,
 };
 
 const POST_FETCHERS: Record<string, () => Promise<SocialPostRow[]>> = {

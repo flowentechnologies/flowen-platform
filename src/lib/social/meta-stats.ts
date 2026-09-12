@@ -69,15 +69,29 @@ async function graphGet<T>(path: string, params: Record<string, string>): Promis
  * types) — a single unsupported metric must not sink the whole sync, so
  * this swallows the error and reports the metric as unavailable (null)
  * rather than throwing.
+ *
+ * `extraParams` exists for the metrics Meta migrated to a `metric_type`
+ * parameter instead of the old implicit daily time-series shape — as of
+ * this API version, `profile_views` and `website_clicks` (see
+ * fetchInstagramStats) 400 without `metric_type=total_value`, confirmed
+ * directly from the Graph API's own error message rather than assumed.
  */
-async function safeDailyInsight(objectId: string, metric: string, accessToken: string, errors?: string[]): Promise<number | null> {
+async function safeDailyInsight(
+  objectId: string,
+  metric: string,
+  accessToken: string,
+  errors?: string[],
+  extraParams?: Record<string, string>,
+): Promise<number | null> {
   try {
-    const data = await graphGet<{ data: Array<{ values: Array<{ value: number }> }> }>(
+    const data = await graphGet<{ data: Array<{ values?: Array<{ value: number }>; total_value?: { value: number } }> }>(
       `${objectId}/insights`,
-      { metric, period: 'day', access_token: accessToken },
+      { metric, period: 'day', access_token: accessToken, ...extraParams },
     );
-    const values = data.data?.[0]?.values;
-    return values?.length ? values[values.length - 1].value : null;
+    const row = data.data?.[0];
+    if (!row) return null;
+    if (row.total_value) return row.total_value.value;
+    return row.values?.length ? row.values[row.values.length - 1].value : null;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`[meta-stats] insight '${metric}' failed for ${objectId}:`, message);
@@ -116,12 +130,16 @@ export async function fetchInstagramStats(): Promise<PlatformStats> {
   const [profile, reach, impressions, profileVisits, websiteClicks] = await Promise.all([
     graphGet<{ followers_count?: number }>(igUserId, { fields: 'followers_count', access_token: accessToken }),
     safeDailyInsight(igUserId, 'reach', accessToken, insightErrors),
-    // Deprecated at the account/day level for some newer IG account types —
-    // attempted anyway rather than assumed unavailable; degrades to null on
-    // this specific account/API-version combination if it really isn't there.
-    safeDailyInsight(igUserId, 'impressions', accessToken, insightErrors),
-    safeDailyInsight(igUserId, 'profile_views', accessToken, insightErrors),
-    safeDailyInsight(igUserId, 'website_clicks', accessToken, insightErrors),
+    // 'impressions' was removed from the account/day insights metric set
+    // entirely (confirmed live: "(#100) metric[0] must be one of the
+    // following values: reach, ... views, ..." — 'impressions' isn't in
+    // that list any more) — 'views' is its replacement in the current set.
+    safeDailyInsight(igUserId, 'views', accessToken, insightErrors),
+    // profile_views/website_clicks moved to the metric_type=total_value
+    // shape — confirmed live: "(#100) The following metrics (profile_views)
+    // should be specified with parameter metric_type=total_value".
+    safeDailyInsight(igUserId, 'profile_views', accessToken, insightErrors, { metric_type: 'total_value' }),
+    safeDailyInsight(igUserId, 'website_clicks', accessToken, insightErrors, { metric_type: 'total_value' }),
   ]);
 
   return {
@@ -131,23 +149,33 @@ export async function fetchInstagramStats(): Promise<PlatformStats> {
   };
 }
 
+/**
+ * page_impressions / page_impressions_unique are NOT called here any more.
+ * Confirmed against Meta's own Page Insights docs: both are being sunset
+ * platform-wide ("By June 15, 2026, a number of the Page Insights metrics
+ * will be deprecated for all API versions" — that date has now passed) and
+ * calling either returns a permanent "(#100) The value must be a valid
+ * insights metric" with no replacement metric name documented. Retrying a
+ * call guaranteed to keep failing forever every sync just produces daily
+ * error noise; impressions/reach are left honestly null here, the same
+ * "not available from this platform" treatment already given to TikTok/
+ * LinkedIn/YouTube/X at the top of this file.
+ */
 export async function fetchFacebookStats(): Promise<PlatformStats> {
   const pageId = process.env.META_PAGE_ID!;
   const accessToken = process.env.META_PAGE_ACCESS_TOKEN!;
-  const insightErrors: string[] = [];
 
-  const [profile, impressions, reach] = await Promise.all([
-    graphGet<{ followers_count?: number; fan_count?: number }>(pageId, { fields: 'followers_count,fan_count', access_token: accessToken }),
-    safeDailyInsight(pageId, 'page_impressions', accessToken, insightErrors),
-    safeDailyInsight(pageId, 'page_impressions_unique', accessToken, insightErrors),
-  ]);
+  const profile = await graphGet<{ followers_count?: number; fan_count?: number }>(
+    pageId, { fields: 'followers_count,fan_count', access_token: accessToken },
+  );
 
   return {
     followers: profile.followers_count ?? profile.fan_count ?? null,
-    impressions, reach,
+    impressions: null,
+    reach: null,
     profileVisits: null,
     websiteClicks: null,
-    insightErrors: insightErrors.length ? insightErrors : undefined,
+    insightErrors: undefined,
   };
 }
 
