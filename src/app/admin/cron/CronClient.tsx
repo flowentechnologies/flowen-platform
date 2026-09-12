@@ -31,7 +31,7 @@ const CRON_JOBS: CronJobDef[] = [
   {
     id:          'system-health',
     label:       'System Health',
-    description: 'Ping all services, log health status',
+    description: 'Ping Supabase, Stripe, SMTP, Meta, Agora ConvoAI, and Explee — log health status',
     schedule:    'Hourly',
     apiPath:     '/api/cron/system-health',
   },
@@ -163,6 +163,13 @@ const CRON_JOBS: CronJobDef[] = [
     description: 'Sync full Explee outreach data (campaigns, contacts, messages)',
     schedule:    'Every 10 min',
     apiPath:     '/api/cron/explee-outreach-sync',
+  },
+  {
+    id:          'agora-agent-sweep',
+    label:       'Agora Agent Sweep',
+    description: 'Force-stop ConvoAI agents left running by an unclean session end',
+    schedule:    'Every 15 min',
+    apiPath:     '/api/cron/agora-agent-sweep',
   },
 ];
 
