@@ -20,8 +20,10 @@
  *   7. Drafts a suggested reply via Claude (skipped for billing and spam)
  *      and queues it in ai_drafts with status='pending'.
  *   8. Raises an admin_notifications row for anything that needs eyes
- *      (skipped for spam), with a priority (high/normal/low — see
- *      computeNotificationPriority) and a deep link to the specific item.
+ *      (skipped for spam and automated mail — see isAutomatedMail; a CRM
+ *      contact or a drafted reply still notifies either way), with a
+ *      priority (high/normal/low — see computeNotificationPriority) and a
+ *      deep link to the specific item.
  *
  * Nothing here ever sends mail. The only function anywhere in this codebase
  * that dispatches an email via Gmail is sendAs() in src/lib/gmail.ts, and
@@ -228,7 +230,18 @@ async function handle(req: NextRequest): Promise<NextResponse> {
             link: `/admin/crm?contact=${crmContactId}`,
             category: cat.category, crmCategory: cat.crmCategory, gmailCategory: gmailCategory,
           });
-        } else {
+        } else if (!automated) {
+          // Automated mail (noreply/system senders, Gmail's own Updates/
+          // Promotions/Social tabs) was already excluded from draft
+          // generation above for exactly this reason — it structurally
+          // can't/shouldn't get a reply — but this notification wasn't
+          // gated on the same check, so it fired anyway. Confirmed live:
+          // DMARC aggregate reports and Google "Security alert" mail
+          // (both automated, both landing in category='general') made up
+          // 150 of 242 unread notifications, all sharing the identical
+          // unhelpful title "New general email" — burying the one real
+          // human reply in that same window ("RE: Flowen x STAMMA") in a
+          // wall of noise indistinguishable from it at a glance.
           await notify({
             type: 'inbox_new',
             title: `New ${cat.category} email`,
