@@ -49,6 +49,10 @@ export async function POST(req: Request) {
   // ── draft ─────────────────────────────────────────────────────────────────
 
   if (action === 'draft') {
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+
     // 1. Gather live KPIs from Supabase
     const [
       usersRes,
@@ -56,6 +60,8 @@ export async function POST(req: Request) {
       nhsRes,
       grantsRes,
       ventureRes,
+      deployRes,
+      issuesRes,
     ] = await Promise.all([
       // total users (profiles count)
       client.from('profiles').select('id', { count: 'exact', head: true }),
@@ -76,6 +82,23 @@ export async function POST(req: Request) {
         .select('status, name, amount_pence'),
       // venture config for fundraising context
       client.from('venture_config').select('*').eq('id', 1).maybeSingle(),
+      // Every production deploy this calendar month with real, user-facing
+      // changes — previously nothing here at all, so the draft had zero
+      // signal about "what shipped" and defaulted to a generic filler line.
+      client
+        .from('deploy_log')
+        .select('changelog_items, created_at')
+        .not('changelog_items', 'is', null)
+        .gte('created_at', monthStart.toISOString())
+        .order('created_at', { ascending: true }),
+      // Any open (non-'ok') consistency-check finding this month — honest
+      // visibility into real issues, not just wins.
+      client
+        .from('consistency_checks')
+        .select('check_type, status, summary, checked_at')
+        .neq('status', 'ok')
+        .gte('checked_at', monthStart.toISOString())
+        .order('checked_at', { ascending: false }),
     ]);
 
     const totalUsers    = usersRes.count ?? 0;
@@ -110,6 +133,44 @@ export async function POST(req: Request) {
     const roundType         = ventureConfig?.round_type ?? 'pre_seed';
     const instrument        = ventureConfig?.instrument ?? 'SAFE';
 
+    // Real "what shipped this month" — deduped by title, since the same
+    // commit/PR can appear multiple times in deploy_log (a redeploy to
+    // pick up an env var change re-triggers the webhook without any new
+    // code). Grouped by type so the prompt sees "12 new features, 9 fixes"
+    // structure rather than one flat, order-random list.
+    type ChangelogEntry = { type: string; title: string; description: string | null };
+    const seenTitles = new Set<string>();
+    const changesByType: Record<string, string[]> = {};
+    for (const row of deployRes.data ?? []) {
+      for (const item of (row.changelog_items ?? []) as ChangelogEntry[]) {
+        const key = item.title.toLowerCase();
+        if (seenTitles.has(key)) continue;
+        seenTitles.add(key);
+        (changesByType[item.type] ??= []).push(item.title);
+      }
+    }
+    const TYPE_LABEL: Record<string, string> = {
+      new: 'New', fixed: 'Fixed', improved: 'Improved', security: 'Security', policy: 'Policy',
+    };
+    const changesBlock = Object.entries(changesByType).length > 0
+      ? Object.entries(changesByType)
+          .map(([type, titles]) => `${TYPE_LABEL[type] ?? type} (${titles.length}):\n${titles.map(t => `  - ${t}`).join('\n')}`)
+          .join('\n\n')
+      : 'No user-facing product changes deployed this month.';
+    const totalChangesThisMonth = Object.values(changesByType).reduce((s, arr) => s + arr.length, 0);
+
+    // Real open issues — honest visibility, not just wins. consistency-check
+    // runs daily and never auto-resolves a discrepancy (by design), so the
+    // same unresolved item can recur across many rows; keep only the most
+    // recent occurrence per check_type.
+    const issuesByType = new Map<string, { summary: string; checked_at: string }>();
+    for (const row of issuesRes.data ?? []) {
+      if (!issuesByType.has(row.check_type)) issuesByType.set(row.check_type, { summary: row.summary, checked_at: row.checked_at });
+    }
+    const issuesBlock = issuesByType.size > 0
+      ? [...issuesByType.entries()].map(([type, i]) => `- ${type}: ${i.summary}`).join('\n')
+      : 'No open consistency-check issues this month.';
+
     // 2. Build the prompt
     const kpiBlock = `
 LIVE DATA — ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
@@ -124,6 +185,12 @@ Product & Users:
 - Total registered users: ${totalUsers.toLocaleString()}
 - Sessions in last 30 days: ${sessions30d.toLocaleString()}
 
+Product changes shipped this month (${totalChangesThisMonth} total, deduplicated from every production deploy):
+${changesBlock}
+
+Open issues this month (from automated consistency checks — billing/marketing/venture data cross-checks):
+${issuesBlock}
+
 NHS Pipeline:
 - Most advanced NHS ICB contact: ${nhsStage}
 
@@ -133,19 +200,20 @@ Grants & Non-dilutive Funding:
 - Grants in drafting: ${grantsDrafting}
 `.trim();
 
-    const systemPrompt = `You are writing a concise, professional investor update for Flowen, an AI speech therapy startup for people who stammer. Tone: honest, confident, forward-looking. Format: plain text with clear sections. No marketing fluff.`;
+    const systemPrompt = `You are writing a concise, professional investor update for Flowen, an AI speech therapy startup for people who stammer. Tone: honest, confident, forward-looking. Format: plain text with clear sections. No marketing fluff. Never invent a product change, metric, or milestone that isn't in the supplied data — if a section's data says nothing happened, say so plainly rather than filling it with generic language.`;
 
     const userPrompt = `Write a monthly investor update using the live data below. Structure it with these clearly labelled sections:
 
-1. HEADLINE (2–3 sentences: most important development this month)
-2. PRODUCT & USERS (key user / session metrics, any product changes)
-3. NHS PIPELINE (status of NHS ICB conversations)
-4. FUNDRAISING STATUS (round progress, committed amount vs target)
-5. GRANTS & NON-DILUTIVE (any grant activity)
-6. KEY ASKS (1–3 specific asks from investors — intros, expertise, connections)
-7. COMING NEXT MONTH (2–3 concrete priorities)
+1. HEADLINE (2–3 sentences: most important development this month — draw this from the actual product changes and issues listed below, not a generic statement)
+2. PRODUCT & USERS (user/session metrics, then highlight the most significant items from "Product changes shipped this month" — group into new features vs. fixes; call out anything that reads as a real user-facing win, however small, and name it specifically rather than saying "various improvements")
+3. ISSUES & OPEN ITEMS (state plainly what's listed under "Open issues this month" — if none, say so; don't apologize excessively, just state the fact and whether it's being worked)
+4. NHS PIPELINE (status of NHS ICB conversations)
+5. FUNDRAISING STATUS (round progress, committed amount vs target)
+6. GRANTS & NON-DILUTIVE (any grant activity)
+7. KEY ASKS (1–3 specific asks from investors — intros, expertise, connections)
+8. COMING NEXT MONTH (2–3 concrete priorities)
 
-Keep the whole update under 400 words. Be specific with numbers. Acknowledge what hasn't moved without excessive apology.
+Keep the whole update under 500 words (product changes this month means there's real material for section 2 — use the extra room there, not by padding other sections). Be specific with numbers and with feature names. Acknowledge what hasn't moved without excessive apology.
 
 ${kpiBlock}`;
 

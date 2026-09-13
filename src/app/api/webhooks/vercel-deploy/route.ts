@@ -344,13 +344,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // 10. Auto-send product update to subscribers if there are user-facing feat: items
   const featItems = parsed.filter(p => p.type !== null);
 
-  // 9. Record in deploy_log (idempotency + history; no user_id required)
+  // 9. Record in deploy_log (idempotency + history; no user_id required).
+  // changelog_items stores the actual titles/descriptions, not just a count
+  // — previously only feat_items (a number) was kept, leaving nothing
+  // queryable to describe what actually shipped in a given period (see
+  // /api/admin/venture/investor-update, which had no real signal to draw
+  // on and defaulted to a generic "no major product changes" line).
   await db.from('deploy_log').insert({
     deployment_id: deploymentId,
     commit_sha:    commitSha,
     branch,
     build_secs:    buildSecs,
     feat_items:    featItems.length,
+    changelog_items: featItems.length > 0
+      ? featItems.map(p => ({ type: p.type, title: p.title, description: p.body.split('\n').filter(Boolean)[0] ?? null }))
+      : null,
     // users_emailed updated below after sending
   });
   let updateSent = false;
