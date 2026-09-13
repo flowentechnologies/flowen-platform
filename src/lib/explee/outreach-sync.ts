@@ -19,6 +19,14 @@
  *     into an outright HTTP 504. hasTimeBudget() lets the route stop
  *     cleanly with a partial result well before the ceiling, instead of
  *     being truncated mid-write.
+ *   - isContactChanged compared the two timestamps as raw strings. `prior`
+ *     comes back from PostgREST (a timestamptz column, serialized with a
+ *     `+00:00` offset); `current` comes straight off Explee's own JSON
+ *     (`Z`-suffixed). Same instant, different string, every time — so
+ *     every contact compared "changed" on every single run, forever, once
+ *     it had ever been synced once. Confirmed live: 1,164/1,164 contacts
+ *     "changed" on 10 consecutive runs — the fast/cheap path this was
+ *     built for never actually ran. Fixed by comparing parsed instants.
  */
 
 export interface ContactSyncState {
@@ -26,11 +34,18 @@ export interface ContactSyncState {
   latest_reply_at: string | null;
 }
 
+/** Epoch millis for a timestamp string, or null for a genuinely absent one — never NaN. */
+function toInstant(value: string | null): number | null {
+  if (!value) return null;
+  const ms = new Date(value).getTime();
+  return Number.isNaN(ms) ? null : ms;
+}
+
 /** Has anything on this thread moved since the last successful sync? */
 export function isContactChanged(prior: ContactSyncState | undefined, current: ContactSyncState): boolean {
   return !prior
-    || prior.latest_sent_at !== current.latest_sent_at
-    || prior.latest_reply_at !== current.latest_reply_at;
+    || toInstant(prior.latest_sent_at) !== toInstant(current.latest_sent_at)
+    || toInstant(prior.latest_reply_at) !== toInstant(current.latest_reply_at);
 }
 
 /** True while there's still enough runway to safely start more work this run. */
