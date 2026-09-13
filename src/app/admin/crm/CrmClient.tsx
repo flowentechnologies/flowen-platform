@@ -8,12 +8,22 @@ import { useSearchParams } from 'next/navigation';
 // one Explee campaign.
 interface ExpleeContactSummary {
   campaign_id: number;
+  person_id: string | null;
   latest_subject: string | null;
   latest_intent: string | null;
   latest_sent_at: string | null;
   latest_reply_at: string | null;
   sent_count: number;
   reply_count: number;
+  // Explee's own authoritative fields — confirmed against its real OpenAPI
+  // spec, previously discarded entirely by the sync even though the
+  // thread response already carried them.
+  needs_reply: boolean;
+  can_reply: boolean | null;
+  reply_blocked_reason: string | null;
+  explee_note: string | null;
+  explee_note_updated_at: string | null;
+  explee_note_updated_by: string | null;
   explee_campaigns: { name: string } | null;
 }
 
@@ -464,6 +474,11 @@ export function CrmClient() {
                         {intent && (
                           <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${intent.cls}`}>{intent.label}</span>
                         )}
+                        {thread?.needs_reply && (
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400" title="Explee is waiting on a reply to this thread">
+                            ✉️ Needs reply
+                          </span>
+                        )}
                         {deal && (
                           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                             {deal}
@@ -645,6 +660,47 @@ function ContactDetail({ contact, onClose, onUpdated }: {
   const [logBody, setLogBody] = useState('');
   const [logging, setLogging] = useState(false);
 
+  // Reply-from-CRM and Explee's own shared note — both act on whichever
+  // Explee thread is "primary" (most recently active) for this contact.
+  const primaryThread = latestExpleeThread(contact);
+  const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
+  const [replySent, setReplySent] = useState(false);
+  const [expleeNoteInput, setExpleeNoteInput] = useState(primaryThread?.explee_note ?? '');
+  const [savingExpleeNote, setSavingExpleeNote] = useState(false);
+
+  async function sendExpleeReply() {
+    if (!primaryThread?.person_id || !replyText.trim()) return;
+    setSendingReply(true);
+    setReplyError(null);
+    const res = await fetch('/api/admin/crm/explee-reply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaignId: primaryThread.campaign_id, personId: primaryThread.person_id, message: replyText }),
+    });
+    const data = await res.json() as { error?: string };
+    if (res.ok) {
+      setReplyText('');
+      setReplySent(true);
+      await fetchTimeline();
+    } else {
+      setReplyError(data.error ?? 'Failed to send reply');
+    }
+    setSendingReply(false);
+  }
+
+  async function saveExpleeNote() {
+    if (!primaryThread?.person_id) return;
+    setSavingExpleeNote(true);
+    await fetch('/api/admin/crm/explee-note', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaignId: primaryThread.campaign_id, personId: primaryThread.person_id, note: expleeNoteInput }),
+    });
+    setSavingExpleeNote(false);
+  }
+
   const fetchTimeline = useCallback(async () => {
     const res = await fetch(`/api/admin/crm/${contact.id}/activities`);
     if (!res.ok) return;
@@ -737,9 +793,14 @@ function ContactDetail({ contact, onClose, onUpdated }: {
                 <p className={`text-[10px] font-bold uppercase tracking-widest ${isHot ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
                   {isHot ? '🔥 Hot lead' : 'Explee outreach'}{contact.became_hot_at ? ` · ${new Date(contact.became_hot_at).toLocaleString('en-GB')}` : ''}
                 </p>
-                <a href="/admin/outreach" className="text-[10px] font-semibold text-sky-600 dark:text-sky-400 hover:underline">
-                  View in Outreach ↗
-                </a>
+                <div className="flex items-center gap-2">
+                  {primary?.needs_reply && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400">✉️ Needs reply</span>
+                  )}
+                  <a href="/admin/outreach" className="text-[10px] font-semibold text-sky-600 dark:text-sky-400 hover:underline">
+                    View in Outreach ↗
+                  </a>
+                </div>
               </div>
 
               {contact.job_title && <p className="text-xs text-slate-700 dark:text-slate-300">{contact.job_title}</p>}
@@ -783,6 +844,64 @@ function ContactDetail({ contact, onClose, onUpdated }: {
               )}
               {intent && !threads.length && (
                 <p className="text-xs text-slate-500 dark:text-slate-400">{intent.label}</p>
+              )}
+
+              {/* Reply from Flowen — only when Explee's own compliance gate allows it
+                  (they've replied and aren't unsubscribed). can_reply is null until the
+                  next sync fetches this thread; treated as not-yet-known, not allowed. */}
+              {primary?.person_id && primary.can_reply && (
+                <div className="border-t border-slate-200 dark:border-slate-800 pt-2 space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Reply via Explee</label>
+                  <textarea
+                    value={replyText}
+                    onChange={e => { setReplyText(e.target.value); setReplySent(false); }}
+                    rows={3}
+                    placeholder="Write a reply — it sends as this campaign's outreach identity, threaded to their message."
+                    className="w-full text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white"
+                  />
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[10px] text-rose-500">{replyError}</p>
+                    <div className="flex items-center gap-2 ml-auto">
+                      {replySent && <span className="text-[10px] text-emerald-500">Sent ✓</span>}
+                      <button
+                        type="button"
+                        onClick={sendExpleeReply}
+                        disabled={sendingReply || !replyText.trim()}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-sky-500 text-white disabled:opacity-40"
+                      >
+                        {sendingReply ? 'Sending…' : 'Send reply'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {primary?.person_id && primary.can_reply === false && primary.reply_blocked_reason && (
+                <p className="text-[10px] text-slate-400 border-t border-slate-200 dark:border-slate-800 pt-2">
+                  Can&apos;t reply — {primary.reply_blocked_reason === 'unsubscribe' ? 'this contact unsubscribed.' : 'they haven’t replied yet.'}
+                </p>
+              )}
+
+              {/* Explee's own team-shared note — distinct from the CRM Notes field
+                  below, which is Flowen's own. */}
+              {primary?.person_id && (
+                <div className="border-t border-slate-200 dark:border-slate-800 pt-2 space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Explee lead note (shared with your team in Explee)</label>
+                  <textarea
+                    value={expleeNoteInput}
+                    onChange={e => setExpleeNoteInput(e.target.value)}
+                    onBlur={saveExpleeNote}
+                    rows={2}
+                    placeholder="Visible in Explee's own inbox too — last write wins."
+                    className="w-full text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-300"
+                  />
+                  {savingExpleeNote && <p className="text-[10px] text-slate-400">Saving…</p>}
+                  {primary.explee_note_updated_by && !savingExpleeNote && (
+                    <p className="text-[10px] text-slate-400">
+                      Last edited by {primary.explee_note_updated_by}
+                      {primary.explee_note_updated_at && ` · ${new Date(primary.explee_note_updated_at).toLocaleString('en-GB')}`}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           );
