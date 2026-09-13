@@ -16,8 +16,22 @@
  *   3. For any contact whose latest_sent_at/latest_reply_at moved since
  *      last sync — i.e. something new happened on that thread — fetches
  *      the full conversation and stores any messages we don't already
- *      have. This avoids re-fetching hundreds of unchanged threads every
- *      10 minutes as the contact list grows.
+ *      have, plus (confirmed against Explee's real OpenAPI spec — the
+ *      thread response already carried this, previously discarded)
+ *      can_reply/reply_blocked_reason and the LeadProfile: job title,
+ *      company, LinkedIn, country, phone feed straight into the linked
+ *      crm_contacts row's enrichment columns (same ones explee-hot-leads
+ *      already populates for hot leads — this fills them in for every
+ *      contact), and Explee's own team-shared note is stored alongside.
+ *      This avoids re-fetching hundreds of unchanged threads every 10
+ *      minutes as the contact list grows.
+ *   3b. Refreshes needs_reply for every contact in the campaign from
+ *      Explee's own tab=need_reply filter — its authoritative "awaiting a
+ *      human answer" set, not a heuristic derived from intent/reply_count.
+ *   3c. Backfills LeadProfile enrichment (can_reply/note/CRM fields) for a
+ *      bounded batch of older rows that predate this feature and whose
+ *      thread hasn't changed since — those never got fetched under 3's
+ *      change-detection alone, so this catches them up over a few runs.
  *   4. Imports every emailed contact into the CRM: links
  *      explee_contacts.crm_contact_id by email where that person is
  *      already a CRM contact, and creates a new crm_contacts row
@@ -65,6 +79,7 @@ import { isContactChanged, hasTimeBudget } from '@/lib/explee/outreach-sync';
 import { planCrmImport, type UnlinkedExpleeContact } from '@/lib/explee/crm-import';
 import { deriveExpleeStage } from '@/lib/explee/stage-mapping';
 import { mapWithConcurrency } from '@/lib/async/concurrency';
+import { crmEnrichmentFromLeadProfile, hasEnrichment, type LeadProfile } from '@/lib/explee/lead-profile';
 
 const EXPLEE_BASE = 'https://api.explee.com';
 const EXPLEE_PROJECT_ID = 33901;
@@ -113,19 +128,29 @@ interface ThreadMessage {
   subject: string | null; body_text: string | null; intent: string | null; status: string | null;
   in_reply_to: string | null; ts: string | null;
 }
-interface ThreadResponse { messages: ThreadMessage[] }
+// can_reply/reply_blocked_reason/lead confirmed against Explee's real
+// OpenAPI spec — this response already carried a full LeadProfile (job
+// title, company, LinkedIn, country, phone, team note) that this route
+// was previously discarding entirely, only ever reading `.messages`.
+interface ThreadResponse {
+  messages: ThreadMessage[];
+  can_reply: boolean;
+  reply_blocked_reason: string | null;
+  lead: LeadProfile | null;
+}
 
 interface ProjectAnalytics {
   project_id: number; total_emails_sent: number; total_replies: number; total_auto_replies: number;
   overall_reply_rate_pct: number; total_hot_leads: number; total_spend_usd: number;
 }
 
-async function paginateInbox(campaignId: number): Promise<InboxContactItem[]> {
+async function paginateInbox(campaignId: number, tab?: 'need_reply' | 'replied' | 'sent'): Promise<InboxContactItem[]> {
   const all: InboxContactItem[] = [];
   let offset = 0;
+  const tabParam = tab ? `&tab=${tab}` : '';
   for (;;) {
     const data = await expleeGet<InboxContactsResponse>(
-      `/public/api/v1/autogtm/campaigns/${campaignId}/inbox?limit=${PAGE_LIMIT}&offset=${offset}`,
+      `/public/api/v1/autogtm/campaigns/${campaignId}/inbox?limit=${PAGE_LIMIT}&offset=${offset}${tabParam}`,
     );
     all.push(...data.contacts);
     if (!data.has_more || data.next_offset === null) break;
@@ -194,7 +219,7 @@ async function handle(req: NextRequest): Promise<NextResponse> {
     // threads for contacts whose activity actually moved since last sync.
     const { data: existingRows } = await supabase
       .from('explee_contacts')
-      .select('person_id, latest_sent_at, latest_reply_at')
+      .select('person_id, latest_sent_at, latest_reply_at, crm_contact_id')
       .eq('campaign_id', c.id)
       .in('person_id', withPersonId.map(x => x.person_id));
     const existingByPerson = new Map((existingRows ?? []).map(r => [r.person_id as string, r]));
@@ -259,14 +284,28 @@ async function handle(req: NextRequest): Promise<NextResponse> {
           }
         }
 
+        const now = new Date().toISOString();
         const { error } = await supabase.from('explee_contacts').upsert({
           campaign_id: c.id, person_id: personId,
           email: contact.email, name: contact.name, latest_subject: contact.latest_subject,
           latest_sent_at: contact.latest_sent_at, latest_reply_at: contact.latest_reply_at,
           latest_intent: contact.latest_intent, sent_count: contact.sent_count, reply_count: contact.reply_count,
-          synced_at: new Date().toISOString(),
+          can_reply: thread.can_reply, reply_blocked_reason: thread.reply_blocked_reason,
+          explee_note: thread.lead?.note ?? null, explee_note_updated_at: thread.lead?.note_updated_at ?? null,
+          explee_note_updated_by: thread.lead?.note_updated_by ?? null, profile_synced_at: now,
+          synced_at: now,
         }, { onConflict: 'campaign_id,person_id' });
         if (!error) contactsUpserted++;
+
+        // Same LeadProfile also feeds crm_contacts' enrichment columns —
+        // explee-hot-leads already populates these for Explee-flagged hot
+        // leads; this fills them in for every other contact too, the
+        // moment their thread is fetched, at zero extra API calls.
+        const crmContactId = existingByPerson.get(personId)?.crm_contact_id as string | null | undefined;
+        const enrichment = crmEnrichmentFromLeadProfile(thread.lead);
+        if (crmContactId && hasEnrichment(enrichment)) {
+          await supabase.from('crm_contacts').update({ ...enrichment, updated_at: now }).eq('id', crmContactId);
+        }
       } catch (err) {
         // A single flaky Explee thread call used to throw out of the whole
         // handler, aborting every remaining campaign for this run. Skip
@@ -276,6 +315,73 @@ async function handle(req: NextRequest): Promise<NextResponse> {
         threadFetchErrors++;
       }
     });
+
+    // ── 3b. Sync Explee's own "needs a reply" set ───────────────────────
+    // tab=need_reply is Explee's authoritative list, not a heuristic we
+    // derive — recomputed fresh every run for this campaign so a contact
+    // that just got answered (by a human, in the Explee app, or via our
+    // own reply endpoint) drops off immediately rather than staying stuck.
+    if (hasTimeBudget(startedAt, TIME_BUDGET_MS)) {
+      try {
+        const needReply = await paginateInbox(c.id, 'need_reply');
+        const needReplyIds = needReply.map(x => x.person_id).filter((x): x is string => !!x);
+        // Clear the whole campaign first, then re-set exactly the current
+        // set — simpler and more robust than a NOT IN filter, and cheap
+        // (bulk updates, not per-row).
+        await supabase.from('explee_contacts').update({ needs_reply: false }).eq('campaign_id', c.id);
+        if (needReplyIds.length > 0) {
+          await supabase.from('explee_contacts').update({ needs_reply: true })
+            .eq('campaign_id', c.id).in('person_id', needReplyIds);
+        }
+      } catch (err) {
+        console.error(`[explee-outreach-sync] needs_reply fetch failed for campaign=${c.id}:`, err);
+      }
+    }
+  }
+
+  // ── 3c. Backfill LeadProfile enrichment for older, never-synced rows ──
+  // Normal syncing only re-fetches a thread when sent/reply activity moved
+  // (isContactChanged) — a contact whose thread hasn't changed since
+  // before this feature shipped would otherwise never get enriched at
+  // all. Bounded per run so it can't blow the time budget; the
+  // profile_synced_at index makes "which rows still need it" a cheap scan,
+  // and it just picks up where it left off on the next run.
+  const BACKFILL_BATCH = 30;
+  let backfilled = 0;
+  if (hasTimeBudget(startedAt, TIME_BUDGET_MS)) {
+    try {
+      const { data: needsBackfill } = await supabase
+        .from('explee_contacts')
+        .select('campaign_id, person_id, crm_contact_id')
+        .is('profile_synced_at', null)
+        .not('crm_contact_id', 'is', null)
+        .limit(BACKFILL_BATCH);
+
+      for (const row of needsBackfill ?? []) {
+        if (!hasTimeBudget(startedAt, TIME_BUDGET_MS)) { partial = true; break; }
+        try {
+          const thread = await expleeGet<ThreadResponse>(
+            `/public/api/v1/autogtm/campaigns/${row.campaign_id}/inbox/${encodeURIComponent(row.person_id as string)}`,
+          );
+          const now = new Date().toISOString();
+          await supabase.from('explee_contacts').update({
+            can_reply: thread.can_reply, reply_blocked_reason: thread.reply_blocked_reason,
+            explee_note: thread.lead?.note ?? null, explee_note_updated_at: thread.lead?.note_updated_at ?? null,
+            explee_note_updated_by: thread.lead?.note_updated_by ?? null, profile_synced_at: now,
+          }).eq('campaign_id', row.campaign_id).eq('person_id', row.person_id);
+
+          const enrichment = crmEnrichmentFromLeadProfile(thread.lead);
+          if (row.crm_contact_id && hasEnrichment(enrichment)) {
+            await supabase.from('crm_contacts').update({ ...enrichment, updated_at: now }).eq('id', row.crm_contact_id);
+          }
+          backfilled++;
+        } catch (err) {
+          console.error(`[explee-outreach-sync] backfill thread fetch failed for campaign=${row.campaign_id} person=${row.person_id}:`, err);
+        }
+      }
+    } catch (err) {
+      console.error('[explee-outreach-sync] backfill query failed:', err);
+    }
   }
 
   // ── 4. Import every emailed contact into the CRM ────────────────────
@@ -435,7 +541,7 @@ async function handle(req: NextRequest): Promise<NextResponse> {
     ok: true, partial, campaigns: campaigns.length, contacts_upserted: contactsUpserted,
     threads_fetched: threadsFetched, messages_stored: messagesStored, snapshot_recorded: movedSinceLast,
     campaign_errors: campaignErrors, thread_fetch_errors: threadFetchErrors, crm_imported: crmImported,
-    stage_resynced: stageResynced,
+    stage_resynced: stageResynced, profile_backfilled: backfilled,
   });
 }
 

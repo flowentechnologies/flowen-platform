@@ -31,7 +31,7 @@ const CRON_JOBS: CronJobDef[] = [
   {
     id:          'system-health',
     label:       'System Health',
-    description: 'Ping Supabase, Stripe, SMTP, Meta, Agora ConvoAI, and Explee — log health status',
+    description: 'Ping Supabase, Stripe, SMTP, Meta, Agora ConvoAI, and Explee (+ credit balance) — log health status',
     schedule:    'Hourly',
     apiPath:     '/api/cron/system-health',
   },

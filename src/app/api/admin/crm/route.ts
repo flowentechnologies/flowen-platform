@@ -36,8 +36,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     .select(`
       *,
       explee_contacts (
-        campaign_id, latest_subject, latest_intent, latest_sent_at, latest_reply_at,
-        sent_count, reply_count,
+        campaign_id, person_id, latest_subject, latest_intent, latest_sent_at, latest_reply_at,
+        sent_count, reply_count, needs_reply, can_reply, reply_blocked_reason,
+        explee_note, explee_note_updated_at, explee_note_updated_by,
         explee_campaigns ( name )
       )
     `, { count: 'exact' })

@@ -200,6 +200,48 @@ async function handle(req: NextRequest): Promise<NextResponse> {
     }
   }
 
+  // ── Explee credit balance ────────────────────────────────────────────────
+  // 1 credit = $0.01; can go negative (postpaid AutoGTM debt not yet
+  // collected). Every Explee API call — including the two syncs above —
+  // needs a positive balance, so a low/negative balance is the single
+  // biggest silent-failure risk for Explee: it doesn't 401 like an expired
+  // token, it just starts 402ing every request until someone notices and
+  // tops up. Checked here so that's caught within the hour, not whenever
+  // someone happens to look at /admin/outreach.
+  {
+    const t0 = Date.now();
+    const key = process.env.EXPLEE_API_KEY;
+    // Below this, a single autopilot campaign search or find-and-enrich
+    // call could exhaust it entirely without warning — not a hard outage
+    // threshold, just enough runway to act before Explee starts 402ing.
+    const LOW_BALANCE_THRESHOLD_CREDITS = 500;
+    if (key) {
+      try {
+        const res = await fetch(`${EXPLEE_BASE}/public/api/v1/billing/balance`, { headers: { 'X-API-Key': key } });
+        const body = await res.json() as { remain?: number };
+        const remain = body.remain;
+        const ok = res.ok && typeof remain === 'number' && remain >= LOW_BALANCE_THRESHOLD_CREDITS;
+        results.push({
+          name:      'explee-credits',
+          ok,
+          latencyMs: Date.now() - t0,
+          detail:    res.ok
+            ? `${remain} credits remaining ($${((remain ?? 0) / 100).toFixed(2)})${ok ? '' : ' — low, top up at explee.com/billing'}`
+            : `${res.status}: ${JSON.stringify(body)}`,
+        });
+      } catch (err) {
+        results.push({
+          name:      'explee-credits',
+          ok:        false,
+          latencyMs: Date.now() - t0,
+          detail:    err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    } else {
+      results.push({ name: 'explee-credits', ok: false, latencyMs: null, detail: 'EXPLEE_API_KEY not configured' });
+    }
+  }
+
   const allOk       = results.every(r => r.ok);
   const durationMs  = Date.now() - started;
 
