@@ -85,6 +85,13 @@ export function OutreachClient() {
   const [threadMessages, setThreadMessages] = useState<Message[]>([]);
   const [threadLoading, setThreadLoading] = useState(false);
 
+  // Campaign start/stop/budget controls — one per-campaign busy/error/draft
+  // slot, keyed by campaign id, so acting on one campaign never disturbs
+  // another row's state.
+  const [controlling, setControlling] = useState<Record<number, boolean>>({});
+  const [controlError, setControlError] = useState<Record<number, string>>({});
+  const [budgetDrafts, setBudgetDrafts] = useState<Record<number, string>>({});
+
   const fetchAll = useCallback(async () => {
     const res = await fetch('/api/admin/explee-outreach');
     if (!res.ok) return;
@@ -111,6 +118,45 @@ export function OutreachClient() {
     const data = await res.json() as { messages: Message[] };
     setThreadMessages(data.messages ?? []);
     setThreadLoading(false);
+  }
+
+  async function controlCampaign(campaignId: number, action: 'start' | 'stop') {
+    setControlling(prev => ({ ...prev, [campaignId]: true }));
+    setControlError(prev => ({ ...prev, [campaignId]: '' }));
+    const res = await fetch('/api/admin/outreach/campaign-control', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaignId, action }),
+    });
+    const data = await res.json() as { error?: string };
+    setControlling(prev => ({ ...prev, [campaignId]: false }));
+    if (!res.ok) {
+      setControlError(prev => ({ ...prev, [campaignId]: data.error ?? 'Failed' }));
+      return;
+    }
+    setCampaigns(prev => prev.map(c => c.id === campaignId ? { ...c, status: action === 'stop' ? 'stopped' : 'outreach' } : c));
+  }
+
+  async function saveBudget(campaignId: number) {
+    const raw = budgetDrafts[campaignId];
+    const dailyLimitUsd = Number(raw);
+    if (!raw || !Number.isFinite(dailyLimitUsd) || dailyLimitUsd < 1 || dailyLimitUsd > 300) {
+      setControlError(prev => ({ ...prev, [campaignId]: 'Budget must be $1-300/day' }));
+      return;
+    }
+    setControlling(prev => ({ ...prev, [campaignId]: true }));
+    setControlError(prev => ({ ...prev, [campaignId]: '' }));
+    const res = await fetch('/api/admin/outreach/campaign-control', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaignId, action: 'set_budget', dailyLimitUsd }),
+    });
+    const data = await res.json() as { error?: string; dailyLimitUsd?: number };
+    setControlling(prev => ({ ...prev, [campaignId]: false }));
+    if (!res.ok) {
+      setControlError(prev => ({ ...prev, [campaignId]: data.error ?? 'Failed' }));
+      return;
+    }
+    setCampaigns(prev => prev.map(c => c.id === campaignId ? { ...c, daily_budget_usd: data.dailyLimitUsd ?? c.daily_budget_usd } : c));
+    setBudgetDrafts(prev => { const next = { ...prev }; delete next[campaignId]; return next; });
   }
 
   if (loading) return <p className="text-sm text-slate-400">Loading…</p>;
@@ -163,6 +209,8 @@ export function OutreachClient() {
                 <th className="text-right px-4 py-2.5 font-semibold">Hot leads</th>
                 <th className="text-right px-4 py-2.5 font-semibold">Spend</th>
                 <th className="text-right px-4 py-2.5 font-semibold">$/lead</th>
+                <th className="text-right px-4 py-2.5 font-semibold">Daily budget</th>
+                <th className="text-right px-4 py-2.5 font-semibold">Controls</th>
               </tr>
             </thead>
             <tbody>
@@ -180,10 +228,36 @@ export function OutreachClient() {
                   <td className="px-4 py-2.5 text-right font-semibold text-emerald-600 dark:text-emerald-400">{c.hot_leads}</td>
                   <td className="px-4 py-2.5 text-right text-slate-600 dark:text-slate-300">{fmtUsd(c.spend_usd)}</td>
                   <td className="px-4 py-2.5 text-right text-slate-600 dark:text-slate-300">{c.hot_leads > 0 ? fmtUsd(c.cost_per_lead_usd) : '—'}</td>
+                  <td className="px-4 py-2.5 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <input
+                        value={budgetDrafts[c.id] ?? String(c.daily_budget_usd)}
+                        onChange={e => setBudgetDrafts(prev => ({ ...prev, [c.id]: e.target.value }))}
+                        className="w-14 text-right bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-1 py-0.5 text-[11px] text-slate-700 dark:text-slate-300"
+                      />
+                      <button
+                        type="button" onClick={() => saveBudget(c.id)} disabled={controlling[c.id]}
+                        className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-40"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-4 py-2.5 text-right">
+                    <button
+                      type="button"
+                      onClick={() => controlCampaign(c.id, c.status === 'stopped' ? 'start' : 'stop')}
+                      disabled={controlling[c.id]}
+                      className={`text-[10px] font-semibold px-2 py-1 rounded ${c.status === 'stopped' ? 'bg-emerald-500 text-white' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'} disabled:opacity-40`}
+                    >
+                      {controlling[c.id] ? '…' : c.status === 'stopped' ? 'Start' : 'Stop'}
+                    </button>
+                    {controlError[c.id] && <p className="text-[9px] text-rose-500 mt-1 max-w-[140px] whitespace-normal">{controlError[c.id]}</p>}
+                  </td>
                 </tr>
               ))}
               {campaigns.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-6 text-center text-slate-400">No campaigns synced yet.</td></tr>
+                <tr><td colSpan={10} className="px-4 py-6 text-center text-slate-400">No campaigns synced yet.</td></tr>
               )}
             </tbody>
           </table>
