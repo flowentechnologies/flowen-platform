@@ -24,9 +24,12 @@ interface SearchRow {
   max_contacts: number;
   preset: 'basic' | 'premium';
   credits_charged: number | null;
+  excluded_total: number | null;
   error: string | null;
   created_at: string;
 }
+
+interface DedupList { id: string; total: number; created_at: string }
 
 interface Progress {
   attempted: number;
@@ -75,6 +78,30 @@ export function ProspectingClient() {
 
   // ── Past searches ────────────────────────────────────────────────────
   const [pastSearches, setPastSearches] = useState<SearchRow[]>([]);
+
+  // ── Dedup list — excludes CRM contacts already owned from new searches ─
+  const [dedupList, setDedupList] = useState<DedupList | null>(null);
+  const [dedupRefreshing, setDedupRefreshing] = useState(false);
+  const [dedupError, setDedupError] = useState<string | null>(null);
+
+  const loadDedupList = useCallback(async () => {
+    const res = await fetch('/api/admin/prospecting/dedup-list');
+    if (!res.ok) return;
+    const data = await res.json() as { list: DedupList | null };
+    setDedupList(data.list);
+  }, []);
+
+  useEffect(() => { loadDedupList(); }, [loadDedupList]);
+
+  async function refreshDedupList() {
+    setDedupRefreshing(true);
+    setDedupError(null);
+    const res = await fetch('/api/admin/prospecting/dedup-list', { method: 'POST' });
+    const data = await res.json() as { error?: string; id?: string; total?: number };
+    setDedupRefreshing(false);
+    if (!res.ok) { setDedupError(data.error ?? 'Failed to build dedup list'); return; }
+    await loadDedupList();
+  }
 
   const loadPastSearches = useCallback(async () => {
     const res = await fetch('/api/admin/prospecting/search');
@@ -211,6 +238,25 @@ export function ProspectingClient() {
         </p>
       </div>
 
+      {/* ── Dedup list — excludes CRM contacts already owned ─────────── */}
+      <div className="flex items-center gap-3 flex-wrap text-xs bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5">
+        {dedupList ? (
+          <span className="text-slate-500 dark:text-slate-400">
+            🛡️ Excluding <strong className="text-slate-700 dark:text-slate-300">{dedupList.total}</strong> known CRM contacts from new searches
+            <span className="text-slate-400"> · built {new Date(dedupList.created_at).toLocaleDateString('en-GB')}</span>
+          </span>
+        ) : (
+          <span className="text-slate-500 dark:text-slate-400">No dedup list built yet — new searches may re-find people already in your CRM.</span>
+        )}
+        <button
+          type="button" onClick={refreshDedupList} disabled={dedupRefreshing}
+          className="ml-auto text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline disabled:opacity-40"
+        >
+          {dedupRefreshing ? 'Building…' : dedupList ? 'Refresh from CRM' : 'Build from CRM'}
+        </button>
+        {dedupError && <p className="text-[10px] text-rose-500 w-full">{dedupError}</p>}
+      </div>
+
       {/* ── Search form ─────────────────────────────────────────────── */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -321,6 +367,7 @@ export function ProspectingClient() {
             <p className="text-sm text-slate-500 dark:text-slate-400">
               {prospects.length} found · {search.credits_charged ?? 0} credits charged
               (${((search.credits_charged ?? 0) * PRICE_PER_CREDIT_USD).toFixed(2)})
+              {!!search.excluded_total && <span className="text-slate-400"> · {search.excluded_total} already-known contacts excluded</span>}
             </p>
             <div className="flex gap-1.5">
               {(['people', 'companies'] as const).map(v => (

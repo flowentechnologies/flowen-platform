@@ -30,6 +30,7 @@ interface FindAndEnrichResponse {
     progress: { attempted: number; found: number; target: number; progress_pct: number; eta_seconds: number | null } | null;
     error: string | null;
     credits_charged: number | null;
+    excluded_total: number | null;
   };
 }
 
@@ -76,12 +77,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     })));
   }
   await supabase.from('explee_searches').update({
-    status: 'completed', credits_charged: data.meta.credits_charged, completed_at: now,
+    status: 'completed', credits_charged: data.meta.credits_charged,
+    excluded_total: data.meta.excluded_total, completed_at: now,
   }).eq('id', id);
 
   const { data: prospects } = await supabase.from('explee_prospects').select('*').eq('search_id', id).order('created_at');
   return NextResponse.json({
-    search: { ...search, status: 'completed', credits_charged: data.meta.credits_charged },
+    search: { ...search, status: 'completed', credits_charged: data.meta.credits_charged, excluded_total: data.meta.excluded_total },
     prospects: prospects ?? [], progress: null,
   });
 }
