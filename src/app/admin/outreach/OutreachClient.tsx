@@ -92,6 +92,40 @@ export function OutreachClient() {
   const [controlError, setControlError] = useState<Record<number, string>>({});
   const [budgetDrafts, setBudgetDrafts] = useState<Record<number, string>>({});
 
+  // Project-level Autopilot / auto-reply settings.
+  const [autopilot, setAutopilot] = useState<{
+    autopilot_enabled: boolean; auto_reply_enabled: boolean; auto_reply_delay_minutes: number;
+  } | null>(null);
+  const [autopilotSaving, setAutopilotSaving] = useState(false);
+  const [autopilotError, setAutopilotError] = useState<string | null>(null);
+
+  const fetchAutopilot = useCallback(async () => {
+    const res = await fetch('/api/admin/outreach/autopilot');
+    if (!res.ok) return;
+    const data = await res.json() as { autopilot_enabled: boolean; auto_reply_enabled: boolean; auto_reply_delay_minutes: number };
+    setAutopilot(data);
+  }, []);
+
+  useEffect(() => { fetchAutopilot(); }, [fetchAutopilot]);
+
+  async function toggleAutopilot(field: 'autopilotEnabled' | 'autoReplyEnabled', value: boolean) {
+    if (!autopilot) return;
+    setAutopilotSaving(true);
+    setAutopilotError(null);
+    const res = await fetch('/api/admin/outreach/autopilot', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: value }),
+    });
+    const data = await res.json() as { error?: string; autopilot_enabled?: boolean; auto_reply_enabled?: boolean };
+    setAutopilotSaving(false);
+    if (!res.ok) { setAutopilotError(data.error ?? 'Failed to update'); return; }
+    setAutopilot(prev => prev && {
+      ...prev,
+      autopilot_enabled: data.autopilot_enabled ?? prev.autopilot_enabled,
+      auto_reply_enabled: data.auto_reply_enabled ?? prev.auto_reply_enabled,
+    });
+  }
+
   const fetchAll = useCallback(async () => {
     const res = await fetch('/api/admin/explee-outreach');
     if (!res.ok) return;
@@ -163,13 +197,49 @@ export function OutreachClient() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-lg font-bold text-slate-900 dark:text-white">Outreach (Explee)</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Every campaign, every contact, every email sent or replied — synced automatically every 10 minutes.
-          Hot leads also flow into the <a href="/admin/crm" className="text-emerald-600 dark:text-emerald-400 hover:underline">CRM Pipeline</a>.
-        </p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-lg font-bold text-slate-900 dark:text-white">Outreach (Explee)</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Every campaign, every contact, every email sent or replied — synced automatically every 10 minutes.
+            Hot leads also flow into the <a href="/admin/crm" className="text-emerald-600 dark:text-emerald-400 hover:underline">CRM Pipeline</a>.
+          </p>
+        </div>
+        <a href="/admin/outreach/suppress-list" className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline shrink-0">
+          Suppress lists ↗
+        </a>
       </div>
+
+      {/* Project-level Autopilot / auto-reply controls */}
+      {autopilot && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex flex-wrap items-center gap-6">
+          <div className="flex items-center gap-2">
+            <button
+              type="button" onClick={() => toggleAutopilot('autopilotEnabled', !autopilot.autopilot_enabled)}
+              disabled={autopilotSaving}
+              className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${autopilot.autopilot_enabled ? 'bg-emerald-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}
+            >
+              Autopilot: {autopilot.autopilot_enabled ? 'ON' : 'OFF'}
+            </button>
+            <span className="text-[10px] text-slate-400">
+              {autopilot.autopilot_enabled ? 'Explee manages campaigns + budget split — per-campaign budget edits will 409.' : 'You control campaign budgets manually.'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button" onClick={() => toggleAutopilot('autoReplyEnabled', !autopilot.auto_reply_enabled)}
+              disabled={autopilotSaving}
+              className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${autopilot.auto_reply_enabled ? 'bg-emerald-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}
+            >
+              Auto-reply: {autopilot.auto_reply_enabled ? 'ON' : 'OFF'}
+            </button>
+            <span className="text-[10px] text-slate-400">
+              {autopilot.auto_reply_enabled ? `AI replies to hot leads after ${autopilot.auto_reply_delay_minutes}min.` : 'Replies always sent manually.'}
+            </span>
+          </div>
+          {autopilotError && <p className="text-[10px] text-rose-500">{autopilotError}</p>}
+        </div>
+      )}
 
       {/* Project rollup cards */}
       {snapshot && (
