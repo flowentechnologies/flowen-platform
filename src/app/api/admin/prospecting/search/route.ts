@@ -64,7 +64,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (body.peopleJobTitles?.length) peopleFilters.job_titles = body.peopleJobTitles;
   if (body.peopleGeo?.length) peopleFilters.geo = body.peopleGeo;
 
-  const payload = { company_filters: companyFilters, people_filters: peopleFilters, max_contacts: maxContacts, preset };
+  // Auto-exclude anyone already in the CRM, if a dedup list has been built
+  // (see /api/admin/prospecting/dedup-list) — matched people are neither
+  // returned nor charged, so this costs nothing and just stops the same
+  // person being "found" a second time.
+  const { data: dedupList } = await db()
+    .from('explee_dedup_lists').select('id')
+    .eq('kind', 'people').order('created_at', { ascending: false }).limit(1).maybeSingle();
+
+  const payload: Record<string, unknown> = { company_filters: companyFilters, people_filters: peopleFilters, max_contacts: maxContacts, preset };
+  if (dedupList?.id) payload.exclude_lists = [dedupList.id];
 
   let res: Response;
   try {
