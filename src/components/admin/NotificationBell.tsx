@@ -20,6 +20,7 @@ const TYPE_ICON: Record<string, string> = {
   draft_pending: '✍️',
   vendor_invoice: '💳',
   crm_new: '🤝',
+  booking_new: '📅',
   system: '⚙️',
 };
 
