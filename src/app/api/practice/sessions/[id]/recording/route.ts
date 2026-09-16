@@ -16,6 +16,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { adminDb } from '@/lib/supabase/admin';
 import { isR2Configured, uploadToR2, getR2SignedUrl } from '@/lib/r2';
+import { buildRecordingR2Key, buildRecordingR2Metadata } from '@/lib/recording-storage';
 
 const BUCKET   = 'session-recordings';
 const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
@@ -37,7 +38,11 @@ export async function POST(req: Request, ctx: Ctx) {
   // Verify session belongs to this user
   const { data: session } = await admin
     .from('practice_sessions')
-    .select('id, audio_storage_path, audio_storage_provider')
+    .select(`
+      id, audio_storage_path, audio_storage_provider,
+      brand, stage_id, created_at, duration_seconds,
+      total_blocks_detected, total_repetitions_detected, total_prolongations_detected
+    `)
     .eq('id', sessionId)
     .eq('user_id', user.id)
     .single();
@@ -60,7 +65,7 @@ export async function POST(req: Request, ctx: Ctx) {
     return NextResponse.json({ error: 'File too large (max 50 MB)' }, { status: 413 });
   }
 
-  const storagePath = `${user.id}/${sessionId}.webm`;
+  const flatPath = `${user.id}/${sessionId}.webm`;
   const buffer = await audioFile.arrayBuffer();
   // MediaRecorder reports the full type string (e.g. "audio/webm;codecs=opus"),
   // but the bucket's allowed_mime_types allowlist matches on the bare type
@@ -69,10 +74,30 @@ export async function POST(req: Request, ctx: Ctx) {
   const contentType = (audioFile.type || 'audio/webm').split(';')[0].trim();
 
   const useR2 = isR2Configured();
+  const category = {
+    userId: user.id,
+    sessionId,
+    brand: session.brand,
+    stageId: session.stage_id,
+    createdAt: session.created_at,
+  };
+  // Categorized `{brand}/stage-N/{yyyy-mm}/...` layout only for R2 — the
+  // existing flat Supabase Storage path is left exactly as it was so
+  // nothing already relying on that shape (RLS policies, prior uploads)
+  // breaks. See src/lib/recording-storage.ts for the layout rationale and
+  // the consent-boundary note (this bucket is NOT training data).
+  const storagePath = useR2 ? buildRecordingR2Key(category) : flatPath;
 
   if (useR2) {
     try {
-      await uploadToR2(storagePath, Buffer.from(buffer), contentType);
+      const metadata = buildRecordingR2Metadata({
+        ...category,
+        durationSeconds: session.duration_seconds,
+        blocksDetected: session.total_blocks_detected,
+        repetitionsDetected: session.total_repetitions_detected,
+        prolongationsDetected: session.total_prolongations_detected,
+      });
+      await uploadToR2(storagePath, Buffer.from(buffer), contentType, metadata);
     } catch (err) {
       console.error('[recording/upload] R2 error:', err);
       return NextResponse.json({ error: 'Upload failed' }, { status: 500 });

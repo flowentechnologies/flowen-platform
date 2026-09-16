@@ -61,13 +61,22 @@ function bucketName(): string {
   return bucket;
 }
 
-/** Uploads a buffer to the configured R2 bucket at `key`. */
-export async function uploadToR2(key: string, body: Buffer | Uint8Array, contentType: string): Promise<void> {
+/** Uploads a buffer to the configured R2 bucket at `key`. `metadata` (if
+ *  given) is written as x-amz-meta-* object metadata — see
+ *  src/lib/recording-storage.ts for the convention used by session
+ *  recordings. */
+export async function uploadToR2(
+  key: string,
+  body: Buffer | Uint8Array,
+  contentType: string,
+  metadata?: Record<string, string>,
+): Promise<void> {
   await getR2Client().send(new PutObjectCommand({
     Bucket: bucketName(),
     Key: key,
     Body: body,
     ContentType: contentType,
+    Metadata: metadata,
   }));
 }
 
