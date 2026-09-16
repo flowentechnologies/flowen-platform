@@ -36,7 +36,7 @@ import {
   listRecentMessageIds, getMessage, extractBodyText, getHeader, resolveAlias, applyLabel,
   resolveGmailCategory,
 } from '@/lib/gmail';
-import { categorize, extractAmountPence, computeNotificationPriority, isAutomatedMail, type Categorization } from '@/lib/inbox-categorize';
+import { categorize, extractAmountPence, computeNotificationPriority, isAutomatedMail, isPaymentFailureNotice, type Categorization } from '@/lib/inbox-categorize';
 import { generateReplyDraft } from '@/lib/inbox-draft';
 import { withCronLogging } from '@/lib/cron-logging';
 
@@ -176,18 +176,25 @@ async function handle(req: NextRequest): Promise<NextResponse> {
         // defeating the point of the notification system.
         results.spam++;
       } else if (cat.isBilling) {
-        const amount = extractAmountPence(`${subject} ${msg.snippet ?? ''}`);
-        await supabase.from('vendor_invoices').insert({
-          inbox_item_id: inboxRow.id,
-          vendor_name: cat.vendorName ?? fromAddress.split('@')[1],
-          amount_pence: amount?.amountPence ?? null,
-          currency: amount?.currency ?? 'gbp',
-          description: subject,
-        });
-        results.billing++;
+        // A declined card / failed charge retry still gets flagged (it's
+        // genuinely worth an admin's attention) but must never become a
+        // vendor_invoices row — no money actually moved, so recording one
+        // would eventually propose a phantom Xero expense for it.
+        const isFailure = isPaymentFailureNotice(`${subject} ${msg.snippet ?? ''}`);
+        if (!isFailure) {
+          const amount = extractAmountPence(`${subject} ${msg.snippet ?? ''}`);
+          await supabase.from('vendor_invoices').insert({
+            inbox_item_id: inboxRow.id,
+            vendor_name: cat.vendorName ?? fromAddress.split('@')[1],
+            amount_pence: amount?.amountPence ?? null,
+            currency: amount?.currency ?? 'gbp',
+            description: subject,
+          });
+          results.billing++;
+        }
         await notify({
           type: 'vendor_invoice',
-          title: `New invoice: ${cat.vendorName ?? fromAddress}`,
+          title: isFailure ? `Payment failed: ${cat.vendorName ?? fromAddress}` : `New invoice: ${cat.vendorName ?? fromAddress}`,
           body: subject,
           link: '/admin/vendor-invoices',
           category: cat.category, gmailCategory: gmailCategory,

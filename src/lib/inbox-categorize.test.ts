@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isAutomatedMail, computeNotificationPriority } from './inbox-categorize';
+import { isAutomatedMail, computeNotificationPriority, isPaymentFailureNotice } from './inbox-categorize';
 
 describe('isAutomatedMail', () => {
   it('flags a noreply-style sender', () => {
@@ -43,5 +43,26 @@ describe('computeNotificationPriority', () => {
 
   it('is normal otherwise', () => {
     expect(computeNotificationPriority({ category: 'general', gmailCategory: 'primary' })).toBe('normal');
+  });
+});
+
+describe('isPaymentFailureNotice', () => {
+  // Real subject lines that landed in vendor_invoices as if they were paid
+  // bills before this existed — a $5.98 x3 Explee retry sequence and 2x
+  // Google Ads / 1x Google Workspace declined-card notices, all tracing
+  // back to the same declined-card issue system-health's explee-credits
+  // check has been flagging.
+  it('flags the real declined-payment subjects that caused this bug', () => {
+    expect(isPaymentFailureNotice('$5.98 payment to Explee was unsuccessful')).toBe(true);
+    expect(isPaymentFailureNotice('Google Ads: Payment was declined for 242-662-7266')).toBe(true);
+    expect(isPaymentFailureNotice('Google Workspace: Payment was declined for flowen.digital')).toBe(true);
+    expect(isPaymentFailureNotice('Google Ads: Your service has been suspended')).toBe(true);
+    expect(isPaymentFailureNotice('Google Ads: Update your payment method')).toBe(true);
+  });
+
+  it('does not flag a genuine receipt or invoice', () => {
+    expect(isPaymentFailureNotice('Your receipt for £24.00')).toBe(false);
+    expect(isPaymentFailureNotice('Invoice #4821 from Vercel')).toBe(false);
+    expect(isPaymentFailureNotice('Payment received — thank you')).toBe(false);
   });
 });
