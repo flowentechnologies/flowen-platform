@@ -23,6 +23,7 @@
     { "path": "/api/cron/explee-hot-leads",    "schedule": "*/10 * * * *" },
     { "path": "/api/cron/explee-outreach-sync", "schedule": "*/10 * * * *" },
     { "path": "/api/cron/agora-agent-sweep",   "schedule": "*/15 * * * *" },
-    { "path": "/api/cron/bookkeeping-stripe-sync", "schedule": "0 * * * *" }
+    { "path": "/api/cron/bookkeeping-stripe-sync", "schedule": "0 * * * *" },
+    { "path": "/api/cron/bookkeeping-categorize", "schedule": "30 * * * *" }
   ]
 }
