@@ -10,9 +10,20 @@ import { randomBytes } from 'crypto';
 import { assertAdmin } from '@/lib/admin/guard';
 
 const REDIRECT_URI = 'https://www.flowen.digital/api/admin/xero/callback';
+// Xero replaced the old broad 'accounting.transactions' scope with granular
+// ones for every app created on or after 2 March 2026 (confirmed live via
+// Xero's own developer docs, not training data — a brand-new app can never
+// be granted the broad scope at all, which is what actually threw the
+// invalid_scope error at /connect). accounting.contacts and
+// accounting.settings.read are unaffected by that split and keep their
+// existing names.
 const SCOPES = [
   'openid', 'profile', 'email',
-  'accounting.transactions', 'accounting.contacts', 'accounting.settings.read',
+  'accounting.invoices',        // create/read invoices (stripe_sync, expense_from_email)
+  'accounting.payments',        // create/read payments (stripe_sync)
+  'accounting.banktransactions', // list/categorise bank transactions (categorize)
+  'accounting.contacts',
+  'accounting.settings.read',   // chart of accounts (categorize)
   'offline_access',
 ].join(' ');
 

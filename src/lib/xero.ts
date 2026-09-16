@@ -5,9 +5,10 @@
 // approval flow in /api/admin/bookkeeping/drafts — nothing in this file is
 // ever called except from that route or the read-only drafting crons.
 //
-// Required OAuth scopes (configured on the Xero app at developer.xero.com):
-//   openid profile email accounting.transactions accounting.contacts
-//   accounting.settings.read offline_access
+// Required OAuth scopes (configured on the Xero app at developer.xero.com) —
+// see src/app/api/admin/xero/connect/route.ts for the authoritative list and
+// why it uses Xero's post-March-2026 granular scopes rather than the old
+// broad accounting.transactions.
 //
 // SECURITY: every function here is server-only. Never import this from a
 // client component — it reads/writes the raw OAuth tokens via adminDb().
