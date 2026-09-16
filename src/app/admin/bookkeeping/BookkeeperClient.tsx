@@ -39,6 +39,10 @@ export function BookkeeperClient() {
   const [filter, setFilter] = useState<'all' | Draft['draft_type']>('all');
   const [edits, setEdits] = useState<Record<string, Record<string, string>>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState<string | null>(null);
+  const [asking, setAsking] = useState(false);
+  const [askError, setAskError] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -80,6 +84,27 @@ export function BookkeeperClient() {
     }
   }
 
+  async function ask() {
+    if (!question.trim()) return;
+    setAsking(true);
+    setAskError(null);
+    setAnswer(null);
+    try {
+      const res = await fetch('/api/admin/bookkeeping/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setAskError(data.error ?? 'Failed to get an answer'); return; }
+      setAnswer(data.answer);
+    } catch {
+      setAskError('Failed to reach the server');
+    } finally {
+      setAsking(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -110,6 +135,36 @@ export function BookkeeperClient() {
           </p>
         </div>
       )}
+
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Ask</p>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !asking) ask(); }}
+            placeholder="e.g. any unreconciled transactions? any duplicate bills? what's our burn this month?"
+            className="flex-1 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-900 dark:text-white"
+          />
+          <button
+            onClick={ask}
+            disabled={asking || !question.trim()}
+            className="text-xs font-semibold px-4 py-2 rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 disabled:opacity-50"
+          >
+            {asking ? 'Thinking…' : 'Ask'}
+          </button>
+        </div>
+        <p className="text-[11px] text-slate-400 mt-1.5">
+          Read-only — answers from live Xero data plus locally captured invoices. Never writes anything.
+        </p>
+        {askError && <p className="text-sm text-red-600 dark:text-red-400 mt-3">{askError}</p>}
+        {answer && (
+          <div className="mt-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
+            {answer}
+          </div>
+        )}
+      </div>
 
       <div className="flex gap-2 flex-wrap">
         {(['all', 'stripe_sync', 'categorize', 'vat_reconciliation', 'expense_from_email'] as const).map(t => (

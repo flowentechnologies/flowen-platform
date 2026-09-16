@@ -168,6 +168,33 @@ export async function listUnreconciledBankTransactions(): Promise<XeroBankTransa
   return body.BankTransactions ?? [];
 }
 
+/** Most recent bank transactions regardless of reconciliation state — the
+ *  Q&A endpoint's read of actual cash movement, not just what still needs
+ *  categorising. Xero doesn't paginate small orgs meaningfully here, so
+ *  this just takes the first page ordered newest-first and trims to
+ *  `limit` client-side rather than crafting a date-range `where` clause. */
+export async function listRecentBankTransactions(limit = 100): Promise<XeroBankTransaction[]> {
+  const res = await xeroFetch('/BankTransactions?order=Date DESC');
+  if (!res.ok) throw new Error(`Xero bank transactions fetch failed: ${res.status} ${await res.text()}`);
+  const body = await res.json() as { BankTransactions?: XeroBankTransaction[] };
+  return (body.BankTransactions ?? []).slice(0, limit);
+}
+
+export interface XeroInvoiceFull extends XeroInvoiceSummary {
+  Type: string; // ACCREC (sales) or ACCPAY (bills)
+  Date: string;
+  Contact?: { Name?: string };
+}
+
+/** Most recent invoices and bills of either type — see the caveat on
+ *  listRecentBankTransactions above re: no date-range filter. */
+export async function listRecentInvoices(limit = 100): Promise<XeroInvoiceFull[]> {
+  const res = await xeroFetch('/Invoices?order=Date DESC');
+  if (!res.ok) throw new Error(`Xero invoices fetch failed: ${res.status} ${await res.text()}`);
+  const body = await res.json() as { Invoices?: XeroInvoiceFull[] };
+  return (body.Invoices ?? []).slice(0, limit);
+}
+
 export interface XeroAccount {
   AccountID: string;
   Code: string;
