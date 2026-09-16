@@ -53,6 +53,7 @@ const NAV: NavSection[] = [
       { label: 'Analytics', href: '/admin/analytics' },
       { label: 'Usage & Costs',   href: '/admin/usage-costs' },
       { label: 'Session Quality', href: '/admin/session-quality' },
+      { label: 'Session Recordings', href: '/admin/recordings' },
       { label: 'Clinician Assignments', href: '/admin/clinician-assignments' },
       { label: 'Feature Flags', href: '/admin/feature-flags' },
       { label: 'Waitlist', href: '/admin/waitlist' },

@@ -1,17 +1,22 @@
 /**
  * /api/practice/sessions/:id/recording
  *
- * POST — receives audio blob, stores in session-recordings bucket,
- *         updates practice_sessions.audio_storage_path.
- *         Always fires after session save (no ML-consent gate).
+ * POST — receives audio blob, stores it in Cloudflare R2 when configured
+ *         (falls back to the Supabase Storage session-recordings bucket
+ *         otherwise), updates practice_sessions.audio_storage_path +
+ *         audio_storage_provider. Always fires after session save (no
+ *         ML-consent gate).
  *
- * GET  — returns a 1-hour signed URL for the recording.
+ * GET  — returns a 1-hour signed URL for the recording, from whichever
+ *         provider it was stored in.
  *         Accessible by: the patient themselves, or their assigned SLP.
  */
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { adminDb } from '@/lib/supabase/admin';
+import { isR2Configured, uploadToR2, getR2SignedUrl } from '@/lib/r2';
+import { buildRecordingR2Key, buildRecordingR2Metadata } from '@/lib/recording-storage';
 
 const BUCKET   = 'session-recordings';
 const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
@@ -33,7 +38,11 @@ export async function POST(req: Request, ctx: Ctx) {
   // Verify session belongs to this user
   const { data: session } = await admin
     .from('practice_sessions')
-    .select('id, audio_storage_path')
+    .select(`
+      id, audio_storage_path, audio_storage_provider,
+      brand, stage_id, created_at, duration_seconds,
+      total_blocks_detected, total_repetitions_detected, total_prolongations_detected
+    `)
     .eq('id', sessionId)
     .eq('user_id', user.id)
     .single();
@@ -56,7 +65,7 @@ export async function POST(req: Request, ctx: Ctx) {
     return NextResponse.json({ error: 'File too large (max 50 MB)' }, { status: 413 });
   }
 
-  const storagePath = `${user.id}/${sessionId}.webm`;
+  const flatPath = `${user.id}/${sessionId}.webm`;
   const buffer = await audioFile.arrayBuffer();
   // MediaRecorder reports the full type string (e.g. "audio/webm;codecs=opus"),
   // but the bucket's allowed_mime_types allowlist matches on the bare type
@@ -64,22 +73,56 @@ export async function POST(req: Request, ctx: Ctx) {
   // browser-recorded upload is rejected (confirmed happening in production).
   const contentType = (audioFile.type || 'audio/webm').split(';')[0].trim();
 
-  const { error: uploadErr } = await admin.storage
-    .from(BUCKET)
-    .upload(storagePath, buffer, {
-      contentType,
-      upsert: true,
-    });
+  const useR2 = isR2Configured();
+  const category = {
+    userId: user.id,
+    sessionId,
+    brand: session.brand,
+    stageId: session.stage_id,
+    createdAt: session.created_at,
+  };
+  // Categorized `{brand}/stage-N/{yyyy-mm}/...` layout only for R2 — the
+  // existing flat Supabase Storage path is left exactly as it was so
+  // nothing already relying on that shape (RLS policies, prior uploads)
+  // breaks. See src/lib/recording-storage.ts for the layout rationale and
+  // the consent-boundary note (this bucket is NOT training data).
+  const storagePath = useR2 ? buildRecordingR2Key(category) : flatPath;
 
-  if (uploadErr) {
-    console.error('[recording/upload]', uploadErr.message);
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+  if (useR2) {
+    try {
+      const metadata = buildRecordingR2Metadata({
+        ...category,
+        durationSeconds: session.duration_seconds,
+        blocksDetected: session.total_blocks_detected,
+        repetitionsDetected: session.total_repetitions_detected,
+        prolongationsDetected: session.total_prolongations_detected,
+      });
+      await uploadToR2(storagePath, Buffer.from(buffer), contentType, metadata);
+    } catch (err) {
+      console.error('[recording/upload] R2 error:', err);
+      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    }
+  } else {
+    const { error: uploadErr } = await admin.storage
+      .from(BUCKET)
+      .upload(storagePath, buffer, {
+        contentType,
+        upsert: true,
+      });
+
+    if (uploadErr) {
+      console.error('[recording/upload]', uploadErr.message);
+      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    }
   }
 
-  // Persist path
+  // Persist path + which provider it landed in
   await admin
     .from('practice_sessions')
-    .update({ audio_storage_path: storagePath })
+    .update({
+      audio_storage_path: storagePath,
+      audio_storage_provider: useR2 ? 'r2' : 'supabase',
+    })
     .eq('id', sessionId)
     .eq('user_id', user.id);
 
@@ -100,7 +143,7 @@ export async function GET(_req: Request, ctx: Ctx) {
   // Fetch session with ownership + audio path
   const { data: session } = await admin
     .from('practice_sessions')
-    .select('user_id, audio_storage_path')
+    .select('user_id, audio_storage_path, audio_storage_provider')
     .eq('id', sessionId)
     .single();
 
@@ -128,6 +171,16 @@ export async function GET(_req: Request, ctx: Ctx) {
       if (!assignment) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     } else {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  }
+
+  if (session.audio_storage_provider === 'r2') {
+    try {
+      const url = await getR2SignedUrl(session.audio_storage_path, URL_TTL);
+      return NextResponse.json({ url, expiresIn: URL_TTL });
+    } catch (err) {
+      console.error('[recording/signed-url] R2 error:', err);
+      return NextResponse.json({ error: 'Could not generate URL' }, { status: 500 });
     }
   }
 

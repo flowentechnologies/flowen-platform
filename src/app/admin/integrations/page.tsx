@@ -43,7 +43,10 @@ function buildIntegrations(stripeLatencyMs: number | null, stripeError: string |
   );
   const hasSupabase = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const hasSentry   = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN);
-  const hasR2       = Boolean(process.env.STORAGE_R2_BUCKET_NAME) && Boolean(process.env.STORAGE_R2_ACCESS_KEY_ID);
+  const hasR2       = Boolean(process.env.STORAGE_R2_ACCOUNT_ID) &&
+    Boolean(process.env.STORAGE_R2_ACCESS_KEY_ID) &&
+    Boolean(process.env.STORAGE_R2_SECRET_ACCESS_KEY) &&
+    Boolean(process.env.STORAGE_R2_BUCKET_NAME);
   const hasVercel   = Boolean(process.env.VERCEL);
   const hasSmtp     = Boolean(process.env.EMAIL_SERVER_HOST) && Boolean(process.env.EMAIL_SERVER_USER);
   const hasXero     = Boolean(process.env.XERO_CLIENT_ID) && Boolean(process.env.XERO_CLIENT_SECRET);
@@ -76,8 +79,8 @@ function buildIntegrations(stripeLatencyMs: number | null, stripeError: string |
     {
       name: 'Cloudflare R2',
       category: 'Storage',
-      description: 'Object storage for assets and audio files.',
-      envVars: ['STORAGE_R2_BUCKET_NAME', 'STORAGE_R2_ACCESS_KEY_ID'],
+      description: 'Object storage — practice session audio recordings (pilot bucket; egress-free at scale, unlike Supabase Storage). Falls back to Supabase Storage when not configured.',
+      envVars: ['STORAGE_R2_ACCOUNT_ID', 'STORAGE_R2_ACCESS_KEY_ID', 'STORAGE_R2_SECRET_ACCESS_KEY', 'STORAGE_R2_BUCKET_NAME'],
       status: hasR2 ? 'connected' : 'missing',
       latencyMs: null,
     },
