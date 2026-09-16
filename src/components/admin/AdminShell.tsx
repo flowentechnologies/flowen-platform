@@ -49,6 +49,7 @@ const NAV: NavSection[] = [
     items: [
       { label: 'Users', href: '/admin/users' },
       { label: 'Billing', href: '/admin/billing' },
+      { label: 'Bookkeeping', href: '/admin/bookkeeping' },
       { label: 'Analytics', href: '/admin/analytics' },
       { label: 'Usage & Costs',   href: '/admin/usage-costs' },
       { label: 'Session Quality', href: '/admin/session-quality' },

@@ -1,0 +1,94 @@
+/**
+ * GET /api/admin/xero/callback
+ *
+ * Completes the OAuth flow started by /connect: exchanges the authorization
+ * code for an access + refresh token, discovers which Xero organisation
+ * ("tenant") the connection grants access to, and stores everything in
+ * xero_oauth_tokens. Xero tokens are user-scoped, not organisation-scoped,
+ * which is why the tenant lookup (fetchXeroConnections) is a separate call
+ * after the token exchange — see src/lib/xero.ts.
+ */
+import { NextRequest, NextResponse } from 'next/server';
+import { assertAdmin } from '@/lib/admin/guard';
+import { adminDb as db } from '@/lib/supabase/admin';
+import { fetchXeroConnections } from '@/lib/xero';
+
+const REDIRECT_URI = 'https://www.flowen.digital/api/admin/xero/callback';
+const TOKEN_URL = 'https://identity.xero.com/connect/token';
+
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  try {
+    await assertAdmin();
+  } catch {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
+  const expectedState = req.cookies.get('xero_oauth_state')?.value;
+
+  if (!code || !state || !expectedState || state !== expectedState) {
+    return NextResponse.json({ error: 'Invalid OAuth state or missing code' }, { status: 400 });
+  }
+
+  const clientId = process.env.XERO_CLIENT_ID;
+  const clientSecret = process.env.XERO_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    return NextResponse.json({ error: 'Xero app credentials not configured' }, { status: 500 });
+  }
+
+  const tokenRes = await fetch(TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      redirect_uri: REDIRECT_URI,
+      grant_type: 'authorization_code',
+    }),
+  });
+
+  const tokenBody = await tokenRes.json() as {
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+    scope?: string;
+    error_description?: string;
+  };
+
+  if (!tokenRes.ok || !tokenBody.access_token) {
+    return NextResponse.json({ error: tokenBody.error_description ?? 'Token exchange failed' }, { status: 500 });
+  }
+
+  let tenant: { tenantId: string; tenantName: string } | undefined;
+  try {
+    const connections = await fetchXeroConnections(tokenBody.access_token);
+    tenant = connections[0];
+  } catch (err) {
+    console.error('[xero] connections lookup failed:', err);
+  }
+
+  const expiresAt = tokenBody.expires_in
+    ? new Date(Date.now() + tokenBody.expires_in * 1000).toISOString()
+    : null;
+
+  await db().from('xero_oauth_tokens').upsert({
+    id: 'org',
+    tenant_id: tenant?.tenantId ?? null,
+    tenant_name: tenant?.tenantName ?? null,
+    access_token: tokenBody.access_token,
+    refresh_token: tokenBody.refresh_token ?? null,
+    expires_at: expiresAt,
+    scope: tokenBody.scope ?? null,
+    updated_at: new Date().toISOString(),
+  });
+
+  const redirectUrl = new URL('/admin/bookkeeping', req.url);
+  redirectUrl.searchParams.set('xero', tenant ? 'connected' : 'connected_no_tenant');
+
+  const res = NextResponse.redirect(redirectUrl);
+  res.cookies.delete('xero_oauth_state');
+  return res;
+}
