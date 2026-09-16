@@ -171,6 +171,13 @@ const CRON_JOBS: CronJobDef[] = [
     schedule:    'Every 15 min',
     apiPath:     '/api/cron/agora-agent-sweep',
   },
+  {
+    id:          'bookkeeping-stripe-sync',
+    label:       'Bookkeeping: Stripe → Xero',
+    description: 'Proposes a bookkeeping draft for every Stripe charge without a matching Xero invoice — see /admin/bookkeeping',
+    schedule:    'Hourly',
+    apiPath:     '/api/cron/bookkeeping-stripe-sync',
+  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

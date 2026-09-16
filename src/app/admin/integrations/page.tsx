@@ -46,6 +46,7 @@ function buildIntegrations(stripeLatencyMs: number | null, stripeError: string |
   const hasR2       = Boolean(process.env.STORAGE_R2_BUCKET_NAME) && Boolean(process.env.STORAGE_R2_ACCESS_KEY_ID);
   const hasVercel   = Boolean(process.env.VERCEL);
   const hasSmtp     = Boolean(process.env.EMAIL_SERVER_HOST) && Boolean(process.env.EMAIL_SERVER_USER);
+  const hasXero     = Boolean(process.env.XERO_CLIENT_ID) && Boolean(process.env.XERO_CLIENT_SECRET);
 
   return [
     {
@@ -94,6 +95,14 @@ function buildIntegrations(stripeLatencyMs: number | null, stripeError: string |
       description: 'Transactional email delivery via SMTP.',
       envVars: ['EMAIL_SERVER_HOST', 'EMAIL_SERVER_USER'],
       status: hasSmtp ? 'connected' : 'missing',
+      latencyMs: null,
+    },
+    {
+      name: 'Xero',
+      category: 'Accounting',
+      description: 'Bookkeeping AI agent — Stripe sync, categorisation, VAT/intercompany reconciliation. See /admin/bookkeeping for connection + tenant status.',
+      envVars: ['XERO_CLIENT_ID', 'XERO_CLIENT_SECRET'],
+      status: hasXero ? 'connected' : 'missing',
       latencyMs: null,
     },
   ];
