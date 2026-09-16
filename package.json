@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
+    "@aws-sdk/client-s3": "^3.1133.0",
+    "@aws-sdk/s3-request-presigner": "^3.1133.0",
     "@mediapipe/tasks-vision": "^0.10.14",
     "@sentry/nextjs": "^10.69.0",
     "@supabase/ssr": "^0.5.2",
