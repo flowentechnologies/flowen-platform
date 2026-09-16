@@ -34,6 +34,7 @@ const JOB_PATHS: Record<string, string> = {
   'agora-agent-sweep':       '/api/cron/agora-agent-sweep',
   'bookkeeping-stripe-sync': '/api/cron/bookkeeping-stripe-sync',
   'bookkeeping-categorize':  '/api/cron/bookkeeping-categorize',
+  'bookkeeping-expense-from-email': '/api/cron/bookkeeping-expense-from-email',
 };
 
 // ── Handler ───────────────────────────────────────────────────────────────────

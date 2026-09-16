@@ -185,6 +185,13 @@ const CRON_JOBS: CronJobDef[] = [
     schedule:    'Hourly',
     apiPath:     '/api/cron/bookkeeping-categorize',
   },
+  {
+    id:          'bookkeeping-expense-from-email',
+    label:       'Bookkeeping: Expense from Email',
+    description: 'Turns captured vendor invoices (from gmail-sync) into AI-categorised Xero bill drafts (up to 25/run) — see /admin/bookkeeping',
+    schedule:    'Hourly',
+    apiPath:     '/api/cron/bookkeeping-expense-from-email',
+  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
