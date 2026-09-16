@@ -178,6 +178,13 @@ const CRON_JOBS: CronJobDef[] = [
     schedule:    'Hourly',
     apiPath:     '/api/cron/bookkeeping-stripe-sync',
   },
+  {
+    id:          'bookkeeping-categorize',
+    label:       'Bookkeeping: Categorise Transactions',
+    description: 'AI-suggests a Xero account code for uncoded bank transactions (up to 25/run) — see /admin/bookkeeping',
+    schedule:    'Hourly',
+    apiPath:     '/api/cron/bookkeeping-categorize',
+  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
