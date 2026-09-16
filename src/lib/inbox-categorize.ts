@@ -34,6 +34,23 @@ const BILLING_KEYWORDS = [
   'your bill', 'statement', 'payment failed', 'auto-renew', 'renewal',
 ];
 
+// A billing-categorised email reporting a payment that did NOT go through
+// (a declined card, a failed charge retry, a suspended service) rather
+// than a real invoice for money actually spent. Found via a real data
+// bug: "payment" alone in BILLING_KEYWORDS matched failure notices just as
+// readily as genuine receipts, and 8 declined-payment emails (a $5.98 x3
+// Explee retry sequence, plus 5 Google Ads/Workspace declined-card and
+// service-suspension notices — all real, all tracing back to the same
+// declined-card issue system-health's explee-credits check has been
+// flagging) had landed in vendor_invoices as if they were real bills, and
+// the connected Xero bookkeeping agent had already started proposing real
+// expense drafts for them before this fix landed.
+const PAYMENT_FAILURE_KEYWORDS = [
+  'unsuccessful', 'failed', 'declined', 'could not be charged', 'unable to charge',
+  "weren't able to charge", "wasn't able to charge", 'past due', 'overdue',
+  'suspended', 'update your payment',
+];
+
 const NHS_DOMAIN_HINT = /\.nhs\.uk$/i;
 
 // 'grant' was a valid crmCategory with no code path that ever assigned it —
@@ -89,6 +106,18 @@ export function categorize(opts: {
   else if (GRANT_DOMAIN_HINT.test(domain) || GRANT_KEYWORDS.some(k => text.includes(k))) crmCategory = 'grant';
 
   return { category, isBilling: false, vendorName, crmCategory };
+}
+
+/** True when a billing-categorised email is reporting a payment failure
+ *  rather than a completed charge — see PAYMENT_FAILURE_KEYWORDS above.
+ *  gmail-sync checks this before inserting a vendor_invoices row: a
+ *  failure notice still gets categorised as billing (so it's visible and
+ *  notified on — a declined card is genuinely worth an admin's attention,
+ *  arguably more urgently than a routine receipt) but must never become a
+ *  vendor_invoices row, because no money actually moved. */
+export function isPaymentFailureNotice(text: string): boolean {
+  const lower = text.toLowerCase();
+  return PAYMENT_FAILURE_KEYWORDS.some(k => lower.includes(k));
 }
 
 /** Best-effort amount extraction from a billing email's subject/snippet —
