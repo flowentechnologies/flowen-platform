@@ -328,9 +328,9 @@ export default function WhitepaperPage() {
       {/* ── 8. Intellectual Property ─────────────────────────────────────────── */}
       <DocH2 id="ip">8. Intellectual Property</DocH2>
       <DocP>
-        Flowen&apos;s core IP assets are held by Flowen IP Ltd, the group&apos;s IP-holding
-        company, and licensed to the operating company Flowen Speech Technologies Ltd. They
-        include:
+        Flowen&apos;s core IP assets are held by Flowen IP Ltd (company number 17471287),
+        the group&apos;s IP-holding company, and licensed to the operating company Flowen
+        Speech Technologies Ltd. They include:
       </DocP>
       <DocTable
         headers={['Asset', 'Type', 'Status']}

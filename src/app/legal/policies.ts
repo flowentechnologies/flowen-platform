@@ -343,7 +343,7 @@ Violation of this section may result in immediate account suspension and legal a
 7. INTELLECTUAL PROPERTY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-All software, algorithms, machine learning models, user interface designs, visual elements (including the Flowen dual-waveform logomark), text content, audio processing methods, and documentation are the exclusive intellectual property of Flowen IP Ltd or its licensors, protected by copyright, trade mark, and other applicable laws. Flowen Speech Technologies Ltd operates the Platform under licence from Flowen IP Ltd.
+All software, algorithms, machine learning models, user interface designs, visual elements (including the Flowen dual-waveform logomark), text content, audio processing methods, and documentation are the exclusive intellectual property of Flowen IP Ltd (company number 17471287) or its licensors, protected by copyright, trade mark, and other applicable laws. Flowen Speech Technologies Ltd operates the Platform under licence from Flowen IP Ltd.
 
 We grant you a limited, non-exclusive, non-transferable, revocable licence to access and use the Platform for your personal or professional therapeutic purposes in accordance with these Terms. This licence does not include any right to copy, modify, distribute, sell, or create derivative works of any Platform content.
 
