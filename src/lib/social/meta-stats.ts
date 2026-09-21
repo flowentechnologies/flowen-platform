@@ -134,7 +134,11 @@ export async function fetchInstagramStats(): Promise<PlatformStats> {
     // entirely (confirmed live: "(#100) metric[0] must be one of the
     // following values: reach, ... views, ..." — 'impressions' isn't in
     // that list any more) — 'views' is its replacement in the current set.
-    safeDailyInsight(igUserId, 'views', accessToken, insightErrors),
+    // Like profile_views/website_clicks below, 'views' also moved to the
+    // metric_type=total_value shape — confirmed live in production error
+    // logs: "(#100) The following metrics (views) should be specified with
+    // parameter metric_type=total_value".
+    safeDailyInsight(igUserId, 'views', accessToken, insightErrors, { metric_type: 'total_value' }),
     // profile_views/website_clicks moved to the metric_type=total_value
     // shape — confirmed live: "(#100) The following metrics (profile_views)
     // should be specified with parameter metric_type=total_value".
