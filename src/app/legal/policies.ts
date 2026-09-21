@@ -1,5 +1,5 @@
 export const MASTER_POLICIES = {
-  company: "Flowen Group Ltd",
+  company: "Flowen Speech Technologies Ltd",
   jurisdiction: "England and Wales",
   contactEmail: "hello@flowen.digital",
   effectiveDate: "1 August 2026",
@@ -13,13 +13,13 @@ Effective Date: 1 August 2026
 1. WHO WE ARE AND HOW TO CONTACT US
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Flowen Group Ltd ("Flowen", "we", "us", "our") is a company registered in England and Wales. We operate the Flowen speech fluency platform, available at flowen.digital and associated subdomains (the "Platform").
+Flowen Speech Technologies Ltd (company number 17470700), a company registered in England and Wales, part of the Flowen group of companies ("Flowen", "we", "us", "our"), operates the Flowen speech fluency platform, available at flowen.digital and associated subdomains (the "Platform").
 
-For the purposes of UK data protection law, Flowen Group Ltd is the Data Controller.
+For the purposes of UK data protection law, Flowen Speech Technologies Ltd is the Data Controller.
 
 Data Protection Contact
 Email: hello@flowen.digital
-Write to: Data Protection, Flowen Group Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
+Write to: Data Protection, Flowen Speech Technologies Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
 
 We are committed to protecting your personal data in accordance with the UK General Data Protection Regulation (UK GDPR), the Data Protection Act 2018 (DPA 2018), and the Data (Use and Access) Act 2025.
 
@@ -252,7 +252,7 @@ Effective Date: 1 August 2026
 1. AGREEMENT TO TERMS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-By accessing or using the Flowen Platform (flowen.digital and associated subdomains), creating an account, or purchasing a subscription, you ("User", "you") agree to be bound by these Terms of Service ("Terms") and our Privacy Policy. These Terms constitute a legally binding agreement between you and Flowen Group Ltd ("Flowen", "we", "us").
+By accessing or using the Flowen Platform (flowen.digital and associated subdomains), creating an account, or purchasing a subscription, you ("User", "you") agree to be bound by these Terms of Service ("Terms") and our Privacy Policy. These Terms constitute a legally binding agreement between you and Flowen Speech Technologies Ltd (company number 17470700), part of the Flowen group of companies ("Flowen", "we", "us").
 
 If you are accessing the Platform on behalf of an organisation (e.g., an NHS trust, private clinic, or educational institution), you represent and warrant that you have authority to bind that organisation and that these Terms apply to that organisation.
 
@@ -268,7 +268,7 @@ Flowen is an AI-assisted speech fluency practice platform designed to support pe
 IMPORTANT MEDICAL DISCLAIMER
 Flowen is NOT a medical device. Flowen does NOT provide medical diagnosis, clinical treatment, or licensed speech-language pathology services directly. The automated analysis and programme recommendations on the Platform are supportive tools and must not be relied upon as a substitute for professional clinical assessment.
 
-If you have been assigned a clinical SLP through the Platform, your treatment relationship is with that clinician, not with Flowen Group Ltd. Flowen provides the technical infrastructure for their clinical practice.
+If you have been assigned a clinical SLP through the Platform, your treatment relationship is with that clinician, not with Flowen Speech Technologies Ltd. Flowen provides the technical infrastructure for their clinical practice.
 
 Always seek the advice of a qualified healthcare professional with any questions you may have regarding your health condition. Never disregard professional medical advice or delay seeking it because of content you have read on or received through the Platform.
 
@@ -343,7 +343,7 @@ Violation of this section may result in immediate account suspension and legal a
 7. INTELLECTUAL PROPERTY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-All software, algorithms, machine learning models, user interface designs, visual elements (including the Flowen dual-waveform logomark), text content, audio processing methods, and documentation are the exclusive intellectual property of Flowen Group Ltd or its licensors, protected by copyright, trade mark, and other applicable laws.
+All software, algorithms, machine learning models, user interface designs, visual elements (including the Flowen dual-waveform logomark), text content, audio processing methods, and documentation are the exclusive intellectual property of Flowen IP Ltd or its licensors, protected by copyright, trade mark, and other applicable laws. Flowen Speech Technologies Ltd operates the Platform under licence from Flowen IP Ltd.
 
 We grant you a limited, non-exclusive, non-transferable, revocable licence to access and use the Platform for your personal or professional therapeutic purposes in accordance with these Terms. This licence does not include any right to copy, modify, distribute, sell, or create derivative works of any Platform content.
 
@@ -359,7 +359,7 @@ The Platform integrates with third-party services including Stripe (payment proc
 9. DISCLAIMERS & WARRANTIES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-THE PLATFORM IS PROVIDED "AS IS" AND "AS AVAILABLE". TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, FLOWEN TECHNOLOGIES LTD EXPRESSLY DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING BUT NOT LIMITED TO:
+THE PLATFORM IS PROVIDED "AS IS" AND "AS AVAILABLE". TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, FLOWEN SPEECH TECHNOLOGIES LTD EXPRESSLY DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING BUT NOT LIMITED TO:
 
 — IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 — WARRANTIES THAT THE PLATFORM WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE FROM HARMFUL COMPONENTS
@@ -373,7 +373,7 @@ This disclaimer does not affect any mandatory statutory rights you may have as a
 
 TO THE FULLEST EXTENT PERMITTED BY ENGLISH LAW:
 
-(a) FLOWEN TECHNOLOGIES LTD SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, LOSS OF PROFITS, LOSS OF DATA, LOSS OF GOODWILL, OR SERVICE INTERRUPTION, HOWEVER CAUSED AND UNDER ANY THEORY OF LIABILITY.
+(a) FLOWEN SPEECH TECHNOLOGIES LTD SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, LOSS OF PROFITS, LOSS OF DATA, LOSS OF GOODWILL, OR SERVICE INTERRUPTION, HOWEVER CAUSED AND UNDER ANY THEORY OF LIABILITY.
 
 (b) IN NO EVENT SHALL FLOWEN'S TOTAL AGGREGATE LIABILITY TO YOU FOR ALL CLAIMS ARISING OUT OF OR RELATING TO THESE TERMS OR THE PLATFORM EXCEED THE GREATER OF: (i) THE TOTAL AMOUNT PAID BY YOU TO FLOWEN IN THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE CLAIM; OR (ii) £100.
 
@@ -383,7 +383,7 @@ Nothing in these Terms excludes or limits our liability for death or personal in
 11. INDEMNIFICATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-You agree to indemnify, defend, and hold harmless Flowen Group Ltd and its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or in any way connected with: (a) your access to or use of the Platform in violation of these Terms; (b) your breach of any representation or warranty in these Terms; or (c) your violation of any applicable law or the rights of any third party.
+You agree to indemnify, defend, and hold harmless Flowen Speech Technologies Ltd and its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or in any way connected with: (a) your access to or use of the Platform in violation of these Terms; (b) your breach of any representation or warranty in these Terms; or (c) your violation of any applicable law or the rights of any third party.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 12. TERM, SUSPENSION & TERMINATION
@@ -414,7 +414,7 @@ We may revise these Terms from time to time. Material changes will be communicat
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 For questions about these Terms: hello@flowen.digital
-Flowen Group Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
+Flowen Speech Technologies Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
   `,
 
   clinicalCompliance: `
@@ -426,11 +426,11 @@ Version: 1.2
 1. OVERVIEW & APPLICABILITY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This statement describes Flowen Group Ltd's compliance with NHS Digital Standard DCB0129: Clinical Risk Management for Manufacturers of Health IT (Version 4.2). DCB0129 applies to any organisation manufacturing, developing, or deploying health IT systems that may be used in NHS or NHS-commissioned clinical environments.
+This statement describes Flowen Speech Technologies Ltd's compliance with NHS Digital Standard DCB0129: Clinical Risk Management for Manufacturers of Health IT (Version 4.2). DCB0129 applies to any organisation manufacturing, developing, or deploying health IT systems that may be used in NHS or NHS-commissioned clinical environments.
 
 System: Flowen Speech Fluency Platform (flowen.digital)
 Clinical Safety Officer: Designated — contact hello@flowen.digital
-Clinical Safety Manager: Flowen Group Ltd
+Clinical Safety Manager: Flowen Speech Technologies Ltd
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 2. CLINICAL SAFETY OFFICER
@@ -521,7 +521,7 @@ NHS organisations deploying the Flowen Platform must comply with DCB0160 (Clinic
 — Conduct a local hazard assessment for their clinical environment
 — Ensure clinical staff complete appropriate training before use
 — Establish a local incident reporting pathway to Flowen's Clinical Safety Officer
-— Agree a Data Processing Agreement with Flowen Group Ltd
+— Agree a Data Processing Agreement with Flowen Speech Technologies Ltd
 
 Flowen will provide full DCB0129 documentation pack, training materials, and a named clinical safety contact upon contracting.
 
@@ -556,7 +556,7 @@ Last Updated: 1 August 2026
 GOVERNING LAW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-These Terms of Service, Privacy Policy, and all other policies and agreements between you and Flowen Group Ltd are governed by, and shall be construed in accordance with, the laws of England and Wales, without regard to conflict of law principles.
+These Terms of Service, Privacy Policy, and all other policies and agreements between you and Flowen Speech Technologies Ltd are governed by, and shall be construed in accordance with, the laws of England and Wales, without regard to conflict of law principles.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 JURISDICTION
@@ -585,7 +585,7 @@ Nothing in these Terms affects your statutory rights as a consumer under English
 CONTACT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Flowen Group Ltd
+Flowen Speech Technologies Ltd
 London, United Kingdom
 hello@flowen.digital
 flowen.digital
@@ -600,7 +600,7 @@ Effective Date: 1 August 2026
 1. ABOUT THIS POLICY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This Cookie Policy explains exactly which cookies and similar storage mechanisms Flowen Group Ltd ("Flowen", "we", "us") sets when you visit flowen.digital, and why. It supplements our Privacy Policy and forms part of our PECR 2003 compliance documentation.
+This Cookie Policy explains exactly which cookies and similar storage mechanisms Flowen Speech Technologies Ltd ("Flowen", "we", "us") sets when you visit flowen.digital, and why. It supplements our Privacy Policy and forms part of our PECR 2003 compliance documentation.
 
 A "cookie" is a small text file placed on your device. We also use sessionStorage and localStorage for temporary, in-browser state — those are never sent to our servers and are not covered by PECR.
 
@@ -744,6 +744,6 @@ We will update this policy if we add new cookies or change how existing ones are
 
 For any questions about our use of cookies:
 Email: hello@flowen.digital
-Write to: Data Protection, Flowen Group Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
+Write to: Data Protection, Flowen Speech Technologies Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
   `
 };
