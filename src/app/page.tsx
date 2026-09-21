@@ -131,8 +131,8 @@ export default function LandingPage() {
 
           {/* Social proof */}
           <div className="mt-10 pt-8 border-t border-slate-800/60 text-center">
-            <div className="text-2xl font-black text-emerald-400 font-mono">88%</div>
-            <div className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">of beta users completed onboarding within their first session</div>
+            <div className="text-2xl font-black text-emerald-400 font-mono">36%</div>
+            <div className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">of beta users have completed onboarding so far</div>
           </div>
         </section>
 

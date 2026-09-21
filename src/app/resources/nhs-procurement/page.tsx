@@ -108,7 +108,7 @@ export default function NhsProcurementPage() {
         <DocLI>Tested with assistive technologies including JAWS, NVDA, and VoiceOver</DocLI>
         <DocLI>Plain English content rated at Flesch-Kincaid Grade 8 or below</DocLI>
         <DocLI>Mobile and tablet compatible for use across devices</DocLI>
-        <DocLI>Onboarding completion rate &gt;88% in beta cohort</DocLI>
+        <DocLI>Onboarding completion rate 36% to date, early-access cohort (n=11)</DocLI>
       </DocUL>
 
       <DocH3 id="dtac-interop">Interoperability</DocH3>
