@@ -7,13 +7,16 @@
  *
  * Required env vars (add to Vercel):
  *   GOOGLE_ADS_DEVELOPER_TOKEN  — from Google Ads API Center
- *   GOOGLE_ADS_CUSTOMER_ID      — 10-digit account ID, no dashes (e.g. 1234567890)
+ *   GOOGLE_ADS_CUSTOMER_ID      — 10-digit account ID (dashes OK — e.g. either
+ *                                 "1234567890" or the UI's "123-456-7890" both
+ *                                 work; non-digits are stripped before use)
  *   GOOGLE_CLIENT_ID            — OAuth2 client ID
  *   GOOGLE_CLIENT_SECRET        — OAuth2 client secret
  *   GOOGLE_REFRESH_TOKEN        — OAuth2 refresh token
  *
  * Optional:
- *   GOOGLE_ADS_LOGIN_CUSTOMER_ID — manager/MCC account ID if using MCC access
+ *   GOOGLE_ADS_LOGIN_CUSTOMER_ID — manager/MCC account ID if using MCC access,
+ *                                  same dashes-OK format as above
  *
  * Read-only: this route NEVER modifies bids, budgets, campaign status,
  * targeting, creatives, or any Google Ads settings.
@@ -43,8 +46,11 @@ async function handle(req: NextRequest) {
   }
 
   const developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
-  const customerId     = process.env.GOOGLE_ADS_CUSTOMER_ID;          // digits only
-  const loginId        = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID;    // optional MCC
+  // Google Ads API rejects the account ID in its own UI's display format
+  // (e.g. "242-662-7266") with INVALID_CUSTOMER_ID — it wants digits only.
+  // Strip non-digits defensively so pasting either format just works.
+  const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/\D/g, '');       // digits only
+  const loginId    = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID?.replace(/\D/g, ''); // optional MCC, same format rule
 
   if (!developerToken || !customerId) {
     return NextResponse.json({
