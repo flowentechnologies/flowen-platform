@@ -212,7 +212,7 @@ async function sendGoogleAdsConversion({
   };
 
   const res = await fetch(
-    `https://googleads.googleapis.com/v17/customers/${customerId}:uploadClickConversions`,
+    `https://googleads.googleapis.com/v25/customers/${customerId}:uploadClickConversions`,
     {
       method:  'POST',
       headers,
