@@ -100,6 +100,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         // "HTTP 502: Bad Gateway" was silently discarding.
         try {
           const body = await jobRes.json() as Record<string, unknown>;
+          jobResult = body;
           jobError = typeof body.error === 'string' ? body.error : JSON.stringify(body);
         } catch {
           jobError = `HTTP ${jobRes.status}: ${jobRes.statusText}`;
