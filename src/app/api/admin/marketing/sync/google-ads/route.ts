@@ -124,11 +124,14 @@ async function handle(req: NextRequest) {
       const json = await res.json() as {
         results?: unknown[];
         nextPageToken?: string;
-        error?: { message: string; status: string };
+        error?: { message: string; status: string; details?: unknown };
       };
 
       if (json.error) {
-        return NextResponse.json({ error: json.error.message, status: json.error.status, configured: true }, { status: 502 });
+        // Google Ads API's real diagnostic (which field/value it rejected,
+        // via GoogleAdsFailure.errors[]) lives in error.details, not the
+        // generic top-level message — surface it instead of discarding it.
+        return NextResponse.json({ error: json.error.message, status: json.error.status, details: json.error.details, configured: true }, { status: 502 });
       }
 
       rawRows   = [...rawRows, ...(json.results ?? [])];
