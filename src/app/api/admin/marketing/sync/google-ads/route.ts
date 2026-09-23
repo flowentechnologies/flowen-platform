@@ -1,7 +1,7 @@
 /**
  * POST /api/admin/marketing/sync/google-ads
  *
- * Pulls last 30 days of campaign/ad-group/ad stats from Google Ads API v18
+ * Pulls last 30 days of campaign/ad-group/ad stats from Google Ads API v25
  * and upserts into ad_platform_stats (platform='google').
  * Idempotent — safe to call multiple times.
  *
@@ -26,7 +26,7 @@ import { getGoogleAccessToken }      from '@/lib/google-oauth';
 import { verifyCronRequest }         from '@/lib/cron-auth';
 import { withCronLogging }           from '@/lib/cron-logging';
 
-const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v18';
+const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v25';
 
 // Accepts either an admin browser session (manual "Sync now" click) or the
 // cron secret (scheduled daily run, or /admin/cron's manual-trigger button)
