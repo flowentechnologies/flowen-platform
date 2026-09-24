@@ -20,6 +20,7 @@ import { assertAdmin } from '@/lib/admin/guard';
 import { adminDb as db } from '@/lib/supabase/admin';
 import { logAuditEvent } from '@/lib/admin/audit';
 import { createXeroInvoiceAndPayment, categorizeBankTransaction, createXeroBill } from '@/lib/xero';
+import { isXeroEntitySlug } from '@/lib/flowen-entities';
 
 interface StripeSyncPayload {
   contactName: string; contactEmail?: string; reference: string; description: string;
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status') ?? 'pending';
   const draftType = searchParams.get('draft_type');
+  const entity = searchParams.get('entity');
 
   let query = db()
     .from('bookkeeping_drafts')
@@ -45,6 +47,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     .limit(200);
   if (status !== 'all') query = query.eq('status', status);
   if (draftType) query = query.eq('draft_type', draftType);
+  if (entity) query = query.eq('entity', entity);
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -73,6 +76,10 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
   if (draft.status !== 'pending') {
     return NextResponse.json({ error: `Draft already ${draft.status}` }, { status: 409 });
   }
+  if (!isXeroEntitySlug(draft.entity)) {
+    return NextResponse.json({ error: `Draft has an invalid entity: ${draft.entity}` }, { status: 500 });
+  }
+  const entity = draft.entity;
 
   if (body.action === 'reject') {
     await supabase.from('bookkeeping_drafts').update({
@@ -95,7 +102,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
         if (!p.accountCode || !p.bankAccountCode) {
           return NextResponse.json({ error: 'accountCode and bankAccountCode must be set before approving' }, { status: 400 });
         }
-        const result = await createXeroInvoiceAndPayment(p);
+        const result = await createXeroInvoiceAndPayment(entity, p);
         xeroResult = result;
         break;
       }
@@ -104,7 +111,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
         if (!p.accountCode) {
           return NextResponse.json({ error: 'accountCode must be set before approving' }, { status: 400 });
         }
-        await categorizeBankTransaction(p.bankTransactionId, p.accountCode);
+        await categorizeBankTransaction(entity, p.bankTransactionId, p.accountCode);
         xeroResult = { bankTransactionId: p.bankTransactionId, accountCode: p.accountCode };
         break;
       }
@@ -113,7 +120,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
         if (!p.accountCode) {
           return NextResponse.json({ error: 'accountCode must be set before approving' }, { status: 400 });
         }
-        const result = await createXeroBill(p);
+        const result = await createXeroBill(entity, p);
         xeroResult = result;
         break;
       }

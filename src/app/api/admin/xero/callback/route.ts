@@ -1,17 +1,20 @@
 /**
  * GET /api/admin/xero/callback
  *
- * Completes the OAuth flow started by /connect: exchanges the authorization
- * code for an access + refresh token, discovers which Xero organisation
- * ("tenant") the connection grants access to, and stores everything in
- * xero_oauth_tokens. Xero tokens are user-scoped, not organisation-scoped,
- * which is why the tenant lookup (fetchXeroConnections) is a separate call
- * after the token exchange — see src/lib/xero.ts.
+ * Completes the OAuth flow started by /connect?entity=...: exchanges the
+ * authorization code for an access + refresh token, discovers which Xero
+ * organisation ("tenant") the connection grants access to, and stores
+ * everything in xero_oauth_tokens under the entity that started the flow
+ * (carried through in the xero_oauth_entity cookie, since Xero's redirect
+ * only echoes back `code` and `state`). Xero tokens are user-scoped, not
+ * organisation-scoped, which is why the tenant lookup (fetchXeroConnections)
+ * is a separate call after the token exchange — see src/lib/xero.ts.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { assertAdmin } from '@/lib/admin/guard';
 import { adminDb as db } from '@/lib/supabase/admin';
 import { fetchXeroConnections } from '@/lib/xero';
+import { isXeroEntitySlug } from '@/lib/flowen-entities';
 
 const REDIRECT_URI = 'https://www.flowen.digital/api/admin/xero/callback';
 const TOKEN_URL = 'https://identity.xero.com/connect/token';
@@ -27,9 +30,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const expectedState = req.cookies.get('xero_oauth_state')?.value;
+  const entity = req.cookies.get('xero_oauth_entity')?.value;
 
   if (!code || !state || !expectedState || state !== expectedState) {
     return NextResponse.json({ error: 'Invalid OAuth state or missing code' }, { status: 400 });
+  }
+  if (!entity || !isXeroEntitySlug(entity)) {
+    return NextResponse.json({ error: 'Missing or invalid entity — the connect flow must be started via /api/admin/xero/connect?entity=...' }, { status: 400 });
   }
 
   const clientId = process.env.XERO_CLIENT_ID;
@@ -75,7 +82,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     : null;
 
   await db().from('xero_oauth_tokens').upsert({
-    id: 'org',
+    entity,
     tenant_id: tenant?.tenantId ?? null,
     tenant_name: tenant?.tenantName ?? null,
     access_token: tokenBody.access_token,
@@ -87,8 +94,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   const redirectUrl = new URL('/admin/bookkeeping', req.url);
   redirectUrl.searchParams.set('xero', tenant ? 'connected' : 'connected_no_tenant');
+  redirectUrl.searchParams.set('entity', entity);
 
   const res = NextResponse.redirect(redirectUrl);
   res.cookies.delete('xero_oauth_state');
+  res.cookies.delete('xero_oauth_entity');
   return res;
 }

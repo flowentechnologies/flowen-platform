@@ -3,43 +3,61 @@
  *
  * Proposes a bookkeeping_drafts row (draft_type='categorize') for every
  * uncoded, unreconciled Xero bank transaction — the "categorise bank
- * transactions" capability. Unlike bookkeeping-stripe-sync this genuinely
- * needs judgement, so each candidate gets one Claude call
- * (suggestCategory(), src/lib/bookkeeping-categorize.ts) to pick an account
- * code from the organisation's real chart of accounts. A hallucinated code
- * is rejected before it can even become a draft — see that file.
+ * transactions" capability — across every Flowen group entity that has Xero
+ * connected (src/lib/flowen-entities.ts; each of the 4 companies is its own
+ * Xero organisation with its own bank feed, so this runs the same pass once
+ * per connected entity rather than assuming a single organisation). Unlike
+ * bookkeeping-stripe-sync this genuinely needs judgement, so each candidate
+ * gets one Claude call (suggestCategory(), src/lib/bookkeeping-categorize.ts)
+ * to pick an account code from that entity's own chart of accounts. A
+ * hallucinated code is rejected before it can even become a draft — see that
+ * file.
  *
  * "Uncoded" here means every line item on the transaction has no
  * AccountCode at all — Xero's /BankTransactions endpoint can also return
  * transactions that already have a code but haven't been reconciled to a
  * bank statement line yet, which this deliberately leaves alone (nothing
- * to suggest there). Bounded to MAX_PER_RUN per invocation to cap LLM
- * spend per run rather than categorising an entire backlog in one go.
+ * to suggest there). Bounded to MAX_PER_RUN per entity per invocation to cap
+ * LLM spend per run rather than categorising an entire backlog in one go.
  *
- * Skips cleanly (ok:true, skipped:true) if Xero isn't connected yet — see
- * /admin/bookkeeping.
+ * Skips cleanly (ok:true, skipped:true) if no entity has Xero connected yet
+ * — see /admin/bookkeeping.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { withCronLogging } from '@/lib/cron-logging';
 import { adminDb as db } from '@/lib/supabase/admin';
-import { getValidXeroAccess, listUnreconciledBankTransactions, listChartOfAccounts } from '@/lib/xero';
+import { listConnectedXeroEntities, listUnreconciledBankTransactions, listChartOfAccounts } from '@/lib/xero';
 import { suggestCategory } from '@/lib/bookkeeping-categorize';
+import type { XeroEntitySlug } from '@/lib/flowen-entities';
 
 const MAX_PER_RUN = 25;
 
 async function handle(_req: NextRequest): Promise<NextResponse> {
-  const xeroAccess = await getValidXeroAccess();
-  if (!xeroAccess) {
-    return NextResponse.json({ ok: true, skipped: true, reason: 'Xero not connected — visit /admin/bookkeeping' });
+  const entities = await listConnectedXeroEntities();
+  if (entities.length === 0) {
+    return NextResponse.json({ ok: true, skipped: true, reason: 'No Xero entity connected — visit /admin/bookkeeping' });
   }
 
+  const supabase = db();
+  const results: Record<string, unknown>[] = [];
+
+  for (const entity of entities) {
+    results.push(await categorizeForEntity(entity, supabase));
+  }
+
+  return NextResponse.json({
+    ok: results.every(r => (r.errors as unknown[]).length === 0),
+    entities: results,
+  });
+}
+
+async function categorizeForEntity(entity: XeroEntitySlug, supabase: ReturnType<typeof db>): Promise<Record<string, unknown>> {
   const [transactions, allAccounts] = await Promise.all([
-    listUnreconciledBankTransactions(),
-    listChartOfAccounts(),
+    listUnreconciledBankTransactions(entity),
+    listChartOfAccounts(entity),
   ]);
   const categorizableAccounts = allAccounts.filter(a => a.Class === 'EXPENSE' || a.Class === 'REVENUE');
 
-  const supabase = db();
   let proposed = 0;
   let skippedExistingDraft = 0;
   let skippedAlreadyCoded = 0;
@@ -61,6 +79,7 @@ async function handle(_req: NextRequest): Promise<NextResponse> {
         .select('id')
         .eq('draft_type', 'categorize')
         .eq('source_ref', txn.BankTransactionID)
+        .eq('entity', entity)
         .neq('status', 'rejected')
         .maybeSingle();
       if (existingDraft) { skippedExistingDraft++; continue; }
@@ -79,6 +98,7 @@ async function handle(_req: NextRequest): Promise<NextResponse> {
 
       const { error: insertErr } = await supabase.from('bookkeeping_drafts').insert({
         draft_type: 'categorize',
+        entity,
         source_ref: txn.BankTransactionID,
         title: `${txn.Contact?.Name ?? 'Unknown payee'} — ${txn.Total.toFixed(2)} → ${suggestion.accountName}`,
         summary: suggestion.reasoning || `Suggested category for: ${description}`,
@@ -101,15 +121,15 @@ async function handle(_req: NextRequest): Promise<NextResponse> {
     }
   }
 
-  return NextResponse.json({
-    ok: errors.length === 0,
+  return {
+    entity,
     checked: transactions.length,
     proposed,
     skipped_existing_draft: skippedExistingDraft,
     skipped_already_coded: skippedAlreadyCoded,
     skipped_no_suggestion: skippedNoSuggestion,
     errors,
-  });
+  };
 }
 
 export const GET = withCronLogging('bookkeeping-categorize', handle);

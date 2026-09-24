@@ -18,20 +18,34 @@
  * sitting in the inbox before that window — a one-off backfill pass over
  * historical mail is separate, deliberately out-of-scope follow-up work.
  *
+ * vendor_invoices has no per-entity attribution yet — gmail-sync doesn't
+ * know which of the 4 Flowen group companies (src/lib/flowen-entities.ts) a
+ * captured vendor email belongs to, and a lot of shared-service vendors are
+ * deliberately contracted at the Group level anyway (one engagement covering
+ * all subsidiaries). So — like bookkeeping-stripe-sync — this books every
+ * captured bill against a single configured entity
+ * (XERO_EXPENSE_FROM_EMAIL_ENTITY, defaulting to 'group') rather than
+ * looping over all connected entities, which would multiply-propose the same
+ * one real bill once per entity. Once vendor_invoices carries its own entity
+ * attribution (e.g. from which @flowen.digital alias received the email),
+ * switch this to read that instead of a single fixed entity.
+ *
  * A vendor_invoices row with no extracted amount (amount_pence null — the
  * extraction in extractAmountPence() is best-effort and doesn't always find
  * one) is skipped rather than proposing a bill with an invented amount.
  *
- * Skips cleanly (ok:true, skipped:true) if Xero isn't connected yet — see
- * /admin/bookkeeping.
+ * Skips cleanly (ok:true, skipped:true) if that entity doesn't have Xero
+ * connected yet — see /admin/bookkeeping.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { withCronLogging } from '@/lib/cron-logging';
 import { adminDb as db } from '@/lib/supabase/admin';
 import { getValidXeroAccess, listChartOfAccounts } from '@/lib/xero';
 import { suggestCategory } from '@/lib/bookkeeping-categorize';
+import { isXeroEntitySlug, type XeroEntitySlug } from '@/lib/flowen-entities';
 
 const MAX_PER_RUN = 25;
+const DEFAULT_ENTITY: XeroEntitySlug = 'group';
 
 interface VendorInvoiceRow {
   id: string;
@@ -44,9 +58,12 @@ interface VendorInvoiceRow {
 }
 
 async function handle(_req: NextRequest): Promise<NextResponse> {
-  const xeroAccess = await getValidXeroAccess();
+  const configuredEntity = process.env.XERO_EXPENSE_FROM_EMAIL_ENTITY;
+  const entity: XeroEntitySlug = configuredEntity && isXeroEntitySlug(configuredEntity) ? configuredEntity : DEFAULT_ENTITY;
+
+  const xeroAccess = await getValidXeroAccess(entity);
   if (!xeroAccess) {
-    return NextResponse.json({ ok: true, skipped: true, reason: 'Xero not connected — visit /admin/bookkeeping' });
+    return NextResponse.json({ ok: true, skipped: true, reason: `Xero not connected for ${entity} — visit /admin/bookkeeping` });
   }
 
   const supabase = db();
@@ -58,7 +75,7 @@ async function handle(_req: NextRequest): Promise<NextResponse> {
     .limit(200);
   if (fetchErr) throw new Error(fetchErr.message);
 
-  const expenseAccounts = (await listChartOfAccounts()).filter(a => a.Class === 'EXPENSE');
+  const expenseAccounts = (await listChartOfAccounts(entity)).filter(a => a.Class === 'EXPENSE');
 
   let proposed = 0;
   let skippedExistingDraft = 0;
@@ -75,6 +92,7 @@ async function handle(_req: NextRequest): Promise<NextResponse> {
         .select('id')
         .eq('draft_type', 'expense_from_email')
         .eq('source_ref', invoice.id)
+        .eq('entity', entity)
         .neq('status', 'rejected')
         .maybeSingle();
       if (existingDraft) { skippedExistingDraft++; continue; }
@@ -96,6 +114,7 @@ async function handle(_req: NextRequest): Promise<NextResponse> {
 
       const { error: insertErr } = await supabase.from('bookkeeping_drafts').insert({
         draft_type: 'expense_from_email',
+        entity,
         source_ref: invoice.id,
         title: `${contactName} — ${(invoice.currency ?? 'gbp').toUpperCase()} ${amount.toFixed(2)} → ${suggestion.accountName}`,
         summary: suggestion.reasoning || `Bill captured from vendor email: ${description}`,
@@ -121,6 +140,7 @@ async function handle(_req: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({
     ok: errors.length === 0,
+    entity,
     checked: invoices?.length ?? 0,
     proposed,
     skipped_existing_draft: skippedExistingDraft,

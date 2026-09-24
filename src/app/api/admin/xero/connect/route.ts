@@ -1,13 +1,18 @@
 /**
- * GET /api/admin/xero/connect
+ * GET /api/admin/xero/connect?entity=group|ip|speech-technologies|labs
  *
- * Starts the one-time Xero OAuth flow. On approval Xero redirects back to
+ * Starts the Xero OAuth flow for one Flowen group entity — each of the 4
+ * companies (src/lib/flowen-entities.ts) connects separately, since each is
+ * its own Xero organisation. On approval Xero redirects back to
  * /api/admin/xero/callback with an authorization code, exchanged for tokens
- * there — the admin never sees or handles a raw token.
+ * there — the admin never sees or handles a raw token. `entity` rides in the
+ * state cookie (signed by nothing, but scoped httpOnly + short-lived like the
+ * CSRF state token next to it) so the callback knows which row to upsert.
  */
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { assertAdmin } from '@/lib/admin/guard';
+import { isXeroEntitySlug } from '@/lib/flowen-entities';
 
 const REDIRECT_URI = 'https://www.flowen.digital/api/admin/xero/callback';
 // Xero replaced the old broad 'accounting.transactions' scope with granular
@@ -27,11 +32,16 @@ const SCOPES = [
   'offline_access',
 ].join(' ');
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     await assertAdmin();
   } catch {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const entity = new URL(req.url).searchParams.get('entity');
+  if (!entity || !isXeroEntitySlug(entity)) {
+    return NextResponse.json({ error: 'entity query param is required (group, ip, speech-technologies, or labs)' }, { status: 400 });
   }
 
   const clientId = process.env.XERO_CLIENT_ID;
@@ -49,6 +59,13 @@ export async function GET(): Promise<NextResponse> {
 
   const res = NextResponse.redirect(authorizeUrl.toString());
   res.cookies.set('xero_oauth_state', state, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: 600,
+    path: '/',
+  });
+  res.cookies.set('xero_oauth_entity', entity, {
     httpOnly: true,
     secure: true,
     sameSite: 'lax',

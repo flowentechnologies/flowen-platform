@@ -6,11 +6,19 @@ interface Draft {
   id: string;
   draft_type: 'stripe_sync' | 'categorize' | 'vat_reconciliation' | 'expense_from_email';
   status: string;
+  entity: string;
   title: string;
   summary: string | null;
   proposed_payload: Record<string, unknown>;
   confidence_pct: number | null;
   created_at: string;
+}
+
+interface EntityStatus {
+  slug: string;
+  name: string;
+  connected: boolean;
+  tenantName: string | null;
 }
 
 const TYPE_LABEL: Record<Draft['draft_type'], string> = {
@@ -32,8 +40,7 @@ function formatVal(v: unknown): string {
 }
 
 export function BookkeeperClient() {
-  const [connected, setConnected] = useState<boolean | null>(null);
-  const [tenantName, setTenantName] = useState<string | null>(null);
+  const [entities, setEntities] = useState<EntityStatus[] | null>(null);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | Draft['draft_type']>('all');
@@ -50,9 +57,8 @@ export function BookkeeperClient() {
       fetch('/api/admin/xero/status').then(r => r.json()),
       fetch(`/api/admin/bookkeeping/drafts${filter !== 'all' ? `?draft_type=${filter}` : ''}`).then(r => r.json()),
     ])
-      .then(([status, draftsRes]: [{ connected: boolean; tenantName: string | null }, { drafts: Draft[] }]) => {
-        setConnected(status.connected);
-        setTenantName(status.tenantName);
+      .then(([status, draftsRes]: [{ entities: EntityStatus[] }, { drafts: Draft[] }]) => {
+        setEntities(status.entities);
         setDrafts(draftsRes.drafts ?? []);
       })
       .finally(() => setLoading(false));
@@ -115,24 +121,33 @@ export function BookkeeperClient() {
         </p>
       </div>
 
-      {connected === false && (
-        <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-4 flex items-center justify-between gap-4">
-          <p className="text-sm text-amber-800 dark:text-amber-300">
-            Xero isn&apos;t connected yet — the sync crons will keep skipping until it is.
-          </p>
-          <a
-            href="/api/admin/xero/connect"
-            className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors"
-          >
-            Connect Xero
-          </a>
-        </div>
-      )}
-      {connected === true && (
-        <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl p-4">
-          <p className="text-sm text-emerald-800 dark:text-emerald-300">
-            Connected to <b>{tenantName ?? 'your Xero organisation'}</b>.
-          </p>
+      {entities && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {entities.map(e => (
+            <div
+              key={e.slug}
+              className={`rounded-xl p-4 flex items-center justify-between gap-4 border ${
+                e.connected
+                  ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30'
+                  : 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30'
+              }`}
+            >
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{e.name}</p>
+                <p className={`text-xs mt-0.5 ${e.connected ? 'text-emerald-800 dark:text-emerald-300' : 'text-amber-800 dark:text-amber-300'}`}>
+                  {e.connected ? `Connected to ${e.tenantName ?? 'Xero'}` : "Not connected — the sync crons skip this entity until it is."}
+                </p>
+              </div>
+              {!e.connected && (
+                <a
+                  href={`/api/admin/xero/connect?entity=${e.slug}`}
+                  className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+                >
+                  Connect
+                </a>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -193,6 +208,9 @@ export function BookkeeperClient() {
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{TYPE_LABEL[draft.draft_type]}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-slate-300 dark:text-slate-600 ml-2">
+                    {entities?.find(e => e.slug === draft.entity)?.name ?? draft.entity}
+                  </span>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">{draft.title}</p>
                   {draft.summary && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{draft.summary}</p>}
                 </div>
@@ -229,7 +247,7 @@ export function BookkeeperClient() {
                   Reject
                 </button>
                 <button
-                  disabled={busyId === draft.id || connected === false}
+                  disabled={busyId === draft.id || !entities?.find(e => e.slug === draft.entity)?.connected}
                   onClick={() => act(draft, 'approve')}
                   className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
                 >
