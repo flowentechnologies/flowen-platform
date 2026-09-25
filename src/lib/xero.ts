@@ -392,3 +392,51 @@ export async function createXeroBill(entity: XeroEntitySlug, payload: {
   if (!invoiceId) throw new Error('Xero bill create returned no InvoiceID');
   return { invoiceId };
 }
+
+/** Creates a manual journal — the correct mechanism for crediting a director's
+ *  loan account (a Current Liability account, not a bank account) against one
+ *  or more expense accounts for personally-paid expenses. A bill can't be
+ *  "paid" from a liability account in Xero, which is why this doesn't reuse
+ *  createXeroBill(). Used by the 'dla_journal' draft type.
+ *
+ *  Xero's sign convention: a positive LineAmount is a debit, negative is a
+ *  credit. Every expense line here is a debit (positive) and the DLA line is
+ *  a credit (negative) for the same total, so the journal balances to zero —
+ *  Xero rejects anything that doesn't. */
+export async function createXeroManualJournal(entity: XeroEntitySlug, payload: {
+  narration: string;
+  date: string; // YYYY-MM-DD
+  dlaAccountCode: string; // e.g. '835'
+  lines: { accountCode: string; description: string; amount: number }[]; // each a debit to an expense account, major units
+}): Promise<{ manualJournalId: string }> {
+  const total = payload.lines.reduce((sum, l) => sum + l.amount, 0);
+
+  const res = await xeroFetch(entity, '/ManualJournals', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ManualJournals: [{
+        Narration: payload.narration,
+        Date: payload.date,
+        Status: 'POSTED',
+        JournalLines: [
+          ...payload.lines.map(l => ({
+            LineAmount: l.amount,
+            AccountCode: l.accountCode,
+            Description: l.description,
+          })),
+          {
+            LineAmount: -total,
+            AccountCode: payload.dlaAccountCode,
+            Description: payload.narration,
+          },
+        ],
+      }],
+    }),
+  });
+  if (!res.ok) throw new Error(`Xero manual journal create failed: ${res.status} ${await res.text()}`);
+  const body = await res.json() as { ManualJournals?: { ManualJournalID: string }[] };
+  const manualJournalId = body.ManualJournals?.[0]?.ManualJournalID;
+  if (!manualJournalId) throw new Error('Xero manual journal create returned no ManualJournalID');
+  return { manualJournalId };
+}

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 interface Draft {
   id: string;
-  draft_type: 'stripe_sync' | 'categorize' | 'vat_reconciliation' | 'expense_from_email';
+  draft_type: 'stripe_sync' | 'categorize' | 'vat_reconciliation' | 'expense_from_email' | 'dla_journal';
   status: string;
   entity: string;
   title: string;
@@ -26,6 +26,7 @@ const TYPE_LABEL: Record<Draft['draft_type'], string> = {
   categorize: 'Categorise transaction',
   vat_reconciliation: 'VAT / intercompany',
   expense_from_email: 'Expense from email',
+  dla_journal: 'DLA journal',
 };
 
 // Fields the drafting crons may leave blank because they're Xero-organisation-
@@ -211,7 +212,7 @@ export function BookkeeperClient() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {(['all', 'stripe_sync', 'categorize', 'vat_reconciliation', 'expense_from_email'] as const).map(t => (
+        {(['all', 'stripe_sync', 'categorize', 'vat_reconciliation', 'expense_from_email', 'dla_journal'] as const).map(t => (
           <button
             key={t}
             onClick={() => setFilter(t)}

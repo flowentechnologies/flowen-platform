@@ -19,7 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { assertAdmin } from '@/lib/admin/guard';
 import { adminDb as db } from '@/lib/supabase/admin';
 import { logAuditEvent } from '@/lib/admin/audit';
-import { createXeroInvoiceAndPayment, categorizeBankTransaction, createXeroBill } from '@/lib/xero';
+import { createXeroInvoiceAndPayment, categorizeBankTransaction, createXeroBill, createXeroManualJournal } from '@/lib/xero';
 import { isXeroEntitySlug } from '@/lib/flowen-entities';
 
 interface StripeSyncPayload {
@@ -29,6 +29,10 @@ interface StripeSyncPayload {
 interface CategorizePayload { bankTransactionId: string; accountCode: string }
 interface ExpenseFromEmailPayload {
   contactName: string; reference: string; description: string; amount: number; currency: string; accountCode: string; date: string;
+}
+interface DlaJournalPayload {
+  narration: string; date: string; dlaAccountCode: string;
+  lines: { accountCode: string; description: string; amount: number }[];
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -121,6 +125,15 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
           return NextResponse.json({ error: 'accountCode must be set before approving' }, { status: 400 });
         }
         const result = await createXeroBill(entity, p);
+        xeroResult = result;
+        break;
+      }
+      case 'dla_journal': {
+        const p = payload as DlaJournalPayload;
+        if (!p.dlaAccountCode || !p.lines?.length || p.lines.some(l => !l.accountCode)) {
+          return NextResponse.json({ error: 'dlaAccountCode and every line\'s accountCode must be set before approving' }, { status: 400 });
+        }
+        const result = await createXeroManualJournal(entity, p);
         xeroResult = result;
         break;
       }

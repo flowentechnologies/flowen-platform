@@ -27,6 +27,11 @@ const SCOPES = [
   'accounting.invoices',        // create/read invoices (stripe_sync, expense_from_email)
   'accounting.payments',        // create/read payments (stripe_sync)
   'accounting.banktransactions', // list/categorise bank transactions (categorize)
+  'accounting.manualjournals',  // create manual journals (dla_journal) — its own
+                                 // granular scope, confirmed against Xero's docs;
+                                 // distinct from accounting.journals.read, which
+                                 // covers the unrelated, Advanced-tier-gated
+                                 // system Journals report endpoint we don't use.
   'accounting.contacts',
   'accounting.settings.read',   // chart of accounts (categorize)
   'offline_access',
