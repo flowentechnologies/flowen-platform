@@ -104,6 +104,15 @@ export async function GET(): Promise<NextResponse> {
       const totalLiabilities = findReportValue(bsRows, 'total liabilities');
       const netAssets = findReportValue(bsRows, 'net assets') ?? (totalAssets !== null && totalLiabilities !== null ? totalAssets - totalLiabilities : null);
 
+      // Low-noise diagnostic: a report with no matching row title (e.g. no
+      // trading activity this period) legitimately produces nulls/zeros
+      // here, but it looks identical to a broken title match from the UI —
+      // this makes the two distinguishable from the logs.
+      console.log('[bookkeeping/overview] entity report values', {
+        entity: slug, revenue, expenses, net, totalAssets, totalLiabilities, netAssets,
+        plRowCount: plRows.length, bsRowCount: bsRows.length,
+      });
+
       entities.push({
         slug, name,
         tenantName: tokenRow?.tenant_name ?? null,
@@ -118,6 +127,10 @@ export async function GET(): Promise<NextResponse> {
         error: null,
       });
     } catch (err) {
+      // Logged server-side — a per-entity failure here doesn't fail the
+      // route's 200, so without this the only trace was a null/zero tile
+      // in the UI with no way to see why.
+      console.error('[bookkeeping/overview] entity fetch failed', { entity: slug, err });
       entities.push({
         slug, name, tenantName: null, currency: null,
         revenue: 0, expenses: 0, net: 0,
