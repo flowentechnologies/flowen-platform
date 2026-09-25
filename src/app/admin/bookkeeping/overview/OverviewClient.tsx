@@ -41,14 +41,14 @@ function structureDotFill(e: EntityOverview | undefined): string {
   return e?.error ? 'fill-amber-500' : 'fill-emerald-500';
 }
 
-function StructureNode({ e, x, y, w, h, role }: { e: EntityOverview | undefined; x: number; y: number; w: number; h: number; role: string }) {
+function StructureNode({ e, label, x, y, w, h, role }: { e: EntityOverview | undefined; label: string; x: number; y: number; w: number; h: number; role: string }) {
   return (
     <g>
       <rect x={x} y={y} width={w} height={h} rx={10} className={`${structureNodeFill(e)} ${structureNodeStroke(e)}`} strokeWidth={1.5} />
-      <circle cx={x + 14} cy={y + 18} r={4} className={structureDotFill(e)} />
-      <text x={x + 24} y={y + 22} className="fill-slate-900 dark:fill-white text-[12px] font-semibold">{e?.name ?? ''}</text>
-      <text x={x + 14} y={y + 38} className="fill-slate-500 dark:fill-slate-400 text-[10px]">{role}</text>
-      <text x={x + 14} y={y + h - 10} className={`text-[11px] font-bold tabular-nums ${!e?.error && (e?.net ?? 0) >= 0 ? 'fill-emerald-600 dark:fill-emerald-400' : e?.error ? 'fill-amber-600 dark:fill-amber-400' : 'fill-red-600 dark:fill-red-400'}`}>
+      <circle cx={x + 13} cy={y + 19} r={4} className={structureDotFill(e)} />
+      <text x={x + 22} y={y + 23} className="fill-slate-900 dark:fill-white text-[11px] font-semibold">{label}</text>
+      <text x={x + 13} y={y + 39} className="fill-slate-500 dark:fill-slate-400 text-[9px]">{role}</text>
+      <text x={x + 13} y={y + h - 11} className={`text-[10px] font-bold tabular-nums ${!e?.error && (e?.net ?? 0) >= 0 ? 'fill-emerald-600 dark:fill-emerald-400' : e?.error ? 'fill-amber-600 dark:fill-amber-400' : 'fill-red-600 dark:fill-red-400'}`}>
         {e?.error ? 'Not connected' : `${gbp(e?.net ?? 0)} net`}
       </text>
     </g>
@@ -73,23 +73,23 @@ function GroupStructureDiagram({ entities }: { entities: EntityOverview[] }) {
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
       <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-2">Group Structure</p>
-      <svg viewBox="0 0 700 260" className="w-full h-auto" role="img" aria-label="Flowen group structure: Flowen Group Ltd owns Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd; IP licenses to Speech Technologies.">
+      <svg viewBox="0 0 720 260" className="w-full h-auto" role="img" aria-label="Flowen group structure: Flowen Group Ltd owns Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd; IP licenses to Speech Technologies.">
         {/* Ownership lines: Group -> each subsidiary */}
-        <line x1={350} y1={78} x2={125} y2={158} className="stroke-slate-300 dark:stroke-slate-700" strokeWidth={1.5} />
-        <line x1={350} y1={78} x2={350} y2={158} className="stroke-slate-300 dark:stroke-slate-700" strokeWidth={1.5} />
-        <line x1={350} y1={78} x2={575} y2={158} className="stroke-slate-300 dark:stroke-slate-700" strokeWidth={1.5} />
-        <text x={190} y={122} className="fill-slate-400 text-[9px] chrome">100% owned</text>
-        <text x={352} y={122} className="fill-slate-400 text-[9px] chrome">100% owned</text>
-        <text x={480} y={122} className="fill-slate-400 text-[9px] chrome">100% owned</text>
+        <line x1={360} y1={78} x2={120} y2={158} className="stroke-slate-300 dark:stroke-slate-700" strokeWidth={1.5} />
+        <line x1={360} y1={78} x2={360} y2={158} className="stroke-slate-300 dark:stroke-slate-700" strokeWidth={1.5} />
+        <line x1={360} y1={78} x2={600} y2={158} className="stroke-slate-300 dark:stroke-slate-700" strokeWidth={1.5} />
+        <text x={195} y={122} className="fill-slate-400 text-[9px] chrome">100% owned</text>
+        <text x={362} y={122} className="fill-slate-400 text-[9px] chrome">100% owned</text>
+        <text x={495} y={122} className="fill-slate-400 text-[9px] chrome">100% owned</text>
 
         {/* IP licenses to Speech Technologies */}
-        <line x1={210} y1={195} x2={265} y2={195} strokeDasharray="4 3" className="stroke-cyan-400 dark:stroke-cyan-600" strokeWidth={1.5} />
+        <line x1={210} y1={195} x2={255} y2={195} strokeDasharray="4 3" className="stroke-cyan-400 dark:stroke-cyan-600" strokeWidth={1.5} />
         <text x={195} y={188} className="fill-cyan-600 dark:fill-cyan-400 text-[9px]">licenses IP →</text>
 
-        <StructureNode e={group} x={260} y={18} w={180} h={60} role="Non-trading holding company" />
-        <StructureNode e={ip} x={40} y={158} w={170} h={70} role="Holds & licenses IP" />
-        <StructureNode e={speech} x={265} y={158} w={170} h={70} role="Trading subsidiary" />
-        <StructureNode e={labs} x={490} y={158} w={170} h={70} role="R&D" />
+        <StructureNode e={group} label="Flowen Group" x={260} y={18} w={200} h={60} role="Non-trading holding company" />
+        <StructureNode e={ip} label="Flowen IP" x={20} y={158} w={190} h={72} role="Holds & licenses IP" />
+        <StructureNode e={speech} label="Speech Technologies" x={255} y={158} w={210} h={72} role="Trading subsidiary" />
+        <StructureNode e={labs} label="Flowen Labs" x={505} y={158} w={190} h={72} role="R&D" />
       </svg>
       <p className="text-[11px] text-slate-400 mt-2">
         Group holds no trade of its own — any real revenue or expense showing here would be worth a second look against
