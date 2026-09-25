@@ -21,3 +21,4 @@ async function handle(req: NextRequest): Promise<NextResponse> {
 }
 
 export const GET = withCronLogging('notifications-cron', handle);
+export const POST = withCronLogging('notifications-cron', handle);

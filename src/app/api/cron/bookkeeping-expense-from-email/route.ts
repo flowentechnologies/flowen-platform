@@ -43,6 +43,7 @@ import { adminDb as db } from '@/lib/supabase/admin';
 import { getValidXeroAccess, listChartOfAccounts } from '@/lib/xero';
 import { suggestCategory } from '@/lib/bookkeeping-categorize';
 import { isXeroEntitySlug, type XeroEntitySlug } from '@/lib/flowen-entities';
+import { verifyCronRequest } from '@/lib/cron-auth';
 
 const MAX_PER_RUN = 25;
 const DEFAULT_ENTITY: XeroEntitySlug = 'group';
@@ -57,7 +58,11 @@ interface VendorInvoiceRow {
   created_at: string;
 }
 
-async function handle(_req: NextRequest): Promise<NextResponse> {
+async function handle(req: NextRequest): Promise<NextResponse> {
+  if (!verifyCronRequest(req.headers)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const configuredEntity = process.env.XERO_EXPENSE_FROM_EMAIL_ENTITY;
   const entity: XeroEntitySlug = configuredEntity && isXeroEntitySlug(configuredEntity) ? configuredEntity : DEFAULT_ENTITY;
 

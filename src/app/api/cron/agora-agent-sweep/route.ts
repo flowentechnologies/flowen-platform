@@ -24,6 +24,7 @@ import { withCronLogging } from '@/lib/cron-logging';
 import { getConvoAIHeaders } from '@/lib/agora/convoai-auth';
 import { DEFAULT_CONVOAI_BASE_URL, buildConvoAIListAgentsUrl, buildConvoAILeaveUrl } from '@/lib/agora/convoai-urls';
 import { findStaleAgents, type ConvoAIAgentSummary } from '@/lib/agora/convoai-sweep';
+import { verifyCronRequest } from '@/lib/cron-auth';
 
 interface ListAgentsResponse {
   data?: { list?: ConvoAIAgentSummary[]; count?: number; cursor?: string };
@@ -55,7 +56,11 @@ async function listAllAgents(baseUrl: string, appId: string): Promise<ConvoAIAge
   return agents;
 }
 
-async function handle(_req: NextRequest): Promise<NextResponse> {
+async function handle(req: NextRequest): Promise<NextResponse> {
+  if (!verifyCronRequest(req.headers)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const appId = process.env.AGORA_APP_ID;
   const configured = Boolean(appId && process.env.AGORA_CUSTOMER_ID && process.env.AGORA_CUSTOMER_SECRET);
   if (!configured) {

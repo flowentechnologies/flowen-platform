@@ -29,11 +29,16 @@ import { adminDb as db } from '@/lib/supabase/admin';
 import { getStripeClient } from '@/lib/stripe';
 import { getValidXeroAccess, findXeroInvoiceByReference } from '@/lib/xero';
 import { isXeroEntitySlug, type XeroEntitySlug } from '@/lib/flowen-entities';
+import { verifyCronRequest } from '@/lib/cron-auth';
 
 const LOOKBACK_DAYS = 3;
 const DEFAULT_ENTITY: XeroEntitySlug = 'group';
 
-async function handle(_req: NextRequest): Promise<NextResponse> {
+async function handle(req: NextRequest): Promise<NextResponse> {
+  if (!verifyCronRequest(req.headers)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const configuredEntity = process.env.XERO_STRIPE_SYNC_ENTITY;
   const entity: XeroEntitySlug = configuredEntity && isXeroEntitySlug(configuredEntity) ? configuredEntity : DEFAULT_ENTITY;
 

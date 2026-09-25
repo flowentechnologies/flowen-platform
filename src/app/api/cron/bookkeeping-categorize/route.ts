@@ -29,10 +29,15 @@ import { adminDb as db } from '@/lib/supabase/admin';
 import { listConnectedXeroEntities, listUnreconciledBankTransactions, listChartOfAccounts } from '@/lib/xero';
 import { suggestCategory } from '@/lib/bookkeeping-categorize';
 import type { XeroEntitySlug } from '@/lib/flowen-entities';
+import { verifyCronRequest } from '@/lib/cron-auth';
 
 const MAX_PER_RUN = 25;
 
-async function handle(_req: NextRequest): Promise<NextResponse> {
+async function handle(req: NextRequest): Promise<NextResponse> {
+  if (!verifyCronRequest(req.headers)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const entities = await listConnectedXeroEntities();
   if (entities.length === 0) {
     return NextResponse.json({ ok: true, skipped: true, reason: 'No Xero entity connected — visit /admin/bookkeeping' });
