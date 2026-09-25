@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 interface Draft {
   id: string;
-  draft_type: 'stripe_sync' | 'categorize' | 'vat_reconciliation' | 'expense_from_email' | 'dla_journal';
+  draft_type: 'stripe_sync' | 'categorize' | 'vat_reconciliation' | 'expense_from_email' | 'dla_journal' | 'share_capital_setoff';
   status: string;
   entity: string;
   title: string;
@@ -27,12 +27,13 @@ const TYPE_LABEL: Record<Draft['draft_type'], string> = {
   vat_reconciliation: 'VAT / intercompany',
   expense_from_email: 'Expense from email',
   dla_journal: 'DLA journal',
+  share_capital_setoff: 'Share capital set-off',
 };
 
 // Fields the drafting crons may leave blank because they're Xero-organisation-
 // specific (a chart-of-accounts code) — editable here before approval, same
 // as editing subject/body on an email draft.
-const EDITABLE_FIELDS = new Set(['accountCode', 'bankAccountCode']);
+const EDITABLE_FIELDS = new Set(['accountCode', 'bankAccountCode', 'shareCapitalAccountCode']);
 
 function formatVal(v: unknown): string {
   if (v == null || v === '') return '—';
@@ -49,6 +50,7 @@ export function BookkeeperClient() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [disconnectingEntity, setDisconnectingEntity] = useState<string | null>(null);
   const [reconcilingDla, setReconcilingDla] = useState(false);
+  const [reconcilingShareCapital, setReconcilingShareCapital] = useState(false);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
@@ -132,6 +134,25 @@ export function BookkeeperClient() {
     }
   }
 
+  async function runShareCapitalReconciliation() {
+    if (!confirm('Generate share capital set-off drafts (Group £100, IP/Labs/Speech Technologies £1 each)? This proposes drafts only — nothing posts to Xero until you approve each one.')) return;
+    setReconcilingShareCapital(true);
+    try {
+      const res = await fetch('/api/admin/bookkeeping/reconcile-share-capital', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? 'Failed to generate share capital drafts'); return; }
+      const summary = (data.results as { entity: string; skipped?: string; error?: string; draftId?: string; amount?: number; shareCapitalAccountCode?: string }[])
+        .map(r => r.skipped ? `${r.entity}: skipped (${r.skipped})` : r.error ? `${r.entity}: FAILED — ${r.error}` : `${r.entity}: £${r.amount?.toFixed(2)} drafted (account: ${r.shareCapitalAccountCode})`)
+        .join('\n');
+      alert(`Share capital set-off:\n\n${summary}`);
+      load();
+    } catch {
+      alert('Failed to reach the server');
+    } finally {
+      setReconcilingShareCapital(false);
+    }
+  }
+
   async function ask() {
     if (!question.trim()) return;
     setAsking(true);
@@ -170,6 +191,13 @@ export function BookkeeperClient() {
             className="text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-50"
           >
             {reconcilingDla ? 'Reconciling…' : 'Reconcile DLA (Jul–Sep)'}
+          </button>
+          <button
+            onClick={runShareCapitalReconciliation}
+            disabled={reconcilingShareCapital}
+            className="text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-50"
+          >
+            {reconcilingShareCapital ? 'Reconciling…' : 'Reconcile share capital'}
           </button>
           <a
             href="/admin/bookkeeping/overview"
@@ -249,7 +277,7 @@ export function BookkeeperClient() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {(['all', 'stripe_sync', 'categorize', 'vat_reconciliation', 'expense_from_email', 'dla_journal'] as const).map(t => (
+        {(['all', 'stripe_sync', 'categorize', 'vat_reconciliation', 'expense_from_email', 'dla_journal', 'share_capital_setoff'] as const).map(t => (
           <button
             key={t}
             onClick={() => setFilter(t)}
@@ -309,6 +337,39 @@ export function BookkeeperClient() {
                   <p className="text-slate-400 mt-2">
                     Credit: account {String(draft.proposed_payload.dlaAccountCode)} (Directors&rsquo; Loan Account) — dated {String(draft.proposed_payload.date)}
                   </p>
+                </div>
+              ) : draft.draft_type === 'share_capital_setoff' ? (
+                <div className="mb-4 text-xs">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-slate-400">
+                        <th className="text-left font-normal pb-1">Line</th>
+                        <th className="text-left font-normal pb-1">Account</th>
+                        <th className="text-right font-normal pb-1">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t border-slate-100 dark:border-slate-800">
+                        <td className="py-1.5 text-slate-700 dark:text-slate-300">Debit — Directors&rsquo; Loan Account</td>
+                        <td className="py-1.5 text-slate-500 dark:text-slate-400">{String(draft.proposed_payload.dlaAccountCode)}</td>
+                        <td className="py-1.5 text-right font-medium text-slate-900 dark:text-white tabular-nums">£{Number(draft.proposed_payload.amount).toFixed(2)}</td>
+                      </tr>
+                      <tr className="border-t border-slate-100 dark:border-slate-800">
+                        <td className="py-1.5 text-slate-700 dark:text-slate-300">Credit — Share Capital (Unpaid)</td>
+                        <td className="py-1.5">
+                          <input
+                            type="text"
+                            defaultValue={String(draft.proposed_payload.shareCapitalAccountCode ?? '')}
+                            placeholder="required before approving"
+                            onChange={e => setEdit(draft.id, 'shareCapitalAccountCode', e.target.value)}
+                            className="w-24 text-xs font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-slate-900 dark:text-white"
+                          />
+                        </td>
+                        <td className="py-1.5 text-right font-medium text-slate-900 dark:text-white tabular-nums">£{Number(draft.proposed_payload.amount).toFixed(2)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p className="text-slate-400 mt-2">Dated {String(draft.proposed_payload.date)} — see the summary above for the direction note before approving.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 mb-4 text-xs">

@@ -19,7 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { assertAdmin } from '@/lib/admin/guard';
 import { adminDb as db } from '@/lib/supabase/admin';
 import { logAuditEvent } from '@/lib/admin/audit';
-import { createXeroInvoiceAndPayment, categorizeBankTransaction, createXeroBill, createXeroManualJournal } from '@/lib/xero';
+import { createXeroInvoiceAndPayment, categorizeBankTransaction, createXeroBill, createXeroManualJournal, createXeroShareCapitalSetoff } from '@/lib/xero';
 import { isXeroEntitySlug } from '@/lib/flowen-entities';
 
 interface StripeSyncPayload {
@@ -33,6 +33,9 @@ interface ExpenseFromEmailPayload {
 interface DlaJournalPayload {
   narration: string; date: string; dlaAccountCode: string;
   lines: { accountCode: string; description: string; amount: number }[];
+}
+interface ShareCapitalSetoffPayload {
+  narration: string; date: string; dlaAccountCode: string; shareCapitalAccountCode: string; amount: number;
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -134,6 +137,15 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
           return NextResponse.json({ error: 'dlaAccountCode and every line\'s accountCode must be set before approving' }, { status: 400 });
         }
         const result = await createXeroManualJournal(entity, p);
+        xeroResult = result;
+        break;
+      }
+      case 'share_capital_setoff': {
+        const p = payload as ShareCapitalSetoffPayload;
+        if (!p.dlaAccountCode || !p.shareCapitalAccountCode || !p.amount) {
+          return NextResponse.json({ error: 'dlaAccountCode, shareCapitalAccountCode, and amount must be set before approving' }, { status: 400 });
+        }
+        const result = await createXeroShareCapitalSetoff(entity, p);
         xeroResult = result;
         break;
       }

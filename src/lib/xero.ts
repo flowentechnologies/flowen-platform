@@ -441,6 +441,44 @@ export async function createXeroManualJournal(entity: XeroEntitySlug, payload: {
   return { manualJournalId };
 }
 
+/** Creates the two-line manual journal that records share capital as paid up
+ *  by way of set-off against the director's loan account — the opposite
+ *  polarity from createXeroManualJournal above. There, the DLA is always the
+ *  *credit* leg (the company reimbursing Howard, increasing what it owes
+ *  him). Here the DLA is the *debit* leg: Howard's existing credit balance on
+ *  the loan account is used up as consideration for the shares, which
+ *  reduces what the company owes him, while the Share Capital (Unpaid)
+ *  debtor is credited to clear it — per the signed sole-director set-off
+ *  resolutions. Used by the 'share_capital_setoff' draft type. */
+export async function createXeroShareCapitalSetoff(entity: XeroEntitySlug, payload: {
+  narration: string;
+  date: string; // YYYY-MM-DD
+  dlaAccountCode: string; // e.g. '835'
+  shareCapitalAccountCode: string; // the entity's "Share Capital (Unpaid)" account
+  amount: number; // major units, always positive
+}): Promise<{ manualJournalId: string }> {
+  const res = await xeroFetch(entity, '/ManualJournals', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ManualJournals: [{
+        Narration: payload.narration,
+        Date: payload.date,
+        Status: 'POSTED',
+        JournalLines: [
+          { LineAmount: payload.amount, AccountCode: payload.dlaAccountCode, Description: payload.narration },
+          { LineAmount: -payload.amount, AccountCode: payload.shareCapitalAccountCode, Description: payload.narration },
+        ],
+      }],
+    }),
+  });
+  if (!res.ok) throw new Error(`Xero share capital set-off journal create failed: ${res.status} ${await res.text()}`);
+  const body = await res.json() as { ManualJournals?: { ManualJournalID: string }[] };
+  const manualJournalId = body.ManualJournals?.[0]?.ManualJournalID;
+  if (!manualJournalId) throw new Error('Xero share capital set-off journal create returned no ManualJournalID');
+  return { manualJournalId };
+}
+
 // ── Reports (Profit & Loss, Balance Sheet) ─────────────────────────────────────
 // Real accrual-accounting reports, not the invoice-list approximation the
 // Group Overview used before this existed. Response shape confirmed against
