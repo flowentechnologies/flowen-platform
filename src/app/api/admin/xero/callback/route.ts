@@ -13,7 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { assertAdmin } from '@/lib/admin/guard';
 import { adminDb as db } from '@/lib/supabase/admin';
-import { fetchXeroConnections } from '@/lib/xero';
+import { fetchXeroConnections, decodeXeroAuthEventId } from '@/lib/xero';
 import { isXeroEntitySlug } from '@/lib/flowen-entities';
 
 const REDIRECT_URI = 'https://www.flowen.digital/api/admin/xero/callback';
@@ -62,6 +62,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     refresh_token?: string;
     expires_in?: number;
     scope?: string;
+    id_token?: string;
     error_description?: string;
   };
 
@@ -70,9 +71,19 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   let tenant: { tenantId: string; tenantName: string } | undefined;
+  let ambiguous = false;
   try {
     const connections = await fetchXeroConnections(tokenBody.access_token);
-    tenant = connections[0];
+    // GET /connections returns every org this Xero user has EVER authorised
+    // for this app, not just the one(s) just granted — with more than one
+    // entity connected, connections[0] would silently pick an arbitrary
+    // stale connection instead of this flow's actual grant. Scope down using
+    // the id_token's authentication_event_id claim, which matches each
+    // connection's own authEventId only for the org(s) granted just now.
+    const authEventId = decodeXeroAuthEventId(tokenBody.id_token);
+    const scoped = authEventId ? connections.filter(c => c.authEventId === authEventId) : connections;
+    tenant = scoped[0] ?? connections[0];
+    ambiguous = scoped.length > 1;
   } catch (err) {
     console.error('[xero] connections lookup failed:', err);
   }
@@ -95,6 +106,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const redirectUrl = new URL('/admin/bookkeeping', req.url);
   redirectUrl.searchParams.set('xero', tenant ? 'connected' : 'connected_no_tenant');
   redirectUrl.searchParams.set('entity', entity);
+  if (ambiguous) {
+    // More than one organisation was granted in this single consent — we
+    // picked one, but which one is arbitrary. Flag it so the admin knows to
+    // check /admin/bookkeeping shows the right tenant name for this entity,
+    // and redo the connect selecting only one org if not.
+    redirectUrl.searchParams.set('xero_ambiguous', '1');
+  }
 
   const res = NextResponse.redirect(redirectUrl);
   res.cookies.delete('xero_oauth_state');

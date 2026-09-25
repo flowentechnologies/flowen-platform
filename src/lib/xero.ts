@@ -110,14 +110,43 @@ export async function getValidXeroAccess(entity: XeroEntitySlug): Promise<{ acce
 
 /** Xero issues a token scoped to the user, not a specific organisation —
  *  the actual tenant(s) it can access are discovered via a separate call
- *  after the OAuth exchange. Called once from the callback route. */
-export async function fetchXeroConnections(accessToken: string): Promise<{ tenantId: string; tenantName: string }[]> {
+ *  after the OAuth exchange. Called once from the callback route.
+ *
+ *  IMPORTANT: this returns every organisation the signed-in Xero user has
+ *  EVER authorised for this app, not just the one(s) granted in the current
+ *  consent — that's what made multi-entity connect silently pick the wrong
+ *  tenant (Labs kept landing on Speech Technologies' connection, which
+ *  happened to come back first) even when the right org was the only one
+ *  selected on Xero's screen. Each connection carries an `authEventId`,
+ *  which the callback route matches against the `authentication_event_id`
+ *  claim in the token exchange's id_token to scope down to just this flow's
+ *  grant — see decodeAuthEventId() below and how the callback uses it. */
+export async function fetchXeroConnections(accessToken: string): Promise<{ tenantId: string; tenantName: string; authEventId: string }[]> {
   const res = await fetch(CONNECTIONS_URL, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) throw new Error(`Xero connections fetch failed: ${res.status}`);
-  const body = await res.json() as { tenantId: string; tenantName: string; tenantType: string }[];
-  return body.filter(c => c.tenantType === 'ORGANISATION').map(c => ({ tenantId: c.tenantId, tenantName: c.tenantName }));
+  const body = await res.json() as { tenantId: string; tenantName: string; tenantType: string; authEventId: string }[];
+  return body.filter(c => c.tenantType === 'ORGANISATION').map(c => ({ tenantId: c.tenantId, tenantName: c.tenantName, authEventId: c.authEventId }));
+}
+
+/** Decodes the `authentication_event_id` claim out of the id_token Xero
+ *  returns from the token exchange (requires the 'openid' scope, already
+ *  requested — see /api/admin/xero/connect). No signature verification: the
+ *  token comes straight from Xero's token endpoint over a direct server-to-
+ *  server HTTPS call, not a redirect param an attacker could substitute, so
+ *  decoding the payload is enough to read this one claim safely. */
+export function decodeXeroAuthEventId(idToken: string | undefined): string | null {
+  if (!idToken) return null;
+  try {
+    const payloadSegment = idToken.split('.')[1];
+    if (!payloadSegment) return null;
+    const payload = JSON.parse(Buffer.from(payloadSegment, 'base64url').toString('utf8')) as Record<string, unknown>;
+    const claim = payload.authentication_event_id;
+    return typeof claim === 'string' ? claim : null;
+  } catch {
+    return null;
+  }
 }
 
 async function xeroFetch(entity: XeroEntitySlug, path: string, init: RequestInit = {}): Promise<Response> {
