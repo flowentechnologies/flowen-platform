@@ -10,7 +10,9 @@ interface EntityOverview {
   revenue: number;
   expenses: number;
   net: number;
-  invoicesConsidered: number;
+  totalAssets: number | null;
+  totalLiabilities: number | null;
+  netAssets: number | null;
   bankTransactionsFetched: number;
   unreconciledCount: number;
   uncodedCount: number;
@@ -21,9 +23,15 @@ interface EntityOverview {
 
 interface Overview {
   generatedAt: string;
+  periodStart: string;
+  periodEnd: string;
   connectedCount: number;
   totalEntities: number;
-  totals: { revenue: number; expenses: number; net: number; pendingDrafts: number; unreconciledCount: number; uncodedCount: number };
+  totals: {
+    revenue: number; expenses: number; net: number;
+    totalAssets: number; totalLiabilities: number; netAssets: number;
+    pendingDrafts: number; unreconciledCount: number; uncodedCount: number;
+  };
   entities: EntityOverview[];
 }
 
@@ -126,6 +134,7 @@ export function OverviewClient() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Group Overview</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Consolidated snapshot across every connected Flowen entity — a rollup, not a true consolidation.
+            {data && ` P&L: ${new Date(data.periodStart).toLocaleDateString('en-GB')} – ${new Date(data.periodEnd).toLocaleDateString('en-GB')} (tax year to date). Balance Sheet: as at ${new Date(data.periodEnd).toLocaleDateString('en-GB')}.`}
           </p>
         </div>
         <button
@@ -170,10 +179,29 @@ export function OverviewClient() {
             </div>
           </div>
 
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Total assets</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-white mt-1 tabular-nums">{gbp(data.totals.totalAssets)}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Total liabilities</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-white mt-1 tabular-nums">{gbp(data.totals.totalLiabilities)}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Net assets</p>
+              <p className={`text-xl font-bold mt-1 tabular-nums ${data.totals.netAssets >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                {gbp(data.totals.netAssets)}
+              </p>
+            </div>
+          </div>
+
           <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3 text-xs text-amber-800 dark:text-amber-300">
-            Revenue/expenses are computed from each entity&apos;s most recent invoices (not a full accrual P&amp;L — Xero&apos;s
-            report API isn&apos;t connected), and intercompany transactions between entities aren&apos;t eliminated. Treat this
-            as a directional rollup, not a statutory consolidation. {data.connectedCount}/{data.totalEntities} entities connected.
+            Revenue, expenses, and Balance Sheet figures come from Xero&apos;s real Profit &amp; Loss and Balance Sheet reports for
+            each entity — not an approximation. What&apos;s still not true consolidation: intercompany transactions between
+            entities aren&apos;t eliminated (e.g. Group funding a subsidiary shows as an expense in one and income in another), so
+            treat the group-wide totals as a directional rollup, not a statutory consolidated position.
+            {' '}{data.connectedCount}/{data.totalEntities} entities connected.
           </div>
 
           <div className="space-y-3">
@@ -201,6 +229,10 @@ export function OverviewClient() {
                     <div>
                       <p className="text-slate-400">Expenses</p>
                       <p className="font-medium text-slate-700 dark:text-slate-300 tabular-nums">{gbp(e.expenses)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">Net assets</p>
+                      <p className="font-medium text-slate-700 dark:text-slate-300 tabular-nums">{e.netAssets !== null ? gbp(e.netAssets) : '—'}</p>
                     </div>
                     <div>
                       <p className="text-slate-400">Unreconciled txns</p>

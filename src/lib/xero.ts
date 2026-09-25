@@ -440,3 +440,62 @@ export async function createXeroManualJournal(entity: XeroEntitySlug, payload: {
   if (!manualJournalId) throw new Error('Xero manual journal create returned no ManualJournalID');
   return { manualJournalId };
 }
+
+// ── Reports (Profit & Loss, Balance Sheet) ─────────────────────────────────────
+// Real accrual-accounting reports, not the invoice-list approximation the
+// Group Overview used before this existed. Response shape confirmed against
+// xero-node's generated models and a real example response (not assumed):
+// a report is a tree of rows — Section rows nest their own Rows array,
+// Row/SummaryRow rows carry the actual Cells. There's no flat schema, so
+// reading a specific figure (e.g. "Net Profit") means walking the tree.
+
+export interface XeroReportCell {
+  Value?: string;
+}
+export interface XeroReportRow {
+  RowType: 'Header' | 'Section' | 'Row' | 'SummaryRow';
+  Title?: string;
+  Cells?: XeroReportCell[];
+  Rows?: XeroReportRow[];
+}
+
+/** Depth-first search for a row whose title matches (case-insensitive,
+ *  partial match — Xero's own wording for these varies by chart of accounts,
+ *  e.g. "Total Income" vs "Total Revenue") and returns its last cell's
+ *  numeric value. Returns null rather than throwing when a report simply
+ *  doesn't have that line (e.g. a brand-new entity with no expenses yet) —
+ *  callers treat that as 0, not an error. */
+export function findReportValue(rows: XeroReportRow[], titleContains: string): number | null {
+  const needle = titleContains.toLowerCase();
+  for (const row of rows) {
+    if (row.Title?.toLowerCase().includes(needle) && row.Cells?.length) {
+      const raw = row.Cells[row.Cells.length - 1]?.Value;
+      const parsed = raw !== undefined ? Number(raw) : NaN;
+      if (!Number.isNaN(parsed)) return parsed;
+    }
+    if (row.Rows?.length) {
+      const nested = findReportValue(row.Rows, titleContains);
+      if (nested !== null) return nested;
+    }
+  }
+  return null;
+}
+
+/** Profit & Loss for one period (fromDate–toDate inclusive). A single-period
+ *  query (no `periods`/`timeframe`) keeps the row shape simple: one value
+ *  column per row. */
+export async function getProfitAndLoss(entity: XeroEntitySlug, fromDate: string, toDate: string): Promise<XeroReportRow[]> {
+  const res = await xeroFetch(entity, `/Reports/ProfitAndLoss?fromDate=${fromDate}&toDate=${toDate}`);
+  if (!res.ok) throw new Error(`Xero P&L report fetch failed: ${res.status} ${await res.text()}`);
+  const body = await res.json() as { Reports?: { Rows?: XeroReportRow[] }[] };
+  return body.Reports?.[0]?.Rows ?? [];
+}
+
+/** Balance Sheet as at one date (a snapshot, not a period — Xero's
+ *  BalanceSheet endpoint takes `date`, not fromDate/toDate). */
+export async function getBalanceSheet(entity: XeroEntitySlug, date: string): Promise<XeroReportRow[]> {
+  const res = await xeroFetch(entity, `/Reports/BalanceSheet?date=${date}`);
+  if (!res.ok) throw new Error(`Xero balance sheet report fetch failed: ${res.status} ${await res.text()}`);
+  const body = await res.json() as { Reports?: { Rows?: XeroReportRow[] }[] };
+  return body.Reports?.[0]?.Rows ?? [];
+}

@@ -32,6 +32,13 @@ const SCOPES = [
                                  // distinct from accounting.journals.read, which
                                  // covers the unrelated, Advanced-tier-gated
                                  // system Journals report endpoint we don't use.
+  'accounting.reports.profitandloss.read', // real P&L (Group Overview) — the broad
+  'accounting.reports.balancesheet.read',  // 'accounting.reports.read' was split
+                                 // into per-report granular scopes; these two are
+                                 // confirmed NOT behind the Advanced-tier paywall
+                                 // (that gate is specifically the raw Journals
+                                 // ledger endpoint, XPM, and Bulk Connections —
+                                 // verified independently, not assumed).
   'accounting.contacts',
   'accounting.settings.read',   // chart of accounts (categorize)
   'offline_access',
