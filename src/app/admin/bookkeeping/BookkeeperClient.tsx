@@ -48,6 +48,7 @@ export function BookkeeperClient() {
   const [edits, setEdits] = useState<Record<string, Record<string, string>>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
   const [disconnectingEntity, setDisconnectingEntity] = useState<string | null>(null);
+  const [reconcilingDla, setReconcilingDla] = useState(false);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
@@ -112,6 +113,25 @@ export function BookkeeperClient() {
     }
   }
 
+  async function runDlaReconciliation() {
+    if (!confirm('Generate DLA journal drafts for the Jul–Sep 2026 reconciliation? This proposes drafts only — nothing posts to Xero until you approve each one.')) return;
+    setReconcilingDla(true);
+    try {
+      const res = await fetch('/api/admin/bookkeeping/reconcile-dla', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error ?? 'Failed to generate DLA drafts'); return; }
+      const summary = (data.results as { entity: string; skipped?: string; error?: string; draftId?: string; total?: number }[])
+        .map(r => r.skipped ? `${r.entity}: skipped (${r.skipped})` : r.error ? `${r.entity}: FAILED — ${r.error}` : `${r.entity}: £${r.total?.toFixed(2)} drafted`)
+        .join('\n');
+      alert(`DLA reconciliation:\n\n${summary}`);
+      load();
+    } catch {
+      alert('Failed to reach the server');
+    } finally {
+      setReconcilingDla(false);
+    }
+  }
+
   async function ask() {
     if (!question.trim()) return;
     setAsking(true);
@@ -143,12 +163,21 @@ export function BookkeeperClient() {
             reconciliation, and expenses captured from vendor email. Nothing here writes to Xero until you approve it.
           </p>
         </div>
-        <a
-          href="/admin/bookkeeping/overview"
-          className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:opacity-90 transition-opacity"
-        >
-          Group Overview →
-        </a>
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <button
+            onClick={runDlaReconciliation}
+            disabled={reconcilingDla}
+            className="text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 disabled:opacity-50"
+          >
+            {reconcilingDla ? 'Reconciling…' : 'Reconcile DLA (Jul–Sep)'}
+          </button>
+          <a
+            href="/admin/bookkeeping/overview"
+            className="text-xs font-semibold px-3 py-2 rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:opacity-90 transition-opacity"
+          >
+            Group Overview →
+          </a>
+        </div>
       </div>
 
       {entities && (
@@ -257,24 +286,50 @@ export function BookkeeperClient() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 mb-4 text-xs">
-                {Object.entries(draft.proposed_payload).map(([key, value]) => (
-                  <div key={key}>
-                    <p className="text-slate-400">{key}</p>
-                    {EDITABLE_FIELDS.has(key) ? (
-                      <input
-                        type="text"
-                        defaultValue={formatVal(value) === '—' ? '' : String(value)}
-                        placeholder="required before approving"
-                        onChange={e => setEdit(draft.id, key, e.target.value)}
-                        className="mt-0.5 w-full text-xs font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-slate-900 dark:text-white"
-                      />
-                    ) : (
-                      <p className="font-medium text-slate-700 dark:text-slate-300">{formatVal(value)}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {draft.draft_type === 'dla_journal' ? (
+                <div className="mb-4 text-xs">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-slate-400">
+                        <th className="text-left font-normal pb-1">Line (debit)</th>
+                        <th className="text-left font-normal pb-1">Account</th>
+                        <th className="text-right font-normal pb-1">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {((draft.proposed_payload.lines as { accountCode: string; description: string; amount: number }[]) ?? []).map((l, i) => (
+                        <tr key={i} className="border-t border-slate-100 dark:border-slate-800">
+                          <td className="py-1.5 text-slate-700 dark:text-slate-300">{l.description}</td>
+                          <td className="py-1.5 text-slate-500 dark:text-slate-400">{l.accountCode}</td>
+                          <td className="py-1.5 text-right font-medium text-slate-900 dark:text-white tabular-nums">£{l.amount.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p className="text-slate-400 mt-2">
+                    Credit: account {String(draft.proposed_payload.dlaAccountCode)} (Directors&rsquo; Loan Account) — dated {String(draft.proposed_payload.date)}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 mb-4 text-xs">
+                  {Object.entries(draft.proposed_payload).map(([key, value]) => (
+                    <div key={key}>
+                      <p className="text-slate-400">{key}</p>
+                      {EDITABLE_FIELDS.has(key) ? (
+                        <input
+                          type="text"
+                          defaultValue={formatVal(value) === '—' ? '' : String(value)}
+                          placeholder="required before approving"
+                          onChange={e => setEdit(draft.id, key, e.target.value)}
+                          className="mt-0.5 w-full text-xs font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-slate-900 dark:text-white"
+                        />
+                      ) : (
+                        <p className="font-medium text-slate-700 dark:text-slate-300">{formatVal(value)}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="flex gap-2 justify-end">
                 <button
