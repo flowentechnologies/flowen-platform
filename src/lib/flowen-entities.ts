@@ -12,7 +12,7 @@ export const XERO_ENTITIES = [
   { slug: 'group', name: 'Flowen Group Ltd' },
   { slug: 'ip', name: 'Flowen IP Ltd' },
   { slug: 'speech-technologies', name: 'Flowen Speech Technologies Ltd' },
-  { slug: 'labs', name: 'Flowen Labs Limited' },
+  { slug: 'labs', name: 'Flowen Labs Ltd' },
 ] as const;
 
 export type XeroEntitySlug = (typeof XERO_ENTITIES)[number]['slug'];
