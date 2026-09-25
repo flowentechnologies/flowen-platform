@@ -459,16 +459,26 @@ export interface XeroReportRow {
   Rows?: XeroReportRow[];
 }
 
-/** Depth-first search for a row whose title matches (case-insensitive,
+/** Depth-first search for a row whose label matches (case-insensitive,
  *  partial match — Xero's own wording for these varies by chart of accounts,
  *  e.g. "Total Income" vs "Total Revenue") and returns its last cell's
  *  numeric value. Returns null rather than throwing when a report simply
  *  doesn't have that line (e.g. a brand-new entity with no expenses yet) —
- *  callers treat that as 0, not an error. */
+ *  callers treat that as 0, not an error.
+ *
+ *  The label lives in different places depending on RowType: a Section row
+ *  (e.g. "Income", "Expenses") carries it in `Title`, but the summary lines
+ *  we actually search for — "Total Income", "Total Assets", "Net Profit" —
+ *  are `Row`/`SummaryRow` rows that put the label in `Cells[0].Value` and
+ *  have no `Title` at all (confirmed against a real Xero P&L response, not
+ *  assumed — the original Title-only check silently matched nothing for
+ *  every summary figure while still walking the tree fine, which is why
+ *  this looked like empty reports rather than a thrown error). */
 export function findReportValue(rows: XeroReportRow[], titleContains: string): number | null {
   const needle = titleContains.toLowerCase();
   for (const row of rows) {
-    if (row.Title?.toLowerCase().includes(needle) && row.Cells?.length) {
+    const label = row.Title ?? row.Cells?.[0]?.Value;
+    if (label?.toLowerCase().includes(needle) && row.Cells && row.Cells.length > 1) {
       const raw = row.Cells[row.Cells.length - 1]?.Value;
       const parsed = raw !== undefined ? Number(raw) : NaN;
       if (!Number.isNaN(parsed)) return parsed;
