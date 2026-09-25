@@ -17,3 +17,4 @@ async function handle(req: NextRequest): Promise<NextResponse> {
 }
 
 export const GET = withCronLogging('practice-reminders', handle);
+export const POST = withCronLogging('practice-reminders', handle);

@@ -17,3 +17,4 @@ async function handle(req: NextRequest): Promise<NextResponse> {
 }
 
 export const GET = withCronLogging('weekly-digest', handle);
+export const POST = withCronLogging('weekly-digest', handle);

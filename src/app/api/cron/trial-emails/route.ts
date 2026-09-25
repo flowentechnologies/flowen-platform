@@ -17,3 +17,4 @@ async function handle(req: NextRequest): Promise<NextResponse> {
 }
 
 export const GET = withCronLogging('trial-emails', handle);
+export const POST = withCronLogging('trial-emails', handle);

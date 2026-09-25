@@ -29,3 +29,4 @@ async function handle(req: NextRequest): Promise<NextResponse> {
 }
 
 export const GET = withCronLogging('workflows', handle);
+export const POST = withCronLogging('workflows', handle);

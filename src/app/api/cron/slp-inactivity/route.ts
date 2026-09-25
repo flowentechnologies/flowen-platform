@@ -23,3 +23,4 @@ async function handle(req: NextRequest): Promise<NextResponse> {
 }
 
 export const GET = withCronLogging('slp-inactivity', handle);
+export const POST = withCronLogging('slp-inactivity', handle);
