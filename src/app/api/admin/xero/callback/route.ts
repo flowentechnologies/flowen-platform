@@ -84,6 +84,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const scoped = authEventId ? connections.filter(c => c.authEventId === authEventId) : connections;
     tenant = scoped[0] ?? connections[0];
     ambiguous = scoped.length > 1;
+    // TEMPORARY diagnostic — the authEventId scoping above didn't actually
+    // pick the right tenant on the last live attempt, so log everything
+    // needed to see why before guessing at another fix. Remove once fixed.
+    let idTokenClaims: unknown = null;
+    if (tokenBody.id_token) {
+      try {
+        idTokenClaims = JSON.parse(Buffer.from(tokenBody.id_token.split('.')[1], 'base64url').toString('utf8'));
+      } catch (e) {
+        idTokenClaims = `decode failed: ${e instanceof Error ? e.message : String(e)}`;
+      }
+    }
+    console.log('[xero][debug]', JSON.stringify({ entity, connections, authEventId, scopedCount: scoped.length, idTokenClaims }));
   } catch (err) {
     console.error('[xero] connections lookup failed:', err);
   }
