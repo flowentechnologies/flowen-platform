@@ -13,7 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { assertAdmin } from '@/lib/admin/guard';
 import { adminDb as db } from '@/lib/supabase/admin';
-import { fetchXeroConnections, decodeXeroAuthEventId } from '@/lib/xero';
+import { fetchXeroConnections } from '@/lib/xero';
 import { isXeroEntitySlug } from '@/lib/flowen-entities';
 
 const REDIRECT_URI = 'https://www.flowen.digital/api/admin/xero/callback';
@@ -77,25 +77,16 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // GET /connections returns every org this Xero user has EVER authorised
     // for this app, not just the one(s) just granted — with more than one
     // entity connected, connections[0] would silently pick an arbitrary
-    // stale connection instead of this flow's actual grant. Scope down using
-    // the id_token's authentication_event_id claim, which matches each
-    // connection's own authEventId only for the org(s) granted just now.
-    const authEventId = decodeXeroAuthEventId(tokenBody.id_token);
-    const scoped = authEventId ? connections.filter(c => c.authEventId === authEventId) : connections;
-    tenant = scoped[0] ?? connections[0];
-    ambiguous = scoped.length > 1;
-    // TEMPORARY diagnostic — the authEventId scoping above didn't actually
-    // pick the right tenant on the last live attempt, so log everything
-    // needed to see why before guessing at another fix. Remove once fixed.
-    let idTokenClaims: unknown = null;
-    if (tokenBody.id_token) {
-      try {
-        idTokenClaims = JSON.parse(Buffer.from(tokenBody.id_token.split('.')[1], 'base64url').toString('utf8'));
-      } catch (e) {
-        idTokenClaims = `decode failed: ${e instanceof Error ? e.message : String(e)}`;
-      }
-    }
-    console.log('[xero][debug]', JSON.stringify({ entity, connections, authEventId, scopedCount: scoped.length, idTokenClaims }));
+    // stale connection instead of this flow's actual grant. Confirmed via
+    // live debug logging that Xero's id_token carries no
+    // authentication_event_id claim to scope by (an earlier fix assumed
+    // otherwise and didn't work) — the actual signal is updatedDateUtc,
+    // which Xero bumps to "now" only on the tenant(s) just granted.
+    const newest = [...connections].sort((a, b) => new Date(b.updatedDateUtc).getTime() - new Date(a.updatedDateUtc).getTime());
+    const justGranted = newest.filter(c => c.updatedDateUtc === newest[0]?.updatedDateUtc);
+    tenant = justGranted[0];
+    ambiguous = justGranted.length > 1;
+    console.log('[xero][debug]', JSON.stringify({ entity, connections, pickedTenantId: tenant?.tenantId, ambiguous }));
   } catch (err) {
     console.error('[xero] connections lookup failed:', err);
   }
