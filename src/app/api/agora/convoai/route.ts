@@ -103,14 +103,26 @@ export async function POST(req: Request) {
     // a network drop, a crash) leaves an agent Agora still considers
     // running under that exact name, and the next join attempt 409s.
     // Agora's own error body names the blocking agent, so force-stop it
-    // and retry once rather than surfacing an opaque conflict to the user.
-    const staleAgentId = conflictingAgentId(res.status, data);
-    if (staleAgentId) {
-      console.warn(`[convoai] stale agent ${staleAgentId} blocking a new join — stopping it and retrying`);
+    // and retry rather than surfacing an opaque conflict to the user.
+    //
+    // Up to 2 retries, each with a short delay before rejoining: a DELETE
+    // returning 200 doesn't guarantee Agora has released the agent name by
+    // the time an immediate retry lands — an unconditional single retry
+    // with no delay left a real, recurring failure mode (practice page
+    // stuck on "Connecting…" forever) where the retry itself still 409'd.
+    // The delay and the second attempt give that eventual-consistency gap
+    // room to close before giving up.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const staleAgentId = conflictingAgentId(res.status, data);
+      if (!staleAgentId) break;
+
+      console.warn(`[convoai] stale agent ${staleAgentId} blocking a new join — stopping it and retrying (attempt ${attempt + 1})`);
       await fetch(buildConvoAILeaveUrl(baseUrl, appId, staleAgentId), {
         method: 'DELETE',
         headers: getConvoAIHeaders(),
       }).catch((err) => console.warn('[convoai] failed to stop stale agent (continuing to retry anyway):', err));
+
+      await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
 
       res = await fetch(joinUrl, {
         method: 'POST',
