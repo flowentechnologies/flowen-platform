@@ -46,6 +46,7 @@ export function BookkeeperClient() {
   const [filter, setFilter] = useState<'all' | Draft['draft_type']>('all');
   const [edits, setEdits] = useState<Record<string, Record<string, string>>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [disconnectingEntity, setDisconnectingEntity] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
@@ -87,6 +88,26 @@ export function BookkeeperClient() {
       setDrafts(prev => prev.filter(d => d.id !== draft.id));
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function disconnect(slug: string, name: string) {
+    if (!confirm(`Disconnect ${name} from Xero? You'll need to reconnect it via Connect before it syncs again.`)) return;
+    setDisconnectingEntity(slug);
+    try {
+      const res = await fetch('/api/admin/xero/disconnect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entity: slug }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        alert(body.error ?? 'Failed to disconnect');
+        return;
+      }
+      load();
+    } finally {
+      setDisconnectingEntity(null);
     }
   }
 
@@ -138,13 +159,21 @@ export function BookkeeperClient() {
                   {e.connected ? `Connected to ${e.tenantName ?? 'Xero'}` : "Not connected — the sync crons skip this entity until it is."}
                 </p>
               </div>
-              {!e.connected && (
+              {!e.connected ? (
                 <a
                   href={`/api/admin/xero/connect?entity=${e.slug}`}
                   className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors"
                 >
                   Connect
                 </a>
+              ) : (
+                <button
+                  onClick={() => disconnect(e.slug, e.name)}
+                  disabled={disconnectingEntity === e.slug}
+                  className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 disabled:opacity-50 transition-colors"
+                >
+                  {disconnectingEntity === e.slug ? 'Disconnecting…' : 'Disconnect'}
+                </button>
               )}
             </div>
           ))}
