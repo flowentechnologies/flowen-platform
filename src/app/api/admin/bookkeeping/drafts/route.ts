@@ -163,6 +163,10 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ ok: true, status: 'applied', xero_result: xeroResult });
   } catch (err) {
+    // Logged server-side, not just returned to the client, so a failed
+    // approval shows up in Vercel runtime logs with its real message
+    // instead of only a bare 500 status line.
+    console.error('[bookkeeping/drafts] approve failed', { draftId: body.id, draftType: draft.draft_type, entity, err });
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Apply failed' }, { status: 500 });
   }
 }
