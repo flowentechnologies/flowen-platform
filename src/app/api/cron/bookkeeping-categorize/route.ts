@@ -42,7 +42,15 @@ async function handle(_req: NextRequest): Promise<NextResponse> {
   const results: Record<string, unknown>[] = [];
 
   for (const entity of entities) {
-    results.push(await categorizeForEntity(entity, supabase));
+    // One entity's Xero call failing (token issue, API outage, etc.) must
+    // not abort every other entity's run — each entity's own drafts are
+    // independent, so a failure here is scoped to that entity's result row,
+    // not the whole cron invocation.
+    try {
+      results.push(await categorizeForEntity(entity, supabase));
+    } catch (err) {
+      results.push({ entity, errors: [{ error: err instanceof Error ? err.message : String(err) }] });
+    }
   }
 
   return NextResponse.json({
