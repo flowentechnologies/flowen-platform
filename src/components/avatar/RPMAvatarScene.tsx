@@ -23,7 +23,7 @@
  *
  * Usage:
  *   <RPMAvatarScene
- *     avatarUrl="/models/facecap_clean.glb"
+ *     avatarUrl="/models/flowen_companion.glb"
  *     blends={blends}
  *     isSpeaking={isSpeaking}
  *   />

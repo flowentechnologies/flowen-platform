@@ -17,7 +17,7 @@
  *
  * Usage:
  *   <AgoraAvatarSession
- *     avatarUrl="/models/facecap_clean.glb"
+ *     avatarUrl="/models/flowen_companion.glb"
  *     systemPrompt="You are a speech therapy assistant..."
  *   />
  */
@@ -39,25 +39,24 @@ const RPMAvatarScene = dynamic(
 );
 
 // ── Default avatar ────────────────────────────────────────────────────────────
-// Stopgap: Ready Player Me (the original source of this avatar) was acquired
-// by Netflix in Dec 2025 and fully shut down Jan 31 2026 — models.readyplayer.me
-// has no DNS records at all any more, so every session using that URL 404'd
-// at the network level before Three.js ever got a chance to load anything.
-// Self-hosting instead of depending on any live third-party avatar service
-// avoids this exact failure mode recurring.
-//
-// facecap_clean.glb is Three.js's own official demo asset (MIT licensed) —
-// already in this repo (public/models/), and carries the full 52 ARKit
-// blend shapes VisemeBlends needs (see git history: it briefly served the
-// same role for the FaceAvatar calibration preview before that component
-// moved to a canvas-2D approach for unrelated reasons) — though under
-// Apple's raw underscore-suffix naming (browDown_L) rather than Ready
-// Player Me's camelCase convention (browDownLeft); RPMAvatarScene
-// normalizes this, see arkit-morph-names.ts. It's a face-only model with
-// no shoulders/torso, so it's a visual downgrade from the old RPM avatar —
-// swap in a proper branded, head-and-shoulders GLB (same ARKit blend-shape
-// scheme) when one exists.
-const DEFAULT_AVATAR_URL = '/models/facecap_clean.glb';
+// flowen_companion.glb is a bespoke, procedurally-generated character built
+// for this product (public/models/, self-hosted GLB — see
+// scripts/ or the 3D Jutsu project referenced in the commit that added this)
+// — an original design, not derived from any third-party asset, replacing
+// the two stopgaps that preceded it: Ready Player Me (shut down Jan 31 2026)
+// and then facecap_clean.glb (Three.js's own MIT-licensed demo head, used
+// as an interim placeholder while this asset was built). Carries the full
+// 52 ARKit-named blend shapes VisemeBlends needs, generated directly under
+// the camelCase naming (mouthSmileLeft, browInnerUp, …) RPMAvatarScene
+// expects — no naming-convention normalization pass required for this
+// asset (arkit-morph-names.ts remains for any other GLB dropped in here).
+// Eye blinks/squints are driven by two small dedicated eyelid meshes rather
+// than the head mesh itself — see the "why" note in the commit that added
+// this file: a shape key on the head's socket rim alone can't occlude the
+// separate eyeball spheres, so eyeBlinkLeft/Right and eyeSquintLeft/Right
+// live on EyeLeftLid/EyeRightLid instead, driven by the same morph-target
+// names via the identical mechanism.
+const DEFAULT_AVATAR_URL = '/models/flowen_companion.glb';
 
 interface Props {
   avatarUrl?:    string;
