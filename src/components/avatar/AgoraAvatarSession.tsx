@@ -51,11 +51,18 @@ const RPMAvatarScene = dynamic(
 // expects — no naming-convention normalization pass required for this
 // asset (arkit-morph-names.ts remains for any other GLB dropped in here).
 // Eye blinks/squints are driven by two small dedicated eyelid meshes rather
-// than the head mesh itself — see the "why" note in the commit that added
-// this file: a shape key on the head's socket rim alone can't occlude the
-// separate eyeball spheres, so eyeBlinkLeft/Right and eyeSquintLeft/Right
-// live on EyeLeftLid/EyeRightLid instead, driven by the same morph-target
-// names via the identical mechanism.
+// than the head mesh itself — a shape key on the head's socket rim alone
+// can't occlude the separate eyeball spheres, so eyeBlinkLeft/Right and
+// eyeSquintLeft/Right live on EyeLeftLid/EyeRightLid instead, driven by the
+// same morph-target names via the identical mechanism.
+//
+// The mouth is a real opening, not a closed surface with a crease drawn on
+// it: the lip line is an actual cut, behind which sit a teeth ring, a dark
+// throat cavity, and a tongue (its own geometry, not a shape-keyed dent in
+// the face) — jawOpen/tongueOut etc. now reveal and move real geometry
+// instead of just stretching skin. (v1 of this asset — the first shipped
+// version — didn't have this; "flimsy, no mouth" feedback prompted the
+// rebuild.)
 const DEFAULT_AVATAR_URL = '/models/flowen_companion.glb';
 
 interface Props {
