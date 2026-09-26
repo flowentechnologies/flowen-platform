@@ -82,6 +82,7 @@ const NAV: NavSection[] = [
       { label: 'IP Debt & Readiness', href: '/admin/ip-readiness' },
       { label: 'Valuation', href: '/admin/valuation' },
       { label: 'Cap Table', href: '/admin/cap-table' },
+      { label: 'SEIS / EIS', href: '/admin/seis-eis' },
     ],
   },
   {
@@ -108,6 +109,7 @@ const NAV: NavSection[] = [
       { label: 'Sub-processors', href: '/admin/sub-processors' },
       { label: 'Insurance', href: '/admin/insurance' },
       { label: 'Safeguarding', href: '/admin/safeguarding' },
+      { label: 'Company Records', href: '/admin/company-records' },
     ],
   },
   {
