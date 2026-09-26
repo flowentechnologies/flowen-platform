@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const VALID_FRAMEWORKS = new Set(['dcb0129', 'dtac', 'dspt', 'mhra', 'wcag']);
+  const VALID_FRAMEWORKS = new Set(['dcb0129', 'dtac', 'dspt', 'mhra', 'wcag', 'insurance', 'safeguarding']);
   const VALID_STATUSES   = new Set(['not_started', 'in_progress', 'complete', 'not_applicable', 'blocked']);
 
   if (!VALID_FRAMEWORKS.has(framework)) {

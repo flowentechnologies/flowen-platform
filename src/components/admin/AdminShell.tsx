@@ -105,6 +105,9 @@ const NAV: NavSection[] = [
       { label: 'NHS Pipeline', href: '/admin/nhs' },
       { label: 'GDPR Art. 30 ROPA', href: '/admin/ropa' },
       { label: 'Internal Policies', href: '/admin/policies' },
+      { label: 'Sub-processors', href: '/admin/sub-processors' },
+      { label: 'Insurance', href: '/admin/insurance' },
+      { label: 'Safeguarding', href: '/admin/safeguarding' },
     ],
   },
   {

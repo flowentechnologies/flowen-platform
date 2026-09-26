@@ -573,6 +573,86 @@ USABILITY & ACCESSIBILITY: WCAG 2.1 AA partial conformance (see Accessibility St
 Full DTAC evidence pack available to NHS procurement teams on request.
   `,
 
+  safeguardingPolicy: `
+SAFEGUARDING POLICY
+Last Updated: 26 September 2026
+Effective Date: 26 September 2026
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. PURPOSE AND SCOPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Flowen Speech Technologies Ltd operates a digital speech-fluency platform used by people who stutter, including children and young people, and by the Speech & Language Pathologists (SLPs) who treat them. This policy sets out how Flowen protects the welfare of children and adults at risk who use the Platform, and what happens when a safeguarding concern arises through it.
+
+This policy applies to all Flowen staff, contractors, and directors with any access to user data or user-facing systems. It does not replace, and is not a substitute for, the safeguarding policy of the clinical organisation employing a user's assigned SLP — that organisation remains responsible for the clinical safeguarding duties owed to its own patients. Flowen's duty under this policy arises from its own, separate position: as the platform provider and data controller, Flowen may become aware of a safeguarding concern (through session content, messages, or a report from a user) that it has a responsibility to act on regardless of what any other organisation does.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. LEGAL FRAMEWORK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This policy is written with regard to:
+— Working Together to Safeguard Children 2023 (statutory guidance, England)
+— The Care Act 2014 (safeguarding adults at risk)
+— Keeping Children Safe in Education 2024, so far as it informs good practice for any platform used in an educational or NHS-adjacent setting
+— UK GDPR Article 9(2)(b)/(c) and (h) as the lawful basis for processing special category data where necessary to protect a user's vital interests or for health/social care purposes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DESIGNATED SAFEGUARDING LEAD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Howard Henry, Sole Director, is Flowen's Designated Safeguarding Lead (DSL) until a dedicated appointment is made as the team grows. The DSL is the first point of contact for any concern raised under this policy and is responsible for deciding whether external referral is required.
+
+Note: the current DSL has not yet completed accredited Level 3 safeguarding training. This is flagged here deliberately rather than left silent — completing that training is a near-term action, not assumed to already be in place.
+
+Contact: hello@flowen.digital, marked "Safeguarding — Urgent" in the subject line.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. RECOGNISING A CONCERN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A safeguarding concern may come to Flowen's attention through:
+— Content disclosed in a practice session transcript or clinical message
+— A direct report from a user, parent/guardian, or clinician
+— A pattern flagged by an assigned SLP through the Platform's messaging system
+— Any Flowen staff member noticing something during ordinary use of the admin tools
+
+Categories tracked in Flowen's internal concern log include: a disclosure of harm, an indication of self-harm risk, a situation warranting external referral, or another welfare concern not covered by the above.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. WHAT TO DO IF A CONCERN ARISES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Do not attempt to investigate or question the person concerned. Record what was seen or said, in their own words where possible, without leading questions.
+2. Log the concern in Flowen's internal safeguarding record as soon as practicable, and always within 24 hours.
+3. Notify the Designated Safeguarding Lead immediately if there is any indication of immediate risk to life or safety — do not wait for the internal log.
+4. The DSL will determine whether the concern should be escalated to the user's assigned SLP's own employer, to statutory children's/adult social care services, or to the police, and will make that referral without unnecessary delay.
+5. If there is an immediate risk to life, call 999 first, and log/notify afterward.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. RECORD-KEEPING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every concern is recorded in Flowen's safeguarding concern log (internal, access restricted to admin staff on a need-to-know basis), including: category, description, status, any external escalation, and resolution. This record is retained for the duration of the platform relationship plus 7 years, consistent with the retention period for other clinical records, and is disclosable to statutory authorities on lawful request.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. THE AI CONVERSATIONAL PRACTICE FEATURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Platform's AI conversational practice feature is a fluency-practice tool, not a moderated or monitored safeguarding channel, and it is not designed to detect or respond to disclosures of harm. It does not currently screen conversation content for safeguarding indicators in real time. Any disclosure a user makes to the AI feature that later comes to Flowen's attention (for example, through a stored transcript reviewed for another purpose) is handled under section 5 above, the same as a disclosure made anywhere else on the Platform.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. TRAINING AND REVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All staff with access to user-facing systems receive an overview of this policy on onboarding. This policy is reviewed at least annually, or sooner following any safeguarding concern that identifies a gap in it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. CONTACT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+To raise a safeguarding concern, or for any question about this policy: hello@flowen.digital.
+`,
+
   governingLaw: `
 GOVERNING LAW & DISPUTE RESOLUTION
 Last Updated: 1 August 2026

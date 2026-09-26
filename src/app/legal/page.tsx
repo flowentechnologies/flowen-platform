@@ -6,7 +6,7 @@ import { MASTER_POLICIES } from './policies';
 
 export const metadata: Metadata = {
   title: 'Legal & Privacy — Flowen Speech Platform',
-  description: 'Flowen\'s terms of service, privacy policy, UK GDPR statement, DCB0129 clinical safety case, and cookie policy.',
+  description: 'Flowen\'s terms of service, privacy policy, UK GDPR statement, DCB0129 clinical safety case, safeguarding policy, and cookie policy.',
 };
 
 const SECTIONS = [
@@ -37,6 +37,13 @@ const SECTIONS = [
     tag: 'PECR 2003',
     summary: 'Every cookie we set — strictly necessary auth tokens, first-party analytics (__vs, __utm, flowen_anon_id), affiliate tracking, and third-party tools.',
     content: MASTER_POLICIES.cookiePolicy,
+  },
+  {
+    id: 'safeguarding-policy',
+    title: 'Safeguarding Policy',
+    tag: 'CHILD & ADULT PROTECTION',
+    summary: 'How Flowen protects the welfare of children and adults at risk who use the Platform, and what happens when a concern is raised.',
+    content: MASTER_POLICIES.safeguardingPolicy,
   },
   {
     id: 'governing-law',

@@ -1,6 +1,11 @@
 import MarketingNavbar from '@/components/MarketingNavbar';
 import MarketingFooter from '@/components/MarketingFooter';
 import type { Metadata } from 'next';
+import { adminDb } from '@/lib/supabase/admin';
+
+// This page's whole job is being the current, accurate sub-processor
+// disclosure — it must never serve a stale cached render.
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Data Processing Agreement — Flowen Speech Platform',
@@ -153,7 +158,26 @@ The Processor shall impose equivalent data protection obligations on each sub-pr
   },
 ];
 
-export default function DPAPage() {
+interface SubProcessorRow {
+  name: string;
+  purpose: string;
+  location: string;
+  safeguard: string;
+}
+
+export default async function DPAPage() {
+  // Public page, no admin gate — reads via the service-role client since
+  // there's no visitor session to check here, same as any other marketing
+  // page reading published content. Falls back to an empty array (rather
+  // than throwing) if the table is ever briefly unreachable, so the page
+  // still renders instead of 500ing on a live legal document.
+  const { data: subProcessors } = await adminDb()
+    .from('sub_processors')
+    .select('name, purpose, location, safeguard')
+    .eq('active', true)
+    .order('name');
+  const activeSubProcessors = (subProcessors ?? []) as SubProcessorRow[];
+
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col">
       <MarketingNavbar />
@@ -248,15 +272,7 @@ export default function DPAPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
-                {[
-                  { name: 'Supabase Inc.', purpose: 'Database, auth, storage (including session recordings)', location: 'UK-GBR', safeguard: 'SCCs + UK Addendum' },
-                  { name: 'Vercel Inc.', purpose: 'Hosting, edge functions', location: 'UK/EU', safeguard: 'SCCs + UK Addendum' },
-                  { name: 'Agora Inc.', purpose: 'Real-time voice relay for AI conversation practice — live audio in transit only, not stored by Agora', location: 'US/EU', safeguard: 'SCCs + UK Addendum' },
-                  { name: 'OpenAI, L.L.C.', purpose: 'AI language model for AI conversation practice (API data not used for model training)', location: 'US', safeguard: 'SCCs + UK Addendum' },
-                  { name: 'ElevenLabs Inc.', purpose: 'AI voice synthesis; voice cloning where a user opts in', location: 'US/EU', safeguard: 'SCCs + UK Addendum' },
-                  { name: 'Functional Software Inc. (Sentry)', purpose: 'Error monitoring (PHI masked)', location: 'EU/US', safeguard: 'SCCs + UK Addendum' },
-                  { name: 'Stripe Inc.', purpose: 'Payment processing', location: 'US/EU', safeguard: 'Independent controller; UK–US Data Bridge' },
-                ].map(sp => (
+                {activeSubProcessors.map(sp => (
                   <tr key={sp.name} className="bg-slate-900/30 hover:bg-slate-900/60 transition-colors">
                     <td className="p-4 text-white font-medium">{sp.name}</td>
                     <td className="p-4 text-slate-400">{sp.purpose}</td>
@@ -268,7 +284,7 @@ export default function DPAPage() {
             </table>
           </div>
           <p className="text-slate-400 text-xs mt-3">
-            Last updated: 1 August 2026. Changes to sub-processors are notified with 30 days&apos; notice.
+            Changes to sub-processors are notified with 30 days&apos; notice.
           </p>
         </div>
 
