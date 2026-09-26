@@ -433,7 +433,7 @@ export const CONTENT: Record<string, ReactNode> = {
         </div>
         <div className="pt-2">
           <p className="text-slate-200 font-bold text-base">Re: Application for Advance Assurance — Seed Enterprise Investment Scheme (SEIS)</p>
-          <p className="text-slate-400 text-xs mt-1">Company: Flowen Group Ltd &nbsp;|&nbsp; Co. No.: 17452036 &nbsp;|&nbsp; UTR: [XXXXXXXXXX]</p>
+          <p className="text-slate-400 text-xs mt-1">Company: Flowen Group Ltd &nbsp;|&nbsp; Co. No.: 17452036 &nbsp;|&nbsp; UTR: 9599400120</p>
         </div>
       </div>
 
@@ -463,13 +463,13 @@ export const CONTENT: Record<string, ReactNode> = {
           {[
             ['Full company name',               'Flowen Group Ltd'],
             ['Companies House number',           '17452036'],
-            ['Unique Taxpayer Reference (UTR)',  '[XXXXXXXXXX]'],
+            ['Unique Taxpayer Reference (UTR)',  '9599400120'],
             ['Registered office address',        '71-75 Shelton Street, Covent Garden, London, WC2H 9JQ'],
-            ['Principal place of business',      '[If different from registered office]'],
-            ['Correspondence address',           '[If different from registered office]'],
-            ['Contact person',                   '[Director name] — flowenspeech@outlook.com'],
+            ['Principal place of business',      'Same as registered office [confirm — assumed, since the Company has no separate trading premises on record]'],
+            ['Correspondence address',           'Same as registered office'],
+            ['Contact person',                   'Howard Henry, Sole Director — flowenspeech@outlook.com'],
             ['Date of incorporation',            '10 September 2026'],
-            ['Accounting reference date',        '[DD Month] annually'],
+            ['Accounting reference date',        '30 September annually'],
             ['SIC code',                         '64209 — Activities of Other Holding Companies N.E.C.'],
             ['Nature of entity',                 'Private company limited by shares — parent holding company of a qualifying trading group'],
             ['Qualifying subsidiaries',          'Flowen IP Ltd (Co. No. 17471287) — holds IP, licenses to the trading subsidiary; Flowen Speech Technologies Ltd (Co. No. 17470700) — carries on the qualifying trade; Flowen Labs Ltd (Co. No. 17471295) — R&D. All three 100%-owned by the Company.'],
@@ -573,7 +573,7 @@ export const CONTENT: Record<string, ReactNode> = {
         <tbody>
           {[
             ['Total amount to be raised under SEIS',  '[£______] (maximum £250,000 under SEIS — Finance Act 2023)'],
-            ['Class of shares',                        'Ordinary shares of £0.0001 nominal value each (or £0.01 if a lower-precision statement of capital was filed)'],
+            ['Class of shares',                        'Ordinary shares of £0.00001 nominal value each (following the 1,000:1 subdivision of the original £0.01 shares — total nominal value unchanged) [confirm SH02 filing reference once it appears at Companies House]'],
             ['Number of new shares to be issued',      '[_______ shares]'],
             ['Issue price per share',                  '[£_____] per share'],
             ['Proposed date of share issue',           '[DD Month YYYY — or "on or before [date]"]'],
