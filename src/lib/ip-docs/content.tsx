@@ -472,7 +472,7 @@ export const CONTENT: Record<string, ReactNode> = {
             ['Accounting reference date',        '[DD Month] annually'],
             ['SIC code',                         '64209 — Activities of Other Holding Companies N.E.C.'],
             ['Nature of entity',                 'Private company limited by shares — parent holding company of a qualifying trading group'],
-            ['Qualifying subsidiaries',          'Flowen IP Ltd (Co. No. [XXXXXXXX]) — holds IP, licenses to the trading subsidiary; Flowen Speech Technologies Ltd (Co. No. [XXXXXXXX]) — carries on the qualifying trade; Flowen Labs Limited (Co. No. [XXXXXXXX]) — R&D. All three 100%-owned by the Company.'],
+            ['Qualifying subsidiaries',          'Flowen IP Ltd (Co. No. 17471287) — holds IP, licenses to the trading subsidiary; Flowen Speech Technologies Ltd (Co. No. 17470700) — carries on the qualifying trade; Flowen Labs Ltd (Co. No. 17471295) — R&D. All three 100%-owned by the Company.'],
           ].map(([f, d]) => (
             <tr key={f}>
               <TD><span className="text-slate-300 font-medium text-xs">{f}</span></TD>
@@ -504,7 +504,7 @@ export const CONTENT: Record<string, ReactNode> = {
       <P>
         The underlying software, models, and brand IP used in this trade are owned by another qualifying subsidiary,
         <Bold> Flowen IP Ltd</Bold>, and licensed to Flowen Speech Technologies Ltd on arm's-length terms (see §3 below
-        for why this licensing does not disqualify the group's trade). <Bold>Flowen Labs Limited</Bold>, the third
+        for why this licensing does not disqualify the group's trade). <Bold>Flowen Labs Ltd</Bold>, the third
         qualifying subsidiary, carries on R&amp;D that feeds into the same trade.
       </P>
       <P>
@@ -529,7 +529,7 @@ export const CONTENT: Record<string, ReactNode> = {
           ['Not listed on a recognised stock exchange',
            'The Company is a private company limited by shares and is not listed or quoted on any recognised stock exchange, nor does it have any arrangement to become so listed.'],
           ['Qualifying subsidiaries only',
-           'The Company (Flowen Group Ltd) is the parent of three subsidiaries — Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Limited — each a wholly-owned (100%) qualifying subsidiary, with no arrangements in place for that ownership to change. The Company holds no interest in any other company.'],
+           'The Company (Flowen Group Ltd) is the parent of three subsidiaries — Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd — each a wholly-owned (100%) qualifying subsidiary, with no arrangements in place for that ownership to change. The Company holds no interest in any other company.'],
           ['Not under control of another company',
            'The Company is not itself a subsidiary of, nor under the control of, any other company. It is the ultimate parent of the group and operates independently.'],
           ['Group trade is not disqualified by intra-group IP licensing',
@@ -537,9 +537,9 @@ export const CONTENT: Record<string, ReactNode> = {
           ['UK permanent establishment',
            'The Company has a permanent establishment in the United Kingdom and carries on its qualifying trade wholly or mainly in the United Kingdom.'],
           ['Gross assets do not exceed £350,000 — tested on a group-consolidated basis',
-           'Because the Company has qualifying subsidiaries, this test is applied to the group\'s consolidated gross assets (Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Limited combined, intra-group balances eliminated on consolidation) — not to Flowen Group Ltd\'s standalone balance sheet, which as a pure holding company has minimal assets of its own. [FILL IN: Current consolidated group gross assets: £_______]. This will also be the case at the time of the share issue.'],
+           'Because the Company has qualifying subsidiaries, this test is applied to the group\'s consolidated gross assets (Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd combined, intra-group balances eliminated on consolidation) — not to Flowen Group Ltd\'s standalone balance sheet, which as a pure holding company has minimal assets of its own. [FILL IN: Current consolidated group gross assets: £_______]. This will also be the case at the time of the share issue.'],
           ['Fewer than 25 full-time equivalent employees — tested group-wide',
-           'This test is also applied across the whole group, not to Flowen Group Ltd alone (which as a holding company is not expected to have any employees of its own). [FILL IN: Total full-time equivalent employees across Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Limited combined: __], which is fewer than 25. This includes all directors employed by any group company.'],
+           'This test is also applied across the whole group, not to Flowen Group Ltd alone (which as a holding company is not expected to have any employees of its own). [FILL IN: Total full-time equivalent employees across Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd combined: __], which is fewer than 25. This includes all directors employed by any group company.'],
           ['Company age — within 3 years of first commercial sale',
            '[CONFIRM WITH ADVISER: which entity\'s trading history is the relevant date here.] Flowen Group Ltd itself carries on no trade and has no trading history of its own — the qualifying trade is carried on by Flowen Speech Technologies Ltd. The first commercial sale of the Flowen/Vocali platform took place on [FILL IN: date, referencing the product\'s actual trading history, not Flowen Speech Technologies Ltd\'s incorporation date if the trade pre-dates the current corporate structure]. This is within 3 years of the proposed date of share issue, satisfying the new qualifying business activity condition under ITA 2007 s.257DA as amended by Finance Act 2023.'],
           ['No previous SEIS investment',
@@ -592,7 +592,7 @@ export const CONTENT: Record<string, ReactNode> = {
       <H>5. Use of Investment Proceeds</H>
 
       <Note>
-        Flowen Group Ltd, as a holding company, does not itself spend this money — it will be passed down to Flowen Speech Technologies Ltd (and Flowen Labs Limited, for R&amp;D spend) via intercompany funding (structured as further share subscriptions or intercompany loans on arm&apos;s-length terms — to be confirmed with an accountant). [CONFIRM WITH ADVISER: the intercompany funding mechanism itself must not compromise the &quot;wholly for the purposes of the qualifying business activity&quot; test below.]
+        Flowen Group Ltd, as a holding company, does not itself spend this money — it will be passed down to Flowen Speech Technologies Ltd (and Flowen Labs Ltd, for R&amp;D spend) via intercompany funding (structured as further share subscriptions or intercompany loans on arm&apos;s-length terms — to be confirmed with an accountant). [CONFIRM WITH ADVISER: the intercompany funding mechanism itself must not compromise the &quot;wholly for the purposes of the qualifying business activity&quot; test below.]
       </Note>
 
       <P>
@@ -828,7 +828,7 @@ export const CONTENT: Record<string, ReactNode> = {
         <LI>The right to sue for past infringements of any of the above rights</LI>
       </UL>
       <H>Licence-Back for Group Use</H>
-      <P>The parties acknowledge that the Company intends to license the Background IP to Flowen Speech Technologies Ltd (and, where relevant, Flowen Labs Limited) under a separate arm&apos;s-length IP Licence Agreement, so that the wider group may continue to operate, develop, and commercialise the platform following this assignment.</P>
+      <P>The parties acknowledge that the Company intends to license the Background IP to Flowen Speech Technologies Ltd (and, where relevant, Flowen Labs Ltd) under a separate arm&apos;s-length IP Licence Agreement, so that the wider group may continue to operate, develop, and commercialise the platform following this assignment.</P>
       <H>Moral Rights</H>
       <P>To the fullest extent permitted by law, the Assignor irrevocably waives all moral rights in the Background IP in favour of the Company and its successors.</P>
       <H>Further Assurance</H>
