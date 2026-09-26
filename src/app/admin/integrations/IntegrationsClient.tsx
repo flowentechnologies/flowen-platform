@@ -86,6 +86,68 @@ function StatusBadge({ status }: { status: IntegrationDef['status'] }) {
   );
 }
 
+// ── Per-integration actions ───────────────────────────────────────────────────
+// Pinterest: a plain OAuth redirect link, same pattern as Xero's own Connect
+// link elsewhere in admin. Meta: not an OAuth redirect at all — Page-posting
+// uses a long-lived Business Manager System User token regenerated manually
+// in Meta's own UI, so a "Connect" button here would be the wrong affordance.
+// What's actually useful is checking what the *currently configured* token
+// can do right now, since the real failure (a deprecated permission) doesn't
+// show up in a bare token-validity check.
+
+function MetaCheckPermissionsButton() {
+  const [checking, setChecking] = useState(false);
+
+  async function check() {
+    setChecking(true);
+    try {
+      const res = await fetch('/api/admin/social/meta/check-permissions');
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Meta check failed: ${data.error ?? 'Unknown error'}`);
+        return;
+      }
+      alert(
+        data.canPostToPages
+          ? `✅ Token can post to Pages.\n\nGranted: ${data.grantedPermissions.join(', ')}`
+          : `⚠️ ${data.note}\n\nGranted: ${data.grantedPermissions.join(', ')}`,
+      );
+    } catch {
+      alert('Failed to reach the server');
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={check}
+      disabled={checking}
+      className="text-[10px] font-mono font-bold px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50"
+    >
+      {checking ? 'Checking…' : 'Check permissions'}
+    </button>
+  );
+}
+
+function IntegrationAction({ name }: { name: string }) {
+  if (name === 'Pinterest') {
+    return (
+      <a
+        href="/api/admin/social/pinterest/connect"
+        className="inline-block text-[10px] font-mono font-bold px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors"
+      >
+        Connect Pinterest
+      </a>
+    );
+  }
+  if (name === 'Meta Ads' || name === 'Social Publishing') {
+    return <MetaCheckPermissionsButton />;
+  }
+  return null;
+}
+
 // ── Services tab ──────────────────────────────────────────────────────────────
 
 function ServicesTab({ integrations }: { integrations: IntegrationDef[] }) {
@@ -160,6 +222,11 @@ function ServicesTab({ integrations }: { integrations: IntegrationDef[] }) {
               </p>
             </div>
           )}
+
+          {/* Per-integration action — connect / diagnose, whichever fits how this one actually authenticates */}
+          <div className="pt-1">
+            <IntegrationAction name={svc.name} />
+          </div>
         </div>
       ))}
     </div>
