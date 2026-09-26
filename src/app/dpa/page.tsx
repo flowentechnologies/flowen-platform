@@ -249,9 +249,11 @@ export default function DPAPage() {
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {[
-                  { name: 'Supabase Inc.', purpose: 'Database, auth, storage', location: 'UK-GBR', safeguard: 'SCCs + UK Addendum' },
+                  { name: 'Supabase Inc.', purpose: 'Database, auth, storage (including session recordings)', location: 'UK-GBR', safeguard: 'SCCs + UK Addendum' },
                   { name: 'Vercel Inc.', purpose: 'Hosting, edge functions', location: 'UK/EU', safeguard: 'SCCs + UK Addendum' },
-                  { name: 'Agora Inc.', purpose: 'Real-time voice (AI speech coach sessions — live audio only, not stored)', location: 'US/EU', safeguard: 'SCCs + UK Addendum' },
+                  { name: 'Agora Inc.', purpose: 'Real-time voice relay for AI conversation practice — live audio in transit only, not stored by Agora', location: 'US/EU', safeguard: 'SCCs + UK Addendum' },
+                  { name: 'OpenAI, L.L.C.', purpose: 'AI language model for AI conversation practice (API data not used for model training)', location: 'US', safeguard: 'SCCs + UK Addendum' },
+                  { name: 'ElevenLabs Inc.', purpose: 'AI voice synthesis; voice cloning where a user opts in', location: 'US/EU', safeguard: 'SCCs + UK Addendum' },
                   { name: 'Functional Software Inc. (Sentry)', purpose: 'Error monitoring (PHI masked)', location: 'EU/US', safeguard: 'SCCs + UK Addendum' },
                   { name: 'Stripe Inc.', purpose: 'Payment processing', location: 'US/EU', safeguard: 'Independent controller; UK–US Data Bridge' },
                 ].map(sp => (

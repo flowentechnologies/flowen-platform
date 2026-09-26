@@ -41,8 +41,17 @@ CLINICAL & HEALTH DATA (Special Category — Article 9 UK GDPR)
 — Therapy stage progression, session completion records, and programme adherence data
 — Treatment plans assigned by Speech & Language Pathologists (SLPs), including prescribed stages, session targets, and clinical goals
 — Self-reported fluency ratings and therapy notes
+— Audio recordings of practice sessions (see below)
 
-IMPORTANT: Raw audio is never stored or transmitted beyond your device. All acoustic analysis is performed in-browser using the Web Audio API. Only processed, anonymised biomarker values (numerical metrics) are sent to our servers. Your voice recordings are never retained.
+HOW YOUR VOICE AND AUDIO ARE HANDLED
+Real-time fluency metrics (block detection, RMS, spectral measures) are computed in-browser using the Web Audio API as you practise. Separately from that live analysis, raw audio is also recorded and leaves your device in three specific cases:
+
+— Session playback for your SLP: a recording of each practice session is uploaded and stored so your assigned Speech & Language Pathologist can review it. This happens for every session where you have an assigned SLP, under the health/social-care processing basis (Article 9(2)(h)), not separate consent — this is a normal part of clinical review, the same as an SLP reviewing a recording made in an in-person session.
+— AI conversation practice: if you use the AI conversational practice feature, your live audio is streamed in real time to our voice-infrastructure provider (Agora) and processed by our AI language and speech providers (OpenAI, and ElevenLabs where a personal voice clone is used) to generate the AI's spoken responses. See section 6 for these providers' roles.
+— Voice cloning (optional): if you choose to create a personal AI voice clone, a short calibration recording is uploaded to ElevenLabs to build it. You can delete your voice clone, and the underlying recording, at any time from your account settings — this permanently removes it from ElevenLabs.
+— Model improvement (optional, separate consent): if you separately opt in to help improve Flowen's AI models, some session recordings are also used for that purpose. This is never on by default and never bundled with any other consent — you can withdraw it at any time without affecting your access to the Platform.
+
+Retention: session recordings are kept until you request their deletion (via your account settings or by contacting us — see section 1) or until your account is closed. We are reviewing a fixed maximum retention period for session recordings and will update this policy once one is set.
 
 PAYMENT DATA
 — Subscription status and plan type
@@ -120,6 +129,7 @@ Monitor platform security             | Legitimate interests (6(1)(f))
 Anonymised product analytics          | Legitimate interests (6(1)(f))
 HMRC compliance and invoicing         | Legal obligation (6(1)(c))
 Respond to your support queries       | Contract (6(1)(b))
+Improve our AI models using your session recordings | Consent (9(2)(a)) — separate opt-in, never bundled
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 6. WHO WE SHARE YOUR DATA WITH
@@ -146,6 +156,21 @@ SENTRY (FUNCTIONAL SOFTWARE INC.)
 Role: Sub-processor (error monitoring)
 Data: Anonymised error logs (no PHI — PHI masking configured)
 Safeguard: SCCs; maskAllText and blockAllMedia enabled
+
+AGORA INC.
+Role: Sub-processor (real-time voice infrastructure for AI conversation practice)
+Data: Live audio, streamed in real time — not stored by Agora
+Safeguard: SCCs with UK Addendum
+
+OPENAI, L.L.C.
+Role: Sub-processor (AI language model for AI conversation practice)
+Data: Speech transcribed from your live audio, and text you type or say to the AI
+Safeguard: SCCs with UK Addendum; OpenAI does not use API data to train its models
+
+ELEVENLABS INC.
+Role: Sub-processor (AI voice synthesis, and voice cloning if you opt in)
+Data: Your calibration recording (if you create a voice clone) and text to be spoken by the AI
+Safeguard: SCCs with UK Addendum. You may delete your voice clone, and its underlying recording, at any time
 
 YOUR ASSIGNED SLP (if applicable)
 Role: Independent clinical professional
