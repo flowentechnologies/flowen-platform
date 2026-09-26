@@ -40,6 +40,20 @@ function fmtDate(iso: string | null) {
   });
 }
 
+/** "3m ago" / "2h ago" / "5d ago" — for the one thing an admin scanning a
+ *  status board actually wants at a glance, next to the exact timestamp. */
+function fmtRelative(iso: string | null): string {
+  if (!iso) return '';
+  const ms = Date.now() - new Date(iso).getTime();
+  if (ms < 0) return '';
+  const mins = Math.floor(ms / 60_000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
 function fmtDateShort(iso: string | null) {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('en-GB', {
@@ -106,6 +120,28 @@ function ServicesTab({ integrations }: { integrations: IntegrationDef[] }) {
 
           {/* Description */}
           <p className="text-[11px] text-slate-500 leading-relaxed">{svc.description}</p>
+
+          {/* Live error — the actual reason, not just a red badge */}
+          {svc.lastError && (
+            <div className="rounded-lg bg-red-500/5 border border-red-500/20 px-2.5 py-2">
+              <p className="text-[10px] font-mono text-red-400 leading-snug break-words">{svc.lastError}</p>
+            </div>
+          )}
+
+          {/* Last success + detail */}
+          {(svc.lastSuccessAt || svc.detail) && (
+            <div className="space-y-0.5">
+              {svc.lastSuccessAt && (
+                <p className="text-[10px] font-mono text-slate-500">
+                  Last success: <span className="text-slate-400">{fmtRelative(svc.lastSuccessAt)}</span>
+                  <span className="text-slate-600"> · {fmtDate(svc.lastSuccessAt)}</span>
+                </p>
+              )}
+              {svc.detail && (
+                <p className="text-[10px] font-mono text-slate-500 break-words">{svc.detail}</p>
+              )}
+            </div>
+          )}
 
           {/* Env vars */}
           <div className="space-y-1">
