@@ -1056,7 +1056,6 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
   const [editingEntry, setEditingEntry] = useState<CapTableEntry | undefined>();
   const [deletingId, startDeleting] = useTransition();
   const [copyMsg, setCopyMsg] = useState('');
-  const [seeding, setSeeding] = useState(false);
 
   // ── Derived numbers ────────────────────────────────────────────────────────
 
@@ -1177,18 +1176,6 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
   function handleAddNew() {
     setEditingEntry(undefined);
     setShowForm(true);
-  }
-
-  async function handleSeed() {
-    if (!confirm('Seed with example Flowen cap table data? This adds founders, option pool, and a SAFE note.')) return;
-    setSeeding(true);
-    const res = await apiCall('seed');
-    setSeeding(false);
-    if (res.error) { alert(res.error); return; }
-    // Reload entries from API
-    const fresh = await fetch('/api/admin/cap-table');
-    const data = await fresh.json();
-    if (data.entries) setEntries(data.entries);
   }
 
   const convertibleEntries = entries.filter(e => isConvertible(e.instrument));
@@ -1313,15 +1300,7 @@ export default function CapTableClient({ initialEntries }: { initialEntries: Cap
                 >
                   Add First Entry
                 </button>
-                <button
-                  onClick={handleSeed}
-                  disabled={seeding}
-                  className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-semibold transition-colors disabled:opacity-50"
-                >
-                  {seeding ? 'Seeding…' : '⚡ Seed example data'}
-                </button>
               </div>
-              <p className="text-xs text-slate-700">Seed adds founders, EMI pool, and example SAFE note</p>
             </div>
           )}
         </div>

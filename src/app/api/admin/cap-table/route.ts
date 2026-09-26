@@ -54,71 +54,6 @@ function pick(obj: Record<string, unknown>, allowed: Set<string>): Record<string
 
 // ── DB client ─────────────────────────────────────────────────────────────────
 
-// ── Seed data ─────────────────────────────────────────────────────────────────
-
-const SEED_ENTRIES = [
-  {
-    holder_name: 'Howard (Founder)',
-    holder_type: 'founder',
-    instrument: 'ordinary_shares',
-    shares: 5_000_000,
-    share_class: 'A Ordinary',
-    price_per_share_pence: 1,
-    amount_pence: 50_000,
-    valuation_cap_pence: null,
-    discount_pct: null,
-    interest_rate_pct: null,
-    vesting_start: null,
-    vesting_months: null,
-    cliff_months: null,
-    seis_eligible: true,
-    eis_eligible: false,
-    certificate_ref: 'SC-001',
-    issued_at: '2024-01-15',
-    notes: 'Founding shares. SEIS advance assurance received.',
-  },
-  {
-    holder_name: 'EMI Option Pool (Unissued)',
-    holder_type: 'pool',
-    instrument: 'emi_option',
-    shares: 500_000,
-    share_class: null,
-    price_per_share_pence: null,
-    amount_pence: null,
-    valuation_cap_pence: null,
-    discount_pct: null,
-    interest_rate_pct: null,
-    vesting_start: null,
-    vesting_months: 48,
-    cliff_months: 12,
-    seis_eligible: false,
-    eis_eligible: false,
-    certificate_ref: null,
-    issued_at: null,
-    notes: 'Board-approved EMI option pool. Standard 4-year vest, 1-year cliff applied to all grants.',
-  },
-  {
-    holder_name: 'SEIS Investor — Advance Assurance',
-    holder_type: 'investor',
-    instrument: 'safe_note',
-    shares: null,
-    share_class: null,
-    price_per_share_pence: null,
-    amount_pence: 5_000_000,
-    valuation_cap_pence: 250_000_000,
-    discount_pct: 20.00,
-    interest_rate_pct: null,
-    vesting_start: null,
-    vesting_months: null,
-    cliff_months: null,
-    seis_eligible: true,
-    eis_eligible: false,
-    certificate_ref: null,
-    issued_at: null,
-    notes: 'SAFE note — £50k at £2.5M valuation cap, 20% conversion discount. SEIS advance assurance pending.',
-  },
-];
-
 // ── GET ────────────────────────────────────────────────────────────────────────
 
 export async function GET() {
@@ -192,22 +127,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  // ── seed ─────────────────────────────────────────────────────────────────────
-  if (action === 'seed') {
-    const { count: countData } = await supabase
-      .from('cap_table_entries')
-      .select('*', { count: 'exact', head: true });
-    const count = countData ?? 0;
-    if (count >= 3) {
-      return NextResponse.json({ skipped: true, reason: 'already seeded' });
-    }
-    const { data, error } = await supabase
-      .from('cap_table_entries')
-      .insert(SEED_ENTRIES)
-      .select();
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    return NextResponse.json({ seeded: data?.length ?? 0 });
-  }
+  // 'seed' removed (26 Sep 2026): this is exactly how the table ended up with
+  // fictional example data (5,000,000 "A Ordinary" shares issued 2024-01-15,
+  // an invented £50k SEIS SAFE note at a £2.5M cap, "SEIS advance assurance
+  // received" — none of it true) sitting in the live cap table. There is no
+  // legitimate reason to reseed a real company's real cap table with
+  // placeholder rows, so the capability is gone, not just its data corrected.
 
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
 }
