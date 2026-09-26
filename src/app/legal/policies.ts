@@ -51,7 +51,7 @@ Real-time fluency metrics (block detection, RMS, spectral measures) are computed
 — Voice cloning (optional): if you choose to create a personal AI voice clone, a short calibration recording is uploaded to ElevenLabs to build it. You can delete your voice clone, and the underlying recording, at any time from your account settings — this permanently removes it from ElevenLabs.
 — Model improvement (optional, separate consent): if you separately opt in to help improve Flowen's AI models, some session recordings are also used for that purpose. This is never on by default and never bundled with any other consent — you can withdraw it at any time without affecting your access to the Platform.
 
-Retention: session recordings are kept until you request their deletion (via your account settings or by contacting us — see section 1) or until your account is closed. We are reviewing a fixed maximum retention period for session recordings and will update this policy once one is set.
+Retention: session recordings (the raw audio itself) are automatically deleted 90 days after the session, whether or not you ask — long enough for your SLP to review recent progress, without keeping raw audio indefinitely. You can also request earlier deletion at any time (via your account settings or by contacting us — see section 1). This does not affect the fluency metrics, session records, or clinical notes from that session, which are retained as part of your ongoing clinical record.
 
 PAYMENT DATA
 — Subscription status and plan type

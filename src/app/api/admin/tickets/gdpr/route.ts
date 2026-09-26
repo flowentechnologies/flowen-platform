@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/guard';
 import { logAuditEvent } from '@/lib/admin/audit';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { eraseUserAudioArtifacts } from '@/lib/gdpr-audio-erasure';
 
 export async function GET() {
   const admin = await requireAdmin();
@@ -88,13 +89,18 @@ export async function POST(req: NextRequest) {
     const { error: rpcError } = await supabase.rpc('apply_gdpr_erasure', { target_user_id: userId });
     if (rpcError) return NextResponse.json({ error: rpcError.message }, { status: 500 });
 
+    // apply_gdpr_erasure is a plain Postgres function — it can't call an
+    // external HTTP API, so it never touched session-recording audio or an
+    // ElevenLabs voice clone. Do that here before the account itself is gone.
+    const audioErasure = await eraseUserAudioArtifacts(supabase, userId);
+
     const { error: authError } = await supabase.auth.admin.deleteUser(userId);
     if (authError) return NextResponse.json({ error: authError.message }, { status: 500 });
 
     const { error } = await supabase.from('gdpr_requests').update({
       status: 'completed',
       completed_at: new Date().toISOString(),
-      internal_notes: 'Erasure applied via apply_gdpr_erasure() + auth.users deleted.',
+      internal_notes: `Erasure applied via apply_gdpr_erasure() + auth.users deleted. Audio: ${audioErasure.sessionRecordingsDeleted} session recording(s) deleted, voice clone ${audioErasure.voiceCloneDeleted ? 'deleted' : 'none/not deleted'}.${audioErasure.errors.length ? ` Errors: ${audioErasure.errors.join('; ')}` : ''}`,
       updated_at: new Date().toISOString(),
     }).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

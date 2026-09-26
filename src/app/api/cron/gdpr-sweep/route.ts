@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronRequest } from '@/lib/cron-auth';
 import { adminDb as db } from '@/lib/supabase/admin';
+import { eraseUserAudioArtifacts } from '@/lib/gdpr-audio-erasure';
 
 // Vercel Cron always invokes via GET (with Authorization: Bearer CRON_SECRET);
 // /admin/cron's manual trigger uses POST (with x-cron-secret) — verifyCronRequest
@@ -41,6 +42,12 @@ async function handle(req: NextRequest): Promise<NextResponse> {
         console.error(`[gdpr-sweep] failed for user ${row.id}:`, error.message);
         errors++;
       } else {
+        // apply_gdpr_erasure can't reach an external HTTP API — session
+        // recordings and an ElevenLabs voice clone need a separate pass.
+        const audioErasure = await eraseUserAudioArtifacts(admin, row.id);
+        if (audioErasure.errors.length) {
+          console.error(`[gdpr-sweep] audio erasure errors for user ${row.id}:`, audioErasure.errors.join('; '));
+        }
         completed++;
       }
     }
@@ -66,6 +73,10 @@ async function handle(req: NextRequest): Promise<NextResponse> {
           console.error(`[gdpr-sweep] consent-log pass failed for ${row.id}:`, error.message);
           errors++;
         } else {
+          const audioErasure = await eraseUserAudioArtifacts(admin, row.id);
+          if (audioErasure.errors.length) {
+            console.error(`[gdpr-sweep] audio erasure errors for user ${row.id}:`, audioErasure.errors.join('; '));
+          }
           completed++;
         }
       }
