@@ -1,13 +1,13 @@
 // ── Live data for ip-docs whose facts have a real source of truth elsewhere
 // in the platform (Xero, company_records, seis_eis_status) rather than
-// being hand-copied into the document text — see SeisLiveData in
+// being hand-copied into the document text — see IpDocLiveData in
 // content.tsx for what this feeds and why. Server-only.
 import { adminDb } from '@/lib/supabase/admin';
 import { getBalanceSheet, findReportValue } from '@/lib/xero';
 import { XERO_ENTITIES } from '@/lib/flowen-entities';
-import type { SeisLiveData } from './content';
+import type { IpDocLiveData } from './content';
 
-const EMPTY: SeisLiveData = {
+const EMPTY: IpDocLiveData = {
   utr: null,
   totalFte: null,
   grossAssetsPence: null,
@@ -17,6 +17,7 @@ const EMPTY: SeisLiveData = {
   founderShares: null,
   emiPoolShares: null,
   emiPoolSubdivisionConfirmed: false,
+  trademarkItems: [],
 };
 
 // Consolidated group gross assets, pulled live from each entity's Xero
@@ -54,10 +55,10 @@ async function getLiveGrossAssetsPence(): Promise<{ pence: number | null; asOf: 
   }
 }
 
-export async function getSeisLiveData(): Promise<SeisLiveData> {
+export async function getIpDocLiveData(): Promise<IpDocLiveData> {
   const db = adminDb();
 
-  const [recordsRes, statusRes, capTableRes, liveAssets] = await Promise.all([
+  const [recordsRes, statusRes, capTableRes, trademarkRes, liveAssets] = await Promise.all([
     db
       .from('company_records')
       .select('value')
@@ -72,12 +73,17 @@ export async function getSeisLiveData(): Promise<SeisLiveData> {
     db
       .from('cap_table_entries')
       .select('holder_type, instrument, shares'),
+    db
+      .from('ip_audit_items')
+      .select('title, status')
+      .eq('category', 'trademarks'),
     getLiveGrossAssetsPence(),
   ]);
 
   if (recordsRes.error) console.error('[ip-docs/live-data] company_records fetch failed:', recordsRes.error);
   if (statusRes.error) console.error('[ip-docs/live-data] seis_eis_status fetch failed:', statusRes.error);
   if (capTableRes.error) console.error('[ip-docs/live-data] cap_table_entries fetch failed:', capTableRes.error);
+  if (trademarkRes.error) console.error('[ip-docs/live-data] ip_audit_items (trademarks) fetch failed:', trademarkRes.error);
 
   const status = statusRes.data;
   const capTable = capTableRes.data ?? [];
@@ -109,7 +115,8 @@ export async function getSeisLiveData(): Promise<SeisLiveData> {
     founderShares: founderRow?.shares ?? null,
     emiPoolShares: emiRow?.shares ?? null,
     emiPoolSubdivisionConfirmed,
+    trademarkItems: trademarkRes.data ?? [],
   };
 }
 
-export { EMPTY as EMPTY_SEIS_LIVE_DATA };
+export { EMPTY as EMPTY_IP_DOC_LIVE_DATA };

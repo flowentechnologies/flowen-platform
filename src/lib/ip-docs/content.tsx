@@ -67,7 +67,7 @@ const RiskBadge = ({ level }: { level: 'acceptable' | 'investigate' | 'unaccepta
 // this is what keeps documents like the SEIS letter from drifting out of
 // sync with the admin data they're actually about (previously required a
 // manual find-and-replace pass every time an underlying fact changed).
-export interface SeisLiveData {
+export interface IpDocLiveData {
   utr: string | null;
   totalFte: number | null;
   grossAssetsPence: number | null;
@@ -83,13 +83,26 @@ export interface SeisLiveData {
   founderShares: number | null;
   emiPoolShares: number | null;
   emiPoolSubdivisionConfirmed: boolean;
+  // From ip_audit_items (category='trademarks') — the trademark tracker
+  // doc used to hold its own copy of these same 4 rows' status as static
+  // prose, independently of the live IP Readiness tracker. Empty array
+  // means the fetch hasn't run (falls back to the doc's last-known text).
+  trademarkItems: { title: string; status: string }[];
 }
+
+export const TRADEMARK_STATUS_LABEL: Record<string, string> = {
+  not_started: '🔴 Not Filed',
+  in_progress: '🟡 In Progress',
+  complete:    '🟢 Registered',
+  blocked:     '⛔ Blocked',
+  waived:      '⚪ Waived',
+};
 
 // ── Document content map ──────────────────────────────────────────────────────
 // A value is either static ReactNode, or — for documents whose facts have a
 // live source of truth elsewhere — a function that renders from that data.
 
-export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactNode)> = {
+export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => ReactNode)> = {
 
   // ── Regulatory & Clinical Safety ──────────────────────────────────────────────
 
@@ -431,7 +444,7 @@ export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactN
 
   // ── SEIS Advance Assurance ───────────────────────────────────────────────────
 
-  'seis-advance-assurance': (live: SeisLiveData) => (
+  'seis-advance-assurance': (live: IpDocLiveData) => (
     <>
       <Note>
         Draft for review. Items in <span className="text-slate-200 font-semibold">[square brackets]</span> require your specific details before submission.
@@ -1337,10 +1350,20 @@ export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactN
 
   // ── Trademarks ────────────────────────────────────────────────────────────────
 
-  'trademark-filing-tracker': (
+  'trademark-filing-tracker': (live: IpDocLiveData) => {
+    // Status comes live from ip_audit_items (category='trademarks') — this
+    // table used to hold its own static copy of the same 4 rows' status,
+    // independently of the live IP Readiness tracker (found consistent as
+    // of this fix, but with nothing keeping it that way). Class/filed/reg
+    // columns aren't tracked there, so those stay as the doc's own data.
+    const byTitle = new Map(live.trademarkItems.map(i => [i.title, i.status]));
+    const liveStatus = (title: string, fallback: string) =>
+      byTitle.has(title) ? TRADEMARK_STATUS_LABEL[byTitle.get(title)!] ?? fallback : fallback;
+
+    return (
     <>
       <H>Flowen Trademark Portfolio — Filing Tracker</H>
-      <P>All UK trademark applications and registrations for Flowen Group Ltd. Updated August 2026.</P>
+      <P>All UK trademark applications and registrations for Flowen Group Ltd. Status columns read live from the <a href="/admin/ip-readiness" className="underline">IP Readiness tracker</a>.</P>
       <div className="rounded-xl border border-slate-800 overflow-x-auto mb-8">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-slate-800 bg-slate-900/60">
@@ -1350,16 +1373,16 @@ export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactN
           </tr></thead>
           <tbody>
             {[
-              ['FLOWEN (wordmark)', '42', 'Software-as-a-service; scientific/tech services', '🟡 In Progress', 'Q3 2026', '—', '—'],
-              ['FLOWEN (wordmark)', '10', 'Medical devices; therapeutic apparatus', '🔴 Not Filed', '—', '—', '—'],
-              ['Dual-waveform logo', '42 + 10', 'Distinctive gradient waveform logomark', '🔴 Not Filed', '—', '—', '—'],
-              ['"Every word gets there." (tagline)', '42', 'Registered slogan', '🔴 Not Filed', '—', '—', '—'],
-            ].map(([mark, cls, desc, status, filed, reg, renewal], i, arr) => (
+              ['FLOWEN Wordmark — UK Class 42', 'FLOWEN (wordmark)', '42', 'Software-as-a-service; scientific/tech services', 'Q3 2026', '—', '—'],
+              ['FLOWEN Wordmark — UK Class 10', 'FLOWEN (wordmark)', '10', 'Medical devices; therapeutic apparatus', '—', '—', '—'],
+              ['Flowen Dual-Waveform Logo', 'Dual-waveform logo', '42 + 10', 'Distinctive gradient waveform logomark', '—', '—', '—'],
+              ['"Every word gets there." Tagline', '"Every word gets there." (tagline)', '42', 'Registered slogan', '—', '—', '—'],
+            ].map(([auditTitle, mark, cls, desc, filed, reg, renewal], i, arr) => (
               <tr key={mark + cls} className={i < arr.length - 1 ? 'border-b border-slate-800/60' : ''}>
                 <td className="px-3 py-2.5 font-medium text-slate-300 text-xs whitespace-nowrap">{mark}</td>
                 <td className="px-3 py-2.5 text-slate-400 text-xs">{cls}</td>
                 <td className="px-3 py-2.5 text-slate-400 text-xs max-w-xs">{desc}</td>
-                <td className="px-3 py-2.5 text-xs whitespace-nowrap">{status}</td>
+                <td className="px-3 py-2.5 text-xs whitespace-nowrap">{liveStatus(auditTitle, '🔴 Not Filed')}</td>
                 <td className="px-3 py-2.5 text-slate-400 text-xs">{filed}</td>
                 <td className="px-3 py-2.5 text-slate-400 text-xs font-mono">{reg}</td>
                 <td className="px-3 py-2.5 text-slate-400 text-xs">{renewal}</td>
@@ -1378,5 +1401,6 @@ export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactN
       <H>Notes on UK Trademark Process</H>
       <P>UK trademark applications are examined by the IPO within approximately 2 months. If accepted, the mark is published in the Trade Marks Journal for 2 months of opposition period before registration. Total time from filing to registration: typically 4–6 months if unopposed.</P>
     </>
-  ),
+    );
+  },
 };
