@@ -14,6 +14,9 @@ const EMPTY: SeisLiveData = {
   grossAssetsAsOf: null,
   priorEisVctInvestment: null,
   priorEisVctNotes: null,
+  founderShares: null,
+  emiPoolShares: null,
+  emiPoolSubdivisionConfirmed: false,
 };
 
 // Consolidated group gross assets, pulled live from each entity's Xero
@@ -54,7 +57,7 @@ async function getLiveGrossAssetsPence(): Promise<{ pence: number | null; asOf: 
 export async function getSeisLiveData(): Promise<SeisLiveData> {
   const db = adminDb();
 
-  const [recordsRes, statusRes, liveAssets] = await Promise.all([
+  const [recordsRes, statusRes, capTableRes, liveAssets] = await Promise.all([
     db
       .from('company_records')
       .select('value')
@@ -66,13 +69,26 @@ export async function getSeisLiveData(): Promise<SeisLiveData> {
       .select('total_fte, consolidated_gross_assets_pence, prior_eis_vct_investment, prior_eis_vct_notes, updated_at')
       .limit(1)
       .maybeSingle(),
+    db
+      .from('cap_table_entries')
+      .select('holder_type, instrument, shares'),
     getLiveGrossAssetsPence(),
   ]);
 
   if (recordsRes.error) console.error('[ip-docs/live-data] company_records fetch failed:', recordsRes.error);
   if (statusRes.error) console.error('[ip-docs/live-data] seis_eis_status fetch failed:', statusRes.error);
+  if (capTableRes.error) console.error('[ip-docs/live-data] cap_table_entries fetch failed:', capTableRes.error);
 
   const status = statusRes.data;
+  const capTable = capTableRes.data ?? [];
+  const founderRow = capTable.find(r => r.holder_type === 'founder');
+  const emiRow = capTable.find(r => r.instrument === 'emi_option');
+  // Crude but reliable given today's known numbers: a genuinely post-
+  // subdivision EMI pool would be in the hundreds of millions of shares —
+  // anything still under a million means the 1,000:1 subdivision applied
+  // to founder shares hasn't been carried across to the pool (or a decision
+  // not to was never recorded), so flag it rather than silently assume.
+  const emiPoolSubdivisionConfirmed = emiRow ? emiRow.shares >= 1_000_000 : false;
 
   // Prefer the live Xero pull; fall back to the last stored snapshot,
   // clearly labelled as such, if Xero couldn't be reached just now.
@@ -90,6 +106,9 @@ export async function getSeisLiveData(): Promise<SeisLiveData> {
     grossAssetsAsOf,
     priorEisVctInvestment: status?.prior_eis_vct_investment ?? null,
     priorEisVctNotes: status?.prior_eis_vct_notes ?? null,
+    founderShares: founderRow?.shares ?? null,
+    emiPoolShares: emiRow?.shares ?? null,
+    emiPoolSubdivisionConfirmed,
   };
 }
 

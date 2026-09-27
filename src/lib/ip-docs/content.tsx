@@ -74,6 +74,15 @@ export interface SeisLiveData {
   grossAssetsAsOf: string | null;
   priorEisVctInvestment: boolean | null;
   priorEisVctNotes: string | null;
+  // From cap_table_entries — the founder's issued ordinary shares, and the
+  // EMI option pool's authorised-but-unissued shares. Pulled live so this
+  // document can't independently drift from the cap table the way it did
+  // once already this session (the 1,000:1 subdivision applied to founder
+  // shares but the EMI pool's own subdivision status is still an open
+  // question — see emiPoolSubdivisionConfirmed).
+  founderShares: number | null;
+  emiPoolShares: number | null;
+  emiPoolSubdivisionConfirmed: boolean;
 }
 
 // ── Document content map ──────────────────────────────────────────────────────
@@ -601,7 +610,7 @@ export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactN
         <tbody>
           {[
             ['Total amount to be raised under SEIS',  '£250,000 (the statutory maximum under SEIS — Finance Act 2023). This SEIS tranche forms part of a wider funding round targeting £350,000 (minimum) to £1,500,000 (target, with possible over-subscription); the balance beyond the SEIS tranche is intended to be raised under EIS and/or other investment. [CONFIRM: whether the full £250,000 SEIS allocation is intended, and whether a companion EIS Advance Assurance application is being submitted for the remainder.]'],
-            ['Class of shares',                        'Ordinary shares of £0.00001 nominal value each (following the 1,000:1 subdivision of the original £0.01 shares — total nominal value unchanged) [confirm SH02 filing reference once it appears at Companies House]'],
+            ['Class of shares',                        `Ordinary shares of £0.00001 nominal value each (following the 1,000:1 subdivision of the original £0.01 shares — total nominal value unchanged) [confirm SH02 filing reference once it appears at Companies House]. Currently ${live.founderShares?.toLocaleString('en-GB') ?? '[FILL IN]'} ordinary shares in issue.${live.emiPoolShares !== null && !live.emiPoolSubdivisionConfirmed ? ` [CONFIRM: the EMI option pool (${live.emiPoolShares.toLocaleString('en-GB')} shares, unissued) is recorded at its pre-subdivision count — confirm whether it should also be subdivided 1,000:1 to ${(live.emiPoolShares * 1000).toLocaleString('en-GB')} before this letter or the cap table are relied on.]` : ''}`],
             ['Number of new shares to be issued',      '[_______ shares]'],
             ['Issue price per share',                  '[£_____] per share'],
             ['Proposed date of share issue',           '[DD Month YYYY — or "on or before [date]"]'],
