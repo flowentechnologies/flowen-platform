@@ -59,9 +59,27 @@ const RiskBadge = ({ level }: { level: 'acceptable' | 'investigate' | 'unaccepta
   return <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${map[level]}`}>{label[level]}</span>;
 };
 
-// ── Document content map ──────────────────────────────────────────────────────
+// ── Live data for documents that reference facts the platform already
+// tracks elsewhere (company_records, seis_eis_status, cap_table_entries).
+// Loaded once by the ip-docs page (src/lib/ip-docs/live-data.ts) and passed
+// to any CONTENT entry that's a function instead of a plain ReactNode —
+// this is what keeps documents like the SEIS letter from drifting out of
+// sync with the admin data they're actually about (previously required a
+// manual find-and-replace pass every time an underlying fact changed).
+export interface SeisLiveData {
+  utr: string | null;
+  totalFte: number | null;
+  grossAssetsPence: number | null;
+  grossAssetsAsOf: string | null;
+  priorEisVctInvestment: boolean | null;
+  priorEisVctNotes: string | null;
+}
 
-export const CONTENT: Record<string, ReactNode> = {
+// ── Document content map ──────────────────────────────────────────────────────
+// A value is either static ReactNode, or — for documents whose facts have a
+// live source of truth elsewhere — a function that renders from that data.
+
+export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactNode)> = {
 
   // ── Regulatory & Clinical Safety ──────────────────────────────────────────────
 
@@ -403,7 +421,7 @@ export const CONTENT: Record<string, ReactNode> = {
 
   // ── SEIS Advance Assurance ───────────────────────────────────────────────────
 
-  'seis-advance-assurance': (
+  'seis-advance-assurance': (live: SeisLiveData) => (
     <>
       <Note>
         Draft for review. Items in <span className="text-slate-200 font-semibold">[square brackets]</span> require your specific details before submission.
@@ -433,7 +451,7 @@ export const CONTENT: Record<string, ReactNode> = {
         </div>
         <div className="pt-2">
           <p className="text-slate-200 font-bold text-base">Re: Application for Advance Assurance — Seed Enterprise Investment Scheme (SEIS)</p>
-          <p className="text-slate-400 text-xs mt-1">Company: Flowen Group Ltd &nbsp;|&nbsp; Co. No.: 17452036 &nbsp;|&nbsp; UTR: 9599400120</p>
+          <p className="text-slate-400 text-xs mt-1">Company: Flowen Group Ltd &nbsp;|&nbsp; Co. No.: 17452036 &nbsp;|&nbsp; UTR: {live.utr ?? '[XXXXXXXXXX]'}</p>
         </div>
       </div>
 
@@ -463,7 +481,7 @@ export const CONTENT: Record<string, ReactNode> = {
           {[
             ['Full company name',               'Flowen Group Ltd'],
             ['Companies House number',           '17452036'],
-            ['Unique Taxpayer Reference (UTR)',  '9599400120'],
+            ['Unique Taxpayer Reference (UTR)',  live.utr ?? '[XXXXXXXXXX]'],
             ['Registered office address',        '71-75 Shelton Street, Covent Garden, London, WC2H 9JQ'],
             ['Principal place of business',      'Same as registered office [confirm — assumed, since the Company has no separate trading premises on record]'],
             ['Correspondence address',           'Same as registered office'],
@@ -542,15 +560,19 @@ export const CONTENT: Record<string, ReactNode> = {
           ['UK permanent establishment',
            'The Company has a permanent establishment in the United Kingdom and carries on its qualifying trade wholly or mainly in the United Kingdom.'],
           ['Gross assets do not exceed £350,000 — tested on a group-consolidated basis',
-           'Because the Company has qualifying subsidiaries, this test is applied to the group\'s consolidated gross assets (Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd combined, intra-group balances eliminated on consolidation) — not to Flowen Group Ltd\'s standalone balance sheet, which as a pure holding company has minimal assets of its own. Per the group\'s Xero accounting records as at 27 September 2026, no group entity carries any recorded asset-account balance (bank feeds are not yet connected/reconciled for any of the four companies), so consolidated gross assets are recorded as £0 — comfortably under the £350,000 threshold on any reasonable view. [CONFIRM WITH ACCOUNTANT: this reflects the bookkeeping position, not a professionally reviewed balance sheet — bank statements should be reconciled before this figure is relied on in the actual submission.] This will also be the case at the time of the share issue.'],
+           `Because the Company has qualifying subsidiaries, this test is applied to the group's consolidated gross assets (Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd combined, intra-group balances eliminated on consolidation) — not to Flowen Group Ltd's standalone balance sheet, which as a pure holding company has minimal assets of its own. Per the group's Xero accounting records${live.grossAssetsAsOf ? ` as at ${live.grossAssetsAsOf}` : ''}, ${live.grossAssetsPence !== null ? `consolidated gross assets are recorded as £${(live.grossAssetsPence / 100).toLocaleString('en-GB')}` : 'consolidated gross assets have not yet been pulled from the live bookkeeping data'} — comfortably under the £350,000 threshold on any reasonable view. [CONFIRM WITH ACCOUNTANT: this reflects the live bookkeeping position, not a professionally reviewed balance sheet — bank statements should be reconciled before this figure is relied on in the actual submission.] This will also be the case at the time of the share issue.`],
           ['Fewer than 25 full-time equivalent employees — tested group-wide',
-           'This test is also applied across the whole group, not to Flowen Group Ltd alone (which as a holding company is not expected to have any employees of its own). Total full-time equivalent employees across Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd combined: 1 (Howard Henry, sole director across all four entities) — well under the 25 limit.'],
+           `This test is also applied across the whole group, not to Flowen Group Ltd alone (which as a holding company is not expected to have any employees of its own). Total full-time equivalent employees across Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd combined: ${live.totalFte ?? '[FILL IN]'}${live.totalFte === 1 ? ' (Howard Henry, sole director across all four entities)' : ''}${live.totalFte !== null ? (live.totalFte < 25 ? ' — well under the 25 limit.' : ' — REVIEW: at or above the 25 limit.') : ', which must be fewer than 25.'}`],
           ['Company age — within 3 years of first commercial sale, or preparing to trade',
            '[CONFIRM WITH ADVISER: which entity\'s trading history is the relevant one, and whether this is correctly framed for a pre-trading company.] Flowen Group Ltd itself carries on no trade and has no trading history of its own — the qualifying trade will be carried on by Flowen Speech Technologies Ltd. As at the date of this application no first commercial sale has yet taken place, so this condition falls to be assessed under the "preparing to carry on a new qualifying trade" limb of ITA 2007 s.257DA (as amended by Finance Act 2023) rather than by reference to a first-sale date. [FILL IN: expected date of first commercial sale, once known, to confirm the applicable time limit is met.]'],
           ['No previous SEIS investment',
            'The Company has not previously received any investment under SEIS, and no SEIS compliance statement (SEIS3) has been issued in respect of the Company.'],
           ['No disqualifying EIS/VCT investment prior to this SEIS issue',
-           'The Company has not received any EIS or VCT investment prior to this proposed SEIS issue.'],
+           live.priorEisVctInvestment === true
+             ? `The Company has previously received EIS/VCT investment as follows: ${live.priorEisVctNotes ?? '[FILL IN]'}. The Company confirms this does not disqualify the proposed SEIS issue.`
+             : live.priorEisVctInvestment === false
+               ? 'The Company has not received any EIS or VCT investment prior to this proposed SEIS issue.'
+               : '[FILL IN: confirm whether the Company has received any EIS or VCT investment prior to this proposed SEIS issue.]'],
           ['Shares are newly issued, full-risk ordinary shares',
            'The shares to be issued to investors will be new ordinary shares, carrying no preferential rights to dividends or to assets on a winding-up, and no rights of redemption. [IF the Company adopts a multi-class structure: these Investor Ordinary shares rank pari passu with each other and, in economic rights, with the Founder\'s Ordinary shares — the only difference between classes is voting/governance rights attached to the Founder class, which does not constitute a dividend or capital preference for SEIS/EIS purposes and does not disqualify these shares. Confirm this analysis with an adviser before relying on it.]'],
           ['Minimum three-year holding period will be observed',

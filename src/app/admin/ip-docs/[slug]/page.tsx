@@ -1,6 +1,7 @@
 import { assertAdmin } from '@/lib/admin/guard';
 import { getDoc, STATUS_BADGE, TYPE_LABEL } from '@/lib/ip-docs/registry';
 import { CONTENT } from '@/lib/ip-docs/content';
+import { getSeisLiveData } from '@/lib/ip-docs/live-data';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -44,7 +45,11 @@ export default async function IpDocPage({ params }: Props) {
   const doc = getDoc(slug);
   if (!doc) notFound();
 
-  const content = CONTENT[slug];
+  // Some documents (currently just the SEIS letter) are a function of live
+  // data tracked elsewhere in the admin system, rather than static prose —
+  // only fetch that data when a document actually needs it.
+  const entry = CONTENT[slug];
+  const content = typeof entry === 'function' ? entry(await getSeisLiveData()) : entry;
 
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-100">
