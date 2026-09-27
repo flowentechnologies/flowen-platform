@@ -1,5 +1,6 @@
 import { assertAdmin } from '@/lib/admin/guard';
 import type { Metadata } from 'next';
+import { REGISTERED_OFFICE_ADDRESS } from '@/lib/flowen-entities';
 
 export const metadata: Metadata = {
   title: 'Internal Policies — Flowen Admin',
@@ -141,7 +142,7 @@ ${COMPANY} | Version 1.0 | Effective ${EFFECTIVE}
 APPOINTMENT DETAILS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Data Controller: Flowen Group Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
+Data Controller: Flowen Group Ltd, ${REGISTERED_OFFICE_ADDRESS}
 Data Protection Contact: ${EMAIL}
 Effective Date: ${EFFECTIVE}
 
@@ -879,7 +880,7 @@ UK Medical Devices Regulations 2002 (as amended) | MHRA Guidance: Software and A
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Product Name: Flowen
-Manufacturer: Flowen Group Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
+Manufacturer: Flowen Group Ltd, ${REGISTERED_OFFICE_ADDRESS}
 Contact: ${EMAIL}
 Version assessed: Current production version (flowen.digital)
 Assessment date: ${EFFECTIVE}

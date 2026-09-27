@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { ReactNode } from 'react';
-import { entityCompanyNumber } from '@/lib/flowen-entities';
+import { entityCompanyNumber, REGISTERED_OFFICE_ADDRESS } from '@/lib/flowen-entities';
 
 // ── Shared doc primitives (lightweight, no external deps) ─────────────────────
 
@@ -483,7 +483,7 @@ export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactN
             ['Full company name',               'Flowen Group Ltd'],
             ['Companies House number',           entityCompanyNumber('group')],
             ['Unique Taxpayer Reference (UTR)',  live.utr ?? '[XXXXXXXXXX]'],
-            ['Registered office address',        '71-75 Shelton Street, Covent Garden, London, WC2H 9JQ'],
+            ['Registered office address',        REGISTERED_OFFICE_ADDRESS],
             ['Principal place of business',      'Same as registered office [confirm — assumed, since the Company has no separate trading premises on record]'],
             ['Correspondence address',           'Same as registered office'],
             ['Contact person',                   'Howard Henry, Sole Director — flowenspeech@outlook.com'],

@@ -37,3 +37,10 @@ export function entityName(slug: XeroEntitySlug): string {
 export function entityCompanyNumber(slug: XeroEntitySlug): string {
   return XERO_ENTITIES.find(e => e.slug === slug)!.companyNumber;
 }
+
+// All 4 entities share one registered office (a company-formation agent's
+// address, standard practice for a group this size) — found independently
+// retyped across content.tsx, legal/policies.ts, and admin/policies/page.tsx
+// (7 occurrences total, all consistent as of this fix, but with nothing
+// stopping that).
+export const REGISTERED_OFFICE_ADDRESS = '71-75 Shelton Street, Covent Garden, London, WC2H 9JQ';

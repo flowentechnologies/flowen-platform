@@ -1,4 +1,4 @@
-import { entityCompanyNumber } from '@/lib/flowen-entities';
+import { entityCompanyNumber, REGISTERED_OFFICE_ADDRESS } from '@/lib/flowen-entities';
 
 export const MASTER_POLICIES = {
   company: "Flowen Speech Technologies Ltd",
@@ -21,7 +21,7 @@ For the purposes of UK data protection law, Flowen Speech Technologies Ltd is th
 
 Data Protection Contact
 Email: hello@flowen.digital
-Write to: Data Protection, Flowen Speech Technologies Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
+Write to: Data Protection, Flowen Speech Technologies Ltd, ${REGISTERED_OFFICE_ADDRESS}
 
 We are committed to protecting your personal data in accordance with the UK General Data Protection Regulation (UK GDPR), the Data Protection Act 2018 (DPA 2018), and the Data (Use and Access) Act 2025.
 
@@ -441,7 +441,7 @@ We may revise these Terms from time to time. Material changes will be communicat
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 For questions about these Terms: hello@flowen.digital
-Flowen Speech Technologies Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
+Flowen Speech Technologies Ltd, ${REGISTERED_OFFICE_ADDRESS}
   `,
 
   clinicalCompliance: `
@@ -851,6 +851,6 @@ We will update this policy if we add new cookies or change how existing ones are
 
 For any questions about our use of cookies:
 Email: hello@flowen.digital
-Write to: Data Protection, Flowen Speech Technologies Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
+Write to: Data Protection, Flowen Speech Technologies Ltd, ${REGISTERED_OFFICE_ADDRESS}
   `
 };
