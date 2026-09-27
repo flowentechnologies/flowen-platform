@@ -577,7 +577,7 @@ export const CONTENT: Record<string, ReactNode> = {
         </thead>
         <tbody>
           {[
-            ['Total amount to be raised under SEIS',  '[£______] (maximum £250,000 under SEIS — Finance Act 2023)'],
+            ['Total amount to be raised under SEIS',  '£250,000 (the statutory maximum under SEIS — Finance Act 2023). This SEIS tranche forms part of a wider funding round targeting £350,000 (minimum) to £1,500,000 (target, with possible over-subscription); the balance beyond the SEIS tranche is intended to be raised under EIS and/or other investment. [CONFIRM: whether the full £250,000 SEIS allocation is intended, and whether a companion EIS Advance Assurance application is being submitted for the remainder.]'],
             ['Class of shares',                        'Ordinary shares of £0.00001 nominal value each (following the 1,000:1 subdivision of the original £0.01 shares — total nominal value unchanged) [confirm SH02 filing reference once it appears at Companies House]'],
             ['Number of new shares to be issued',      '[_______ shares]'],
             ['Issue price per share',                  '[£_____] per share'],
@@ -662,12 +662,15 @@ export const CONTENT: Record<string, ReactNode> = {
           </tr>
         </thead>
         <tbody>
-          {[1, 2, 3].map(n => (
-            <tr key={n}>
-              <TD muted>[Name {n}]</TD>
-              <TD muted>[Address]</TD>
-              <TD muted mono>[£     ]</TD>
-              <TD muted>[No / Yes — reason]</TD>
+          {[
+            ['Fuel Ventures', '[address — confirm registered/office address]', '[£______ — confirm amount]', 'No'],
+            ['Raheem Sterling', '[address still needed]', '[£______ — confirm amount]', 'No — personal connection to the Company\'s director (a close friend), not a director, shareholder, or connected person as defined for SEIS purposes; confirm with adviser that this relationship doesn\'t trigger the "connected person" restriction before submission.'],
+          ].map(([name, address, amount, connected]) => (
+            <tr key={name}>
+              <TD muted>{name}</TD>
+              <TD muted>{address}</TD>
+              <TD muted mono>{amount}</TD>
+              <TD muted>{connected}</TD>
             </tr>
           ))}
         </tbody>
