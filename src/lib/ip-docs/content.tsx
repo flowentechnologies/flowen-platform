@@ -509,8 +509,13 @@ export const CONTENT: Record<string, ReactNode> = {
       </P>
       <P>
         The group's trade is the <Bold>development and commercialisation of proprietary software and AI technology</Bold>.
-        Flowen and Vocali are licensed to end users on a subscription basis (direct-to-consumer and via NHS/private SLT
-        practices). The qualifying business activity commenced on <Bold>[Date trade first commenced]</Bold>.
+        Flowen and Vocali are intended to be licensed to end users on a subscription basis (direct-to-consumer and via
+        NHS/private SLT practices). As at the date of this application, the Company has not yet made its first
+        commercial sale — the qualifying trade is being prepared, not yet carried on, and the proceeds of this SEIS
+        issue are intended to be applied substantially towards completing that preparation and bringing the platform
+        to market. Advance Assurance is accordingly sought on a prospective basis in respect of a new qualifying
+        trade about to be carried on, as HMRC's guidance permits <Bold>[FILL IN: expected date of first commercial
+        sale/launch]</Bold>.
       </P>
       <P>
         This trade is a qualifying trade for the purposes of ITA 2007 s.192 and does not fall within any of the
@@ -537,15 +542,15 @@ export const CONTENT: Record<string, ReactNode> = {
           ['UK permanent establishment',
            'The Company has a permanent establishment in the United Kingdom and carries on its qualifying trade wholly or mainly in the United Kingdom.'],
           ['Gross assets do not exceed £350,000 — tested on a group-consolidated basis',
-           'Because the Company has qualifying subsidiaries, this test is applied to the group\'s consolidated gross assets (Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd combined, intra-group balances eliminated on consolidation) — not to Flowen Group Ltd\'s standalone balance sheet, which as a pure holding company has minimal assets of its own. [FILL IN: Current consolidated group gross assets: £_______]. This will also be the case at the time of the share issue.'],
+           'Because the Company has qualifying subsidiaries, this test is applied to the group\'s consolidated gross assets (Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd combined, intra-group balances eliminated on consolidation) — not to Flowen Group Ltd\'s standalone balance sheet, which as a pure holding company has minimal assets of its own. Per the group\'s Xero accounting records as at 27 September 2026, no group entity carries any recorded asset-account balance (bank feeds are not yet connected/reconciled for any of the four companies), so consolidated gross assets are recorded as £0 — comfortably under the £350,000 threshold on any reasonable view. [CONFIRM WITH ACCOUNTANT: this reflects the bookkeeping position, not a professionally reviewed balance sheet — bank statements should be reconciled before this figure is relied on in the actual submission.] This will also be the case at the time of the share issue.'],
           ['Fewer than 25 full-time equivalent employees — tested group-wide',
-           'This test is also applied across the whole group, not to Flowen Group Ltd alone (which as a holding company is not expected to have any employees of its own). [FILL IN: Total full-time equivalent employees across Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd combined: __], which is fewer than 25. This includes all directors employed by any group company.'],
-          ['Company age — within 3 years of first commercial sale',
-           '[CONFIRM WITH ADVISER: which entity\'s trading history is the relevant date here.] Flowen Group Ltd itself carries on no trade and has no trading history of its own — the qualifying trade is carried on by Flowen Speech Technologies Ltd. The first commercial sale of the Flowen/Vocali platform took place on [FILL IN: date, referencing the product\'s actual trading history, not Flowen Speech Technologies Ltd\'s incorporation date if the trade pre-dates the current corporate structure]. This is within 3 years of the proposed date of share issue, satisfying the new qualifying business activity condition under ITA 2007 s.257DA as amended by Finance Act 2023.'],
+           'This test is also applied across the whole group, not to Flowen Group Ltd alone (which as a holding company is not expected to have any employees of its own). Total full-time equivalent employees across Flowen Group Ltd, Flowen IP Ltd, Flowen Speech Technologies Ltd, and Flowen Labs Ltd combined: 1 (Howard Henry, sole director across all four entities) — well under the 25 limit.'],
+          ['Company age — within 3 years of first commercial sale, or preparing to trade',
+           '[CONFIRM WITH ADVISER: which entity\'s trading history is the relevant one, and whether this is correctly framed for a pre-trading company.] Flowen Group Ltd itself carries on no trade and has no trading history of its own — the qualifying trade will be carried on by Flowen Speech Technologies Ltd. As at the date of this application no first commercial sale has yet taken place, so this condition falls to be assessed under the "preparing to carry on a new qualifying trade" limb of ITA 2007 s.257DA (as amended by Finance Act 2023) rather than by reference to a first-sale date. [FILL IN: expected date of first commercial sale, once known, to confirm the applicable time limit is met.]'],
           ['No previous SEIS investment',
            'The Company has not previously received any investment under SEIS, and no SEIS compliance statement (SEIS3) has been issued in respect of the Company.'],
           ['No disqualifying EIS/VCT investment prior to this SEIS issue',
-           '[FILL IN: The Company has not received any EIS or VCT investment prior to this SEIS issue / OR: The Company has previously received EIS/VCT investment as follows: ______.] The Company confirms that any prior EIS/VCT investment does not disqualify the proposed SEIS issue.'],
+           'The Company has not received any EIS or VCT investment prior to this proposed SEIS issue.'],
           ['Shares are newly issued, full-risk ordinary shares',
            'The shares to be issued to investors will be new ordinary shares, carrying no preferential rights to dividends or to assets on a winding-up, and no rights of redemption. [IF the Company adopts a multi-class structure: these Investor Ordinary shares rank pari passu with each other and, in economic rights, with the Founder\'s Ordinary shares — the only difference between classes is voting/governance rights attached to the Founder class, which does not constitute a dividend or capital preference for SEIS/EIS purposes and does not disqualify these shares. Confirm this analysis with an adviser before relying on it.]'],
           ['Minimum three-year holding period will be observed',
@@ -752,13 +757,13 @@ export const CONTENT: Record<string, ReactNode> = {
 
       <div className="space-y-2 mb-8">
         {[
-          ['☐', 'Latest audited accounts or management accounts (period ending [date])'],
-          ['☐', 'Memorandum and Articles of Association (Companies House filed version)'],
-          ['☐', 'Draft subscription agreement or investment terms sheet'],
-          ['☐', 'Business plan / investor deck (confidential)'],
-          ['☐', 'Current cap table (pre- and post-investment)'],
-          ['☐', 'Copy of most recent filed Confirmation Statement (CS01)'],
-          ['☐', 'Details of any convertible loan notes or ASAs outstanding (if applicable)'],
+          ['✅', 'Management accounts (Xero, as at 27 September 2026) — no audited accounts exist yet; the Company was incorporated 10 September 2026.'],
+          ['☐', 'Memorandum and Articles of Association — standard Model Articles are believed to apply (no bespoke Articles were filed at incorporation); confirm against the Companies House filing history before attaching.'],
+          ['☐', 'Draft subscription agreement or investment terms sheet — not yet drafted.'],
+          ['✅', 'Business plan / investor deck (confidential) — existing investor pitch deck.'],
+          ['✅', 'Current cap table — pre-investment version ready; post-investment version pending once this issue\'s amount/share count/price are set (see §6 above).'],
+          ['☐', 'Confirmation Statement (CS01) — none filed yet; not yet due (first CS01 falls due within 12 months of the 10 September 2026 incorporation date).'],
+          ['✅', 'Convertible loan notes / ASAs — none recorded in the cap table; to be formally confirmed by the Company before submission.'],
         ].map(([tick, text]) => (
           <div key={text} className="flex gap-3 items-start text-sm">
             <span className="text-slate-500 shrink-0 font-mono mt-0.5">{tick}</span>
