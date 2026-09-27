@@ -2,6 +2,7 @@ import MarketingNavbar from '@/components/MarketingNavbar';
 import MarketingFooter from '@/components/MarketingFooter';
 import type { Metadata } from 'next';
 import { adminDb } from '@/lib/supabase/admin';
+import { entityCompanyNumber } from '@/lib/flowen-entities';
 
 // This page's whole job is being the current, accurate sub-processor
 // disclosure — it must never serve a stale cached render.
@@ -20,7 +21,7 @@ const CLAUSES = [
 
 "Controller" means the organisation (NHS trust, ICB, private clinic, educational institution, or other body) contracting with Flowen Speech Technologies Ltd for access to the Flowen Platform.
 
-"Processor" means Flowen Speech Technologies Ltd (company number 17470700), a company registered in England and Wales, part of the Flowen group of companies, operating the Flowen speech fluency platform at flowen.digital.
+"Processor" means Flowen Speech Technologies Ltd (company number ${entityCompanyNumber('speech-technologies')}), a company registered in England and Wales, part of the Flowen group of companies, operating the Flowen speech fluency platform at flowen.digital.
 
 "Data Subject" means the individual (typically a patient or platform user) whose personal data is processed.
 

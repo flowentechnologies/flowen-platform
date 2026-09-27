@@ -1,3 +1,5 @@
+import { entityCompanyNumber } from '@/lib/flowen-entities';
+
 export const MASTER_POLICIES = {
   company: "Flowen Speech Technologies Ltd",
   jurisdiction: "England and Wales",
@@ -13,7 +15,7 @@ Effective Date: 1 August 2026
 1. WHO WE ARE AND HOW TO CONTACT US
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Flowen Speech Technologies Ltd (company number 17470700), a company registered in England and Wales, part of the Flowen group of companies ("Flowen", "we", "us", "our"), operates the Flowen speech fluency platform, available at flowen.digital and associated subdomains (the "Platform").
+Flowen Speech Technologies Ltd (company number ${entityCompanyNumber('speech-technologies')}), a company registered in England and Wales, part of the Flowen group of companies ("Flowen", "we", "us", "our"), operates the Flowen speech fluency platform, available at flowen.digital and associated subdomains (the "Platform").
 
 For the purposes of UK data protection law, Flowen Speech Technologies Ltd is the Data Controller.
 
@@ -277,7 +279,7 @@ Effective Date: 1 August 2026
 1. AGREEMENT TO TERMS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-By accessing or using the Flowen Platform (flowen.digital and associated subdomains), creating an account, or purchasing a subscription, you ("User", "you") agree to be bound by these Terms of Service ("Terms") and our Privacy Policy. These Terms constitute a legally binding agreement between you and Flowen Speech Technologies Ltd (company number 17470700), part of the Flowen group of companies ("Flowen", "we", "us").
+By accessing or using the Flowen Platform (flowen.digital and associated subdomains), creating an account, or purchasing a subscription, you ("User", "you") agree to be bound by these Terms of Service ("Terms") and our Privacy Policy. These Terms constitute a legally binding agreement between you and Flowen Speech Technologies Ltd (company number ${entityCompanyNumber('speech-technologies')}), part of the Flowen group of companies ("Flowen", "we", "us").
 
 If you are accessing the Platform on behalf of an organisation (e.g., an NHS trust, private clinic, or educational institution), you represent and warrant that you have authority to bind that organisation and that these Terms apply to that organisation.
 

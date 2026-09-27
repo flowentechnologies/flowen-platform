@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { ReactNode } from 'react';
+import { entityCompanyNumber } from '@/lib/flowen-entities';
 
 // ── Shared doc primitives (lightweight, no external deps) ─────────────────────
 
@@ -451,7 +452,7 @@ export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactN
         </div>
         <div className="pt-2">
           <p className="text-slate-200 font-bold text-base">Re: Application for Advance Assurance — Seed Enterprise Investment Scheme (SEIS)</p>
-          <p className="text-slate-400 text-xs mt-1">Company: Flowen Group Ltd &nbsp;|&nbsp; Co. No.: 17452036 &nbsp;|&nbsp; UTR: {live.utr ?? '[XXXXXXXXXX]'}</p>
+          <p className="text-slate-400 text-xs mt-1">Company: Flowen Group Ltd &nbsp;|&nbsp; Co. No.: {entityCompanyNumber('group')} &nbsp;|&nbsp; UTR: {live.utr ?? '[XXXXXXXXXX]'}</p>
         </div>
       </div>
 
@@ -480,7 +481,7 @@ export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactN
         <tbody>
           {[
             ['Full company name',               'Flowen Group Ltd'],
-            ['Companies House number',           '17452036'],
+            ['Companies House number',           entityCompanyNumber('group')],
             ['Unique Taxpayer Reference (UTR)',  live.utr ?? '[XXXXXXXXXX]'],
             ['Registered office address',        '71-75 Shelton Street, Covent Garden, London, WC2H 9JQ'],
             ['Principal place of business',      'Same as registered office [confirm — assumed, since the Company has no separate trading premises on record]'],
@@ -490,7 +491,7 @@ export const CONTENT: Record<string, ReactNode | ((live: SeisLiveData) => ReactN
             ['Accounting reference date',        '30 September annually'],
             ['SIC code',                         '64209 — Activities of Other Holding Companies N.E.C.'],
             ['Nature of entity',                 'Private company limited by shares — parent holding company of a qualifying trading group'],
-            ['Qualifying subsidiaries',          'Flowen IP Ltd (Co. No. 17471287) — holds IP, licenses to the trading subsidiary; Flowen Speech Technologies Ltd (Co. No. 17470700) — carries on the qualifying trade; Flowen Labs Ltd (Co. No. 17471295) — R&D. All three 100%-owned by the Company.'],
+            ['Qualifying subsidiaries',          `Flowen IP Ltd (Co. No. ${entityCompanyNumber('ip')}) — holds IP, licenses to the trading subsidiary; Flowen Speech Technologies Ltd (Co. No. ${entityCompanyNumber('speech-technologies')}) — carries on the qualifying trade; Flowen Labs Ltd (Co. No. ${entityCompanyNumber('labs')}) — R&D. All three 100%-owned by the Company.`],
           ].map(([f, d]) => (
             <tr key={f}>
               <TD><span className="text-slate-300 font-medium text-xs">{f}</span></TD>
