@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { pixelPurchase, pixelSubscribe, pixelStartTrial } from '@/lib/pixel';
+import { pixelStartTrial } from '@/lib/pixel';
 import posthog from 'posthog-js';
 
 export interface BillingProps {
@@ -261,30 +261,38 @@ export function BillingClient({
   const [trialBanner, setTrialBanner] = useState(false);
 
   useEffect(() => {
-    if (params.get('success') === '1') {
-      const isTrial = params.get('trial') === '1';
+    const cameFromCheckout = params.get('success') === '1';
+    const isTrial = params.get('trial') === '1';
 
-      // Meta Pixel — Purchase / Subscribe / Trial Start
-      if (isTrial) {
-        pixelStartTrial({ value: 0, currency: 'GBP' });
-      } else {
-        pixelSubscribe({ value: 0, currency: 'GBP' });
-        pixelPurchase({ value: 0, currency: 'GBP', content_ids: [tier ?? 'subscription'] });
-      }
-
-      // Google Ads — Purchase conversion
-      if (typeof window.gtag === 'function') {
-        window.gtag('event', 'conversion', {
-          send_to: 'AW-18375319306/wyB9CP-pmt0cEIq-hLpE',
-          currency: 'GBP',
-        });
-      }
-
-      if (isTrial) setTrialBanner(true);
-      router.replace('/dashboard/billing');
-    }
+    // The Stripe return URL is NOT payment proof (2026-09-29). No purchase
+    // or Ads conversion fires from it any more: the old block sent
+    // pixelPurchase/pixelSubscribe and the AW-18375319306/wyB9CP-pmt0cEIq-hLpE
+    // Google Ads conversion on ?success=1 — including ?trial=1, which made a
+    // £0 trial look like paid revenue to bidding. Paid conversions are now
+    // emitted server-side only, from the verified Stripe invoice webhook
+    // with the actual collected amount (src/lib/analytics/paid-conversion.ts).
+    if (isTrial) setTrialBanner(true);
+    if (cameFromCheckout || isTrial) router.replace('/dashboard/billing');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Trial start — keyed on SERVER-verified state, not the return URL.
+  // `status` comes from the subscriptions table (written by the signed
+  // Stripe webhook), so this fires once per real trial and never from a
+  // replayed URL. Consent-gated inside pixel.ts; deduped per period in
+  // sessionStorage.
+  useEffect(() => {
+    if (status !== 'trialing') return;
+    const key = `flowen_trial_tracked_${tier ?? 'sub'}_${currentPeriodEnd ?? ''}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch {
+      // sessionStorage unavailable — fire anyway; worst case a duplicate
+      // StartTrial, which Meta/Snap dedupe by event_id downstream.
+    }
+    pixelStartTrial({ value: 0, currency: 'GBP' });
+  }, [status, tier, currentPeriodEnd]);
 
   return (
     <div className="space-y-4">
