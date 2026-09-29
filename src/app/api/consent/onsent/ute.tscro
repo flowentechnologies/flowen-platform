@@ -1,0 +1,72 @@
+/**
+ * POST /api/consent
+ *
+ * Records a cookie-banner decision as a server-verifiable row in
+ * consent_records. The client-side flowen_cookie_consent cookie stays as
+ * the fast path for script injection in the current tab, but no ad-network
+ * endpoint trusts it — every one re-checks this table (src/lib/consent.ts).
+ *
+ * Binding: the visitor's flowen_anon_id (httpOnly, minted by proxy.ts on
+ * first visit) plus the session user ID when signed in. Latest row wins:
+ * a later 'necessary' decision revokes an earlier 'all'.
+ *
+ * Body: { "decision": "all" | "necessary" }
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { adminDb } from '@/lib/supabase/admin';
+import { checkProxyRateLimit } from '@/lib/rate-limit';
+
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  if (!(await checkProxyRateLimit(ip, true))) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
+  let decision: unknown;
+  try {
+    ({ decision } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+  if (decision !== 'all' && decision !== 'necessary') {
+    return NextResponse.json({ error: 'decision must be all or necessary' }, { status: 400 });
+  }
+
+  const cookieStore = await cookies();
+  const anonymousId = cookieStore.get('flowen_anon_id')?.value ?? null;
+
+  let userId: string | null = null;
+  try {
+    const ssr = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } },
+    );
+    const { data: { user } } = await ssr.auth.getUser();
+    userId = user?.id ?? null;
+  } catch {
+    // No session — anonymous consent is still recorded.
+  }
+
+  if (!anonymousId && !userId) {
+    return NextResponse.json({ error: 'No identity to bind consent to' }, { status: 400 });
+  }
+
+  const { error } = await adminDb().from('consent_records').insert({
+    anonymous_id: anonymousId,
+    user_id:      userId,
+    decision,
+    purposes:     decision === 'all' ? ['analytics', 'ads'] : ['necessary'],
+    user_agent:   req.headers.get('user-agent'),
+  });
+
+  if (error) {
+    console.error('[consent] record failed:', error.message);
+    return NextResponse.json({ error: 'Could not record consent' }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+                          }
