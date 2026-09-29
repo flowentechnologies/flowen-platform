@@ -8,7 +8,7 @@ import { MASTER_POLICIES } from '@/app/legal/policies';
 export const metadata: Metadata = {
   title: 'Cookie Policy — Flowen',
   description:
-    'Full details on every cookie Flowen sets — strictly necessary auth cookies, first-party analytics (__vs, __utm), affiliate tracking, and third-party tools.',
+    'How Flowen uses necessary, analytics and advertising cookies, and how to change your choice.',
   alternates: { canonical: '/cookie-policy' },
 };
 
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 interface CookieRow {
   name: string;
-  category: 'strictly-necessary' | 'analytics' | 'affiliate' | 'third-party';
+  category: 'strictly-necessary' | 'analytics' | 'advertising' | 'affiliate' | 'third-party';
   purpose: string;
   setBy: string;
   retention: string;
@@ -35,7 +35,7 @@ const COOKIES: CookieRow[] = [
   {
     name: '__vs',
     category: 'analytics',
-    purpose: 'Visitor session ID. A random UUID assigned on first visit — no personal data. Used to count unique visitors and measure sessions.',
+    purpose: 'First-party visitor ID assigned on first visit to count sessions and pageviews. Set before a banner choice.',
     setBy: 'Flowen server (proxy)',
     retention: '30 days (rolling)',
     httpOnly: true,
@@ -43,7 +43,7 @@ const COOKIES: CookieRow[] = [
   {
     name: '__utm',
     category: 'analytics',
-    purpose: 'First-touch UTM parameters (source, medium, campaign, term, content). Only set when UTM params are present in the URL. Never shared with third parties.',
+    purpose: 'First-party campaign parameters captured when present in a URL, before a banner choice.',
     setBy: 'Flowen server (proxy)',
     retention: '30 days',
     httpOnly: true,
@@ -51,7 +51,7 @@ const COOKIES: CookieRow[] = [
   {
     name: 'flowen_anon_id',
     category: 'analytics',
-    purpose: 'Anonymous marketing attribution ID. Links ad click IDs (gclid, fbclid) to conversions via server-side Conversions API. No personal data.',
+    purpose: 'First-party attribution ID. Links ad click IDs and visits to downstream conversions. Server-side ad-network sends require Accept all.',
     setBy: 'Flowen server (proxy)',
     retention: '365 days',
     httpOnly: true,
@@ -66,10 +66,26 @@ const COOKIES: CookieRow[] = [
   },
   {
     name: 'ph_*',
-    category: 'third-party',
-    purpose: 'PostHog product analytics — distinct ID and session ID for usage funnels (e.g. "session started"). Hosted on our own EU instance.',
+    category: 'analytics',
+    purpose: 'PostHog product analytics identifiers and sessions, loaded only after Accept all.',
     setBy: 'PostHog JS (browser)',
     retention: '1 year (distinct ID) / session',
+    httpOnly: false,
+  },
+  {
+    name: 'flowen_cookie_consent',
+    category: 'strictly-necessary',
+    purpose: 'Stores your choice (all or necessary) so it persists across visits; a matching server record is also saved.',
+    setBy: 'Flowen browser',
+    retention: '1 year',
+    httpOnly: false,
+  },
+  {
+    name: 'Provider cookies (Google, Meta, Snapchat, LinkedIn)',
+    category: 'advertising',
+    purpose: 'May be set by advertising pixels and remarketing tags after Accept all; actual names and lifetimes depend on each provider.',
+    setBy: 'Advertising providers',
+    retention: 'Provider-dependent',
     httpOnly: false,
   },
   {
@@ -84,7 +100,8 @@ const COOKIES: CookieRow[] = [
 
 const CATEGORY_LABELS: Record<CookieRow['category'], { label: string; color: string }> = {
   'strictly-necessary': { label: 'Strictly Necessary', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
-  'analytics':          { label: 'First-Party Analytics', color: 'text-sky-400 bg-sky-500/10 border-sky-500/30' },
+  'analytics':          { label: 'Analytics', color: 'text-sky-400 bg-sky-500/10 border-sky-500/30' },
+  'advertising':        { label: 'Advertising', color: 'text-orange-400 bg-orange-500/10 border-orange-500/30' },
   'affiliate':          { label: 'Affiliate / Referral', color: 'text-violet-400 bg-violet-500/10 border-violet-500/30' },
   'third-party':        { label: 'Third-Party', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
 };
@@ -109,9 +126,9 @@ export default function CookiePolicyPage() {
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Cookie Policy</h1>
           <p className="text-slate-400 text-sm leading-relaxed max-w-2xl">
-            Last updated <strong className="text-slate-300">1 August 2026</strong>.
+            Last updated <strong className="text-slate-300">29 September 2026</strong>.
             We believe cookie policies should be readable — this one is.
-            Below is every cookie we set, in plain English, alongside the full legal text.
+            Below are the main cookies and tracking tools we use, alongside the full policy.
           </p>
         </div>
 
@@ -120,12 +137,11 @@ export default function CookiePolicyPage() {
           <p className="text-[10px] font-mono uppercase tracking-widest text-slate-400">TL;DR</p>
           <div className="grid sm:grid-cols-2 gap-3 text-sm">
             {[
-              { icon: '✓', color: 'text-emerald-400', text: 'No advertising or cross-site tracking cookies' },
-              { icon: '✓', color: 'text-emerald-400', text: 'First-party analytics only — data stays on our servers' },
-              { icon: '✓', color: 'text-emerald-400', text: '__vs visitor ID is a random UUID — no personal data' },
-              { icon: '✓', color: 'text-emerald-400', text: 'All first-party cookies are HttpOnly — not readable by scripts' },
-              { icon: '✓', color: 'text-emerald-400', text: 'We honour the Do Not Track browser signal' },
-              { icon: '✓', color: 'text-emerald-400', text: 'You can opt out of analytics by emailing us' },
+              { icon: '✓', color: 'text-emerald-400', text: 'Authentication and the cookie-choice record work without Accept all' },
+              { icon: '✓', color: 'text-emerald-400', text: 'Our server also sets first-party visit and attribution IDs before a choice' },
+              { icon: '✓', color: 'text-emerald-400', text: 'PostHog and GA4 start only after Accept all' },
+              { icon: '✓', color: 'text-emerald-400', text: 'Advertising pixels and remarketing tags start only after Accept all' },
+              { icon: '✓', color: 'text-emerald-400', text: 'Change your choice below at any time' },
             ].map(({ icon, color, text }) => (
               <div key={text} className="flex items-start gap-2">
                 <span className={`${color} font-bold shrink-0`}>{icon}</span>
@@ -137,7 +153,7 @@ export default function CookiePolicyPage() {
 
         {/* Cookie table */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-white">Every cookie we set</h2>
+          <h2 className="text-xl font-bold text-white">Cookies and similar technology</h2>
 
           {/* Category legend */}
           <div className="flex flex-wrap gap-2">
@@ -197,21 +213,13 @@ export default function CookiePolicyPage() {
           <div className="space-y-3 text-sm text-slate-400 leading-relaxed">
             <p>
               <strong className="text-slate-200">Browser settings:</strong> Block or delete cookies in your browser settings.
-              Note: blocking strictly necessary cookies will prevent sign-in.
+              Blocking strictly necessary cookies may prevent sign-in.
             </p>
             <p>
-              <strong className="text-slate-200">First-party analytics opt-out:</strong> Email{' '}
-              <a href="mailto:hello@flowen.digital?subject=Cookie opt-out" className="text-emerald-400 hover:text-emerald-300">
-                hello@flowen.digital
-              </a>{' '}
-              with the subject "Cookie opt-out". We will suppress analytics for your account within 5 working days.
+              <strong className="text-slate-200">Change or withdraw consent:</strong> Use the Change cookie choices button above and choose Necessary only. The choice is saved in a browser cookie and a server record. If you previously accepted all, the page reloads after withdrawal to unload scripts already running in that tab.
             </p>
             <p>
-              <strong className="text-slate-200">Do Not Track:</strong> We honour the DNT browser signal.
-              When active, all non-essential cookies and analytics events are suppressed.
-            </p>
-            <p>
-              <strong className="text-slate-200">PostHog:</strong> Opt out via Dashboard → Settings → Privacy, or email us.
+              <strong className="text-slate-200">Existing cookies:</strong> Withdrawing consent prevents further optional tracking in this browser. You can delete existing provider cookies in your browser settings. For questions about first-party visit and attribution data, email <a href="mailto:hello@flowen.digital" className="text-emerald-400 hover:text-emerald-300">hello@flowen.digital</a>.
             </p>
           </div>
         </section>
