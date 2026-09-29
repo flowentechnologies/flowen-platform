@@ -700,157 +700,52 @@ flowen.digital
 
   cookiePolicy: `
 COOKIE POLICY
-Last Updated: 1 August 2026
-Effective Date: 1 August 2026
+Last Updated: 29 September 2026
+Effective Date: 29 September 2026
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. ABOUT THIS POLICY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This Cookie Policy explains exactly which cookies and similar storage mechanisms Flowen Speech Technologies Ltd ("Flowen", "we", "us") sets when you visit flowen.digital, and why. It supplements our Privacy Policy and forms part of our PECR 2003 compliance documentation.
-
-A "cookie" is a small text file placed on your device. We also use sessionStorage and localStorage for temporary, in-browser state — those are never sent to our servers and are not covered by PECR.
+This policy explains how Flowen Speech Technologies Ltd ("Flowen", "we", "us") uses cookies and similar browser technology on flowen.digital. A cookie is a small piece of data stored by your browser. We also use localStorage and sessionStorage for in-browser state. This policy covers our own tools and the advertising and analytics providers that can load after your choice.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2. STRICTLY NECESSARY COOKIES
+2. BEFORE YOU ACCEPT ALL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-These cookies are essential for the platform to function. They do not require your consent under PECR Regulation 6(1)(b).
+Authentication cookies from Supabase (sb-* / *-auth-token*) keep you signed in. Stripe may set fraud-prevention and payment-flow cookies on checkout pages. The flowen_cookie_consent cookie stores your choice (all or necessary) for one year. The browser sends that decision to /api/consent, where a server record links the latest choice to a first-party visitor ID and, if signed in, your account. The latest recorded choice governs server-side ad-network sends.
 
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ Name            │ Purpose                                                       │
-│ sb-*            │ Supabase session authentication tokens. Set when you sign in. │
-│                 │ Contains a signed JWT and refresh token that keep you logged  │
-│                 │ in across page loads. Expires with your session or at the JWT │
-│                 │ expiry (typically 1 hour, auto-renewed by the SDK).           │
-│ *-auth-token*   │ Alternative name form used by Supabase SSR on some routes.   │
-└─────────────────────────────────────────────────────────────────────────────────┘
+Our server also sets first-party identifiers before a choice: __vs (a visitor session ID, 30 days), __utm (first-touch campaign parameters when present in the URL, 30 days), and flowen_anon_id (an attribution ID, one year). It may record pageviews and incoming ad click IDs on our own server. These are not the same as third-party analytics or advertising scripts. No server-side ad-network send is permitted without an active all-consent record. The flowen_ref cookie (30 days) stores an affiliate code if you arrive by a ?ref= link. These first-party cookies are HttpOnly where specified in the table above, except for flowen_cookie_consent, which browser code reads to apply your choice.
 
-Set by: Supabase (first-party, via our server)
-Stored: HttpOnly, Secure, SameSite=Lax
-Retention: Session / 1 hour (auto-refreshed while active)
+PostHog, GA4, advertising pixels and Sentry Session Replay do not start before Accept all or after Necessary only. Basic Sentry error capture can run without Session Replay. Browser settings that block necessary cookies may also prevent sign-in.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-3. FIRST-PARTY ANALYTICS COOKIES
+3. ANALYTICS AFTER ACCEPT ALL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-We operate our own analytics pipeline to understand platform usage without relying on third-party advertising networks. These cookies are set by our own server (flowen.digital) and data is stored exclusively on infrastructure we control.
-
-Under PECR Regulation 6(4) and the ICO's guidance on first-party analytics, these cookies are considered to have a minimal privacy impact. We treat them as a legitimate interest (UK GDPR Article 6(1)(f)) and do not require opt-in consent, but you may opt out at any time (see Section 7).
-
-┌─────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Name            │ Purpose                                                                   │
-│                 │                                                                           │
-│ __vs            │ Visitor Session ID. A randomly generated UUID (v4) assigned on your       │
-│                 │ first visit and refreshed every 30 days. Used to count unique visitors,   │
-│                 │ measure returning vs. new users, and attribute page views within a        │
-│                 │ session. Contains no personal data — it is a random identifier only.      │
-│                 │                                                                           │
-│                 │ Set by: Flowen server (proxy layer)                                       │
-│                 │ Stored: HttpOnly, SameSite=Lax (not accessible to JavaScript)            │
-│                 │ Retention: 30 days (rolling)                                              │
-│                 │                                                                           │
-│ __utm           │ UTM Attribution Capture. Stores the first-touch UTM parameters           │
-│                 │ (utm_source, utm_medium, utm_campaign, utm_term, utm_content) from the    │
-│                 │ URL you arrived from, if any. Used to measure which channels drive        │
-│                 │ signups. Not shared with any third party. No personal data — only the     │
-│                 │ marketing parameters that were already in the URL you clicked.            │
-│                 │                                                                           │
-│                 │ Set by: Flowen server (proxy layer), only when UTM params are present    │
-│                 │ Stored: HttpOnly, SameSite=Lax                                           │
-│                 │ Retention: 30 days                                                        │
-│                 │                                                                           │
-│ flowen_anon_id  │ Anonymous Attribution ID. A UUID assigned on first visit for marketing   │
-│                 │ attribution purposes (linking ad click IDs such as Google gclid or Meta  │
-│                 │ fbclid to downstream conversions via the Conversions API). Contains no   │
-│                 │ personal data. Not synced to any ad network without your prior consent.  │
-│                 │                                                                           │
-│                 │ Set by: Flowen server (proxy layer)                                       │
-│                 │ Stored: HttpOnly, Secure, SameSite=Lax                                   │
-│                 │ Retention: 365 days                                                       │
-└─────────────────────────────────────────────────────────────────────────────────────────────┘
+PostHog records product usage events and can set ph_* browser identifiers and session cookies. It uses the configured EU endpoint. Google Analytics 4 (GA4), loaded directly or through Google Tag Manager (GTM), measures pageviews and opted-in events and may use Google analytics identifiers. These tools start only after an all-consent decision. Sentry Session Replay also starts only after Accept all; basic error monitoring can run separately without replay.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-4. AFFILIATE & REFERRAL COOKIES
+4. ADVERTISING AFTER ACCEPT ALL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-┌─────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Name            │ Purpose                                                                   │
-│                 │                                                                           │
-│ flowen_ref      │ Affiliate Referral Code. Set when you arrive via a referral link          │
-│                 │ containing a ?ref= parameter. Stores the affiliate's code (a short        │
-│                 │ alphanumeric string — no personal data) so that any subsequent            │
-│                 │ subscription can be correctly attributed to the referring partner.         │
-│                 │                                                                           │
-│                 │ Set by: Flowen server (proxy layer), only on referral links               │
-│                 │ Stored: HttpOnly, SameSite=Lax                                           │
-│                 │ Retention: 30 days                                                        │
-└─────────────────────────────────────────────────────────────────────────────────────────────┘
+Meta Pixel, Snapchat Pixel, LinkedIn Insight Tag, and Google Ads tags (including remarketing through GTM) can run after Accept all. These providers may set their own cookies or use comparable browser identifiers to measure visits and conversions across sites. Where enabled, Flowen also sends verified conversion events server-side to Meta, Snapchat or Google Ads; these sends check the latest server consent record. Provider cookie names and retention periods can change under their own policies. No optional advertising script is injected before Accept all or after Necessary only on a new page load.
+
+We do not sell cookie data to data brokers. This is not a claim that advertising tracking never occurs: it can occur after Accept all.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-5. THIRD-PARTY ANALYTICS & ERROR MONITORING
+5. CHANGE YOUR CHOICE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-POSTHOG (Product Analytics)
-We use PostHog to track product usage events (e.g. "session started", "stage selected"). PostHog sets cookies in the ph_* namespace via JavaScript. These identify a browser pseudonymously across page loads to build usage funnels. PostHog is configured with our own EU-hosted instance — data does not pass through PostHog's US servers.
+Use the "Change cookie choices" button above to reopen the banner. Choose "Necessary only" to withdraw optional analytics and advertising consent. The browser choice is stored in flowen_cookie_consent and the new decision is recorded on our server. If scripts had already loaded under an earlier Accept all choice, the page reloads after the withdrawal is recorded so they are no longer running in that tab. You can also clear existing provider cookies in your browser settings. Choosing Accept all again starts optional tools only after the server acknowledges the new decision.
 
-Cookies set: ph_{project_token}_posthog (distinct ID), ph_{project_token}_ses_id (session)
-Retention: Persistent / 1 year for distinct ID; session cookie for session ID
-Lawful basis: Legitimate interest (UK GDPR Article 6(1)(f))
-Opt-out: See Section 7
-
-SENTRY (Error Monitoring — consent-gated)
-Sentry is used for JavaScript error reporting. Session Replay (video-like recording of user interactions) is NOT initialised until you explicitly consent. Basic error capture (stack traces, browser/OS version) begins on page load but does not set persistent cookies. Sentry's data processing is governed by our Data Processing Agreement with Sentry, Inc.
-
-Retention: Error events are retained for 90 days on Sentry's servers.
-Opt-out: Opting out of analytics (Section 7) also disables Sentry Session Replay.
-
-STRIPE (Payment Processing)
-When you visit our pricing or checkout pages, Stripe may set cookies for fraud prevention and payment flow continuity (e.g. __stripe_mid, __stripe_sid). These are strictly necessary for completing a purchase. Stripe's privacy policy governs their use: stripe.com/privacy.
+If saving a choice fails, the banner shows an error and does not grant new optional tracking. For questions about first-party visit and attribution data or existing records, contact hello@flowen.digital.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-6. COOKIES WE DO NOT SET
+6. UPDATES AND CONTACT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-— We do not set advertising cookies or cross-site tracking cookies.
-— We do not use Google Analytics, Facebook Pixel (cookie-based), or any other ad-network tracking cookie.
-— We do not sell data from our cookies to data brokers.
-— We do not use cookies for behavioural advertising or retargeting (we use server-side Conversions API only, which does not require browser-level cookies).
+We will update this policy when our cookie practices change. For questions, email hello@flowen.digital or write to Data Protection, Flowen Speech Technologies Ltd, ${REGISTERED_OFFICE_ADDRESS}.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-7. YOUR CHOICES & HOW TO OPT OUT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-BROWSER SETTINGS
-All major browsers allow you to block or delete cookies. If you block strictly necessary cookies, parts of the platform (including sign-in) will not work.
-
-Firefox:  Preferences → Privacy & Security → Cookies and Site Data
-Chrome:   Settings → Privacy and Security → Cookies and other site data
-Safari:   Settings → Privacy → Manage Website Data
-Edge:     Settings → Cookies and site permissions
-
-FIRST-PARTY ANALYTICS OPT-OUT
-To opt out of our first-party analytics (__vs, __utm, flowen_anon_id):
-Email hello@flowen.digital with the subject "Cookie opt-out". We will add your account to our suppression list within 5 working days.
-
-POSTHOG OPT-OUT
-Visit your dashboard → Settings → Privacy, or email us at hello@flowen.digital.
-
-DO NOT TRACK
-We respect the Do Not Track (DNT) browser signal. When DNT is active, we suppress all non-essential cookies and analytics events.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-8. UPDATES TO THIS POLICY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-We will update this policy if we add new cookies or change how existing ones are used. We will notify registered users by email if a material change affects consent requirements. The "Last Updated" date at the top of this document will always reflect the most recent revision.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-9. CONTACT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-For any questions about our use of cookies:
-Email: hello@flowen.digital
-Write to: Data Protection, Flowen Speech Technologies Ltd, ${REGISTERED_OFFICE_ADDRESS}
   `
 };
