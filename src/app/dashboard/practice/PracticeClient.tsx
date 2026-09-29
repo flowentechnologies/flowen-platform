@@ -14,7 +14,7 @@ import { ExercisePanel } from './ExercisePanel';
 import { DisfluencyHUD } from '@/components/practice/DisfluencyHUD';
 import { useAudioPipeline } from '@/lib/hooks/useAudioPipeline';
 import { useDisfluencyDetector } from '@/hooks/useDisfluencyDetector';
-import posthog from 'posthog-js';
+import { capturePostHog } from '@/lib/posthog-consent';
 
 // ── Avatar: Agora ConvoAI + Ready Player Me 3D (replaces Canvas 2D FaceAvatar)
 const AgoraAvatarSession = dynamic(
@@ -839,7 +839,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     }
 
     rafRef.current = requestAnimationFrame(tick);
-    posthog.capture('practice_session_started', { stage_id: stageId });
+    capturePostHog('practice_session_started', { stage_id: stageId });
     setScreen('recording');
   }, [stageId, audioPipeline, disfluency]);
 
@@ -983,7 +983,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
         })();
       }
 
-      posthog.capture('practice_session_saved', {
+      capturePostHog('practice_session_saved', {
         stage_id: stageId,
         duration_seconds: elapsed,
         repeated_session: andRepeat,

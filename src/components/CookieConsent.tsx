@@ -25,16 +25,17 @@ function writeConsent(level: ConsentLevel) {
  * authoritative half of the choice; the cookie above is only the fast path
  * for script injection in this browser.
  */
-function recordConsent(decision: ConsentLevel) {
+async function recordConsent(decision: ConsentLevel): Promise<boolean> {
   try {
-    void fetch('/api/consent', {
+    const response = await fetch('/api/consent', {
       method:    'POST',
       headers:   { 'Content-Type': 'application/json' },
       body:      JSON.stringify({ decision }),
       keepalive: true,
     });
+    return response.ok;
   } catch {
-    // Never break the banner on a network hiccup.
+    return false;
   }
 }
 
@@ -51,6 +52,8 @@ async function enableSentryReplay() {
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const existing = readConsent();
@@ -61,20 +64,48 @@ export default function CookieConsent() {
     if (existing === 'all') enableSentryReplay();
   }, []);
 
-  const accept = () => {
+  useEffect(() => {
+    const show = () => setVisible(true);
+    window.addEventListener('flowen:consent:manage', show);
+    return () => window.removeEventListener('flowen:consent:manage', show);
+  }, []);
+
+  const accept = async () => {
+    if (saving) return;
+    setSaving(true);
+    setError('');
+    // Wait for the server consent row before any client tracking can start.
+    if (!await recordConsent('all')) {
+      setError('Could not save your choice. Please try again.');
+      setSaving(false);
+      return;
+    }
     writeConsent('all');
-    recordConsent('all');
     enableSentryReplay();
     window.dispatchEvent(new Event('flowen:consent:granted'));
     setVisible(false);
+    setSaving(false);
   };
 
-  const necessary = () => {
+  const necessary = async () => {
+    if (saving) return;
+    setSaving(true);
+    setError('');
+    const wasAll = readConsent() === 'all';
+    // Stop client capture synchronously, even if server persistence is slow.
     writeConsent('necessary');
-    recordConsent('necessary');
-    // Latest server row wins — this is also how a previous 'all' is revoked.
     window.dispatchEvent(new Event('flowen:consent:revoked'));
+    const saved = await recordConsent('necessary');
+    if (!saved) {
+      setError('Could not save your choice on the server. Please retry Necessary only.');
+      setSaving(false);
+      return;
+    }
     setVisible(false);
+    setSaving(false);
+    // Consent-gated injected scripts and Sentry Replay cannot be reliably
+    // unloaded; a reload after the server acknowledges revocation removes them.
+    if (wasAll) window.location.reload();
   };
 
   if (!visible) return null;
@@ -98,15 +129,18 @@ export default function CookieConsent() {
             </Link>
           </p>
         </div>
+        {error && <p role="alert" className="text-red-300 text-xs">{error}</p>}
         <div className="flex items-center gap-3 flex-shrink-0">
           <button
             onClick={necessary}
+            disabled={saving}
             className="px-4 py-2.5 rounded-xl border border-slate-600 text-slate-300 text-xs font-semibold hover:border-slate-500 hover:text-white transition-all whitespace-nowrap"
           >
             Necessary only
           </button>
           <button
             onClick={accept}
+            disabled={saving}
             className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all whitespace-nowrap shadow-lg shadow-emerald-500/20"
           >
             Accept all

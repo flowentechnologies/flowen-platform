@@ -3,7 +3,7 @@
 import React, { useState, useTransition, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { completeOnboarding } from '@/app/actions/complete-onboarding';
-import posthog from 'posthog-js';
+import { capturePostHog } from '@/lib/posthog-consent';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -491,7 +491,7 @@ function OnboardingForm() {
 
       if (actionError) { setError(actionError); return; }
 
-      posthog.capture('onboarding_completed', {
+      capturePostHog('onboarding_completed', {
         role:              state.role,
         funding_path:      state.fundingPath,
         recommendation:    rec.type,

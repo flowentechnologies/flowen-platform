@@ -4,7 +4,7 @@ import React, { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { logout } from '@/app/auth/actions';
-import posthog from 'posthog-js';
+import { capturePostHog } from '@/lib/posthog-consent';
 
 function Section({ title, description, danger, children }: {
   title: string; description?: string; danger?: boolean; children: React.ReactNode;
@@ -99,7 +99,7 @@ export default function SettingsPage() {
           body: JSON.stringify({ email_reminders: remindersEnabled, streak_notifications: streakEnabled, reminder_hour: reminderHour }),
         });
         if (res.ok) {
-          posthog.capture('settings_updated', {
+          capturePostHog('settings_updated', {
             settings_section: 'notifications',
             practice_reminders_enabled: remindersEnabled,
             streak_notifications_enabled: streakEnabled,
@@ -130,7 +130,7 @@ export default function SettingsPage() {
         event_type:       next ? 'data_collection_consent_given' : 'data_collection_consent_withdrawn',
         consent_version:  '2026-08-01',
       });
-      posthog.capture('settings_updated', { settings_section: 'data_collection', consent: next });
+      capturePostHog('settings_updated', { settings_section: 'data_collection', consent: next });
       setDataConsentMsg(next ? 'Thank you — your sessions will now contribute to training.' : 'Preference saved. No further audio will be collected.');
     });
   };
@@ -151,7 +151,7 @@ export default function SettingsPage() {
     await sb.from('consent_audit_log').insert({
       user_id: user.id, event_type: 'gdpr_consent_withdrawn', consent_version: '2026-07-01',
     });
-    posthog.capture('account_erasure_requested');
+    capturePostHog('account_erasure_requested');
     await sb.auth.signOut();
     router.push('/?erased=true');
   };

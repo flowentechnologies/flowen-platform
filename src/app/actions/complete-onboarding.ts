@@ -126,7 +126,7 @@ export async function completeOnboarding(opts: {
   if (milestone.id) {
     cookieStore.set('flowen_onboarding_event', milestone.id, {
       path: '/',
-      maxAge: 600,
+      maxAge: 60 * 60 * 24,
       httpOnly: false,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',

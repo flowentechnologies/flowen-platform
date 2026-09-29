@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import posthog from 'posthog-js';
+import { capturePostHog } from '@/lib/posthog-consent';
 import { createClient } from '@/lib/supabase/client';
 
 interface Message {
@@ -128,7 +128,7 @@ export function MessagesClient({ slpId, slpName, myId }: { slpId: string; slpNam
           return [...prev, data.message];
         });
         setContent('');
-        posthog.capture('message_sent', { recipient_type: 'clinician' });
+        capturePostHog('message_sent', { recipient_type: 'clinician' });
       } else {
         setSendError('Message could not be sent. Please try again.');
       }

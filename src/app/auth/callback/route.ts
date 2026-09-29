@@ -107,10 +107,10 @@ export async function GET(request: NextRequest) {
         // One-shot browser flag: PostHogProvider reads this, fires the
         // consented GA4 sign_up + Meta CompleteRegistration with this exact
         // event ID (shared with the server CAPI send for dedup), then
-        // clears it. Not httpOnly — the browser must read it; 10-minute TTL.
+        // clears it. Not httpOnly — the browser must read it; 24-hour TTL.
         response.cookies.set('flowen_signup_event', signupEventId, {
           path: '/',
-          maxAge: 600,
+          maxAge: 60 * 60 * 24,
           httpOnly: false,
           sameSite: 'lax',
           secure: process.env.NODE_ENV === 'production',

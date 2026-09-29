@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition, useRef } from 'react';
 import { applySlpBeta } from '@/app/actions/apply-slp-beta';
-import posthog from 'posthog-js';
+import { capturePostHog } from '@/lib/posthog-consent';
 
 const CASELOAD_OPTIONS = [
   { value: '',       label: 'Select caseload size…' },
@@ -49,7 +49,7 @@ export function CliniciansForm() {
       const result = await applySlpBeta(payload);
       if (result.success) {
         setSubmitted(true);
-        posthog.capture('slp_beta_applied', {
+        capturePostHog('slp_beta_applied', {
           organisation: payload.organisation,
           caseload_size: payload.caseload_size,
           client_group: payload.client_group,

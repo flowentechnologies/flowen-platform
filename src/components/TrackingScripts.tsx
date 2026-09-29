@@ -72,15 +72,20 @@ export default function TrackingScripts({ providers }: { providers: TrackingProv
       if (consented) gtagConsent('update', true);
       providers.forEach(p => {
         if (!p.enabled || !p.head_html) return;
-        if (p.consent_required && !consented) return;
+        if (!consented) return; // Fail closed even if a provider row is misconfigured.
         injectProvider(p);
       });
     };
 
     fire();
 
+    const revoke = () => gtagConsent('update', false);
     window.addEventListener('flowen:consent:granted', fire);
-    return () => window.removeEventListener('flowen:consent:granted', fire);
+    window.addEventListener('flowen:consent:revoked', revoke);
+    return () => {
+      window.removeEventListener('flowen:consent:granted', fire);
+      window.removeEventListener('flowen:consent:revoked', revoke);
+    };
   }, [providers]);
 
   return null;

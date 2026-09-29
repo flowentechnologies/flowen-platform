@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import posthog from 'posthog-js';
+import { capturePostHog } from '@/lib/posthog-consent';
 
 // ---------------------------------------------------------------------------
 // Exercise definitions
@@ -326,7 +326,7 @@ export function MicroClient() {
         setSecondsLeft(0);
         setRunning(false);
         setShowDone(true);
-        posthog.capture('micro_exercise_completed', {
+        capturePostHog('micro_exercise_completed', {
           exercise_id: exercise.id,
           duration_seconds: exercise.duration,
         });

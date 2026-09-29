@@ -1,25 +1,7 @@
-import posthog from 'posthog-js';
 import * as Sentry from '@sentry/nextjs';
 
-const posthogToken = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
-const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
-
-if (posthogToken && posthogHost) {
-  posthog.init(posthogToken, {
-    api_host: posthogHost,
-    capture_pageview: false,
-    capture_pageleave: true,
-    capture_exceptions: true,
-    session_recording: { maskAllInputs: false, maskInputOptions: { password: true } },
-  });
-} else if (process.env.NODE_ENV === 'development') {
-  const missingVariable = posthogToken
-    ? 'NEXT_PUBLIC_POSTHOG_HOST'
-    : 'NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN';
-  throw new Error(
-    `${missingVariable} variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once ${missingVariable} is configured`,
-  );
-}
+// PostHog starts only in the consent-gated client provider. Instrumentation
+// runs before hydration, when there is no trusted browser consent decision.
 
 Sentry.init({
   dsn: 'https://010726adaecb386ff1a525bae3b7cbfe@o4511814939246592.ingest.de.sentry.io/4511823825862736',

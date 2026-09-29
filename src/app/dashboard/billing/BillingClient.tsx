@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { pixelStartTrial } from '@/lib/pixel';
-import posthog from 'posthog-js';
+import { capturePostHog } from '@/lib/posthog-consent';
 
 export interface BillingProps {
   hasSubscription: boolean;
@@ -172,7 +172,7 @@ function ManageBillingCard({ hasSubscription, stripeCustomerId }: Pick<BillingPr
         setLoading(false);
         return;
       }
-      posthog.capture('billing_portal_opened');
+      capturePostHog('billing_portal_opened');
       window.location.href = data.url;
     } catch {
       setError('Failed to open billing portal. Please try again.');
