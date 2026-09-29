@@ -1183,7 +1183,7 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
                 {filtered.length} of {entries.length} hazard{entries.length !== 1 ? 's' : ''}
               </span>
               <span>
-                Last export format: DCB0129 Hazard Log · Flowen Speech Therapy
+                Last export format: DCB0129 Hazard Log · Flowen Fluency Practice Tool
               </span>
             </div>
           )}
@@ -1201,4 +1201,4 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
       )}
     </div>
   );
-}
+    }
