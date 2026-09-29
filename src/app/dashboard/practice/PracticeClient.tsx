@@ -1925,4 +1925,4 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       </div>
     </div>
   );
-                    }
+}
