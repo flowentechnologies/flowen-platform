@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import posthog from 'posthog-js';
+import { capturePostHog } from '@/lib/posthog-consent';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -135,7 +135,7 @@ function SocialFollowStep({ initialDone }: { initialDone: boolean }) {
       window.open(s.href, '_blank', 'noopener,noreferrer');
     }
     setOpened(true);
-    posthog.capture('checklist_social_opened', { socials: SOCIALS.map(s => s.label) });
+    capturePostHog('checklist_social_opened', { socials: SOCIALS.map(s => s.label) });
   }
 
   function claim() {
@@ -146,7 +146,7 @@ function SocialFollowStep({ initialDone }: { initialDone: boolean }) {
         if (json.ok) {
           setClaimed(true);
           setResult(json.discountApplied ? 'applied' : 'pending');
-          posthog.capture('checklist_social_claimed', {
+          capturePostHog('checklist_social_claimed', {
             discount_applied: json.discountApplied,
             discount_pending: json.discountPending,
           });
@@ -176,7 +176,7 @@ function SocialFollowStep({ initialDone }: { initialDone: boolean }) {
                 href={s.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => { setOpened(true); posthog.capture('checklist_social_click', { platform: s.label }); }}
+                onClick={() => { setOpened(true); capturePostHog('checklist_social_click', { platform: s.label }); }}
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 text-xs font-semibold transition-all"
               >
                 {s.icon}
