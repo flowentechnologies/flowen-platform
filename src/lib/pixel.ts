@@ -11,6 +11,13 @@
  * Both platforms deduplicate on event_id — if the browser pixel and the CAPI
  * relay report the same event, only one is counted. This gives ad-blocker
  * resilience and a higher Event Match Quality score without double-counting.
+ *
+ * Consent (2026-09-29): every export — AND the CAPI bridge itself — is
+ * gated on the flowen_cookie_consent=all cookie. Previously the helper
+ * called the server bridge even when the pixel script had been blocked by
+ * missing consent, leaking an unconsented server-side send. The server
+ * route independently re-verifies consent against consent_records, so this
+ * client check is the fast path, not the boundary.
  */
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -33,6 +40,13 @@ declare global {
     gtag?: (...args: unknown[]) => void;
     dataLayer?: unknown[];
   }
+}
+
+// ── Consent ───────────────────────────────────────────────────────────────────
+
+function hasAdsConsent(): boolean {
+  if (typeof document === 'undefined') return false;
+  return document.cookie.includes('flowen_cookie_consent=all');
 }
 
 // ── Internals ─────────────────────────────────────────────────────────────────
@@ -87,12 +101,15 @@ function uuid(): string {
 /**
  * Fire-and-forget CAPI bridge.
  * Never throws — CAPI failure should never affect the user's journey.
+ * Consent-gated here as well as at each export, so no future caller can
+ * bypass the gate by invoking the bridge path directly.
  */
 function capi(
   event_name:   MetaEventName,
   event_id:     string,
   custom_data?: Record<string, unknown>,
 ): void {
+  if (!hasAdsConsent()) return;
   fetch('/api/track/capi', {
     method:    'POST',
     headers:   { 'Content-Type': 'application/json' },
@@ -104,6 +121,7 @@ function capi(
 // ── Standard events ───────────────────────────────────────────────────────────
 
 export function pixelPageView(): void {
+  if (!hasAdsConsent()) return;
   const id = uuid();
   fbq('track', 'PageView', {}, { eventID: id });
   fireSnap('PageView');
@@ -111,16 +129,34 @@ export function pixelPageView(): void {
 }
 
 export function pixelLead(opts?: { content_name?: string; content_category?: string }): void {
+  if (!hasAdsConsent()) return;
   const id = uuid();
   fbq('track', 'Lead', opts ?? {}, { eventID: id });
   capi('Lead', id, opts);
 }
 
 export function pixelCompleteRegistration(opts?: { content_name?: string; status?: boolean }): void {
+  if (!hasAdsConsent()) return;
   const id = uuid();
   fbq('track', 'CompleteRegistration', opts ?? {}, { eventID: id });
   fireSnap('CompleteRegistration', opts as Record<string, unknown>);
   capi('CompleteRegistration', id, opts as Record<string, unknown>);
+}
+
+/**
+ * CompleteRegistration with a caller-supplied event ID. Used for the
+ * verified-signup milestone: /auth/callback records the milestone and the
+ * server-side CAPI send uses the SAME id (via marketing_attribution.
+ * signup_event_id), so browser and server deduplicate to one conversion.
+ */
+export function pixelCompleteRegistrationWithId(
+  eventId: string,
+  opts?: { content_name?: string; status?: boolean },
+): void {
+  if (!hasAdsConsent()) return;
+  fbq('track', 'CompleteRegistration', opts ?? {}, { eventID: eventId });
+  fireSnap('CompleteRegistration', opts as Record<string, unknown>);
+  capi('CompleteRegistration', eventId, opts as Record<string, unknown>);
 }
 
 export function pixelViewContent(opts?: {
@@ -130,6 +166,7 @@ export function pixelViewContent(opts?: {
   value?:            number;
   currency?:         string;
 }): void {
+  if (!hasAdsConsent()) return;
   const id = uuid();
   fbq('track', 'ViewContent', opts ?? {}, { eventID: id });
   fireSnap('ViewContent', opts);
@@ -142,6 +179,7 @@ export function pixelInitiateCheckout(opts?: {
   value?:       number;
   currency?:    string;
 }): void {
+  if (!hasAdsConsent()) return;
   const id = uuid();
   fbq('track', 'InitiateCheckout', opts ?? {}, { eventID: id });
   fireSnap('InitiateCheckout', opts);
@@ -149,6 +187,7 @@ export function pixelInitiateCheckout(opts?: {
 }
 
 export function pixelPurchase(opts: { value: number; currency: string; content_ids?: string[] }): void {
+  if (!hasAdsConsent()) return;
   const id = uuid();
   fbq('track', 'Purchase', opts, { eventID: id });
   fireSnap('Purchase', opts);
@@ -156,6 +195,7 @@ export function pixelPurchase(opts: { value: number; currency: string; content_i
 }
 
 export function pixelStartTrial(opts?: { value?: number; currency?: string; predicted_ltv?: number }): void {
+  if (!hasAdsConsent()) return;
   const id = uuid();
   fbq('track', 'StartTrial', opts ?? {}, { eventID: id });
   fireSnap('StartTrial', opts);
@@ -163,6 +203,7 @@ export function pixelStartTrial(opts?: { value?: number; currency?: string; pred
 }
 
 export function pixelSubscribe(opts?: { value?: number; currency?: string; predicted_ltv?: number }): void {
+  if (!hasAdsConsent()) return;
   const id = uuid();
   fbq('track', 'Subscribe', opts ?? {}, { eventID: id });
   fireSnap('Subscribe', opts);
@@ -170,12 +211,14 @@ export function pixelSubscribe(opts?: { value?: number; currency?: string; predi
 }
 
 export function pixelSearch(opts?: { search_string?: string }): void {
+  if (!hasAdsConsent()) return;
   const id = uuid();
   fbq('track', 'Search', opts ?? {}, { eventID: id });
   // Search not included in MetaEventName — browser-only is fine
 }
 
 export function pixelCustom(eventName: string, opts?: Record<string, unknown>): void {
+  if (!hasAdsConsent()) return;
   const id = uuid();
   fbq('trackCustom', eventName, opts ?? {}, { eventID: id });
   // Custom events go browser-only

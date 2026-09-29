@@ -22,24 +22,24 @@
  * Optional env var:
  *   META_TEST_EVENT_CODE           — (optional) test mode in Events Manager
  *
- * Google Ads env vars:
- *   GOOGLE_ADS_DEVELOPER_TOKEN     — Google Ads API developer token
- *   GOOGLE_ADS_CUSTOMER_ID         — Google Ads customer account ID (no dashes)
- *   GOOGLE_ADS_CONVERSION_ACTION_ID — numeric conversion action ID
- *   GOOGLE_ADS_CLIENT_ID           — OAuth2 client ID
- *   GOOGLE_ADS_CLIENT_SECRET       — OAuth2 client secret
- *   GOOGLE_ADS_REFRESH_TOKEN       — OAuth2 refresh token (offline access)
- *   GOOGLE_ADS_LOGIN_CUSTOMER_ID   — (optional) MCC / manager account ID
+ * Google Ads env vars: see src/lib/google-ads-conversions.ts (shared uploader).
  *
- * Privacy contract:
- *   ONLY hashed email (SHA-256), click IDs, and event metadata are transmitted
- *   to ad networks. Clinical data, session content, health metadata, and raw
- *   PII are NEVER forwarded.
+ * Privacy contract (hardened 2026-09-29):
+ *   - Consent gate: no identifier is read or forwarded unless consent_records
+ *     holds a current 'all' decision for the converting user. Fail closed.
+ *   - ONLY hashed email (SHA-256), click IDs, and event metadata are
+ *     transmitted to ad networks. Clinical data, session content, health
+ *     metadata, and raw PII are NEVER forwarded.
+ *   - Google uploads no longer mark google_event_sent on a bare HTTP 2xx —
+ *     partialFailureError is parsed first, and the last error is persisted
+ *     on the attribution row for diagnostics.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { adminDb } from '@/lib/supabase/admin';
+import { hasAdsConsent } from '@/lib/consent';
+import { uploadClickConversion } from '@/lib/google-ads-conversions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -65,6 +65,7 @@ interface AttributionRecord {
   meta_event_sent:   boolean;
   google_event_sent: boolean;
   first_seen_at:     string;
+  signup_event_id:   string | null;
 }
 
 // ── Supabase helpers ──────────────────────────────────────────────────────────
@@ -113,117 +114,6 @@ function metaEventName(conversionType: string | null): string {
   }
 }
 
-// ── Google Ads helpers ────────────────────────────────────────────────────────
-
-/**
- * Exchanges a refresh token for a short-lived OAuth2 access token.
- * Returns null if credentials are missing or the exchange fails.
- */
-async function getGoogleAccessToken(): Promise<string | null> {
-  const clientId     = process.env.GOOGLE_ADS_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_ADS_CLIENT_SECRET;
-  const refreshToken = process.env.GOOGLE_ADS_REFRESH_TOKEN;
-  if (!clientId || !clientSecret || !refreshToken) return null;
-
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id:     clientId,
-      client_secret: clientSecret,
-      refresh_token: refreshToken,
-      grant_type:    'refresh_token',
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.text().catch(() => '');
-    console.error('[track-meta] Google OAuth token error:', res.status, err);
-    return null;
-  }
-
-  const { access_token } = await res.json();
-  return (access_token as string) ?? null;
-}
-
-/**
- * Formats an ISO timestamp into the format Google Ads requires:
- * "yyyy-MM-dd HH:mm:ss+00:00"
- */
-function toGoogleDateTime(isoStr: string): string {
-  return new Date(isoStr)
-    .toISOString()
-    .replace('T', ' ')
-    .replace(/\.\d{3}Z$/, '+00:00');
-}
-
-/**
- * Uploads a click conversion to Google Ads Enhanced Conversions.
- * Only called when a gclid is present on the attribution record.
- *
- * Docs: https://developers.google.com/google-ads/api/docs/conversions/upload-clicks
- */
-async function sendGoogleAdsConversion({
-  gclid,
-  hashedEmail,
-  conversionDateTime,
-}: {
-  gclid:              string;
-  hashedEmail:        string;
-  conversionDateTime: string;
-}): Promise<{ ok: boolean; status?: number; body?: string }> {
-  const devToken   = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
-  const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, ''); // strip dashes
-  const actionId   = process.env.GOOGLE_ADS_CONVERSION_ACTION_ID;
-
-  if (!devToken || !customerId || !actionId) {
-    return { ok: false, body: 'Google Ads env vars not configured' };
-  }
-
-  const accessToken = await getGoogleAccessToken();
-  if (!accessToken) {
-    return { ok: false, body: 'Failed to obtain Google OAuth token' };
-  }
-
-  const headers: Record<string, string> = {
-    'Content-Type':   'application/json',
-    'Authorization':  `Bearer ${accessToken}`,
-    'developer-token': devToken,
-  };
-
-  // Include manager account ID if the customer is under an MCC.
-  const loginCustomerId = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID?.replace(/-/g, '');
-  if (loginCustomerId) {
-    headers['login-customer-id'] = loginCustomerId;
-  }
-
-  const payload = {
-    conversions: [{
-      gclid,
-      conversionAction: `customers/${customerId}/conversionActions/${actionId}`,
-      conversionDateTime: toGoogleDateTime(conversionDateTime),
-      // Value 0 for free signup; extend with real revenue when subscription fires.
-      conversionValue: 0,
-      currencyCode:    'GBP',
-      // Enhanced Conversions — hashed email for improved match rates.
-      userIdentifiers: [{ hashedEmail }],
-    }],
-    partialFailure: true,
-  };
-
-  const res = await fetch(
-    `https://googleads.googleapis.com/v25/customers/${customerId}:uploadClickConversions`,
-    {
-      method:  'POST',
-      headers,
-      body:    JSON.stringify(payload),
-    },
-  );
-
-  const body = await res.text().catch(() => '');
-  return { ok: res.ok, status: res.status, body };
-}
-
 // ── Webhook handler ───────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -264,7 +154,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, skipped: 'already sent to all configured networks' });
   }
 
-  // 5. Fetch user email — only PII lookup; goes no further than the hash.
+  // 5. Consent gate — fail closed, BEFORE any identifier (email, click ID,
+  //    IP, UA) is read or forwarded. record.user_id is non-null here per the
+  //    isNewConversion guard above.
+  if (!(await hasAdsConsent({ userId: record.user_id }))) {
+    return NextResponse.json({ ok: true, skipped: 'no_ads_consent' });
+  }
+
+  // 6. Fetch user email — only PII lookup; goes no further than the hash.
   //    record.user_id is non-null here (isNewConversion guard above), but
   //    TypeScript can't narrow through the early-return pattern.
   const { data: adminData, error: userErr } = await authAdmin().getUserById(record.user_id!);
@@ -282,7 +179,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const hashed     = hashEmail(email);
   const convertedAt = record.converted_at ?? new Date().toISOString();
 
-  // 6. Meta Conversions API ────────────────────────────────────────────────────
+  // 7. Meta Conversions API ────────────────────────────────────────────────────
   const metaResult = { sent: false, skipped: false };
 
   if (!metaDone) {
@@ -311,7 +208,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         data: [{
           event_name:    metaEventName(record.conversion_type),
           event_time:    eventTime,
-          event_id:      record.anonymous_id, // deduplication key
+          // Browser/server dedup: for ad-click signups the browser fires
+          // CompleteRegistration with the milestone id (handed over via the
+          // flowen_signup_event cookie), which the bridge wrote onto this
+          // row as signup_event_id — same event_id, one counted conversion.
+          event_id:      record.signup_event_id ?? record.anonymous_id,
           action_source: 'website',
           user_data:     userData,
           ...(record.conversion_type === 'subscription' && {
@@ -336,34 +237,49 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         metaResult.sent = true;
         await serviceDb()
           .from('marketing_attribution')
-          .update({ meta_event_sent: true, meta_sent_at: new Date().toISOString() })
+          .update({ meta_event_sent: true, meta_sent_at: new Date().toISOString(), meta_last_error: null })
           .eq('anonymous_id', record.anonymous_id);
       } else {
         const errBody = await metaRes.text().catch(() => '');
         console.error('[track-meta] Meta CAPI error:', metaRes.status, errBody);
+        // Persist the failure — a row with meta_event_sent=false stays
+        // retryable, and the error explains why.
+        await serviceDb()
+          .from('marketing_attribution')
+          .update({ meta_last_error: `HTTP ${metaRes.status}: ${errBody}`.slice(0, 500) })
+          .eq('anonymous_id', record.anonymous_id);
       }
     }
   }
 
-  // 7. Google Ads Enhanced Conversions ─────────────────────────────────────────
+  // 8. Google Ads Enhanced Conversions ─────────────────────────────────────────
   const googleResult = { sent: false, skipped: false };
 
   if (!googleDone && record.gclid) {
-    const gRes = await sendGoogleAdsConversion({
+    const gRes = await uploadClickConversion({
       gclid:              record.gclid,
       hashedEmail:        hashed,
       conversionDateTime: convertedAt,
+      conversionValue:    0, // free signup; paid revenue flows through paid-conversion.ts
+      currencyCode:       'GBP',
     });
 
     if (gRes.ok) {
       googleResult.sent = true;
       await serviceDb()
         .from('marketing_attribution')
-        .update({ google_event_sent: true, google_sent_at: new Date().toISOString() })
+        .update({ google_event_sent: true, google_sent_at: new Date().toISOString(), google_last_error: null })
         .eq('anonymous_id', record.anonymous_id);
     } else {
-      console.error('[track-meta] Google Ads error:', gRes.status, gRes.body);
-      googleResult.skipped = !process.env.GOOGLE_ADS_DEVELOPER_TOKEN; // missing config vs real error
+      console.error('[track-meta] Google Ads error:', gRes.status, gRes.error);
+      googleResult.skipped = Boolean(gRes.notConfigured); // missing config vs real error
+      if (!gRes.notConfigured) {
+        // Not marked sent → stays retryable; persist why.
+        await serviceDb()
+          .from('marketing_attribution')
+          .update({ google_last_error: (gRes.error ?? 'unknown').slice(0, 500) })
+          .eq('anonymous_id', record.anonymous_id);
+      }
     }
   } else {
     googleResult.skipped = true; // no gclid or already sent

@@ -1,18 +1,23 @@
 'use client';
 
 import { useEffect } from 'react';
-import type { PurchaseEventPayload } from '@/lib/analytics/purchase-event';
+import type { StartTrialEventPayload } from '@/lib/analytics/purchase-event';
 
 function hasConsent(): boolean {
   return document.cookie.includes('flowen_cookie_consent=all');
 }
 
 /**
- * Fires the GA4 ecommerce `purchase` event on mount, using gtag() directly
- * (not a raw dataLayer.push) — gtag() itself does `dataLayer.push(arguments)`
+ * Fires the GA4 `start_trial` event on mount, using gtag() directly (not a
+ * raw dataLayer.push) — gtag() itself does `dataLayer.push(arguments)`
  * (see src/lib/tracking-scripts.ts's generateGa4), so this is picked up
  * identically by the direct gtag.js GA4 property AND by GTM, since both
  * read from the same window.dataLayer.
+ *
+ * Renamed from `purchase` to `start_trial` on 2026-09-29: checkout always
+ * starts a £0 trial, and reporting the recurring plan price as a purchase
+ * fed ad platforms a false revenue signal. This event must never be mapped
+ * to a paid-purchase bidding goal.
  *
  * Same consent gate every other tracker in this app goes through
  * (TrackingScripts.tsx) — never fires before the cookie banner is accepted,
@@ -21,13 +26,14 @@ function hasConsent(): boolean {
  *
  * Deduplicated per transaction via sessionStorage — reloading this page
  * (e.g. a bookmark, a browser back/forward) must not re-report the same
- * purchase. This is a best-effort, same-browser-tab guard; it can't prevent
- * every possible double-count (a cleared storage, a different device), but
- * neither can any client-only ecommerce tracking implementation.
+ * trial start. This is a best-effort, same-browser-tab guard; it can't
+ * prevent every possible double-count (a cleared storage, a different
+ * device), but neither can any client-only ecommerce tracking
+ * implementation.
  */
-export function PurchaseEventTracker({ payload }: { payload: PurchaseEventPayload }) {
+export function PurchaseEventTracker({ payload }: { payload: StartTrialEventPayload }) {
   useEffect(() => {
-    const dedupeKey = `flowen_purchase_tracked_${payload.transaction_id}`;
+    const dedupeKey = `flowen_trial_tracked_${payload.transaction_id}`;
     let fired = false;
 
     function fire() {
@@ -45,7 +51,7 @@ export function PurchaseEventTracker({ payload }: { payload: PurchaseEventPayloa
       w.dataLayer = w.dataLayer || [];
       function gtag(...args: unknown[]) { w.dataLayer!.push(args); }
 
-      gtag('event', 'purchase', {
+      gtag('event', 'start_trial', {
         transaction_id: payload.transaction_id,
         value:          payload.value,
         currency:       payload.currency,

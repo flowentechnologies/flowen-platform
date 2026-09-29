@@ -18,9 +18,14 @@
  * (/events/validate instead of /events), toggled here via
  * SNAP_CAPI_VALIDATE=true. See the Snap block below for details.
  *
- * Privacy contract:
- *   Only hashed email (SHA-256), click IDs, IP, and user-agent are
- *   forwarded. No clinical data, session content, or raw PII.
+ * Privacy contract (hardened 2026-09-29):
+ *   - Consent gate: nothing is read or forwarded unless consent_records
+ *     holds a current 'all' decision for this visitor/user. Fail closed.
+ *   - Event names are runtime-allowlisted; custom_data is filtered to a
+ *     key allowlist, so a caller mistake can never push clinical data,
+ *     session content, or raw PII into an ad payload.
+ *   - Only hashed email (SHA-256), click IDs, IP, and user-agent are
+ *     forwarded, and only after consent.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -28,6 +33,8 @@ import { createHash } from 'crypto';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { adminDb } from '@/lib/supabase/admin';
+import { hasAdsConsent } from '@/lib/consent';
+import { checkProxyRateLimit } from '@/lib/rate-limit';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -45,6 +52,39 @@ interface CAPIRequest {
   event_name:  MetaEventName;
   event_id:    string;          // UUID generated client-side; must match the fbq() call
   custom_data?: Record<string, unknown>;
+}
+
+// Runtime allowlist — the type alone does not stop a crafted request body.
+const ALLOWED_EVENTS = new Set<string>([
+  'PageView', 'ViewContent', 'Lead', 'InitiateCheckout',
+  'Purchase', 'StartTrial', 'CompleteRegistration', 'Subscribe',
+]);
+
+// custom_data keys permitted to leave this server. Anything else is dropped.
+const ALLOWED_CUSTOM_KEYS = new Set([
+  'currency', 'value', 'content_name', 'content_category',
+  'content_ids', 'num_items', 'predicted_ltv', 'status', 'order_id',
+]);
+
+/**
+ * Allowlist + flatten custom_data before it goes anywhere near an ad
+ * network. This is the code-level guarantee that clinical fields can never
+ * leak into an ad payload via a caller mistake.
+ */
+function sanitizeCustomData(
+  input: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!input || typeof input !== 'object') return undefined;
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(input)) {
+    if (!ALLOWED_CUSTOM_KEYS.has(key)) continue;
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      out[key] = value;
+    } else if (key === 'content_ids' && Array.isArray(value)) {
+      out[key] = value.filter(v => typeof v === 'string');
+    }
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -76,6 +116,13 @@ const SNAP_EVENT_MAP: Partial<Record<MetaEventName, string>> = {
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  // Per-route rate limit (defence in depth — proxy.ts already limits /api,
+  // this caps event volume at the route itself).
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  if (!(await checkProxyRateLimit(ip, true))) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   let body: CAPIRequest;
   try {
     body = await req.json();
@@ -83,9 +130,35 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { event_name, event_id, custom_data } = body;
-  if (!event_name || !event_id) {
-    return NextResponse.json({ error: 'event_name and event_id required' }, { status: 400 });
+  const { event_name, event_id } = body;
+  if (!event_name || !event_id || !ALLOWED_EVENTS.has(event_name)) {
+    return NextResponse.json({ error: 'valid event_name and event_id required' }, { status: 400 });
+  }
+  const custom_data = sanitizeCustomData(body.custom_data);
+
+  // Resolve identity once: the anonymous attribution cookie + the session.
+  const cookieStore = await cookies();
+  const anonId = cookieStore.get('flowen_anon_id')?.value ?? null;
+
+  let userEmail: string | null = null;
+  let userId:    string | null = null;
+  try {
+    const ssr = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } },
+    );
+    const { data: { user } } = await ssr.auth.getUser();
+    userEmail = user?.email ?? null;
+    userId    = user?.id    ?? null;
+  } catch {
+    // Session unavailable — continue unauthenticated.
+  }
+
+  // Consent gate — checked BEFORE any identifier is hashed or forwarded,
+  // fail closed. A missing or revoked decision means nothing leaves here.
+  if (!(await hasAdsConsent({ anonymousId: anonId, userId }))) {
+    return NextResponse.json({ ok: true, skipped: 'no_ads_consent' });
   }
 
   // 1. Read Meta config from tracking_providers
@@ -99,38 +172,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const capiToken     = (provider?.server_config as Record<string, string> | null)?.capi_token ?? null;
   const metaConfigured = Boolean(provider?.enabled && pixelId && capiToken);
 
-  // 2. Build user_data — hashed email when authenticated, always IP + UA
+  // 2. Build user_data — hashed email when authenticated, IP + UA
   // (shared by both providers below, so this runs even if Meta isn't configured)
   const userData: Record<string, unknown> = {};
 
   // IP address from Vercel/proxy headers
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+  const ipAddr = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
           ?? req.headers.get('x-real-ip')
           ?? null;
   const ua = req.headers.get('user-agent');
-  if (ip) userData.client_ip_address = ip;
-  if (ua) userData.client_user_agent  = ua;
+  if (ipAddr) userData.client_ip_address = ipAddr;
+  if (ua)     userData.client_user_agent  = ua;
 
-  // Session user email (optional — not all events are from authenticated users)
-  try {
-    const cookieStore = await cookies();
-    const ssr = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } },
-    );
-    const { data: { user } } = await ssr.auth.getUser();
-    if (user?.email) {
-      userData.em = [sha256(user.email)];
-    }
-  } catch {
-    // Session unavailable — continue without email
+  if (userEmail) {
+    userData.em = [sha256(userEmail)];
   }
 
   // 3. fbclid → fbc from marketing_attribution via anonymous_id cookie
   try {
-    const cookieStore = await cookies();
-    const anonId = cookieStore.get('flowen_anon_id')?.value;
     if (anonId) {
       const { data: attr } = await adminDb()
         .from('marketing_attribution')
@@ -195,7 +254,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
       if (snapProvider?.enabled && snapPixelId && snapToken) {
         const snapUserData: Record<string, unknown> = {};
-        if (ip) snapUserData.client_ip_address = ip;
+        if (ipAddr) snapUserData.client_ip_address = ipAddr;
         if (ua) snapUserData.user_agent = ua;
         if (userData.em) snapUserData.em = userData.em; // reuse hash already computed above
 

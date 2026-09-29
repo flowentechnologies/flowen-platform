@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { bridgeAttribution } from "@/lib/attribution";
 import { SESSION_STARTED_COOKIE, sessionStartedCookieOptions } from "@/lib/auth/session-policy";
 
 async function getSupabaseClient() {
@@ -51,10 +50,11 @@ export async function login(formData: FormData) {
     cookies(),
   ]);
 
-  // Bridge the anonymous attribution record to this user on every login.
-  // No-ops gracefully if the cookie is absent or no ad click is on record.
-  const anonId = cookieStore.get('flowen_anon_id')?.value;
-  await bridgeAttribution(anonId, authData.user.id, 'signup');
+  // No attribution bridge on login (2026-09-29): bridging here fired on
+  // every password login, so a returning user with a fresh ad click looked
+  // like a NEW signup conversion. Signup bridging now happens only in
+  // /auth/callback, gated on a verified new-account milestone
+  // (src/lib/analytics/milestones.ts).
 
   // Marks the start of the absolute session lifetime — proxy.ts forces
   // re-login once this cookie is older than MAX_SESSION_AGE_MS, independent

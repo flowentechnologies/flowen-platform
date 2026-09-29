@@ -19,6 +19,25 @@ function writeConsent(level: ConsentLevel) {
   document.cookie = `${CONSENT_COOKIE}=${level}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax; Secure`;
 }
 
+/**
+ * Server-verifiable record of the decision — every ad-network endpoint
+ * re-checks consent_records via src/lib/consent.ts, so this POST is the
+ * authoritative half of the choice; the cookie above is only the fast path
+ * for script injection in this browser.
+ */
+function recordConsent(decision: ConsentLevel) {
+  try {
+    void fetch('/api/consent', {
+      method:    'POST',
+      headers:   { 'Content-Type': 'application/json' },
+      body:      JSON.stringify({ decision }),
+      keepalive: true,
+    });
+  } catch {
+    // Never break the banner on a network hiccup.
+  }
+}
+
 async function enableSentryReplay() {
   try {
     const Sentry = await import('@sentry/nextjs');
@@ -44,6 +63,7 @@ export default function CookieConsent() {
 
   const accept = () => {
     writeConsent('all');
+    recordConsent('all');
     enableSentryReplay();
     window.dispatchEvent(new Event('flowen:consent:granted'));
     setVisible(false);
@@ -51,6 +71,9 @@ export default function CookieConsent() {
 
   const necessary = () => {
     writeConsent('necessary');
+    recordConsent('necessary');
+    // Latest server row wins — this is also how a previous 'all' is revoked.
+    window.dispatchEvent(new Event('flowen:consent:revoked'));
     setVisible(false);
   };
 
@@ -67,7 +90,9 @@ export default function CookieConsent() {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-white mb-1">This site uses cookies</p>
           <p className="text-xs text-slate-400 leading-relaxed">
-            We use strictly necessary cookies for authentication and optional analytics cookies (Sentry error replay) to improve reliability.{' '}
+            We use strictly necessary cookies for authentication. With your consent we also use
+            analytics and advertising cookies (Google, Meta, Snapchat, LinkedIn) and Sentry error
+            replay to measure and improve the service.{' '}
             <Link href="/cookie-policy" className="text-emerald-400 underline whitespace-nowrap">
               Cookie Policy
             </Link>

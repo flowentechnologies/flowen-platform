@@ -45,43 +45,105 @@ function anonymizeIp(ip: string): string {
   return ip;
 }
 
+type AttributionRecord = Partial<{
+  gclid: string; fbclid: string; ttclid: string; msclkid: string;
+  utm_source: string; utm_medium: string; utm_campaign: string;
+  utm_content: string; utm_term: string;
+  referrer: string; landing_page: string;
+  ip_address: string; user_agent: string;
+}>;
+
+function supabaseRestHeaders(): Record<string, string> {
+  return {
+    apikey:         process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    Authorization:  `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
+    'Content-Type': 'application/json',
+  };
+}
+
+/** Best-effort failure log into system_error_logs — never throws. */
+async function logAttributionFailure(message: string): Promise<void> {
+  try {
+    await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/system_error_logs`, {
+      method:  'POST',
+      headers: supabaseRestHeaders(),
+      body:    JSON.stringify({
+        source:      'proxy/attribution',
+        error_code:  'ATTRIBUTION_WRITE_FAILED',
+        message,
+        environment: process.env.NODE_ENV ?? 'production',
+      }),
+    });
+  } catch { /* logging must never break the request */ }
+}
+
 /**
  * Writes attribution data to marketing_attribution via the Supabase REST API.
  *
  * Uses a raw fetch rather than the SDK to keep the proxy bundle lightweight —
  * the SDK adds ~20 kB that is wasted when most requests carry no click IDs.
  *
+ * DURABLE (2026-09-29): the caller awaits this and retries once on failure.
+ * The old fire-and-forget version silently lost attribution rows — and with
+ * them the conversion — whenever the write raced instance shutdown.
+ *
+ * Click-credit policy (explicit, defined 2026-09-29):
+ *   - Click IDs (gclid/fbclid/ttclid/msclkid): FIRST-TOUCH. The click that
+ *     first brought this anonymous visitor keeps the credit; a later click
+ *     ID never overwrites one already on the row. To enforce that we read
+ *     the existing row first and drop any incoming click ID that is already
+ *     credited. If the read fails we throw rather than risk clobbering the
+ *     originally credited click.
+ *   - UTMs, referrer, landing_page, IP, UA: LAST-TOUCH — updated on each
+ *     attributed visit, matching the affiliate referral policy below.
+ *   Retention is bounded by the consent decision: server-side ad-network
+ *   sends from this data require a current 'all' consent record
+ *   (src/lib/consent.ts); visitors who chose necessary-only never leave
+ *   this database.
+ *
  * The `Prefer: resolution=merge-duplicates` header instructs PostgREST to run
  * an upsert (INSERT … ON CONFLICT DO UPDATE). Only columns present in the body
  * are updated, so a return visit without new click IDs won't clobber existing
  * attribution data.
- *
- * Called fire-and-forget — Vercel Fluid Compute keeps the instance alive long
- * enough for the write to settle without adding latency to the HTTP response.
  */
 async function captureAttribution(
   anonId: string,
-  record: Partial<{
-    gclid: string; fbclid: string; ttclid: string; msclkid: string;
-    utm_source: string; utm_medium: string; utm_campaign: string;
-    utm_content: string; utm_term: string;
-    referrer: string; landing_page: string;
-    ip_address: string; user_agent: string;
-  }>,
+  record: AttributionRecord,
 ): Promise<void> {
-  const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/marketing_attribution`;
-  await fetch(url, {
+  const base = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/marketing_attribution`;
+
+  let writeRecord: AttributionRecord = record;
+  const incomingClickIds = CLICK_ID_PARAMS.filter(p => record[p]);
+  if (incomingClickIds.length > 0) {
+    const readRes = await fetch(
+      `${base}?anonymous_id=eq.${encodeURIComponent(anonId)}&select=gclid,fbclid,ttclid,msclkid`,
+      { headers: supabaseRestHeaders() },
+    );
+    if (!readRes.ok) {
+      throw new Error(`attribution read failed: HTTP ${readRes.status}`);
+    }
+    const rows = await readRes.json() as Array<Partial<Record<ClickIdParam, string>>>;
+    const existing = rows[0] ?? {};
+    const filtered: AttributionRecord = { ...record };
+    for (const p of incomingClickIds) {
+      if (existing[p]) delete filtered[p]; // first-touch: keep the credited click
+    }
+    writeRecord = filtered;
+  }
+
+  const writeRes = await fetch(base, {
     method:  'POST',
     headers: {
-      apikey:         process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      Authorization:  `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`,
-      'Content-Type': 'application/json',
+      ...supabaseRestHeaders(),
       // Upsert on primary key (anonymous_id). Only specified columns are
       // updated on conflict — absent columns retain their existing values.
-      Prefer:         'resolution=merge-duplicates',
+      Prefer: 'resolution=merge-duplicates',
     },
-    body: JSON.stringify({ anonymous_id: anonId, ...record }),
+    body: JSON.stringify({ anonymous_id: anonId, ...writeRecord }),
   });
+  if (!writeRes.ok) {
+    throw new Error(`attribution upsert failed: HTTP ${writeRes.status}`);
+  }
 }
 
 // Rate limiting is handled by the distributed Upstash-backed checkProxyRateLimit
@@ -408,10 +470,21 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
         user_agent:   request.headers.get('user-agent') ?? undefined,
       };
 
-      // Fire-and-forget — does not add to response latency.
-      void captureAttribution(anonId, record).catch(() => {
-        // Swallow silently — attribution failure must never impact page delivery.
-      });
+      // Durable write, awaited with one retry — a lost attribution row is a
+      // lost conversion. Runs only on click/UTM arrivals, so the added
+      // latency does not touch ordinary page views. Failures are logged,
+      // never thrown: analytics must not break the user journey.
+      try {
+        await captureAttribution(anonId, record);
+      } catch (err) {
+        console.error('[proxy] attribution write failed, retrying once:', err);
+        try {
+          await captureAttribution(anonId, record);
+        } catch (err2) {
+          console.error('[proxy] attribution write failed after retry:', err2);
+          await logAttributionFailure(err2 instanceof Error ? err2.message : String(err2));
+        }
+      }
     }
 
     // Set or refresh the anonymous ID cookie whenever it is new or click IDs

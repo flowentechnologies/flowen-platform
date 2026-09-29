@@ -1,20 +1,22 @@
 /**
- * Builds the GA4 ecommerce `purchase` event payload for the post-checkout
- * confirmation page, per Google's own shape:
- * https://developers.google.com/analytics/devguides/collection/ga4/set-up-ecommerce
+ * Builds the GA4 `start_trial` event payload for the post-checkout welcome
+ * page.
  *
- * Pulled entirely from the real Stripe Checkout Session — never hardcoded —
- * so transaction_id, currency, and value are all genuine per-purchase data
- * rather than static placeholders.
+ * Why start_trial and not purchase (2026-09-29): checkout here ALWAYS runs
+ * with a 7-day free trial (see /api/stripe/checkout), so amount_total is
+ * £0 — nothing is collected today. This builder previously reported the
+ * plan's recurring price as a GA4 `purchase`, which fed a false revenue
+ * signal to every platform reading that event, including Google Ads
+ * bidding. A trial start is not revenue: the event is now `start_trial`
+ * with value 0, and it must never be mapped to a paid-purchase goal.
  *
- * `value` deliberately uses each line item's real recurring price
- * (Price.unit_amount), not the session's own amount_total: checkout here
- * always runs with a 7-day trial (see /api/stripe/checkout), so
- * amount_total is 0 — nothing is actually charged today. Reporting that as
- * the "purchase" value would tell every ad platform every trial signup is
- * worth £0, which defeats the entire point of conversion-value tracking.
- * The recurring price is the real committed value of what the person just
- * signed up for.
+ * Real paid purchases are reported server-side only, from the verified
+ * Stripe invoice webhook with the actual collected amount — see
+ * src/lib/analytics/paid-conversion.ts.
+ *
+ * Data is still pulled from the real Stripe Checkout Session — never
+ * hardcoded — so transaction_id, currency and the item list are genuine
+ * per-checkout data.
  */
 
 export interface StripeLineItemLike {
@@ -30,18 +32,18 @@ export interface StripeLineItemLike {
   } | null;
 }
 
-export interface PurchaseEventPayload {
+export interface StartTrialEventPayload {
   transaction_id: string;
-  value: number;
+  value: number; // always 0 — a trial collects nothing
   currency: string;
   items: Array<{ item_id: string; item_name: string; price: number; quantity: number }>;
 }
 
-export function buildPurchaseEventPayload(
+export function buildStartTrialEventPayload(
   sessionId: string,
   currency: string | null | undefined,
   lineItems: StripeLineItemLike[],
-): PurchaseEventPayload {
+): StartTrialEventPayload {
   const items = lineItems.map((li, i) => {
     const unitAmount = li.price?.unit_amount ?? 0;
     const quantity = li.quantity ?? 1;
@@ -61,16 +63,16 @@ export function buildPurchaseEventPayload(
     return {
       item_id:   itemId,
       item_name: productName,
+      // Plan catalogue price is fine as item metadata; it is NOT the value
+      // of this event — nothing was collected.
       price:     Math.round(unitAmount) / 100,
       quantity,
     };
   });
 
-  const value = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
-
   return {
     transaction_id: sessionId,
-    value:          Math.round(value * 100) / 100, // guard against float drift (e.g. 19.959999999998)
+    value:          0,
     currency:       (currency ?? 'gbp').toUpperCase(),
     items,
   };

@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { sendAdminNewUserAlert } from '@/lib/email';
 import { fireEventWorkflows } from '@/lib/workflow-executor';
+import { recordMilestone } from '@/lib/analytics/milestones';
 
 const ALLOWED_ROLES = new Set(['pwds', 'clinician', 'researcher', 'parent_carer', 'other']);
 const ALLOWED_COUNTRIES = new Set(['GB', 'IE', 'OTHER']);
@@ -116,6 +117,21 @@ export async function completeOnboarding(opts: {
     .eq('id', user.id);
 
   if (error) return { error: 'Could not save your profile. Please try again.' };
+
+  // Authoritative onboarding milestone (2026-09-29): fires exactly once,
+  // only after the server-side profile write above succeeded. The returned
+  // id rides to the browser as a one-shot cookie; PostHogProvider turns it
+  // into the consented GA4 onboarding_complete event and clears it.
+  const milestone = await recordMilestone(user.id, 'onboarding_complete', user.id);
+  if (milestone.id) {
+    cookieStore.set('flowen_onboarding_event', milestone.id, {
+      path: '/',
+      maxAge: 600,
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+  }
 
   await admin.from('consent_audit_log').insert({
     user_id:         user.id,

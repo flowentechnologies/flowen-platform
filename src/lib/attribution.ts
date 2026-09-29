@@ -24,8 +24,11 @@ export type ConversionType = 'signup' | 'subscription' | 'trial';
 /**
  * Links an anonymous attribution record to an authenticated user.
  *
- * Called immediately after a successful login, signup, or magic-link exchange.
- * If the visitor arrived via an ad click, the proxy will have already inserted
+ * Called only from /auth/callback after a verified NEW-signup milestone
+ * (2026-09-29). It must NOT be called on ordinary logins: bridging a
+ * returning user's fresh ad click made them look like a new signup
+ * conversion. If the visitor arrived via an ad click, the proxy will have
+ * already inserted
  * a row in marketing_attribution keyed on anonymous_id. This function sets the
  * user_id on that row, which is what triggers the Supabase DB webhook that
  * forwards the conversion to Meta CAPI / Google Ads Enhanced Conversions.
@@ -41,6 +44,7 @@ export async function bridgeAttribution(
   anonId: string | undefined | null,
   userId: string,
   conversionType: ConversionType = 'signup',
+  signupEventId?: string,
 ): Promise<void> {
   // Nothing to bridge if the cookie was never set (no ad click on record).
   if (!anonId) return;
@@ -51,6 +55,11 @@ export async function bridgeAttribution(
       user_id:         userId,
       converted_at:    new Date().toISOString(),
       conversion_type: conversionType,
+      // Browser/server dedup key for the signup event (2026-09-29): the
+      // milestone id handed to the browser via the flowen_signup_event
+      // cookie, so the browser Meta event and the server CAPI send share
+      // one event_id and the platform counts one conversion.
+      ...(signupEventId && { signup_event_id: signupEventId }),
     })
     .eq('anonymous_id', anonId)
     .is('user_id', null); // Idempotency guard — bridge at most once per attribution row.
