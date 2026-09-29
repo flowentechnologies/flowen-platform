@@ -8,10 +8,16 @@ export function hasPostHogConsent(cookie: string | undefined = typeof document !
 }
 
 let started = false;
+let initialized = false;
 
 export function startPostHog(): boolean {
   if (!hasPostHogConsent()) return false;
   if (started) return true;
+  if (initialized) {
+    if (posthog.has_opted_out_capturing()) posthog.opt_in_capturing();
+    started = true;
+    return true;
+  }
   const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
   const host = process.env.NEXT_PUBLIC_POSTHOG_HOST;
   if (!token || !host) return false;
@@ -22,6 +28,7 @@ export function startPostHog(): boolean {
     capture_exceptions: true,
     session_recording: { maskAllInputs: false, maskInputOptions: { password: true } },
   });
+  initialized = true;
   started = true;
   // A prior necessary-only revocation may have persisted an opt-out flag.
   if (posthog.has_opted_out_capturing()) posthog.opt_in_capturing();
