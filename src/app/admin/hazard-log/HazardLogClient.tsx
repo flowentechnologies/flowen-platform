@@ -1201,4 +1201,4 @@ export function HazardLogClient({ initialEntries }: { initialEntries: HazardEntr
       )}
     </div>
   );
-  }
+}
