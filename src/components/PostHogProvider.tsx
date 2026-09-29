@@ -1,28 +1,28 @@
 'use client';
 
 import posthog from 'posthog-js';
-import { PostHogProvider as PHProvider, usePostHog } from 'posthog-js/react';
+
+import { PostHogProvider as PHProvider } from 'posthog-js/react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { pixelCompleteRegistrationWithId } from '@/lib/pixel';
+import { capturePostHog, hasPostHogConsent, identifyPostHog, resetPostHogIdentity, revokePostHog, startPostHog } from '@/lib/posthog-consent';
 
 
 function PageViewTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const ph = usePostHog();
 
   useEffect(() => {
-    if (!ph) return;
+    if (!hasPostHogConsent()) return;
     const url = `${window.location.origin}${pathname}${searchParams.toString() ? `?${searchParams}` : ''}`;
-    ph.capture('$pageview', { $current_url: url });
-  }, [pathname, searchParams, ph]);
+    capturePostHog('$pageview', { $current_url: url });
+  }, [pathname, searchParams]);
 
   return null;
 }
 
-const IDENTIFIED_USER_ID_KEY = 'flowen_posthog_user_id';
 
 // ── One-shot milestone events ────────────────────────────────────────────────
 // The server sets these short-lived, JS-readable cookies at the exact
@@ -55,7 +55,7 @@ function fireSignupEvent(eventId: string, userId: string): void {
     window.gtag('event', 'sign_up', { method: 'email' });
   }
   // Product analytics (not an ad network).
-  posthog.capture('user_signed_up', { user_id: userId });
+  capturePostHog('user_signed_up', { user_id: userId });
 }
 
 function fireOnboardingEvent(): void {
@@ -67,65 +67,69 @@ function fireOnboardingEvent(): void {
 function checkOneShotEvents(userId?: string): void {
   const signupEventId = readOneShotCookie('flowen_signup_event');
   if (signupEventId && userId) {
-    clearOneShotCookie('flowen_signup_event');
-    fireSignupEvent(signupEventId, userId);
+    if (hasPostHogConsent()) {
+      fireSignupEvent(signupEventId, userId);
+      clearOneShotCookie('flowen_signup_event');
+    }
   }
   if (readOneShotCookie('flowen_onboarding_event')) {
-    clearOneShotCookie('flowen_onboarding_event');
-    fireOnboardingEvent();
+    if (hasPostHogConsent()) {
+      fireOnboardingEvent();
+      clearOneShotCookie('flowen_onboarding_event');
+    }
   }
 }
 
 function AuthIdentityTracker() {
   useEffect(() => {
     const supabase = createClient();
-
-    const resetIdentity = () => {
-      if (localStorage.getItem(IDENTIFIED_USER_ID_KEY)) {
-        posthog.reset();
-        localStorage.removeItem(IDENTIFIED_USER_ID_KEY);
-      }
-    };
-
-    const identifyUser = (user: { id: string; email?: string | null }) => {
-      const identifiedUserId = localStorage.getItem(IDENTIFIED_USER_ID_KEY);
-      if (identifiedUserId && identifiedUserId !== user.id) posthog.reset();
-
-      posthog.identify(user.id, user.email ? { email: user.email } : undefined);
-      localStorage.setItem(IDENTIFIED_USER_ID_KEY, user.id);
-    };
+    let active = true;
 
     void supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!active || !hasPostHogConsent()) return;
       if (user) {
-        identifyUser(user);
+        identifyPostHog(user);
         checkOneShotEvents(user.id);
       } else {
-        resetIdentity();
+        resetPostHogIdentity();
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active || !hasPostHogConsent()) return;
       if (event === 'SIGNED_OUT') {
-        resetIdentity();
+        resetPostHogIdentity();
       } else if (event === 'SIGNED_IN' && session?.user) {
-        identifyUser(session.user);
+        identifyPostHog(session.user);
         checkOneShotEvents(session.user.id);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => { active = false; subscription.unsubscribe(); };
   }, []);
 
   return null;
 }
 
 export default function PostHogProvider({ children }: { children: React.ReactNode }) {
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const grant = () => setActive(startPostHog());
+    const revoke = () => { revokePostHog(); setActive(false); };
+    grant(); // Existing persisted 'all' decision on a later visit.
+    window.addEventListener('flowen:consent:granted', grant);
+    window.addEventListener('flowen:consent:revoked', revoke);
+    return () => {
+      window.removeEventListener('flowen:consent:granted', grant);
+      window.removeEventListener('flowen:consent:revoked', revoke);
+    };
+  }, []);
+
   return (
     <PHProvider client={posthog}>
-      <AuthIdentityTracker />
-      <Suspense fallback={null}>
-        <PageViewTracker />
-      </Suspense>
+      {active && <AuthIdentityTracker />}
+      {active && <Suspense fallback={null}><PageViewTracker /></Suspense>}
       {children}
     </PHProvider>
   );
