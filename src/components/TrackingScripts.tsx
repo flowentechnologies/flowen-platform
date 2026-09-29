@@ -15,6 +15,25 @@ function hasConsent(): boolean {
   return document.cookie.includes('flowen_cookie_consent=all');
 }
 
+/**
+ * Google Consent Mode v2 — pushed straight onto the dataLayer so it applies
+ * whether GA4/gtag loads directly or through GTM. Signals start DENIED:
+ * nothing here marks Google storage consented by default. The granted update
+ * fires only after an explicit 'all' decision.
+ */
+function gtagConsent(command: 'default' | 'update', granted: boolean) {
+  if (typeof window === 'undefined') return;
+  const w = window as unknown as { dataLayer?: unknown[] };
+  w.dataLayer = w.dataLayer || [];
+  const state = granted ? 'granted' : 'denied';
+  w.dataLayer.push(['consent', command, {
+    ad_storage:        state,
+    analytics_storage: state,
+    ad_user_data:      state,
+    ad_personalization: state,
+  }]);
+}
+
 const injected = new Set<string>();
 
 function injectProvider(p: TrackingProvider) {
@@ -44,8 +63,13 @@ function injectProvider(p: TrackingProvider) {
 
 export default function TrackingScripts({ providers }: { providers: TrackingProvider[] }) {
   useEffect(() => {
+    // Denied-by-default before anything injects — every page load, even
+    // before the visitor has answered the banner.
+    gtagConsent('default', false);
+
     const fire = () => {
       const consented = hasConsent();
+      if (consented) gtagConsent('update', true);
       providers.forEach(p => {
         if (!p.enabled || !p.head_html) return;
         if (p.consent_required && !consented) return;
