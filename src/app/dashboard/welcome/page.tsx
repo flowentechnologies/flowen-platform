@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getStripeClient } from '@/lib/stripe';
-import { buildPurchaseEventPayload, type PurchaseEventPayload } from '@/lib/analytics/purchase-event';
+import { buildStartTrialEventPayload, type StartTrialEventPayload } from '@/lib/analytics/purchase-event';
 import { PurchaseEventTracker } from '@/components/analytics/PurchaseEventTracker';
 
 export const metadata = { title: 'Welcome to Flowen' };
@@ -11,19 +11,20 @@ export const metadata = { title: 'Welcome to Flowen' };
 /**
  * Stripe redirects here with ?session_id={CHECKOUT_SESSION_ID} — see
  * success_url in /api/stripe/checkout. Resolves the real transaction for
- * GA4's purchase event (src/lib/analytics/purchase-event.ts) rather than
- * reporting nothing, or static/hardcoded values, on the one page in the app
- * whose entire job is confirming a purchase.
+ * GA4's start_trial event (src/lib/analytics/purchase-event.ts) — checkout
+ * here always starts a £0 trial, so this is NOT a purchase and reports
+ * value 0. Paid revenue is reported server-side from the verified Stripe
+ * invoice webhook (src/lib/analytics/paid-conversion.ts).
  *
  * Verifies the session's own email matches the signed-in user before using
  * it for anything — a session_id is a plausible thing to see turn up as a
  * copy-pasted or replayed query param, and this is a live Stripe API call
  * against whatever id is handed to it.
  */
-async function resolvePurchaseEvent(
+async function resolveTrialEvent(
   sessionId: string | undefined,
   userEmail: string | null | undefined,
-): Promise<PurchaseEventPayload | null> {
+): Promise<StartTrialEventPayload | null> {
   if (!sessionId || !userEmail) return null;
 
   try {
@@ -39,11 +40,11 @@ async function resolvePurchaseEvent(
     const lineItems = session.line_items?.data ?? [];
     if (lineItems.length === 0) return null;
 
-    return buildPurchaseEventPayload(session.id, session.currency, lineItems);
+    return buildStartTrialEventPayload(session.id, session.currency, lineItems);
   } catch (err) {
     // A dead/invalid/already-expired session id must never break the
     // welcome page itself — worst case, this one purchase goes untracked.
-    console.error('[dashboard/welcome] failed to resolve checkout session for GA4 purchase event:', err);
+    console.error('[dashboard/welcome] failed to resolve checkout session for GA4 start_trial event:', err);
     return null;
   }
 }
@@ -65,9 +66,9 @@ export default async function WelcomePage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login');
 
-  const [{ data: profile }, purchaseEvent] = await Promise.all([
+  const [{ data: profile }, trialEvent] = await Promise.all([
     supabase.from('profiles').select('display_name').eq('id', user.id).maybeSingle(),
-    resolvePurchaseEvent(session_id, user.email),
+    resolveTrialEvent(session_id, user.email),
   ]);
 
   const firstName = (profile?.display_name ?? user.email?.split('@')[0] ?? 'there')
@@ -75,7 +76,7 @@ export default async function WelcomePage({
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-6 py-12">
-      {purchaseEvent && <PurchaseEventTracker payload={purchaseEvent} />}
+      {trialEvent && <PurchaseEventTracker payload={trialEvent} />}
       <div className="max-w-lg w-full space-y-10 text-center">
 
         {/* Celebration */}
