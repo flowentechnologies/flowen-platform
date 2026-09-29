@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildStartTrialEventPayload } from './purchase-event';
 
+// A trial collects no revenue; keep the event value at zero.
 describe('buildStartTrialEventPayload', () => {
   it('reports a free trial with zero event value, not the recurring price', () => {
     const payload = buildStartTrialEventPayload('cs_test_123', 'gbp', [
