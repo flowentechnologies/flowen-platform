@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 interface Draft {
   id: string;
-  draft_type: 'stripe_sync' | 'categorize' | 'vat_reconciliation' | 'expense_from_email' | 'dla_journal' | 'share_capital_setoff';
+  draft_type: 'stripe_sync' | 'categorize' | 'vat_reconciliation' | 'expense_from_email' | 'dla_journal' | 'share_capital_setoff' | 'vendor_dla';
   status: string;
   entity: string;
   title: string;
@@ -28,6 +28,7 @@ const TYPE_LABEL: Record<Draft['draft_type'], string> = {
   expense_from_email: 'Expense from email',
   dla_journal: 'DLA journal',
   share_capital_setoff: 'Share capital set-off',
+  vendor_dla: 'Vendor DLA draft',
 };
 
 // Fields the drafting crons may leave blank because they're Xero-organisation-
@@ -51,6 +52,8 @@ export function BookkeeperClient() {
   const [disconnectingEntity, setDisconnectingEntity] = useState<string | null>(null);
   const [reconcilingDla, setReconcilingDla] = useState(false);
   const [reconcilingShareCapital, setReconcilingShareCapital] = useState(false);
+  const [creatingVendorDraft, setCreatingVendorDraft] = useState(false);
+  const [vendorDraftError, setVendorDraftError] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
@@ -151,6 +154,28 @@ export function BookkeeperClient() {
     } finally {
       setReconcilingShareCapital(false);
     }
+  }
+
+  async function createVendorDraft(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fields = Object.fromEntries(new FormData(form));
+    setCreatingVendorDraft(true);
+    setVendorDraftError(null);
+    try {
+      const res = await fetch('/api/admin/bookkeeping/drafts', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...fields,
+          amount: Number(fields.amount), gbpAmount: fields.gbpAmount ? Number(fields.gbpAmount) : null,
+          vatReview: true,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setVendorDraftError(data.error ?? 'Could not create draft'); return; }
+      form.reset();
+      load();
+    } catch { setVendorDraftError('Could not reach the server'); }
+    finally { setCreatingVendorDraft(false); }
   }
 
   async function ask() {
@@ -276,8 +301,38 @@ export function BookkeeperClient() {
         )}
       </div>
 
+      <details className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+        <summary className="cursor-pointer font-semibold text-sm text-slate-900 dark:text-white">Create vendor DLA draft</summary>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+          Saves a pending proposal only. Nothing posts to Xero until separately approved.
+          The source currency is kept distinct from the GBP amount for the eventual journal.
+          VAT remains for accountant review; do not claim input VAT from this draft.
+        </p>
+        <form onSubmit={createVendorDraft} className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <label className="space-y-1">Bearing entity
+            <select name="entity" required className="block w-full rounded border p-2 text-slate-900">
+              <option value="">Select entity</option>
+              {entities?.filter(e => e.connected).map(e => <option key={e.slug} value={e.slug}>{e.name}</option>)}
+            </select>
+          </label>
+          <label className="space-y-1">Vendor<input name="vendor" required maxLength={120} className="block w-full rounded border p-2 text-slate-900" /></label>
+          <label className="space-y-1">Description<input name="description" required maxLength={500} className="block w-full rounded border p-2 text-slate-900" /></label>
+          <label className="space-y-1">Invoice/charge reference<input name="reference" required maxLength={120} className="block w-full rounded border p-2 text-slate-900" /></label>
+          <label className="space-y-1">Cost date<input name="date" type="date" required className="block w-full rounded border p-2 text-slate-900" /></label>
+          <label className="space-y-1">Source currency<input name="currency" defaultValue="GBP" required maxLength={3} className="block w-full rounded border p-2 text-slate-900" /></label>
+          <label className="space-y-1">Source amount<input name="amount" type="number" min="0.01" step="0.01" required className="block w-full rounded border p-2 text-slate-900" /></label>
+          <label className="space-y-1">Actual GBP card amount (required before approval)<input name="gbpAmount" type="number" min="0.01" step="0.01" className="block w-full rounded border p-2 text-slate-900" /></label>
+          <label className="space-y-1">Expense account code (required before approval)<input name="expenseAccountCode" inputMode="numeric" className="block w-full rounded border p-2 text-slate-900" /></label>
+          <label className="space-y-1">DLA account code<input name="dlaAccountCode" defaultValue="835" required inputMode="numeric" className="block w-full rounded border p-2 text-slate-900" /></label>
+          <label className="space-y-1 sm:col-span-2">Evidence URL<input name="evidenceUrl" type="url" required className="block w-full rounded border p-2 text-slate-900" /></label>
+          <label className="space-y-1 sm:col-span-2">VAT review note<input name="vatNote" defaultValue="Accountant to review; no VAT reclaimed" maxLength={500} className="block w-full rounded border p-2 text-slate-900" /></label>
+          {vendorDraftError && <p role="alert" className="text-red-600 sm:col-span-2">{vendorDraftError}</p>}
+          <button disabled={creatingVendorDraft} className="rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-2 disabled:opacity-50 sm:col-span-2">{creatingVendorDraft ? 'Creating…' : 'Save pending draft'}</button>
+        </form>
+      </details>
+
       <div className="flex gap-2 flex-wrap">
-        {(['all', 'stripe_sync', 'categorize', 'vat_reconciliation', 'expense_from_email', 'dla_journal', 'share_capital_setoff'] as const).map(t => (
+        {(['all', 'stripe_sync', 'categorize', 'vat_reconciliation', 'expense_from_email', 'dla_journal', 'share_capital_setoff', 'vendor_dla'] as const).map(t => (
           <button
             key={t}
             onClick={() => setFilter(t)}
@@ -337,6 +392,15 @@ export function BookkeeperClient() {
                   <p className="text-slate-400 mt-2">
                     Credit: account {String(draft.proposed_payload.dlaAccountCode)} (Directors&rsquo; Loan Account) — dated {String(draft.proposed_payload.date)}
                   </p>
+                </div>
+              ) : draft.draft_type === 'vendor_dla' ? (
+                <div className="mb-4 text-xs text-slate-700 dark:text-slate-300 space-y-2">
+                  <p>Source: {String(draft.proposed_payload.currency)} {Number(draft.proposed_payload.amount).toFixed(2)} · {String(draft.proposed_payload.date)} · {String(draft.proposed_payload.reference)}</p>
+                  <p>Vendor: {String(draft.proposed_payload.vendor)} · {String(draft.proposed_payload.description)}</p>
+                  <p>Debit expense account {String(draft.proposed_payload.expenseAccountCode || 'NOT SET')} · credit DLA {String(draft.proposed_payload.dlaAccountCode)}. GBP journal amount: {draft.proposed_payload.gbpAmount == null ? 'NOT SET' : `£${Number(draft.proposed_payload.gbpAmount).toFixed(2)}`}.</p>
+                  <p>VAT review required: {String(draft.proposed_payload.vatNote || 'Accountant review pending')}</p>
+                  <a className="underline text-emerald-600" target="_blank" rel="noopener noreferrer" href={String(draft.proposed_payload.evidenceUrl)}>Open evidence</a>
+                  <p className="text-amber-600">Missing a GBP amount or valid expense account? Do not approve. Reject and recreate with verified details.</p>
                 </div>
               ) : draft.draft_type === 'share_capital_setoff' ? (
                 <div className="mb-4 text-xs">
@@ -401,7 +465,7 @@ export function BookkeeperClient() {
                   Reject
                 </button>
                 <button
-                  disabled={busyId === draft.id || !entities?.find(e => e.slug === draft.entity)?.connected}
+                  disabled={busyId === draft.id || !entities?.find(e => e.slug === draft.entity)?.connected || (draft.draft_type === 'vendor_dla' && (!draft.proposed_payload.gbpAmount || !draft.proposed_payload.expenseAccountCode))}
                   onClick={() => act(draft, 'approve')}
                   className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
                 >

@@ -1,6 +1,7 @@
 /**
  * /api/admin/bookkeeping/drafts
  *
+ * POST   — create one pending vendor DLA draft; never writes to Xero.
  * GET    — list proposed bookkeeping actions (default: status=pending).
  * PATCH  — the ONLY route in this codebase that can turn a bookkeeping
  *          draft into an actual Xero write. Requires an explicit admin
@@ -19,7 +20,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { assertAdmin } from '@/lib/admin/guard';
 import { adminDb as db } from '@/lib/supabase/admin';
 import { logAuditEvent } from '@/lib/admin/audit';
-import { createXeroInvoiceAndPayment, categorizeBankTransaction, createXeroBill, createXeroManualJournal, createXeroShareCapitalSetoff } from '@/lib/xero';
+import { createXeroInvoiceAndPayment, categorizeBankTransaction, createXeroBill, createXeroManualJournal, createXeroShareCapitalSetoff, listChartOfAccounts } from '@/lib/xero';
 import { isXeroEntitySlug } from '@/lib/flowen-entities';
 
 interface StripeSyncPayload {
@@ -33,6 +34,11 @@ interface ExpenseFromEmailPayload {
 interface DlaJournalPayload {
   narration: string; date: string; dlaAccountCode: string;
   lines: { accountCode: string; description: string; amount: number }[];
+}
+interface VendorDlaPayload {
+  vendor: string; description: string; amount: number; currency: string; date: string;
+  dlaAccountCode: string; expenseAccountCode: string; gbpAmount: number | null;
+  evidenceUrl: string; reference: string; vatReview: true; vatNote: string;
 }
 interface ShareCapitalSetoffPayload {
   narration: string; date: string; dlaAccountCode: string; shareCapitalAccountCode: string; amount: number;
@@ -59,6 +65,66 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ drafts: data, admin: admin.email });
+}
+
+/** Create a pending proposal only. Never calls Xero. The GBP journal amount and
+ * expense-side chart account remain mandatory approval-time decisions. */
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  let admin;
+  try { admin = await assertAdmin(); } catch { return NextResponse.json({ error: 'Forbidden' }, { status: 403 }); }
+  let input: Record<string, unknown>;
+  try { input = await req.json() as Record<string, unknown>; }
+  catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+  const text = (key: string) => typeof input[key] === 'string' ? (input[key] as string).trim() : '';
+  const entity = text('entity');
+  const vendor = text('vendor');
+  const description = text('description');
+  const reference = text('reference');
+  const date = text('date');
+  const currency = text('currency').toUpperCase();
+  const dlaAccountCode = text('dlaAccountCode') || '835';
+  const expenseAccountCode = text('expenseAccountCode');
+  const evidenceUrl = text('evidenceUrl');
+  const vatNote = text('vatNote');
+  const amount = input.amount;
+  const gbpAmount = input.gbpAmount;
+  if (!isXeroEntitySlug(entity) || !vendor || vendor.length > 120 || !description || description.length > 500 ||
+      !reference || reference.length > 120 || !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+      !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date ||
+      !/^[A-Z]{3}$/.test(currency) || typeof amount !== 'number' || !Number.isFinite(amount) ||
+      amount <= 0 || Math.abs(Math.round(amount * 100) - amount * 100) > 1e-7 || !/^\d{2,10}$/.test(dlaAccountCode) ||
+      (expenseAccountCode && !/^\d{2,10}$/.test(expenseAccountCode)) ||
+      (gbpAmount != null && (typeof gbpAmount !== 'number' || !Number.isFinite(gbpAmount) || gbpAmount <= 0 || Math.abs(Math.round(gbpAmount * 100) - gbpAmount * 100) > 1e-7)) ||
+      (currency === 'GBP' && gbpAmount != null && gbpAmount !== amount) ||
+      input.vatReview !== true || vatNote.length > 500) {
+    return NextResponse.json({ error: 'Invalid vendor DLA draft fields' }, { status: 400 });
+  }
+  try {
+    const url = new URL(evidenceUrl);
+    if (url.protocol !== 'https:' || !url.hostname || evidenceUrl.length > 2048) throw new Error();
+  } catch { return NextResponse.json({ error: 'A valid HTTPS evidence URL is required' }, { status: 400 }); }
+
+  const sourceRef = `manual-vendor-dla:${entity}:${reference}`;
+  const supabase = db();
+  const { data: existing, error: lookupError } = await supabase.from('bookkeeping_drafts')
+    .select('id, status').eq('entity', entity).eq('draft_type', 'vendor_dla')
+    .eq('source_ref', sourceRef).neq('status', 'rejected').limit(1);
+  if (lookupError) return NextResponse.json({ error: lookupError.message }, { status: 500 });
+  if (existing?.length) return NextResponse.json({ error: 'A draft with this entity and reference already exists', draftId: existing[0].id }, { status: 409 });
+
+  const payload: VendorDlaPayload = { vendor, description, reference, date, currency,
+    amount, dlaAccountCode, expenseAccountCode, gbpAmount: currency === 'GBP' ? amount : (gbpAmount ?? null),
+    evidenceUrl, vatReview: true, vatNote };
+  const { data: draft, error } = await supabase.from('bookkeeping_drafts').insert({
+    draft_type: 'vendor_dla', entity, source_ref: sourceRef, status: 'pending',
+    title: `${vendor} — ${currency} ${amount.toFixed(2)} (DLA draft)`,
+    summary: `${description} | ${reference} | VAT/account review required${vatNote ? `: ${vatNote}` : ''}`,
+    proposed_payload: payload,
+  }).select('id, status, entity, proposed_payload').single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await logAuditEvent({ action: 'bookkeeping.vendor_dla_draft_created', actor_id: admin.id,
+    metadata: { draft_id: draft.id, entity, reference } });
+  return NextResponse.json({ draft }, { status: 201 });
 }
 
 export async function PATCH(req: NextRequest): Promise<NextResponse> {
@@ -137,6 +203,31 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
           return NextResponse.json({ error: 'dlaAccountCode and every line\'s accountCode must be set before approving' }, { status: 400 });
         }
         const result = await createXeroManualJournal(entity, p);
+        xeroResult = result;
+        break;
+      }
+      case 'vendor_dla': {
+        const p = payload as VendorDlaPayload;
+        // Manual journals post in the Xero organisation's GBP base currency.
+        // Never re-label a source USD number as GBP or infer an exchange rate.
+        const gbp = Number(p.gbpAmount);
+        if (!p.expenseAccountCode || !p.dlaAccountCode || !Number.isFinite(gbp) || gbp <= 0 ||
+            Math.abs(Math.round(gbp * 100) - gbp * 100) > 1e-7 || !p.vatReview || !p.evidenceUrl) {
+          return NextResponse.json({ error: 'GBP card amount, expense account, DLA account and evidence/VAT review are required before approval' }, { status: 400 });
+        }
+        if (p.currency === 'GBP' && gbp !== Number(p.amount)) {
+          return NextResponse.json({ error: 'GBP draft source amount and journal amount disagree' }, { status: 400 });
+        }
+        const accounts = await listChartOfAccounts(entity);
+        if (!accounts.some(a => a.Code === p.expenseAccountCode && a.Class === 'EXPENSE') ||
+            !accounts.some(a => a.Code === p.dlaAccountCode && a.Type === 'CURRLIAB')) {
+          return NextResponse.json({ error: 'Expense or DLA code not found in the selected Xero entity chart' }, { status: 400 });
+        }
+        const result = await createXeroManualJournal(entity, {
+          narration: `${p.vendor} ${p.reference} — ${p.description}; source ${p.currency} ${p.amount}; evidence ${p.evidenceUrl}; VAT review: ${p.vatNote || 'pending accountant review'}`,
+          date: p.date, dlaAccountCode: p.dlaAccountCode,
+          lines: [{ accountCode: p.expenseAccountCode, description: `${p.vendor} ${p.reference} — ${p.description}`, amount: gbp }],
+        });
         xeroResult = result;
         break;
       }
