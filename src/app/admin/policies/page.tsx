@@ -627,7 +627,7 @@ Risks remaining at Medium residual level are accepted only where:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 A Clinical Safety Case is maintained throughout the product lifecycle:
-— Initial Safety Case: compiled prior to first deployment (see POL-013)
+— Initial Safety Case: compiled prior to first deployment (see POL-012)
 — Safety Case Report: prepared for each procuring NHS organisation (DCB0129 Annex B)
 — Safety Case is reviewed and updated upon any material change to the system
 
@@ -1132,7 +1132,7 @@ Having identified and assessed all foreseeable clinical hazards, implemented app
 THE CLINICAL SAFETY OFFICER CONCLUDES that the Flowen platform is acceptably safe for deployment as a digital wellness and fluency practice tool for adults with persistent stammering, subject to the following conditions:
 
 1. The platform is deployed only with its documented intended purpose and no diagnostic or therapeutic claims
-2. All five open/ongoing mitigations (H002, H003, H005, H008) remain active and are reviewed quarterly
+2. The open hazards H005 and H008 remain under review; mitigations for H002 and H003 are marked implemented but retain medium residual risk and are reviewed quarterly
 3. The annual safety case review is completed by August 2027
 4. An external qualified CSO reviews and co-signs this safety case prior to NHS clinical deployment
 
