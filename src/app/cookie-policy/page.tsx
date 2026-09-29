@@ -1,4 +1,5 @@
 import MarketingNavbar from '@/components/MarketingNavbar';
+import ManageCookieConsent from '@/components/ManageCookieConsent';
 import MarketingFooter from '@/components/MarketingFooter';
 import Link from 'next/link';
 import type { Metadata } from 'next';
@@ -192,6 +193,7 @@ export default function CookiePolicyPage() {
         {/* Opt-out section */}
         <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
           <h2 className="text-base font-bold text-white">Your choices</h2>
+          <ManageCookieConsent />
           <div className="space-y-3 text-sm text-slate-400 leading-relaxed">
             <p>
               <strong className="text-slate-200">Browser settings:</strong> Block or delete cookies in your browser settings.
