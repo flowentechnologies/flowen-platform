@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import posthog from 'posthog-js';
+import { capturePostHog } from '@/lib/posthog-consent';
 
 // ── FAQ data ──────────────────────────────────────────────────────────────────
 
@@ -92,7 +92,7 @@ function ContactForm() {
         body: JSON.stringify({ subject, body: message, category }),
       });
       if (res.ok) {
-        posthog.capture('support_request_submitted', { category });
+        capturePostHog('support_request_submitted', { category });
         setSent(true);
       } else {
         const data = await res.json().catch(() => ({})) as { error?: string };
