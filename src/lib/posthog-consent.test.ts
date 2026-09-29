@@ -67,6 +67,11 @@ describe('PostHog consent gate', () => {
     expect(ph.capture).toHaveBeenCalledTimes(1);
     expect(ph.identify).toHaveBeenCalledTimes(1);
     expect(storage.has('flowen_posthog_user_id')).toBe(false);
+    cookie = 'flowen_cookie_consent=all';
+    ph.has_opted_out_capturing.mockReturnValueOnce(true);
+    expect(startPostHog()).toBe(true);
+    expect(ph.init).toHaveBeenCalledTimes(1);
+    expect(ph.opt_in_capturing).toHaveBeenCalledTimes(1);
   });
 
   it('resumes only after a new all decision and clears persisted opt-out', () => {
