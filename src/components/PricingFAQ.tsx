@@ -5,7 +5,7 @@ import { useState } from 'react';
 const FAQS = [
   {
     q: 'What happens after the 7-day free trial?',
-    a: "Nothing happens automatically until you confirm. At the end of your trial you'll be prompted to choose a billing plan. If you don't, your account simply reverts to the free waitlist tier — no charge, no surprise. We ask for card details at checkout so we can activate the trial instantly, but we won't take payment until you choose to continue.",
+    a: "Your paid subscription starts automatically when the 7-day trial ends, using the card you added at checkout. Cancel any time before day 8 and you pay nothing — cancellation takes under a minute from your dashboard, no questions asked.",
   },
   {
     q: 'Can I really cancel any time?',
@@ -17,7 +17,7 @@ const FAQS = [
   },
   {
     q: 'Is Flowen eligible for NHS, Access to Work, or DSA funding?',
-    a: "Yes. Flowen is designed to work alongside funded pathways. If you have an Access to Work award, your employer reimburses the cost. DSA-eligible students can claim Flowen as an assistive technology. For NHS-commissioned use, your clinician can refer directly via the institutional pathway — contact hello@flowen.digital. We provide invoices and receipts suitable for all three routes.",
+    a: "Flowen is designed to work alongside funded pathways. If you have an Access to Work award or DSA support, Flowen can usually be claimed as an assistive technology cost — your funding body makes the final eligibility decision, and we provide invoices and receipts suitable for reimbursement claims. For NHS-commissioned use, contact hello@flowen.digital about the Funded Access institutional route.",
   },
   {
     q: 'How does the AI actually work?',
@@ -25,7 +25,7 @@ const FAQS = [
   },
   {
     q: 'What devices does it work on?',
-    a: "Flowen works in any modern browser (Chrome, Safari, Firefox, Edge) on desktop or laptop. A native iOS app is in development under our Apple Developer membership. Android follows shortly after. A stable internet connection and a microphone are the only requirements.",
+    a: "Flowen works in any modern browser (Chrome, Safari, Firefox, Edge) on desktop or laptop. A native iOS app is planned; Android follows after that. A stable internet connection and a microphone are the only requirements.",
   },
   {
     q: 'Is my voice data private?',
