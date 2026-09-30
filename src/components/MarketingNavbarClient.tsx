@@ -68,10 +68,10 @@ export default function MarketingNavbarClient({ initialLoggedIn = false }: { ini
           )}
 
           <Link
-            href={loggedIn ? '/dashboard' : '/waitlist'}
+            href={loggedIn ? '/dashboard' : '/auth/signup'}
             className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-sm transition-all hover:scale-105 shadow-md shadow-emerald-500/20"
           >
-            {loggedIn ? 'Open Dashboard' : 'Join Waitlist'}
+            {loggedIn ? 'Open Dashboard' : 'Get started free'}
           </Link>
 
           {/* Hamburger — mobile only */}
