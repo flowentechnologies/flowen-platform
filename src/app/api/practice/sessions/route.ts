@@ -69,6 +69,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Body must be a JSON object' }, { status: 400 });
+  }
+
   const { duration_seconds, total_blocks_detected, total_repetitions_detected, total_prolongations_detected, stage_id, transcript, average_latency_ms } = body;
   if (
     typeof duration_seconds !== 'number' || !Number.isFinite(duration_seconds) || duration_seconds < 5 || duration_seconds > 7200 ||
