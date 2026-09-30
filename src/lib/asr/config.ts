@@ -16,7 +16,7 @@ export function decodeWav(audio: unknown): Buffer | null {
   const b = Buffer.from(audio, 'base64');
   if (b.length < 44 || b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WAVE') return null;
   // Walk chunks rather than assuming fmt/data positions; reject truncated uploads.
-  let pcm = false, data = false;
+  let pcm = false, data = false, sampleRate = 0, dataBytes = 0;
   for (let offset = 12; offset + 8 <= b.length;) {
     const size = b.readUInt32LE(offset + 4), end = offset + 8 + size;
     if (end > b.length) return null;
@@ -25,10 +25,13 @@ export function decodeWav(audio: unknown): Buffer | null {
       if (size < 16 || b.readUInt16LE(offset + 8) !== 1 || b.readUInt16LE(offset + 10) !== 1 || b.readUInt16LE(offset + 22) !== 16) return null;
       const rate = b.readUInt32LE(offset + 12);
       if (rate < 8000 || rate > 48000) return null;
+      sampleRate = rate;
+      if (b.readUInt16LE(offset + 20) !== 2 || b.readUInt32LE(offset + 16) !== rate * 2) return null;
       pcm = true;
     }
-    if (type === 'data' && size > 0) data = true;
+    if (type === 'data' && size > 0) { data = true; dataBytes += size; }
     offset = end + (size % 2);
   }
-  return pcm && data ? b : null;
+  const seconds = dataBytes / (sampleRate * 2);
+  return pcm && data && seconds >= 0.5 && seconds <= 30 && b.readUInt32LE(4) + 8 === b.length ? b : null;
 }
