@@ -18,15 +18,15 @@ import { adminDb as db } from '@/lib/supabase/admin';
 const FOUC_SCRIPT = `(function(){try{var t=localStorage.getItem('flowen-theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
 
 export const metadata: Metadata = {
-  title: 'Flowen — Retraining the Brain to Speak Freely',
-  description: 'AI Speech Coordination for School, Workplace & Daily Life. Sub-80ms real-time vocal retraining engine.',
+  title: 'Flowen — Real-time speech biofeedback for people who stammer',
+  description: 'Practice speaking with instant acoustic biofeedback on your fluency. 3 free sessions, no card required. Built on evidence-based techniques used in clinical speech therapy.',
   metadataBase: new URL('https://flowen.digital'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Flowen — AI Speech Coordination',
-    description: 'Every word gets there. Sub-80ms real-time vocal retraining and clinical supervision platform.',
+    title: 'Flowen — Real-time speech biofeedback',
+    description: 'Instant feedback on your speech as you practise. 3 free sessions, no card required.',
     url: 'https://flowen.digital',
     siteName: 'Flowen',
     images: [
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
         url: '/assets/images/flowen-hero-banner.jpg',
         width: 1200,
         height: 630,
-        alt: 'Flowen AI Speech Coordination Platform',
+        alt: 'Flowen real-time speech biofeedback platform',
       },
     ],
     locale: 'en_GB',
@@ -42,8 +42,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Flowen — AI Speech Coordination',
-    description: 'Every word gets there. Sub-150ms real-time vocal retraining.',
+    title: 'Flowen — Real-time speech biofeedback',
+    description: 'Instant feedback on your speech as you practise. 3 free sessions, no card required.',
     images: ['/assets/images/flowen-hero-banner.jpg'],
   },
   icons: {
