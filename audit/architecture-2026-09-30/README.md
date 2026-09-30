@@ -6,8 +6,8 @@ This is a first audit pass, not a declaration that the platform is bug-free. No 
 
 - 124 Next.js page routes and 174 API routes inventoried from the fresh main checkout.
 - Static literal page destinations checked against page routes: no unmatched destination found. Dynamic paths, anchor targets and authorization are separate checks and are not certified by this result.
-- Existing unit suite: 253 tests in 34 files passed. Added 12 redirect tests: total 265 tests in 35 files passed.
-- Auth/proxy changed files pass ESLint. Full-project lint and type/build checks are separate, not inferred from unit tests.
+- Existing unit suite: 253 tests in 34 files passed. Added 12 redirect tests and 6 audio-upload route tests: total 286 tests in 37 files passed.
+- Auth/proxy and audio-upload changed files pass ESLint. Full TypeScript check passes. GitHub CI passes and the initial Vercel preview is Ready. Whole-project lint exceeds the local time window and has not been certified.
 - Live anonymous dashboard correctly redirects to login with `next=/dashboard`.
 - Admin and dashboard navigation have route destinations. Authenticated end-to-end user, clinician, billing, recording and admin workflows still require test identities and controlled non-production fixtures. No practice session, invitation, payment, email or personal account state was generated during this audit.
 
@@ -26,7 +26,7 @@ This is a first audit pass, not a declaration that the platform is bug-free. No 
 ## Findings still open
 
 - `src/app/api/practice/asr/route.ts` promises a per-user limiter in its header but implements no limiter. Coordinate with the ASR workstream; do not silently change model/runtime behavior in this auth PR.
-- Practice coach and session POST handlers parse JSON then destructure without guarding null or non-object payloads. Valid JSON `null` raises rather than returning the intended 400. Add request-shape validation and route tests in a separate patch.
+- Practice coach and session POST handlers previously destructured null/non-object JSON. This patch adds object guards; coach also validates field types before calling the AI provider. Fifteen mocked route tests cover non-object JSON and invalid coach fields.
 - Practice entitlement is enforced in the server-rendered practice page, but the authenticated session-write API does not repeat the free-session/subscription check. Test direct API access and mobile entitlement before changing product policy. A UI paywall is not an API permission boundary.
 - `src/app/api/infra/error-boundary/route.ts` ignores the Supabase insert result's error and returns received=true. This can hide missing error persistence. Self-healing is explicitly unavailable on Vercel because its queue is filesystem-based.
 - Production auth recovery needs a controlled test account and a real recovery link after preview deployment. Source and unit validation are not proof of delivered-email/PKCE behavior.
@@ -36,3 +36,7 @@ This is a first audit pass, not a declaration that the platform is bug-free. No 
 ## Evidence
 
 Before screenshot: live dashboard request resolved to the login screen with its next destination. Implementation screenshot: branch package.json shows the corrected lint command. PR diff and raw branch byte verification document the auth changes. Screenshots are supporting evidence, not substitutes for test results.
+
+## Training audio persistence follow-up
+
+The audio upload handler previously returned ok=true even when the training_samples insert failed. It now fails honestly, checks idempotency lookup errors, cleans an unreferenced object after failed insertion and avoids deleting a concurrent committed sample or an unverifiable reference. Existing consent and session ownership checks are unchanged. Six mocked route tests cover these boundaries. The practice client still fire-and-forgets training uploads and ignores HTTP failures, so user-visible retry/status remains open. Cleanup failure logs an orphan warning; no existing production objects were deleted.
