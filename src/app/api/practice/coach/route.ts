@@ -36,7 +36,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
 
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'Body must be a JSON object' }, { status: 400 });
+  }
+
   const { stageId, transcript, sessionElapsed, lastCoachResponse } = body;
+  if (typeof transcript !== 'string' || !Number.isInteger(stageId) || stageId < 1 || stageId > 5 ||
+      typeof sessionElapsed !== 'number' || !Number.isFinite(sessionElapsed) || sessionElapsed < 0 ||
+      (lastCoachResponse !== undefined && typeof lastCoachResponse !== 'string')) {
+    return NextResponse.json({ error: 'Invalid coaching data' }, { status: 400 });
+  }
   // stageName is not used server-side — stageId selects the prompt
 
   const stageInstruction = STAGE_PROMPTS[stageId] ?? STAGE_PROMPTS[5];
