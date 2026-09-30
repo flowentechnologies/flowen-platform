@@ -18,7 +18,7 @@ export interface IpDocMeta {
 
 export const IP_DOCS: IpDocMeta[] = [
   // Regulatory & Clinical Safety
-  { slug: 'dcb0129-clinical-safety-case',  title: 'DCB0129 Clinical Safety Case Report',            category: 'regulatory', type: 'clinical-safety-case',    status: 'draft', auditSlug: null, version: '1.0', date: 'August 2026' },
+  { slug: 'dcb0129-clinical-safety-case',  title: 'DCB0129 Clinical Safety Case Report',            category: 'regulatory', type: 'clinical-safety-case',    status: 'draft', auditSlug: null, version: '1.1', date: '30 September 2026' },
   { slug: 'seis-advance-assurance',        title: 'SEIS Advance Assurance Application — HMRC',      category: 'regulatory', type: 'regulatory-application',  status: 'draft', auditSlug: null, version: '1.0', date: 'August 2026' },
   // Contracts
   { slug: 'founder-ip-assignment-deed',    title: 'Founder IP Assignment Deed',                  category: 'contracts',     type: 'legal-template',   status: 'requires-legal-review', auditSlug: 'Founder IP Assignment Deed',               version: '1.0', date: 'August 2026' },

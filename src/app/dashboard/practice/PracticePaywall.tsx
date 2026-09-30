@@ -121,7 +121,7 @@ export function PracticePaywall({ sessionsUsed, freeLimit, streak, daysActive, b
             </svg>
             <div>
               <p className="text-xs font-bold text-sky-200 leading-tight">DCB0129 Clinical Safety · NHS DTAC Assessed</p>
-              <p className="text-[11px] text-sky-400/70 leading-tight mt-0.5">Built to NHS digital clinical safety standards for speech & language therapy platforms.</p>
+              <p className="text-[11px] text-sky-400/70 leading-tight mt-0.5">Clinical safety documentation is in preparation. NHS deployment approval is not claimed.</p>
             </div>
           </div>
         </div>

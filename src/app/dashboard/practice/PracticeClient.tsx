@@ -139,6 +139,16 @@ interface Props {
 const STEP_LABELS = ['Stage', 'Ready', 'Record', 'Review'] as const;
 const SCREEN_TO_STEP: Record<Screen, number> = { select: 0, ready: 1, recording: 2, summary: 3, progression: 4 };
 
+function PracticeSafetyNotice({ review = false }: { review?: boolean }) {
+  return (
+    <aside aria-label="Practice limits and support" className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+      <p>Flowen is a practice tool, not a diagnosis or a replacement for a speech and language therapist. Automated feedback can miss or mislabel speech events. Scores are not a measure of your worth or a clinical assessment.</p>
+      <p className="mt-2">You can stop whenever you need to. If practice leaves you distressed, pause and seek support. <a href="https://stamma.org/get-help" target="_blank" rel="noopener noreferrer" className="underline text-sky-600 dark:text-sky-400">STAMMA support</a> · <a href="https://www.samaritans.org/how-we-can-help/contact-samaritan/" target="_blank" rel="noopener noreferrer" className="underline text-sky-600 dark:text-sky-400">Samaritans</a></p>
+      {review && <p className="mt-2">Optional next step: try one small conversation outside the app when you feel ready. Focus on taking part, not a perfect score, and keep following any advice from your therapist.</p>}
+    </aside>
+  );
+}
+
 function StepBar({ current }: { current: Screen }) {
   const idx = SCREEN_TO_STEP[current];
   return (
@@ -1022,6 +1032,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
         {/* Step bar */}
         <StepBar current="select" />
+        <PracticeSafetyNotice />
 
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -1251,6 +1262,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
         {/* Step bar */}
         <StepBar current="ready" />
+        <PracticeSafetyNotice />
 
         {/* Back */}
         <button
@@ -1419,6 +1431,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
         {/* Step bar */}
         <StepBar current="recording" />
+        <PracticeSafetyNotice />
 
         {/* AI Avatar — Agora ConvoAI + RPM 3D (lip-sync from TTS audio) */}
         <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl shadow-black/40">
@@ -1789,7 +1802,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
   // Celebration tier
   const celebrationEmoji = blocks === 0 ? '🌟' : summaryBpm < 2 ? '🎉' : summaryBpm < 5 ? '✅' : '💪';
   const celebrationMsg   = blocks === 0
-    ? 'Perfect session — zero blocks detected!'
+    ? 'No blocks detected by the automated feedback. This can miss speech events.'
     : summaryBpm < 2
     ? 'Excellent fluency — you\'re in the zone.'
     : summaryBpm < 5
@@ -1805,6 +1818,7 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       {/* Step bar */}
       <StepBar current="summary" />
+        <PracticeSafetyNotice review />
 
       {/* Celebration hero */}
       <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-950/70 via-slate-900 to-slate-900 border border-emerald-500/25 px-6 py-8 text-center space-y-2">
@@ -1925,4 +1939,4 @@ export function PracticeClient({ recommendedStage, recentSessions: initialRecent
       </div>
     </div>
   );
-}
+                                     }

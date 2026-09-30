@@ -1,3 +1,4 @@
+import { nhsChecklistCompletion } from '@/lib/nhs-readiness';
 import { assertAdmin } from '@/lib/admin/guard';
 import { stripe } from '@/lib/stripe';
 import { CommandCentreClient } from './CommandCentreClient';
@@ -23,7 +24,7 @@ async function fetchData(): Promise<CCData> {
     grantsRes,
     roadmapStatusRes, roadmapNextRes,
     ventureRes,
-    complianceRes, hazardRes,
+    complianceRes,
     icbCountRes,
   ] = await Promise.all([
     client.from('profiles').select('*', { count: 'exact', head: true }),
@@ -46,7 +47,6 @@ async function fetchData(): Promise<CCData> {
     client.from('roadmap_milestones').select('id,title,target_date').eq('priority', 'critical').not('status', 'in', '("complete","deferred")').order('target_date', { ascending: true, nullsFirst: false }).limit(1),
     client.from('venture_config').select('cash_in_bank_pence,monthly_burn_pence').eq('id', 1).maybeSingle(),
     client.from('compliance_items').select('framework,status'),
-    client.from('hazard_log').select('id').eq('risk_level', 'critical').in('status', ['open','accepted']),
     client.from('nhs_icb_contacts').select('*', { count: 'exact', head: true }).in('stage', ['engaged','proposal','pilot','contract']),
   ]);
 
@@ -132,17 +132,7 @@ async function fetchData(): Promise<CCData> {
 
   // NHS readiness score
   const complianceRows = (complianceRes.data ?? []) as { framework: string; status: string }[];
-  const frameworkWeights: Record<string, number> = { dcb0129: 30, dtac: 25, dspt: 20 };
-  let nhsScore = 0;
-  for (const [fw, weight] of Object.entries(frameworkWeights)) {
-    const items = complianceRows.filter(c => c.framework === fw);
-    const applicable = items.filter(c => c.status !== 'not_applicable');
-    const complete = applicable.filter(c => c.status === 'complete').length;
-    nhsScore += applicable.length > 0 ? (complete / applicable.length) * weight : weight;
-  }
-  if ((hazardRes.data ?? []).length === 0) nhsScore += 15;
-  if ((totalUsersRes.count ?? 0) > 0) nhsScore += 10;
-  const nhsReadinessScore = Math.round(nhsScore);
+  const nhsReadinessScore = nhsChecklistCompletion(complianceRows);
 
   return {
     generatedAt: now.toISOString(),
