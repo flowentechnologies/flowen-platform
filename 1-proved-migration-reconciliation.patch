@@ -1,0 +1,450 @@
+diff --git a/supabase/migrations/20260901_slp_session_notes_patient.sql b/supabase/migrations/20260901115633_slp_session_notes_patient.sql
+similarity index 100%
+rename from supabase/migrations/20260901_slp_session_notes_patient.sql
+rename to supabase/migrations/20260901115633_slp_session_notes_patient.sql
+diff --git a/supabase/migrations/20260901122620_20260901_id_verified_default_true.sql b/supabase/migrations/20260901122620_20260901_id_verified_default_true.sql
+new file mode 100644
+index 0000000..ab03318
+--- /dev/null
++++ b/supabase/migrations/20260901122620_20260901_id_verified_default_true.sql
+@@ -0,0 +1,9 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++-- KYC (DIDIT) was removed from the onboarding flow in Aug 2026.
++-- New users should default to id_verified = true so they are not blocked.
++-- Backfill existing users who were never manually verified.
++ALTER TABLE profiles ALTER COLUMN id_verified SET DEFAULT true;
++
++UPDATE profiles
++SET id_verified = true
++WHERE id_verified = false;
+diff --git a/supabase/migrations/20260901212422_assets_bucket_allow_favicon_mime.sql b/supabase/migrations/20260901212422_assets_bucket_allow_favicon_mime.sql
+new file mode 100644
+index 0000000..cb76a69
+--- /dev/null
++++ b/supabase/migrations/20260901212422_assets_bucket_allow_favicon_mime.sql
+@@ -0,0 +1,5 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++update storage.buckets
++set allowed_mime_types = array_append(allowed_mime_types, 'image/x-icon')
++where id = 'assets'
++  and not ('image/x-icon' = any(allowed_mime_types));
+diff --git a/supabase/migrations/20260902182951_create_social_publish_queue.sql b/supabase/migrations/20260902182951_create_social_publish_queue.sql
+new file mode 100644
+index 0000000..5b6da51
+--- /dev/null
++++ b/supabase/migrations/20260902182951_create_social_publish_queue.sql
+@@ -0,0 +1,27 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++create table if not exists social_publish_queue (
++  id uuid primary key default gen_random_uuid(),
++  series text not null,
++  day_num integer,
++  platform text not null,
++  caption text not null,
++  hashtags text not null default '',
++  asset_path text not null,
++  asset_public_url text,
++  scheduled_at timestamptz not null,
++  status text not null default 'pending',
++  published_at timestamptz,
++  external_post_id text,
++  error_message text,
++  attempt_count integer not null default 0,
++  created_at timestamptz not null default now(),
++  updated_at timestamptz not null default now(),
++  constraint social_publish_queue_platform_check check (platform in ('instagram', 'facebook', 'linkedin')),
++  constraint social_publish_queue_status_check check (status in ('pending', 'published', 'failed', 'manual_pending', 'manual_done', 'skipped'))
++);
++
++create index if not exists idx_social_publish_queue_due
++  on social_publish_queue (platform, status, scheduled_at);
++
++comment on table social_publish_queue is
++  'Cross-platform social publishing queue (distinct from social_posts, which is post-performance analytics). Instagram/Facebook rows are auto-published by /api/cron/social-publish via the Meta Graph API. LinkedIn rows are semi-automated: sit at status=manual_pending and surface in /admin/social for the admin to copy-paste and mark manual_done — LinkedIn Company Page auto-posting requires Marketing Developer Platform approval, which is enterprise-gated and was not pursued.';
+diff --git a/supabase/migrations/20260902183008_social_publish_queue_rls.sql b/supabase/migrations/20260902183008_social_publish_queue_rls.sql
+new file mode 100644
+index 0000000..7411c56
+--- /dev/null
++++ b/supabase/migrations/20260902183008_social_publish_queue_rls.sql
+@@ -0,0 +1,5 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++alter table social_publish_queue enable row level security;
++-- No policies added: table is only ever accessed via the service-role client
++-- (adminDb) from the cron route and the admin dashboard's server actions,
++-- never from the browser/anon key. Deny-by-default is intentional.
+diff --git a/supabase/migrations/20260903_pinterest_snapchat_social.sql b/supabase/migrations/20260903185240_extend_social_queue_pinterest_snapchat.sql
+similarity index 100%
+rename from supabase/migrations/20260903_pinterest_snapchat_social.sql
+rename to supabase/migrations/20260903185240_extend_social_queue_pinterest_snapchat.sql
+diff --git a/supabase/migrations/20260904_pitch_deck_bucket.sql b/supabase/migrations/20260903231800_create_pitch_deck_private_bucket.sql
+similarity index 100%
+rename from supabase/migrations/20260904_pitch_deck_bucket.sql
+rename to supabase/migrations/20260903231800_create_pitch_deck_private_bucket.sql
+diff --git a/supabase/migrations/20260905_gmail_inbox_crm_notifications.sql b/supabase/migrations/20260905100512_gmail_inbox_crm_notifications.sql
+similarity index 100%
+rename from supabase/migrations/20260905_gmail_inbox_crm_notifications.sql
+rename to supabase/migrations/20260905100512_gmail_inbox_crm_notifications.sql
+diff --git a/supabase/migrations/20260905_inbox_gmail_category.sql b/supabase/migrations/20260905112617_inbox_gmail_category.sql
+similarity index 100%
+rename from supabase/migrations/20260905_inbox_gmail_category.sql
+rename to supabase/migrations/20260905112617_inbox_gmail_category.sql
+diff --git a/supabase/migrations/20260905_inbox_crm_notifications_v2.sql b/supabase/migrations/20260905150330_inbox_crm_notifications_v2.sql
+similarity index 100%
+rename from supabase/migrations/20260905_inbox_crm_notifications_v2.sql
+rename to supabase/migrations/20260905150330_inbox_crm_notifications_v2.sql
+diff --git a/supabase/migrations/20260905_cross_system_consistency_checks.sql b/supabase/migrations/20260905160223_cross_system_consistency_checks.sql
+similarity index 100%
+rename from supabase/migrations/20260905_cross_system_consistency_checks.sql
+rename to supabase/migrations/20260905160223_cross_system_consistency_checks.sql
+diff --git a/supabase/migrations/20260905_ad_platform_stats_unique_constraint.sql b/supabase/migrations/20260905171451_ad_platform_stats_unique_constraint.sql
+similarity index 100%
+rename from supabase/migrations/20260905_ad_platform_stats_unique_constraint.sql
+rename to supabase/migrations/20260905171451_ad_platform_stats_unique_constraint.sql
+diff --git a/supabase/migrations/20260907_move_vector_extension_out_of_public.sql b/supabase/migrations/20260907022249_move_vector_extension_out_of_public_schema.sql
+similarity index 100%
+rename from supabase/migrations/20260907_move_vector_extension_out_of_public.sql
+rename to supabase/migrations/20260907022249_move_vector_extension_out_of_public_schema.sql
+diff --git a/supabase/migrations/20260907114948_slp_notifications.sql b/supabase/migrations/20260907114948_slp_notifications.sql
+new file mode 100644
+index 0000000..37620af
+--- /dev/null
++++ b/supabase/migrations/20260907114948_slp_notifications.sql
+@@ -0,0 +1,102 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++-- SLT-facing real-time notifications: new patient message, session completed.
++--
++-- Two clinician systems coexist in this codebase (role='clinician', the
++-- older one actually in use -- the only real slp_assignments row today is
++-- for a role='clinician' profile -- and role='slp', a newer /slp/* portal
++-- with zero real users yet). Both key off the same slp_assignments /
++-- slp_messages / practice_sessions tables via slp_user_id, so this table
++-- and its triggers work for either role without needing to know which
++-- portal the recipient will actually view it in.
++create table slp_notifications (
++  id           uuid primary key default gen_random_uuid(),
++  slp_user_id  uuid not null references profiles(id) on delete cascade,
++  type         text not null,
++  title        text not null,
++  body         text,
++  link         text,
++  priority     text not null default 'normal',
++  read_at      timestamptz,
++  created_at   timestamptz not null default now()
++);
++
++create index idx_slp_notifications_recipient on slp_notifications(slp_user_id, read_at);
++
++alter table slp_notifications enable row level security;
++
++create policy "clinicians read their own notifications"
++  on slp_notifications for select
++  using (auth.uid() = slp_user_id);
++
++create policy "clinicians update their own notifications"
++  on slp_notifications for update
++  using (auth.uid() = slp_user_id);
++
++alter publication supabase_realtime add table slp_notifications;
++
++-- Trigger 1: a message arrives for a clinician/SLT recipient.
++create or replace function notify_slp_new_message()
++returns trigger
++language plpgsql
++security definer
++set search_path = public
++as $$
++declare
++  recipient_role text;
++  sender_name    text;
++begin
++  select role into recipient_role from profiles where id = new.to_user_id;
++  if recipient_role in ('clinician', 'slp') then
++    select coalesce(display_name, email) into sender_name from profiles where id = new.from_user_id;
++    insert into slp_notifications (slp_user_id, type, title, body, link, priority)
++    values (
++      new.to_user_id,
++      'new_message',
++      'New message from ' || coalesce(sender_name, 'a patient'),
++      left(new.content, 140),
++      '/dashboard/messages',
++      'normal'
++    );
++  end if;
++  return new;
++end;
++$$;
++
++create trigger trg_notify_slp_new_message
++  after insert on slp_messages
++  for each row execute function notify_slp_new_message();
++
++-- Trigger 2: a patient completes a practice session -- notify their
++-- assigned clinician(s) via slp_assignments.
++create or replace function notify_slp_session_completed()
++returns trigger
++language plpgsql
++security definer
++set search_path = public
++as $$
++declare
++  patient_name text;
++  assignment   record;
++begin
++  select coalesce(display_name, email) into patient_name from profiles where id = new.user_id;
++  for assignment in
++    select slp_user_id from slp_assignments where patient_user_id = new.user_id
++  loop
++    insert into slp_notifications (slp_user_id, type, title, body, link, priority)
++    values (
++      assignment.slp_user_id,
++      'session_completed',
++      coalesce(patient_name, 'A patient') || ' completed a practice session',
++      'Stage ' || new.stage_id || ' \xc2\xb7 ' || round((new.duration_seconds / 60.0)::numeric, 1) || ' min \xc2\xb7 '
++        || coalesce(new.total_blocks_detected, 0) || ' blocks detected',
++      '/dashboard/clinician',
++      'normal'
++    );
++  end loop;
++  return new;
++end;
++$$;
++
++create trigger trg_notify_slp_session_completed
++  after insert on practice_sessions
++  for each row execute function notify_slp_session_completed();
+diff --git a/supabase/migrations/20260907115059_fix_slp_notification_separator_encoding.sql b/supabase/migrations/20260907115059_fix_slp_notification_separator_encoding.sql
+new file mode 100644
+index 0000000..bb773be
+--- /dev/null
++++ b/supabase/migrations/20260907115059_fix_slp_notification_separator_encoding.sql
+@@ -0,0 +1,35 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++-- Fix a real bug from the previous migration: the middle-dot separator
++-- got mistranscribed as the literal 8-character text \xc2\xb7 instead of
++-- an actual '.' character (confirmed via char_length = octet_length on
++-- the one row it produced, meaning every byte was single-byte ASCII, not
++-- a real UTF-8 middle dot). Using a plain ASCII separator instead of a
++-- Unicode character removes the whole class of transcription risk.
++create or replace function notify_slp_session_completed()
++returns trigger
++language plpgsql
++security definer
++set search_path = public
++as $$
++declare
++  patient_name text;
++  assignment   record;
++begin
++  select coalesce(display_name, email) into patient_name from profiles where id = new.user_id;
++  for assignment in
++    select slp_user_id from slp_assignments where patient_user_id = new.user_id
++  loop
++    insert into slp_notifications (slp_user_id, type, title, body, link, priority)
++    values (
++      assignment.slp_user_id,
++      'session_completed',
++      coalesce(patient_name, 'A patient') || ' completed a practice session',
++      'Stage ' || new.stage_id || ' - ' || round((new.duration_seconds / 60.0)::numeric, 1) || ' min - '
++        || coalesce(new.total_blocks_detected, 0) || ' blocks detected',
++      '/dashboard/clinician',
++      'normal'
++    );
++  end loop;
++  return new;
++end;
++$$;
+diff --git a/supabase/migrations/20260907_explee_hot_leads.sql b/supabase/migrations/20260907122740_explee_hot_leads.sql
+similarity index 100%
+rename from supabase/migrations/20260907_explee_hot_leads.sql
+rename to supabase/migrations/20260907122740_explee_hot_leads.sql
+diff --git a/supabase/migrations/20260907_explee_outreach_sync.sql b/supabase/migrations/20260907124234_explee_outreach_sync.sql
+similarity index 100%
+rename from supabase/migrations/20260907_explee_outreach_sync.sql
+rename to supabase/migrations/20260907124234_explee_outreach_sync.sql
+diff --git a/supabase/migrations/20260907_revoke_slp_notification_trigger_rpc.sql b/supabase/migrations/20260907135004_revoke_public_execute_on_slp_notification_triggers.sql
+similarity index 100%
+rename from supabase/migrations/20260907_revoke_slp_notification_trigger_rpc.sql
+rename to supabase/migrations/20260907135004_revoke_public_execute_on_slp_notification_triggers.sql
+diff --git a/supabase/migrations/20260907_ad_platform_stats_unique_key.sql b/supabase/migrations/20260907135659_ad_platform_stats_unique_key.sql
+similarity index 100%
+rename from supabase/migrations/20260907_ad_platform_stats_unique_key.sql
+rename to supabase/migrations/20260907135659_ad_platform_stats_unique_key.sql
+diff --git a/supabase/migrations/20260907204327_crm_contacts_add_clinician_lead_category.sql b/supabase/migrations/20260907204327_crm_contacts_add_clinician_lead_category.sql
+new file mode 100644
+index 0000000..48be331
+--- /dev/null
++++ b/supabase/migrations/20260907204327_crm_contacts_add_clinician_lead_category.sql
+@@ -0,0 +1,4 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++alter table crm_contacts drop constraint crm_contacts_category_check;
++alter table crm_contacts add constraint crm_contacts_category_check
++  check (category in ('investor','grant','nhs_partner','press','affiliate','vendor','sales_lead','clinician_lead','other'));
+diff --git a/supabase/migrations/20260907204332_drop_unused_slp_beta_applications.sql b/supabase/migrations/20260907204332_drop_unused_slp_beta_applications.sql
+new file mode 100644
+index 0000000..58401f9
+--- /dev/null
++++ b/supabase/migrations/20260907204332_drop_unused_slp_beta_applications.sql
+@@ -0,0 +1,8 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++-- The role='slp' portal (/slp/*) is being retired: zero real profiles ever
++-- had role='slp', and this table had zero rows ever (confirmed live before
++-- dropping) — nobody applied, nobody was promoted. The /clinicians page's
++-- apply form now writes to crm_contacts (category='clinician_lead')
++-- instead, so real interest still surfaces somewhere a human actually
++-- looks, rather than a dead-end table behind a removed admin review page.
++drop table if exists slp_beta_applications;
+diff --git a/supabase/migrations/20260908_admin_action_items.sql b/supabase/migrations/20260908120923_admin_action_items.sql
+similarity index 100%
+rename from supabase/migrations/20260908_admin_action_items.sql
+rename to supabase/migrations/20260908120923_admin_action_items.sql
+diff --git a/supabase/migrations/20260909_deck_invite_variant.sql b/supabase/migrations/20260908231628_deck_invite_variant.sql
+similarity index 100%
+rename from supabase/migrations/20260909_deck_invite_variant.sql
+rename to supabase/migrations/20260908231628_deck_invite_variant.sql
+diff --git a/supabase/migrations/20260911_crm_stage_auto_managed.sql b/supabase/migrations/20260911142253_crm_stage_auto_managed.sql
+similarity index 100%
+rename from supabase/migrations/20260911_crm_stage_auto_managed.sql
+rename to supabase/migrations/20260911142253_crm_stage_auto_managed.sql
+diff --git a/supabase/migrations/20260913_explee_contact_enrichment.sql b/supabase/migrations/20260913124756_explee_contact_enrichment.sql
+similarity index 100%
+rename from supabase/migrations/20260913_explee_contact_enrichment.sql
+rename to supabase/migrations/20260913124756_explee_contact_enrichment.sql
+diff --git a/supabase/migrations/20260913_explee_prospecting.sql b/supabase/migrations/20260913133509_explee_prospecting.sql
+similarity index 100%
+rename from supabase/migrations/20260913_explee_prospecting.sql
+rename to supabase/migrations/20260913133509_explee_prospecting.sql
+diff --git a/supabase/migrations/20260913_explee_dedup_lists.sql b/supabase/migrations/20260913152620_explee_dedup_lists.sql
+similarity index 100%
+rename from supabase/migrations/20260913_explee_dedup_lists.sql
+rename to supabase/migrations/20260913152620_explee_dedup_lists.sql
+diff --git a/supabase/migrations/20260913152647_explee_searches_excluded_total.sql b/supabase/migrations/20260913152647_explee_searches_excluded_total.sql
+new file mode 100644
+index 0000000..f2a317d
+--- /dev/null
++++ b/supabase/migrations/20260913152647_explee_searches_excluded_total.sql
+@@ -0,0 +1,3 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++alter table explee_searches add column if not exists excluded_total integer;
++comment on column explee_searches.excluded_total is 'How many candidates were skipped because they matched the dedup list passed in exclude_lists — never enriched, never charged. Null when no dedup list was applied to this search.';
+diff --git a/supabase/migrations/20260913_deploy_log_changelog_items.sql b/supabase/migrations/20260913193411_deploy_log_changelog_items.sql
+similarity index 100%
+rename from supabase/migrations/20260913_deploy_log_changelog_items.sql
+rename to supabase/migrations/20260913193411_deploy_log_changelog_items.sql
+diff --git a/supabase/migrations/20260914_cal_com_bookings.sql b/supabase/migrations/20260914123434_cal_com_bookings.sql
+similarity index 100%
+rename from supabase/migrations/20260914_cal_com_bookings.sql
+rename to supabase/migrations/20260914123434_cal_com_bookings.sql
+diff --git a/supabase/migrations/20260916_xero_bookkeeping.sql b/supabase/migrations/20260916134009_xero_bookkeeping.sql
+similarity index 100%
+rename from supabase/migrations/20260916_xero_bookkeeping.sql
+rename to supabase/migrations/20260916134009_xero_bookkeeping.sql
+diff --git a/supabase/migrations/20260916_r2_session_recordings.sql b/supabase/migrations/20260916183748_r2_session_recordings.sql
+similarity index 100%
+rename from supabase/migrations/20260916_r2_session_recordings.sql
+rename to supabase/migrations/20260916183748_r2_session_recordings.sql
+diff --git a/supabase/migrations/20260918004056_enable_rls_missing_tables.sql b/supabase/migrations/20260918004056_enable_rls_missing_tables.sql
+new file mode 100644
+index 0000000..c1c36f8
+--- /dev/null
++++ b/supabase/migrations/20260918004056_enable_rls_missing_tables.sql
+@@ -0,0 +1,16 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++-- Five tables were left off when RLS was enabled on their sibling tables
++-- (explee_analytics_snapshots, explee_campaigns, explee_contacts,
++-- explee_messages, xero_oauth_tokens, etc. all already have RLS enabled
++-- with no policies — service-role-only access via adminDb(), same pattern
++-- used throughout the admin/prospecting and webhook routes). Confirmed via
++-- grep that all five are only ever queried through adminDb() (service
++-- role, which bypasses RLS), never the anon/authenticated client, so
++-- enabling RLS with no policies is safe and closes the gap flagged by
++-- Supabase's security advisor (rls_disabled_in_public, ERROR level).
++
++alter table public.explee_searches enable row level security;
++alter table public.explee_prospects enable row level security;
++alter table public.explee_campaign_imports enable row level security;
++alter table public.explee_dedup_lists enable row level security;
++alter table public.cal_bookings enable row level security;
+diff --git a/supabase/migrations/20260918004403_revoke_direct_execute_slp_trigger_functions.sql b/supabase/migrations/20260918004403_revoke_direct_execute_slp_trigger_functions.sql
+new file mode 100644
+index 0000000..6a1535c
+--- /dev/null
++++ b/supabase/migrations/20260918004403_revoke_direct_execute_slp_trigger_functions.sql
+@@ -0,0 +1,16 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++-- notify_slp_new_message and notify_slp_session_completed are trigger
++-- functions (RETURNS trigger, reference NEW.*) fired AFTER INSERT on
++-- slp_messages and practice_sessions respectively — confirmed via
++-- information_schema.triggers. They were never meant to be called
++-- directly; Postgres exposes every function to anon/authenticated via
++-- PostgREST's /rpc/ endpoint by default unless EXECUTE is revoked, which
++-- is what the security advisor (anon/authenticated_security_definer_
++-- function_executable) is flagging. Revoking direct EXECUTE does not
++-- affect the triggers themselves — a trigger invokes its function using
++-- the privileges baked into SECURITY DEFINER regardless of who performed
++-- the INSERT, independent of these GRANTs, which only govern explicit
++-- direct calls (SQL or PostgREST RPC).
++
++revoke execute on function public.notify_slp_new_message() from anon, authenticated;
++revoke execute on function public.notify_slp_session_completed() from anon, authenticated;
+diff --git a/supabase/migrations/20260918004434_revoke_public_execute_slp_trigger_functions.sql b/supabase/migrations/20260918004434_revoke_public_execute_slp_trigger_functions.sql
+new file mode 100644
+index 0000000..bfe29be
+--- /dev/null
++++ b/supabase/migrations/20260918004434_revoke_public_execute_slp_trigger_functions.sql
+@@ -0,0 +1,14 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++-- The previous migration revoked EXECUTE from anon/authenticated directly,
++-- but pg_proc.proacl showed the actual grant was to PUBLIC
++-- ({=X/postgres,...}) — every role, including anon/authenticated, inherits
++-- EXECUTE through PUBLIC regardless of any role-specific revoke, so that
++-- migration was a no-op. Revoking from PUBLIC directly is what's needed.
++--
++-- Trigger firing is unaffected: Postgres invokes a trigger function using
++-- its own internal mechanism when a row is inserted, not via a role
++-- performing a direct function call, so it doesn't consult the caller's
++-- EXECUTE grant on the trigger function at all.
++
++revoke execute on function public.notify_slp_new_message() from public;
++revoke execute on function public.notify_slp_session_completed() from public;
+diff --git a/supabase/migrations/20260925_xero_multi_entity.sql b/supabase/migrations/20260924232920_xero_multi_entity.sql
+similarity index 100%
+rename from supabase/migrations/20260925_xero_multi_entity.sql
+rename to supabase/migrations/20260924232920_xero_multi_entity.sql
+diff --git a/supabase/migrations/20260925_dla_journal_draft_type.sql b/supabase/migrations/20260925022233_dla_journal_draft_type.sql
+similarity index 100%
+rename from supabase/migrations/20260925_dla_journal_draft_type.sql
+rename to supabase/migrations/20260925022233_dla_journal_draft_type.sql
+diff --git a/supabase/migrations/20260925_share_capital_setoff_draft_type.sql b/supabase/migrations/20260925185516_share_capital_setoff_draft_type.sql
+similarity index 100%
+rename from supabase/migrations/20260925_share_capital_setoff_draft_type.sql
+rename to supabase/migrations/20260925185516_share_capital_setoff_draft_type.sql
+diff --git a/supabase/migrations/20260925_audit_perf_fixes.sql b/supabase/migrations/20260925190848_audit_perf_fixes.sql
+similarity index 100%
+rename from supabase/migrations/20260925_audit_perf_fixes.sql
+rename to supabase/migrations/20260925190848_audit_perf_fixes.sql
+diff --git a/supabase/migrations/20260926_session_recording_retention.sql b/supabase/migrations/20260926004320_session_recording_retention.sql
+similarity index 100%
+rename from supabase/migrations/20260926_session_recording_retention.sql
+rename to supabase/migrations/20260926004320_session_recording_retention.sql
+diff --git a/supabase/migrations/20260926_governance_registers.sql b/supabase/migrations/20260926150422_governance_registers.sql
+similarity index 100%
+rename from supabase/migrations/20260926_governance_registers.sql
+rename to supabase/migrations/20260926150422_governance_registers.sql
+diff --git a/supabase/migrations/20260926_seis_eis_and_company_records.sql b/supabase/migrations/20260926182314_seis_eis_and_company_records.sql
+similarity index 100%
+rename from supabase/migrations/20260926_seis_eis_and_company_records.sql
+rename to supabase/migrations/20260926182314_seis_eis_and_company_records.sql
+diff --git a/supabase/migrations/20260929213000_consent_milestones.sql b/supabase/migrations/20260929202036_consent_records_and_conversion_milestones.sql
+similarity index 100%
+rename from supabase/migrations/20260929213000_consent_milestones.sql
+rename to supabase/migrations/20260929202036_consent_records_and_conversion_milestones.sql
+diff --git a/supabase/migrations/20260929203836_consent_records_identity_check.sql b/supabase/migrations/20260929203836_consent_records_identity_check.sql
+new file mode 100644
+index 0000000..ac0926c
+--- /dev/null
++++ b/supabase/migrations/20260929203836_consent_records_identity_check.sql
+@@ -0,0 +1,4 @@
++-- Recovered original Production migration SQL. Already recorded remotely.
++alter table public.consent_records
++  add constraint consent_records_identity_check
++  check (anonymous_id is not null or user_id is not null);

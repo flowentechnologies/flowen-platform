@@ -1,0 +1,209 @@
+[
+  {
+    "kind": "rename-exact",
+    "from": "20260901_slp_session_notes_patient.sql",
+    "to": "20260901115633_slp_session_notes_patient.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260901122620_20260901_id_verified_default_true.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260901212422_assets_bucket_allow_favicon_mime.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260902182951_create_social_publish_queue.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260902183008_social_publish_queue_rls.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260903_pinterest_snapchat_social.sql",
+    "to": "20260903185240_extend_social_queue_pinterest_snapchat.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260904_pitch_deck_bucket.sql",
+    "to": "20260903231800_create_pitch_deck_private_bucket.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260905_gmail_inbox_crm_notifications.sql",
+    "to": "20260905100512_gmail_inbox_crm_notifications.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260905_inbox_gmail_category.sql",
+    "to": "20260905112617_inbox_gmail_category.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260905_inbox_crm_notifications_v2.sql",
+    "to": "20260905150330_inbox_crm_notifications_v2.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260905_cross_system_consistency_checks.sql",
+    "to": "20260905160223_cross_system_consistency_checks.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260905_ad_platform_stats_unique_constraint.sql",
+    "to": "20260905171451_ad_platform_stats_unique_constraint.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260907_move_vector_extension_out_of_public.sql",
+    "to": "20260907022249_move_vector_extension_out_of_public_schema.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260907114948_slp_notifications.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260907115059_fix_slp_notification_separator_encoding.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260907_explee_hot_leads.sql",
+    "to": "20260907122740_explee_hot_leads.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260907_explee_outreach_sync.sql",
+    "to": "20260907124234_explee_outreach_sync.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260907_revoke_slp_notification_trigger_rpc.sql",
+    "to": "20260907135004_revoke_public_execute_on_slp_notification_triggers.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260907_ad_platform_stats_unique_key.sql",
+    "to": "20260907135659_ad_platform_stats_unique_key.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260907204327_crm_contacts_add_clinician_lead_category.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260907204332_drop_unused_slp_beta_applications.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260908_admin_action_items.sql",
+    "to": "20260908120923_admin_action_items.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260909_deck_invite_variant.sql",
+    "to": "20260908231628_deck_invite_variant.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260911_crm_stage_auto_managed.sql",
+    "to": "20260911142253_crm_stage_auto_managed.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260913_explee_contact_enrichment.sql",
+    "to": "20260913124756_explee_contact_enrichment.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260913_explee_prospecting.sql",
+    "to": "20260913133509_explee_prospecting.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260913_explee_dedup_lists.sql",
+    "to": "20260913152620_explee_dedup_lists.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260913152647_explee_searches_excluded_total.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260913_deploy_log_changelog_items.sql",
+    "to": "20260913193411_deploy_log_changelog_items.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260914_cal_com_bookings.sql",
+    "to": "20260914123434_cal_com_bookings.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260916_xero_bookkeeping.sql",
+    "to": "20260916134009_xero_bookkeeping.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260916_r2_session_recordings.sql",
+    "to": "20260916183748_r2_session_recordings.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260918004056_enable_rls_missing_tables.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260918004403_revoke_direct_execute_slp_trigger_functions.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260918004434_revoke_public_execute_slp_trigger_functions.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260925_xero_multi_entity.sql",
+    "to": "20260924232920_xero_multi_entity.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260925_dla_journal_draft_type.sql",
+    "to": "20260925022233_dla_journal_draft_type.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260925_share_capital_setoff_draft_type.sql",
+    "to": "20260925185516_share_capital_setoff_draft_type.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260925_audit_perf_fixes.sql",
+    "to": "20260925190848_audit_perf_fixes.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260926_session_recording_retention.sql",
+    "to": "20260926004320_session_recording_retention.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260926_governance_registers.sql",
+    "to": "20260926150422_governance_registers.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260926_seis_eis_and_company_records.sql",
+    "to": "20260926182314_seis_eis_and_company_records.sql"
+  },
+  {
+    "kind": "rename-exact",
+    "from": "20260929213000_consent_milestones.sql",
+    "to": "20260929202036_consent_records_and_conversion_milestones.sql"
+  },
+  {
+    "kind": "recover-remote",
+    "to": "20260929203836_consent_records_identity_check.sql"
+  }
+]
