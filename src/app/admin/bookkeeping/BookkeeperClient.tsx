@@ -441,7 +441,7 @@ export function BookkeeperClient() {
                           <textarea name="vatNote" aria-label={`VAT review note for ${draft.title}`} maxLength={500} defaultValue={String(draft.proposed_payload.vatNote ?? '')} className="block w-full rounded border p-2 text-slate-900" />
                         </label>
                       </div>
-                      <p className="text-amber-600">Save verified details first. Saving keeps this draft pending and does not post to Xero. Expense accounts are checked against the entity's chart on approval. VAT review remains required.</p>
+                      <p className="text-amber-600">Save verified details first. Saving keeps this draft pending and does not post to Xero. Expense accounts are checked against the entity&apos;s chart on approval. VAT review remains required.</p>
                       <button type="submit" disabled={busyId === draft.id} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 font-semibold disabled:opacity-50">Save draft</button>
                       <p role="status" aria-live="polite">{saveFeedback[draft.id]}</p>
                     </form>
