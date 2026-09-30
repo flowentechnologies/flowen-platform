@@ -342,8 +342,8 @@ async function handleInvoicePaymentSucceeded(
   // Stripe event (real collected GBP, not a plan price); exactly-once by
   // invoice ID via conversion_milestones; consent-gated internally.
   // £0 trial invoices are ignored by reportPaidPurchase.
-  if (invoice.id && (invoice.amount_paid ?? 0) > 0) {
-    void reportPaidPurchase({
+  if (invoice.livemode && invoice.id && (invoice.amount_paid ?? 0) > 0) {
+    await reportPaidPurchase({
       userId,
       invoiceId:   invoice.id,
       amountPence: invoice.amount_paid,
@@ -351,7 +351,7 @@ async function handleInvoicePaymentSucceeded(
       paidAt:      invoice.status_transitions?.paid_at
         ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
         : undefined,
-    }).catch(err => console.error('[stripe-webhook] paid-conversion report failed:', err));
+    });
   }
 }
 
