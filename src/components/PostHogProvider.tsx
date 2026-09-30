@@ -1,6 +1,7 @@
 'use client';
 
 import posthog from 'posthog-js';
+import { queueGa4Event } from '@/lib/analytics/ga4-client';
 
 import { PostHogProvider as PHProvider } from 'posthog-js/react';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -41,34 +42,29 @@ function clearOneShotCookie(name: string): void {
   document.cookie = `${name}=; path=/; max-age=0`;
 }
 
-function hasAdsConsent(): boolean {
-  return typeof document !== 'undefined' && document.cookie.includes('flowen_cookie_consent=all');
-}
 
-function fireSignupEvent(eventId: string, userId: string): void {
+function fireSignupEvent(eventId: string, userId: string): boolean {
+  if (typeof window.gtag !== 'function') return false;
   // Meta CompleteRegistration — consent-gated inside pixel.ts; the event ID
   // is shared with the server-side CAPI send so the two deduplicate into
   // one conversion.
   pixelCompleteRegistrationWithId(eventId, { content_name: 'flowen_signup' });
   // Consented GA4 sign_up — no email, no clinical content.
-  if (hasAdsConsent() && typeof window !== 'undefined' && typeof window.gtag === 'function') {
-    window.gtag('event', 'sign_up', { method: 'email' });
-  }
+  queueGa4Event('sign_up', { method: 'email' });
   // Product analytics (not an ad network).
   capturePostHog('user_signed_up', { user_id: userId });
+  return true;
 }
 
 function fireOnboardingEvent(): void {
-  if (hasAdsConsent() && typeof window !== 'undefined' && typeof window.gtag === 'function') {
-    window.gtag('event', 'onboarding_complete');
-  }
+  queueGa4Event('onboarding_complete');
 }
 
 function checkOneShotEvents(userId?: string): void {
   const signupEventId = readOneShotCookie('flowen_signup_event');
   if (signupEventId && userId) {
     if (hasPostHogConsent()) {
-      fireSignupEvent(signupEventId, userId);
+      if (!fireSignupEvent(signupEventId, userId)) return;
       clearOneShotCookie('flowen_signup_event');
     }
   }
@@ -84,6 +80,12 @@ function AuthIdentityTracker() {
   useEffect(() => {
     const supabase = createClient();
     let active = true;
+    const ready = () => {
+      void supabase.auth.getUser().then(({ data: { user } }) => {
+        if (active && user && hasPostHogConsent()) checkOneShotEvents(user.id);
+      });
+    };
+    window.addEventListener('flowen:tracking:ready', ready);
 
     void supabase.auth.getUser().then(({ data: { user } }) => {
       if (!active || !hasPostHogConsent()) return;
@@ -105,7 +107,7 @@ function AuthIdentityTracker() {
       }
     });
 
-    return () => { active = false; subscription.unsubscribe(); };
+    return () => { active = false; subscription.unsubscribe(); window.removeEventListener('flowen:tracking:ready', ready); };
   }, []);
 
   return null;
