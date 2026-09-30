@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { pixelStartTrial } from '@/lib/pixel';
 import { capturePostHog } from '@/lib/posthog-consent';
 
 export interface BillingProps {
@@ -281,18 +280,7 @@ export function BillingClient({
   // Stripe webhook), so this fires once per real trial and never from a
   // replayed URL. Consent-gated inside pixel.ts; deduped per period in
   // sessionStorage.
-  useEffect(() => {
-    if (status !== 'trialing') return;
-    const key = `flowen_trial_tracked_${tier ?? 'sub'}_${currentPeriodEnd ?? ''}`;
-    try {
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, '1');
-    } catch {
-      // sessionStorage unavailable — fire anyway; worst case a duplicate
-      // StartTrial, which Meta/Snap dedupe by event_id downstream.
-    }
-    pixelStartTrial({ value: 0, currency: 'GBP' });
-  }, [status, tier, currentPeriodEnd]);
+
 
   return (
     <div className="space-y-4">
