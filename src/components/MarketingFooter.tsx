@@ -95,12 +95,11 @@ export default function MarketingFooter() {
 
         <div className="border-t border-slate-800/60 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-400 text-xs">
-            © 2026 Flowen Speech Technology Ltd. All rights reserved. Registered under UK GDPR &amp; DCB0129 Clinical Safety Governance.
+            © 2026 Flowen Speech Technologies Ltd. All rights reserved.
           </p>
           <div className="flex items-center gap-3">
-            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-400">DCB0129</span>
             <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-400">UK GDPR</span>
-            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-400">NHS</span>
+            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-400">UK data residency</span>
           </div>
         </div>
       </div>
