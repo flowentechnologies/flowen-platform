@@ -8,7 +8,7 @@ export async function allowAsr(userId: string) {
   const url = process.env.UPSTASH_REDIS_REST_URL, token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (url && token) {
     limiter ??= new Ratelimit({ redis: new Redis({ url, token }), limiter: Ratelimit.slidingWindow(360, '1 h'), prefix: 'rl:asr' });
-    return (await limiter.limit(userId)).success;
+    try { return (await limiter.limit(userId)).success; } catch { return false; }
   }
   // Without a distributed limiter, do not silently leave paid production
   // requests unbounded across Vercel instances.
