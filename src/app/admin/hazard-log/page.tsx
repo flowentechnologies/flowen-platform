@@ -38,6 +38,12 @@ export default async function HazardLogPage() {
         </span>
       </div>
 
+      <aside className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-slate-600 dark:text-slate-300">
+        <h2 className="font-semibold">Working hazard log - clinical approval pending</h2>
+        <p className="mt-2">The recorded scores, reviewer names and mitigation statuses are not evidence of qualified CSO acceptance. H005 and H008 remain open. Existing mitigation text includes unverified controls; the 30 September 2026 evidence actions are in the risk management plan. Do not use this log as an approved NHS release record.</p>
+        <a className="mt-2 inline-block underline text-amber-700 dark:text-amber-400" href="/admin/policies#POL-006">Control verification and CSO approval actions</a>
+      </aside>
+
       <HazardLogClient initialEntries={entries} />
     </div>
   );
