@@ -354,7 +354,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // 5. Redirect already-authed users away from auth pages.
   //    Exempt /auth/callback — it must run even when a session cookie exists
   //    (e.g. re-linking a Google account) so the OAuth code exchange completes.
-  if (isAuthRoute && user && !pathname.startsWith('/auth/callback')) {
+  //    Password recovery pages must remain usable with an authenticated session.
+  if (isAuthRoute && user && !pathname.startsWith('/auth/callback') && pathname !== '/auth/reset-password' && pathname !== '/auth/forgot-password') {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
