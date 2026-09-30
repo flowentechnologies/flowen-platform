@@ -13,9 +13,11 @@ describe('ASR configuration and audio validation', () => {
 describe('dataset review validation', () => {
   it('rejects unbounded and fractional pages', () => { for (const n of ['NaN', '-1', '0.5', 'Infinity', '100001']) expect(datasetPage(n)).toBeNull(); expect(datasetPage(null)).toBe(0); });
   it('accepts valid annotations and rejects unknown/out-of-bounds events', () => {
-    expect(validAnnotations([{ type: 'BLOCK', ts_ms: 0, duration_ms: 500 }], 1)).toBe(true);
-    expect(validAnnotations([{ type: 'BLOCK', ts_ms: 900, duration_ms: 500 }], 1)).toBe(false);
-    expect(validAnnotations([{ type: 'FAKE', ts_ms: 0, duration_ms: 1 }], 1)).toBe(false);
+    expect(validAnnotations([{ type: 'BLOCK', onset_ms: 0, duration_ms: 500 }], 1)).toBe(true);
+    expect(validAnnotations([{ type: 'BLOCK', onset_ms: 900, duration_ms: 500 }], 1)).toBe(false);
+    expect(validAnnotations([{ type: 'FAKE', onset_ms: 0, duration_ms: 1 }], 1)).toBe(false);
     expect(validAnnotations([], 0)).toBe(false);
+    expect(validAnnotations([{ id: 1, type: 'BLOCK', source: 'rule-based', onset_ms: 0, duration_ms: 500, confidence: 0.7 }], 1)).toBe(true);
+    expect(validAnnotations([{ type: 'BLOCK', ts_ms: 0, duration_ms: 500 }], 1)).toBe(false);
   });
 });
