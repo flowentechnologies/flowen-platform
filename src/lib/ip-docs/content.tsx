@@ -102,7 +102,9 @@ export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => React
   'dcb0129-clinical-safety-case': (
     <>
       <Note>Draft v1.1, 30 September 2026. Not issued, not signed and not approved for NHS deployment. The canonical eight-hazard log and qualified CSO review govern this record.</Note>
-      <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-slate-300">{SAFETY_CASE_DRAFT}</pre>
+      {SAFETY_CASE_DRAFT.split('\n\n').map((paragraph, index) => (
+        <p key={index} className="whitespace-pre-wrap text-sm leading-relaxed text-slate-300 mb-4">{paragraph}</p>
+      ))}
       <P><a className="underline" href="/admin/hazard-log">Live hazard log</a> | <a className="underline" href="/admin/policies#POL-006">Risk management plan</a> | <a className="underline" href="/admin/policies#POL-011">Monitoring plan</a></P>
     </>
   ),
