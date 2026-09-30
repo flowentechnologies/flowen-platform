@@ -7,7 +7,7 @@ Status: DRAFT. No clinical approval, signature or NHS release authorisation is r
 
 1. SCOPE AND GOVERNANCE
 Manufacturer: Flowen Group Ltd. Product: adult wellness and fluency practice web platform. The proposed NHS deployment, receiving organisation, clinical pathway and supported release must be defined before clinical release acceptance. Consumer deployment is not evidence of NHS approval. DCB0129 manufacturer duties and the adopter's DCB0160 duties are separate.
-Howard Henry is the founder and technical/documentation lead, not a verified qualified Clinical Safety Officer in this record. A clinician has been nominated for the CSO role; that nomination is not a completed appointment. Formal appointment acceptance, full name, current professional registration, risk-management competence/training evidence and authority are still required. Lived experience alone does not satisfy the clinical qualification requirement. No training completion is asserted.
+Howard Henry is the founder and technical/documentation lead, not a verified qualified Clinical Safety Officer in this record. There is an intention to appoint a clinician to the CSO role; that intention is not a completed appointment. Formal appointment acceptance, full name, current professional registration, risk-management competence/training evidence and authority are still required. Lived experience alone does not satisfy the clinical qualification requirement. No training completion is asserted.
 Top management must confirm resources, clinical/technical responsibilities, escalation cover and document/release approval authority. The appointed CSO must approve this plan, each hazard-log version and each safety-case report.
 
 2. LIFECYCLE AND DOCUMENT CONTROL
@@ -46,6 +46,10 @@ Intended NHS pathway/population and receiving organisation: pending.
 Control-validation results and clinical residual-risk decisions: pending.
 Release acceptance/signatures and review schedule: pending.
 
+SOURCE REGISTER
+https://digital.nhs.uk/data-and-information/information-standards/information-standards-and-data-collections-including-extractions/publications-and-notifications/standards-and-collections/dcb0129-clinical-risk-management-its-application-in-the-manufacture-of-health-it-systems
+https://digital.nhs.uk/binaries/content/assets/website-assets/data-and-information/information-standards/standards-and-collections/dcb0129-clinical-risk-management-its-application-in-the-manufacture-of-health-it-systems/0129242018spec.pdf
+https://digital.nhs.uk/services/clinical-safety/applicability-of-dcb-0129-and-dcb-0160/step-by-step-guidance
 SOURCE: NHS England DCB0129 Specification v4.2, Amd 24/2018, issued 2 May 2018. Clauses 2.2-2.6, 3.2-3.6 and 7.1-7.3 require governance, competent CSO, approved plan/log/reports, incident management, release review and in-service monitoring. Check current published amendments before formal approval. This plan is preparation, not a certificate.`;
 
 export const PMS_DRAFT = `IN-SERVICE MONITORING / POST-MARKET SURVEILLANCE PLAN
