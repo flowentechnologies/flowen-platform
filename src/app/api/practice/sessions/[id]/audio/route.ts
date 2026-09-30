@@ -58,11 +58,16 @@ export async function POST(req: Request, ctx: RouteContext) {
   }
 
   // Idempotency — if already uploaded, return success without re-uploading
-  const { data: existing } = await admin
+  const { data: existing, error: lookupErr } = await admin
     .from('training_samples')
     .select('id')
     .eq('session_id', sessionId)
     .maybeSingle();
+
+  if (lookupErr) {
+    console.error('[audio/upload] sample lookup failed:', lookupErr.message);
+    return NextResponse.json({ error: 'Unable to check existing audio' }, { status: 500 });
+  }
 
   if (existing) {
     return NextResponse.json({ ok: true, sampleId: existing.id, existed: true });
@@ -77,7 +82,9 @@ export async function POST(req: Request, ctx: RouteContext) {
   }
 
   const audioFile = formData.get('audio') as File | null;
-  if (!audioFile) return NextResponse.json({ error: 'No audio file' }, { status: 400 });
+  if (!(audioFile instanceof File) || audioFile.size === 0) {
+    return NextResponse.json({ error: 'No audio file' }, { status: 400 });
+  }
   if (audioFile.size > MAX_BYTES) {
     return NextResponse.json({ error: 'Audio file too large (max 50 MB)' }, { status: 413 });
   }
@@ -129,10 +136,26 @@ export async function POST(req: Request, ctx: RouteContext) {
     .select('id')
     .single();
 
-  if (dbErr) {
-    console.error('[audio/upload] db error:', dbErr.message);
-    // Best-effort — storage upload succeeded, log and continue
+  if (dbErr || !sample?.id) {
+    console.error('[audio/upload] sample insert failed:', dbErr?.message ?? 'No sample returned');
+    // Another request may have committed the sample while this request failed.
+    // Never delete an object now referenced by a successful concurrent insert.
+    const { data: committed, error: recheckErr } = await admin
+      .from('training_samples')
+      .select('id')
+      .eq('session_id', sessionId)
+      .maybeSingle();
+    if (committed) {
+      return NextResponse.json({ ok: true, sampleId: committed.id, existed: true });
+    }
+    if (!recheckErr) {
+      const { error: cleanupErr } = await admin.storage.from(BUCKET).remove([storagePath]);
+      if (cleanupErr) console.error('[audio/upload] orphan cleanup failed:', cleanupErr.message);
+    } else {
+      console.error('[audio/upload] orphan check failed:', recheckErr.message);
+    }
+    return NextResponse.json({ error: 'Audio sample could not be saved. Please try again.' }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, sampleId: sample?.id ?? null });
+  return NextResponse.json({ ok: true, sampleId: sample.id });
 }
