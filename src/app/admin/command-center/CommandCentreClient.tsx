@@ -326,7 +326,7 @@ export function CommandCentreClient({ initialData }: { initialData: CCData }) {
       <div>
         <p className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-widest mb-3">NHS & Compliance</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard label="NHS Readiness" value={`${nhsReadinessScore}%`} sub="DCB0129 · DTAC · DSPT" color={nhsReadinessScore >= 80 ? 'text-emerald-400' : nhsReadinessScore >= 50 ? 'text-amber-400' : 'text-red-400'} href="/admin/compliance" />
+          <KpiCard label="NHS Readiness" value={`${nhsReadinessScore}%`} sub="Checklist completion · not clinical approval" color={nhsReadinessScore >= 80 ? 'text-emerald-400' : nhsReadinessScore >= 50 ? 'text-amber-400' : 'text-red-400'} href="/admin/compliance" />
           <KpiCard label="Roadmap In Progress" value={roadmapInProgress.toString()} sub={nextCriticalMilestone ? `next: ${nextCriticalMilestone.title.slice(0, 22)}` : 'no critical items'} color="text-indigo-400" href="/admin/roadmap" />
           <KpiCard label="Next Critical" value={nextCriticalMilestone?.target_date ?? '—'} sub={nextCriticalMilestone?.title.slice(0, 28) ?? 'no critical milestone'} color="text-purple-400" href="/admin/roadmap" />
           <KpiCard label="Evidence Pack" value="→" sub="clinical & commercial docs" color="text-slate-400" href="/admin/evidence" />
