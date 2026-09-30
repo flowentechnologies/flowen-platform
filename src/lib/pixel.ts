@@ -194,12 +194,13 @@ export function pixelPurchase(opts: { value: number; currency: string; content_i
   capi('Purchase', id, opts);
 }
 
-export function pixelStartTrial(opts?: { value?: number; currency?: string; predicted_ltv?: number }): void {
-  if (!hasAdsConsent()) return;
-  const id = uuid();
+export function pixelStartTrial(opts?: { value?: number; currency?: string; predicted_ltv?: number }, eventId?: string): boolean {
+  if (!hasAdsConsent()) return false;
+  const id = eventId ?? uuid();
   fbq('track', 'StartTrial', opts ?? {}, { eventID: id });
   fireSnap('StartTrial', opts);
   capi('StartTrial', id, opts);
+  return true;
 }
 
 export function pixelSubscribe(opts?: { value?: number; currency?: string; predicted_ltv?: number }): void {
