@@ -12,6 +12,7 @@ export async function POST(req: Request) {
   if (Number(req.headers.get('content-length') || 0) > 1000000) return NextResponse.json({ error: 'Annotation too large' }, { status: 413 });
   let body;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+  if (JSON.stringify(body).length > 1000000) return NextResponse.json({ error: 'Annotation too large' }, { status: 413 });
   if (!body || !UUID.test(body.id ?? '') || !['playback', 'annotate'].includes(body.action)) return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   const db = adminDb();
   const { data: sample, error } = await db.from('training_samples').select('id,user_id,storage_path,duration_seconds,consent_version,transcript,disfluency_events').eq('id', body.id).maybeSingle();
