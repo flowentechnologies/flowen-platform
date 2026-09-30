@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
+import { pixelStartTrial } from '@/lib/pixel';
+import { queueGa4Event } from '@/lib/analytics/ga4-client';
 import type { StartTrialEventPayload } from '@/lib/analytics/purchase-event';
 
 function hasConsent(): boolean {
@@ -37,31 +39,34 @@ export function PurchaseEventTracker({ payload }: { payload: StartTrialEventPayl
     let fired = false;
 
     function fire() {
-      if (fired || hasConsent() === false) return;
+      if (fired || hasConsent() === false || typeof window.gtag !== 'function') return;
       try {
         if (sessionStorage.getItem(dedupeKey)) { fired = true; return; }
-        sessionStorage.setItem(dedupeKey, '1');
       } catch {
         // sessionStorage unavailable — fire anyway rather than silently
         // dropping a real conversion; worst case is an occasional duplicate.
       }
-      fired = true;
 
-      const w = window as unknown as { dataLayer?: unknown[] };
-      w.dataLayer = w.dataLayer || [];
-      function gtag(...args: unknown[]) { w.dataLayer!.push(args); }
-
-      gtag('event', 'start_trial', {
+      // Only the verified checkout session produces a trial event. Both Meta
+      // paths share the transaction ID, including across browser tabs.
+      pixelStartTrial({ value: 0, currency: payload.currency }, `trial:${payload.transaction_id}`);
+      queueGa4Event('start_trial', {
         transaction_id: payload.transaction_id,
         value:          payload.value,
         currency:       payload.currency,
         items:          payload.items,
       });
+      fired = true;
+      try { sessionStorage.setItem(dedupeKey, '1'); } catch { /* best effort */ }
     }
 
     fire();
     window.addEventListener('flowen:consent:granted', fire);
-    return () => window.removeEventListener('flowen:consent:granted', fire);
+    window.addEventListener('flowen:tracking:ready', fire);
+    return () => {
+      window.removeEventListener('flowen:consent:granted', fire);
+      window.removeEventListener('flowen:tracking:ready', fire);
+    };
   }, [payload]);
 
   return null;
