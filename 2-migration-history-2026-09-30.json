@@ -1,0 +1,462 @@
+[
+  {
+    "version": "20260724",
+    "name": "flowen_production_init",
+    "statements": [
+      "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"",
+      "DO $$ BEGIN\n    CREATE TYPE subscription_status AS ENUM (\n        'trialing', 'active', 'canceled', 'incomplete', 'incomplete_expired', 'past_due', 'unpaid'\n    );\nEXCEPTION\n    WHEN duplicate_object THEN null;\nEND $$",
+      "CREATE TABLE IF NOT EXISTS public.customers (\n    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,\n    stripe_customer_id TEXT UNIQUE NOT NULL,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL\n)",
+      "CREATE TABLE IF NOT EXISTS public.subscriptions (\n    id TEXT PRIMARY KEY,\n    user_id UUID REFERENCES public.customers(id) ON DELETE CASCADE NOT NULL,\n    status subscription_status NOT NULL,\n    price_id TEXT NOT NULL,\n    cancel_at_period_end BOOLEAN NOT NULL DEFAULT false,\n    current_period_start TIMESTAMP WITH TIME ZONE NOT NULL,\n    current_period_end TIMESTAMP WITH TIME ZONE NOT NULL,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL\n)",
+      "CREATE TABLE IF NOT EXISTS public.anonymized_telemetry_features (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    session_hash TEXT NOT NULL,\n    disfluency_type TEXT NOT NULL CHECK (disfluency_type IN ('Block', 'Repetition', 'Prolongation', 'Fluent')),\n    entropy_score FLOAT NOT NULL,\n    mel_spectrogram_latents JSONB NOT NULL,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL\n)",
+      "CREATE INDEX IF NOT EXISTS idx_telemetry_session_hash ON public.anonymized_telemetry_features(session_hash)",
+      "CREATE INDEX IF NOT EXISTS idx_telemetry_created_at ON public.anonymized_telemetry_features(created_at DESC)",
+      "CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON public.subscriptions(user_id)",
+      "ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE public.anonymized_telemetry_features ENABLE ROW LEVEL SECURITY",
+      "CREATE POLICY \"Users view own customer profile\" ON public.customers FOR SELECT USING (auth.uid() = id)",
+      "CREATE POLICY \"Users view own subscription status\" ON public.subscriptions FOR SELECT USING (auth.uid() = user_id)",
+      "CREATE POLICY \"Anon upload to anonymized feature store\" ON public.anonymized_telemetry_features FOR INSERT TO anon WITH CHECK (true)"
+    ]
+  },
+  {
+    "version": "20260725",
+    "name": "enterprise_production",
+    "statements": [
+      "CREATE EXTENSION IF NOT EXISTS pgcrypto",
+      "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"",
+      "DO $$\nBEGIN\n    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'subscription_status') THEN\n        CREATE TYPE subscription_status AS ENUM ('active', 'trialing', 'past_due', 'canceled', 'unpaid', 'incomplete');\n    END IF;\nEND $$",
+      "CREATE TABLE IF NOT EXISTS public.system_error_logs (\n    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,\n    timestamp TIMESTAMPTZ DEFAULT NOW() NOT NULL,\n    environment VARCHAR(50) DEFAULT 'production' NOT NULL,\n    source VARCHAR(100) NOT NULL,\n    error_code VARCHAR(100),\n    message TEXT NOT NULL,\n    stack_trace TEXT,\n    metadata JSONB DEFAULT '{}'::jsonb,\n    resolved BOOLEAN DEFAULT FALSE NOT NULL\n)",
+      "CREATE INDEX IF NOT EXISTS idx_error_logs_timestamp ON public.system_error_logs (timestamp DESC)",
+      "CREATE INDEX IF NOT EXISTS idx_error_logs_resolved ON public.system_error_logs (resolved)"
+    ]
+  },
+  {
+    "version": "20260725000000",
+    "name": "flowen_production_blueprint",
+    "statements": [
+      "CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"",
+      "CREATE TABLE IF NOT EXISTS public.customers (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    email TEXT UNIQUE NOT NULL,\n    stripe_customer_id TEXT UNIQUE,\n    subsidy_voucher_code TEXT,\n    is_subsidized BOOLEAN DEFAULT FALSE,\n    created_at TIMESTAMPTZ DEFAULT NOW(),\n    updated_at TIMESTAMPTZ DEFAULT NOW()\n)",
+      "DO $$ \nBEGIN \n    IF NOT EXISTS (\n        SELECT 1 FROM information_schema.columns \n        WHERE table_schema='public' AND table_name='customers' AND column_name='auth_user_id'\n    ) THEN\n        ALTER TABLE public.customers ADD COLUMN auth_user_id UUID UNIQUE;\n    END IF;\nEND $$",
+      "CREATE TABLE IF NOT EXISTS public.subscriptions (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    stripe_subscription_id TEXT UNIQUE NOT NULL,\n    stripe_price_id TEXT NOT NULL,\n    status TEXT NOT NULL,\n    tier_interval TEXT CHECK (tier_interval IN ('annual', 'semi_annual', 'quarterly', 'founding')),\n    current_period_start TIMESTAMPTZ,\n    current_period_end TIMESTAMPTZ,\n    cancel_at_period_end BOOLEAN DEFAULT FALSE,\n    created_at TIMESTAMPTZ DEFAULT NOW(),\n    updated_at TIMESTAMPTZ DEFAULT NOW()\n)",
+      "DO $$ \nBEGIN \n    IF NOT EXISTS (\n        SELECT 1 FROM information_schema.columns \n        WHERE table_schema='public' AND table_name='subscriptions' AND column_name='customer_id'\n    ) THEN\n        ALTER TABLE public.subscriptions ADD COLUMN customer_id UUID REFERENCES public.customers(id) ON DELETE CASCADE;\n    END IF;\nEND $$",
+      "CREATE TABLE IF NOT EXISTS public.anonymized_telemetry_features (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    latency_ms NUMERIC(6,2) NOT NULL,\n    jitter_ms NUMERIC(6,2) NOT NULL,\n    fundamental_frequency_hz NUMERIC(6,2),\n    spectral_tilt NUMERIC(6,2),\n    created_at TIMESTAMPTZ DEFAULT NOW()\n)",
+      "DO $$ \nBEGIN \n    IF NOT EXISTS (\n        SELECT 1 FROM information_schema.columns \n        WHERE table_schema='public' AND table_name='anonymized_telemetry_features' AND column_name='session_id'\n    ) THEN\n        ALTER TABLE public.anonymized_telemetry_features ADD COLUMN session_id UUID NOT NULL DEFAULT gen_random_uuid();\n    END IF;\n\n    IF NOT EXISTS (\n        SELECT 1 FROM information_schema.columns \n        WHERE table_schema='public' AND table_name='anonymized_telemetry_features' AND column_name='customer_id'\n    ) THEN\n        ALTER TABLE public.anonymized_telemetry_features ADD COLUMN customer_id UUID REFERENCES public.customers(id) ON DELETE SET NULL;\n    END IF;\nEND $$",
+      "CREATE INDEX IF NOT EXISTS idx_customers_stripe_id ON public.customers(stripe_customer_id)",
+      "CREATE INDEX IF NOT EXISTS idx_subscriptions_customer_id ON public.subscriptions(customer_id)",
+      "CREATE INDEX IF NOT EXISTS idx_telemetry_session_id ON public.anonymized_telemetry_features(session_id)",
+      "ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE public.anonymized_telemetry_features ENABLE ROW LEVEL SECURITY",
+      "DO $$ \nBEGIN\n    DROP POLICY IF EXISTS \"Users can view own customer record\" ON public.customers;\n    CREATE POLICY \"Users can view own customer record\" ON public.customers FOR SELECT USING (auth.uid() = auth_user_id);\n\n    DROP POLICY IF EXISTS \"Users can view own subscriptions\" ON public.subscriptions;\n    CREATE POLICY \"Users can view own subscriptions\" ON public.subscriptions FOR SELECT USING (\n        customer_id IN (SELECT id FROM public.customers WHERE auth_user_id = auth.uid())\n    );\n\n    DROP POLICY IF EXISTS \"Allow public telemetry ingestion\" ON public.anonymized_telemetry_features;\n    CREATE POLICY \"Allow public telemetry ingestion\" ON public.anonymized_telemetry_features FOR INSERT WITH CHECK (true);\nEND $$"
+    ]
+  },
+  {
+    "version": "20260727000000",
+    "name": "init_flowen",
+    "statements": [
+      "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"",
+      "CREATE EXTENSION IF NOT EXISTS \"vector\"",
+      "CREATE TYPE app_brand AS ENUM ('flowen', 'vocali')",
+      "CREATE TYPE subscription_tier AS ENUM ('founding', 'standard', 'public_funds', 'vocali_freemium')",
+      "CREATE TYPE disfluency_type AS ENUM ('block', 'repetition', 'prolongation', 'easy_onset')",
+      "CREATE TABLE public.profiles (\n    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,\n    brand app_brand NOT NULL DEFAULT 'flowen',\n    tier subscription_tier NOT NULL DEFAULT 'standard',\n    organization_id UUID,\n    opt_in_telemetry BOOLEAN NOT NULL DEFAULT true,\n    daily_practice_limit_mins INT DEFAULT 15,\n    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),\n    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()\n)",
+      "CREATE TABLE public.organizations (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    name TEXT NOT NULL,\n    contract_reference TEXT UNIQUE NOT NULL,\n    total_allocated_seats INT NOT NULL DEFAULT 20000,\n    used_seats INT NOT NULL DEFAULT 0,\n    contract_start_date DATE NOT NULL,\n    contract_end_date DATE NOT NULL,\n    is_active BOOLEAN DEFAULT true,\n    created_at TIMESTAMPTZ DEFAULT NOW()\n)",
+      "ALTER TABLE public.profiles \nADD CONSTRAINT fk_profiles_organization \nFOREIGN KEY (organization_id) REFERENCES public.organizations(id) ON DELETE SET NULL",
+      "CREATE TABLE public.practice_sessions (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,\n    brand app_brand NOT NULL,\n    duration_seconds INT NOT NULL,\n    total_blocks_detected INT DEFAULT 0,\n    total_repetitions_detected INT DEFAULT 0,\n    total_prolongations_detected INT DEFAULT 0,\n    average_latency_ms NUMERIC(6,2),\n    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()\n)",
+      "CREATE TABLE public.telemetry_logs (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    session_id UUID NOT NULL REFERENCES public.practice_sessions(id) ON DELETE CASCADE,\n    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,\n    audio_clip_r2_path TEXT,\n    disfluency_type disfluency_type NOT NULL,\n    confidence_score NUMERIC(4,3) NOT NULL,\n    acoustic_embedding vector(512),\n    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()\n)",
+      "CREATE INDEX idx_profiles_org ON public.profiles(organization_id)",
+      "CREATE INDEX idx_sessions_user ON public.practice_sessions(user_id)",
+      "CREATE INDEX idx_telemetry_type ON public.telemetry_logs(disfluency_type)",
+      "CREATE INDEX idx_telemetry_embedding ON public.telemetry_logs USING hnsw (acoustic_embedding vector_cosine_ops)",
+      "ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE public.practice_sessions ENABLE ROW LEVEL SECURITY",
+      "ALTER TABLE public.telemetry_logs ENABLE ROW LEVEL SECURITY",
+      "CREATE POLICY \"Users view own profile\" ON public.profiles\n    FOR SELECT USING (auth.uid() = id)",
+      "CREATE POLICY \"Users update own profile\" ON public.profiles\n    FOR UPDATE USING (auth.uid() = id)",
+      "CREATE POLICY \"Users view own sessions\" ON public.practice_sessions\n    FOR SELECT USING (auth.uid() = user_id)",
+      "CREATE POLICY \"Users insert own sessions\" ON public.practice_sessions\n    FOR INSERT WITH CHECK (auth.uid() = user_id)",
+      "CREATE POLICY \"Users insert telemetry if opted in\" ON public.telemetry_logs\n    FOR INSERT WITH CHECK (\n        EXISTS (\n            SELECT 1 FROM public.profiles \n            WHERE id = auth.uid() AND opt_in_telemetry = true\n        )\n    )",
+      "CREATE OR REPLACE FUNCTION public.handle_new_user()\nRETURNS TRIGGER AS $$\nBEGIN\n    INSERT INTO public.profiles (id, brand, tier)\n    VALUES (\n        NEW.id, \n        COALESCE((NEW.raw_user_meta_data->>'brand')::app_brand, 'flowen'),\n        COALESCE((NEW.raw_user_meta_data->>'tier')::subscription_tier, 'standard')\n    );\n    RETURN NEW;\nEND;\n$$ LANGUAGE plpgsql SECURITY DEFINER",
+      "CREATE TRIGGER on_auth_user_created\n    AFTER INSERT ON auth.users\n    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user()"
+    ]
+  },
+  {
+    "version": "20260728",
+    "name": "security_policies",
+    "statements": [
+      "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"",
+      "CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"",
+      "CREATE EXTENSION IF NOT EXISTS \"vector\"",
+      "ALTER TABLE public.profiles\n    ADD COLUMN IF NOT EXISTS id_verified              BOOLEAN     NOT NULL DEFAULT false,\n    ADD COLUMN IF NOT EXISTS id_verified_at           TIMESTAMPTZ,\n    ADD COLUMN IF NOT EXISTS didit_session_id         TEXT        UNIQUE",
+      "ALTER TABLE public.profiles\n    ADD COLUMN IF NOT EXISTS gdpr_consent_at          TIMESTAMPTZ,\n    ADD COLUMN IF NOT EXISTS gdpr_consent_version     TEXT,\n    ADD COLUMN IF NOT EXISTS marketing_consent        BOOLEAN     NOT NULL DEFAULT false,\n    ADD COLUMN IF NOT EXISTS marketing_consent_at     TIMESTAMPTZ",
+      "ALTER TABLE public.profiles\n    ADD COLUMN IF NOT EXISTS data_erasure_requested_at TIMESTAMPTZ,\n    ADD COLUMN IF NOT EXISTS data_erasure_completed_at TIMESTAMPTZ",
+      "ALTER TABLE public.profiles\n    ADD COLUMN IF NOT EXISTS data_residency_region    TEXT        NOT NULL DEFAULT 'UK-GBR',\n    ADD COLUMN IF NOT EXISTS data_controller_entity   TEXT        NOT NULL DEFAULT 'Flowen Ltd'",
+      "ALTER TABLE public.profiles\n    ADD COLUMN IF NOT EXISTS pacer_default_bpm        NUMERIC(5,2) DEFAULT 60.0,\n    ADD COLUMN IF NOT EXISTS laryngeal_sensitivity    NUMERIC(3,2) DEFAULT 0.50\n        CHECK (laryngeal_sensitivity BETWEEN 0.0 AND 1.0)",
+      "CREATE TABLE IF NOT EXISTS public.consent_audit_log (\n    id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),\n    user_id         UUID        NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,\n    event_type      TEXT        NOT NULL\n                    CHECK (event_type IN (\n                        'gdpr_consent_granted',\n                        'gdpr_consent_withdrawn',\n                        'marketing_consent_granted',\n                        'marketing_consent_withdrawn',\n                        'telemetry_opt_in',\n                        'telemetry_opt_out',\n                        'erasure_requested',\n                        'erasure_completed',\n                        'kyc_initiated',\n                        'kyc_approved',\n                        'kyc_declined'\n                    )),\n    consent_version TEXT,\n    ip_address      INET,\n    user_agent      TEXT,\n    metadata        JSONB       DEFAULT '{}'::jsonb,\n    recorded_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()\n)",
+      "CREATE TABLE IF NOT EXISTS public.session_snapshots (\n    id                      UUID        PRIMARY KEY DEFAULT gen_random_uuid(),\n    session_id              UUID        NOT NULL\n                            REFERENCES public.practice_sessions(id) ON DELETE CASCADE,\n    user_id                 UUID        NOT NULL\n                            REFERENCES public.profiles(id) ON DELETE CASCADE,\n    snapshot_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),\n\n    \n    pacer_bpm               NUMERIC(5,2),\n    target_bpm              NUMERIC(5,2),\n    pacer_phase             TEXT        CHECK (pacer_phase IN ('inhale','hold','exhale','rest')),\n\n    \n    rms_level               NUMERIC(6,4),\n    peak_rms                NUMERIC(6,4),\n    fundamental_freq_hz     NUMERIC(7,2),\n    laryngeal_tension_index NUMERIC(4,3)\n                            CHECK (laryngeal_tension_index BETWEEN 0.0 AND 1.0),\n\n    \n    is_voice_active         BOOLEAN     DEFAULT false,\n    block_detected          BOOLEAN     DEFAULT false,\n    block_duration_ms       INTEGER,\n\n    \n    pipeline_latency_ms     NUMERIC(6,2)\n)",
+      "CREATE TABLE IF NOT EXISTS public.data_retention_policies (\n    user_id                 UUID        PRIMARY KEY\n                            REFERENCES public.profiles(id) ON DELETE CASCADE,\n    session_retention_days  INTEGER     NOT NULL DEFAULT 365,\n    telemetry_retention_days INTEGER    NOT NULL DEFAULT 90,\n    snapshot_retention_days  INTEGER   NOT NULL DEFAULT 30,\n    auto_anonymise          BOOLEAN     NOT NULL DEFAULT true,\n    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()\n)",
+      "CREATE INDEX IF NOT EXISTS idx_profiles_unverified\n    ON public.profiles (id)\n    WHERE id_verified = false",
+      "CREATE INDEX IF NOT EXISTS idx_profiles_erasure_queue\n    ON public.profiles (data_erasure_requested_at)\n    WHERE data_erasure_requested_at IS NOT NULL\n      AND data_erasure_completed_at IS NULL",
+      "CREATE INDEX IF NOT EXISTS idx_profiles_tier_brand\n    ON public.profiles (tier, brand)",
+      "CREATE INDEX IF NOT EXISTS idx_sessions_user_created\n    ON public.practice_sessions (user_id, created_at DESC)",
+      "CREATE INDEX IF NOT EXISTS idx_sessions_day_bucket\n    ON public.practice_sessions (date_trunc('day', created_at AT TIME ZONE 'UTC'))",
+      "CREATE INDEX IF NOT EXISTS idx_telemetry_session_time\n    ON public.telemetry_logs (session_id, created_at DESC)",
+      "CREATE INDEX IF NOT EXISTS idx_telemetry_user_type\n    ON public.telemetry_logs (user_id, disfluency_type, created_at DESC)",
+      "CREATE INDEX IF NOT EXISTS idx_telemetry_brin_created\n    ON public.telemetry_logs USING brin (created_at)\n    WITH (pages_per_range = 32)",
+      "CREATE INDEX IF NOT EXISTS idx_telemetry_high_confidence\n    ON public.telemetry_logs (session_id, confidence_score DESC)\n    WHERE confidence_score >= 0.85",
+      "CREATE INDEX IF NOT EXISTS idx_snapshots_session_time\n    ON public.session_snapshots (session_id, snapshot_at DESC)",
+      "CREATE INDEX IF NOT EXISTS idx_snapshots_user_time\n    ON public.session_snapshots (user_id, snapshot_at DESC)",
+      "CREATE INDEX IF NOT EXISTS idx_snapshots_voice_active\n    ON public.session_snapshots (session_id, snapshot_at)\n    WHERE is_voice_active = true",
+      "CREATE INDEX IF NOT EXISTS idx_consent_audit_user_time\n    ON public.consent_audit_log (user_id, recorded_at DESC)",
+      "CREATE INDEX IF NOT EXISTS idx_consent_audit_event\n    ON public.consent_audit_log (event_type, recorded_at DESC)",
+      "CREATE INDEX IF NOT EXISTS idx_errors_unresolved\n    ON public.system_error_logs (timestamp DESC)\n    WHERE resolved = false",
+      "ALTER TABLE public.consent_audit_log ENABLE ROW LEVEL SECURITY",
+      "CREATE POLICY \"Users insert own consent events\" ON public.consent_audit_log\n    FOR INSERT WITH CHECK (auth.uid() = user_id)",
+      "CREATE POLICY \"Users view own consent history\" ON public.consent_audit_log\n    FOR SELECT USING (auth.uid() = user_id)",
+      "ALTER TABLE public.session_snapshots ENABLE ROW LEVEL SECURITY",
+      "CREATE POLICY \"Users view own snapshots\" ON public.session_snapshots\n    FOR SELECT USING (auth.uid() = user_id)",
+      "CREATE POLICY \"Users insert own snapshots\" ON public.session_snapshots\n    FOR INSERT WITH CHECK (auth.uid() = user_id)",
+      "ALTER TABLE public.data_retention_policies ENABLE ROW LEVEL SECURITY",
+      "CREATE POLICY \"Users view own retention policy\" ON public.data_retention_policies\n    FOR SELECT USING (auth.uid() = user_id)",
+      "CREATE POLICY \"Users upsert own retention policy\" ON public.data_retention_policies\n    FOR INSERT WITH CHECK (auth.uid() = user_id)",
+      "CREATE POLICY \"Users update own retention policy\" ON public.data_retention_policies\n    FOR UPDATE USING (auth.uid() = user_id)",
+      "CREATE OR REPLACE FUNCTION public.apply_gdpr_erasure(target_user_id UUID)\nRETURNS VOID\nLANGUAGE plpgsql\nSECURITY DEFINER\nAS $$\nBEGIN\n    \n    UPDATE public.profiles SET\n        id_verified              = false,\n        id_verified_at           = NULL,\n        didit_session_id         = NULL,\n        gdpr_consent_at          = NULL,\n        gdpr_consent_version     = NULL,\n        marketing_consent        = false,\n        marketing_consent_at     = NULL,\n        data_erasure_completed_at = NOW(),\n        pacer_default_bpm        = 60.0,\n        laryngeal_sensitivity    = 0.50,\n        updated_at               = NOW()\n    WHERE id = target_user_id;\n\n    \n    DELETE FROM public.telemetry_logs WHERE user_id = target_user_id;\n\n    \n    DELETE FROM public.session_snapshots WHERE user_id = target_user_id;\n\n    \n    \n    UPDATE public.practice_sessions SET\n        average_latency_ms = NULL\n    WHERE user_id = target_user_id;\nEND;\n$$",
+      "CREATE OR REPLACE FUNCTION public.create_default_retention_policy()\nRETURNS TRIGGER\nLANGUAGE plpgsql\nSECURITY DEFINER\nAS $$\nBEGIN\n    INSERT INTO public.data_retention_policies (user_id)\n    VALUES (NEW.id)\n    ON CONFLICT (user_id) DO NOTHING;\n    RETURN NEW;\nEND;\n$$",
+      "DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1 FROM pg_trigger\n        WHERE tgname = 'on_profile_created_set_retention'\n    ) THEN\n        CREATE TRIGGER on_profile_created_set_retention\n            AFTER INSERT ON public.profiles\n            FOR EACH ROW EXECUTE FUNCTION public.create_default_retention_policy();\n    END IF;\nEND $$"
+    ]
+  },
+  {
+    "version": "20260729",
+    "name": "rls_onboarding",
+    "statements": [
+      "ALTER TABLE public.profiles\n  ADD COLUMN IF NOT EXISTS is_admin          BOOLEAN      NOT NULL DEFAULT false,\n  ADD COLUMN IF NOT EXISTS display_name      TEXT,\n  ADD COLUMN IF NOT EXISTS onboarding_complete BOOLEAN    NOT NULL DEFAULT false",
+      "ALTER TABLE public.system_error_logs ENABLE ROW LEVEL SECURITY",
+      "CREATE POLICY \"sel_system_error_logs_admins\"\n  ON public.system_error_logs\n  FOR SELECT\n  USING (\n    EXISTS (\n      SELECT 1 FROM public.profiles\n      WHERE id = auth.uid() AND is_admin = true\n    )\n  )",
+      "CREATE POLICY \"sel_organizations_member\"\n  ON public.organizations\n  FOR SELECT\n  USING (\n    EXISTS (\n      SELECT 1 FROM public.profiles\n      WHERE id = auth.uid() AND organization_id = organizations.id\n    )\n  )",
+      "CREATE POLICY \"sel_organizations_admin\"\n  ON public.organizations\n  FOR SELECT\n  USING (\n    EXISTS (\n      SELECT 1 FROM public.profiles\n      WHERE id = auth.uid() AND is_admin = true\n    )\n  )",
+      "CREATE POLICY \"ins_organizations_admin\"\n  ON public.organizations\n  FOR INSERT\n  WITH CHECK (\n    EXISTS (\n      SELECT 1 FROM public.profiles\n      WHERE id = auth.uid() AND is_admin = true\n    )\n  )",
+      "CREATE POLICY \"upd_organizations_admin\"\n  ON public.organizations\n  FOR UPDATE\n  USING (\n    EXISTS (\n      SELECT 1 FROM public.profiles\n      WHERE id = auth.uid() AND is_admin = true\n    )\n  )",
+      "CREATE POLICY \"sel_telemetry_logs_own\"\n  ON public.telemetry_logs\n  FOR SELECT\n  USING (auth.uid() = user_id)",
+      "CREATE POLICY \"sel_telemetry_logs_admin\"\n  ON public.telemetry_logs\n  FOR SELECT\n  USING (\n    EXISTS (\n      SELECT 1 FROM public.profiles\n      WHERE id = auth.uid() AND is_admin = true\n    )\n  )",
+      "DROP POLICY IF EXISTS \"Anon upload to anonymized feature store\"\n  ON public.anonymized_telemetry_features",
+      "CREATE POLICY \"ins_anonymized_telemetry_auth\"\n  ON public.anonymized_telemetry_features\n  FOR INSERT\n  TO authenticated\n  WITH CHECK (true)",
+      "CREATE TABLE IF NOT EXISTS public.waitlist_signups (\n  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),\n  email       TEXT        NOT NULL UNIQUE,\n  source      TEXT        NOT NULL DEFAULT 'waitlist_page',\n  metadata    JSONB,\n  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()\n)",
+      "ALTER TABLE public.waitlist_signups ENABLE ROW LEVEL SECURITY",
+      "CREATE POLICY \"ins_waitlist_public\"\n  ON public.waitlist_signups\n  FOR INSERT\n  WITH CHECK (true)",
+      "CREATE POLICY \"sel_waitlist_admins\"\n  ON public.waitlist_signups\n  FOR SELECT\n  USING (\n    EXISTS (\n      SELECT 1 FROM public.profiles\n      WHERE id = auth.uid() AND is_admin = true\n    )\n  )",
+      "CREATE INDEX IF NOT EXISTS idx_profiles_is_admin\n  ON public.profiles (is_admin)\n  WHERE is_admin = true",
+      "CREATE INDEX IF NOT EXISTS idx_waitlist_signups_email\n  ON public.waitlist_signups (email)",
+      "CREATE INDEX IF NOT EXISTS idx_waitlist_signups_created_at\n  ON public.waitlist_signups USING BRIN (created_at)"
+    ]
+  },
+  {
+    "version": "20260901115633",
+    "name": "slp_session_notes_patient",
+    "statements": [
+      "ALTER TABLE slp_session_notes\n  ALTER COLUMN session_id DROP NOT NULL;\n\n\nALTER TABLE slp_session_notes\n  ADD COLUMN IF NOT EXISTS patient_user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE;\n\n\nALTER TABLE slp_session_notes\n  DROP CONSTRAINT IF EXISTS slp_session_notes_session_id_slp_user_id_key;\n\n\nCREATE INDEX IF NOT EXISTS slp_session_notes_patient_slp_idx\n  ON slp_session_notes(patient_user_id, slp_user_id, created_at DESC);\n\n\nUPDATE slp_session_notes sn\nSET patient_user_id = ps.user_id\nFROM practice_sessions ps\nWHERE sn.session_id = ps.id\n  AND sn.patient_user_id IS NULL;\n\n\nUPDATE slp_session_notes\nSET session_id = NULL\nWHERE session_id = '00000000-0000-0000-0000-000000000000';"
+    ]
+  },
+  {
+    "version": "20260901122620",
+    "name": "20260901_id_verified_default_true",
+    "statements": [
+      "ALTER TABLE profiles ALTER COLUMN id_verified SET DEFAULT true;\n\nUPDATE profiles\nSET id_verified = true\nWHERE id_verified = false;"
+    ]
+  },
+  {
+    "version": "20260901212422",
+    "name": "assets_bucket_allow_favicon_mime",
+    "statements": [
+      "update storage.buckets\nset allowed_mime_types = array_append(allowed_mime_types, 'image/x-icon')\nwhere id = 'assets'\n  and not ('image/x-icon' = any(allowed_mime_types));"
+    ]
+  },
+  {
+    "version": "20260902182951",
+    "name": "create_social_publish_queue",
+    "statements": [
+      "create table if not exists social_publish_queue (\n  id uuid primary key default gen_random_uuid(),\n  series text not null,\n  day_num integer,\n  platform text not null,\n  caption text not null,\n  hashtags text not null default '',\n  asset_path text not null,\n  asset_public_url text,\n  scheduled_at timestamptz not null,\n  status text not null default 'pending',\n  published_at timestamptz,\n  external_post_id text,\n  error_message text,\n  attempt_count integer not null default 0,\n  created_at timestamptz not null default now(),\n  updated_at timestamptz not null default now(),\n  constraint social_publish_queue_platform_check check (platform in ('instagram', 'facebook', 'linkedin')),\n  constraint social_publish_queue_status_check check (status in ('pending', 'published', 'failed', 'manual_pending', 'manual_done', 'skipped'))\n);\n\ncreate index if not exists idx_social_publish_queue_due\n  on social_publish_queue (platform, status, scheduled_at);\n\ncomment on table social_publish_queue is\n  'Cross-platform social publishing queue (distinct from social_posts, which is post-performance analytics). Instagram/Facebook rows are auto-published by /api/cron/social-publish via the Meta Graph API. LinkedIn rows are semi-automated: sit at status=manual_pending and surface in /admin/social for the admin to copy-paste and mark manual_done \u2014 LinkedIn Company Page auto-posting requires Marketing Developer Platform approval, which is enterprise-gated and was not pursued.';"
+    ]
+  },
+  {
+    "version": "20260902183008",
+    "name": "social_publish_queue_rls",
+    "statements": [
+      "alter table social_publish_queue enable row level security;"
+    ]
+  },
+  {
+    "version": "20260903185240",
+    "name": "extend_social_queue_pinterest_snapchat",
+    "statements": [
+      "alter table social_publish_queue drop constraint social_publish_queue_platform_check;\nalter table social_publish_queue add constraint social_publish_queue_platform_check\n  check (platform in ('instagram', 'facebook', 'linkedin', 'pinterest', 'snapchat'));\n\n\n\n\n\n\ncreate table if not exists social_platform_tokens (\n  platform text primary key,\n  access_token text not null,\n  refresh_token text,\n  expires_at timestamptz,\n  board_id text,\n  updated_at timestamptz not null default now()\n);\nalter table social_platform_tokens enable row level security;"
+    ]
+  },
+  {
+    "version": "20260903231800",
+    "name": "create_pitch_deck_private_bucket",
+    "statements": [
+      "insert into storage.buckets (id, name, public)\nvalues ('pitch-deck', 'pitch-deck', false)\non conflict (id) do nothing;"
+    ]
+  },
+  {
+    "version": "20260905100512",
+    "name": "gmail_inbox_crm_notifications",
+    "statements": [
+      "create table if not exists gmail_oauth_tokens (\n  id            text primary key default 'admin',\n  mailbox       text not null default 'admin@flowen.digital',\n  access_token  text not null,\n  refresh_token text,\n  expires_at    timestamptz,\n  scope         text,\n  connected_at  timestamptz not null default now(),\n  updated_at    timestamptz not null default now()\n);\nalter table gmail_oauth_tokens enable row level security;\n\n\ncreate table if not exists inbox_items (\n  id              uuid primary key default gen_random_uuid(),\n  gmail_message_id text not null unique,\n  gmail_thread_id  text not null,\n  alias           text not null,               \n  from_address    text not null,\n  from_name       text,\n  to_addresses    jsonb not null default '[]',\n  subject         text,\n  snippet         text,\n  body_text       text,\n  received_at     timestamptz not null,\n  category        text not null default 'general'\n                    check (category in ('general','billing','crm','press','security','support','careers','affiliates','other')),\n  is_billing      boolean not null default false,\n  vendor_name     text,\n  crm_contact_id  uuid,\n  status          text not null default 'unread'\n                    check (status in ('unread','read','responded','archived')),\n  labels_applied  jsonb not null default '[]',\n  created_at      timestamptz not null default now()\n);\nalter table inbox_items enable row level security;\ncreate index if not exists inbox_items_alias_idx on inbox_items(alias);\ncreate index if not exists inbox_items_category_idx on inbox_items(category);\ncreate index if not exists inbox_items_received_at_idx on inbox_items(received_at desc);\n\n\ncreate table if not exists vendor_invoices (\n  id            uuid primary key default gen_random_uuid(),\n  inbox_item_id uuid references inbox_items(id) on delete set null,\n  vendor_name   text not null,\n  amount_pence  bigint,\n  currency      text default 'gbp',\n  invoice_date  date,\n  description   text,\n  created_at    timestamptz not null default now()\n);\nalter table vendor_invoices enable row level security;\ncreate index if not exists vendor_invoices_vendor_idx on vendor_invoices(vendor_name);\n\n\ncreate table if not exists crm_contacts (\n  id             uuid primary key default gen_random_uuid(),\n  name           text,\n  email          text not null unique,\n  company        text,\n  category       text not null default 'other'\n                   check (category in ('investor','grant','nhs_partner','press','affiliate','vendor','other')),\n  stage          text not null default 'new'\n                   check (stage in ('new','contacted','in_discussion','won','lost')),\n  source         text,                          \n  last_contact_at timestamptz,\n  notes          text,\n  created_at     timestamptz not null default now(),\n  updated_at     timestamptz not null default now()\n);\nalter table crm_contacts enable row level security;\ncreate index if not exists crm_contacts_category_idx on crm_contacts(category);\ncreate index if not exists crm_contacts_stage_idx on crm_contacts(stage);\n\nalter table inbox_items\n  add constraint inbox_items_crm_contact_fk\n  foreign key (crm_contact_id) references crm_contacts(id) on delete set null;\n\n\n\n\n\ncreate table if not exists ai_drafts (\n  id             uuid primary key default gen_random_uuid(),\n  draft_type     text not null check (draft_type in ('reply','outreach')),\n  inbox_item_id  uuid references inbox_items(id) on delete cascade,\n  crm_contact_id uuid references crm_contacts(id) on delete set null,\n  to_address     text not null,\n  from_alias     text not null,                 \n  subject        text,\n  body_text      text not null,\n  confidence_pct integer not null default 0 check (confidence_pct between 0 and 100),\n  model          text,\n  status         text not null default 'pending'\n                   check (status in ('pending','approved','rejected','sent','edited_sent')),\n  reviewed_by    uuid references profiles(id),\n  reviewed_at    timestamptz,\n  gmail_message_id text,                        \n  created_at     timestamptz not null default now()\n);\nalter table ai_drafts enable row level security;\ncreate index if not exists ai_drafts_status_idx on ai_drafts(status);\n\n\ncreate table if not exists admin_notifications (\n  id         uuid primary key default gen_random_uuid(),\n  type       text not null check (type in ('inbox_new','draft_pending','vendor_invoice','crm_new','system')),\n  title      text not null,\n  body       text,\n  link       text,\n  read_at    timestamptz,\n  created_at timestamptz not null default now()\n);\nalter table admin_notifications enable row level security;\ncreate index if not exists admin_notifications_unread_idx on admin_notifications(read_at) where read_at is null;"
+    ]
+  },
+  {
+    "version": "20260905112617",
+    "name": "inbox_gmail_category",
+    "statements": [
+      "alter table inbox_items\n  add column if not exists gmail_category text\n    check (gmail_category in ('primary','social','promotions','updates','forums','spam'));\n\ncreate index if not exists inbox_items_gmail_category_idx on inbox_items(gmail_category);"
+    ]
+  },
+  {
+    "version": "20260905150330",
+    "name": "inbox_crm_notifications_v2",
+    "statements": [
+      "alter table crm_contacts\n  add column if not exists deal_value_pence bigint,\n  add column if not exists deal_currency text default 'gbp';\n\ncreate table if not exists crm_activities (\n  id             uuid primary key default gen_random_uuid(),\n  crm_contact_id uuid not null references crm_contacts(id) on delete cascade,\n  type           text not null check (type in ('email_inbound','email_outbound','call','meeting','note','stage_change')),\n  body           text,\n  occurred_at    timestamptz not null default now(),\n  created_by     uuid references profiles(id), \n  created_at     timestamptz not null default now()\n);\nalter table crm_activities enable row level security;\ncreate index if not exists crm_activities_contact_idx on crm_activities(crm_contact_id, occurred_at desc);\n\n\n\nalter table admin_notifications\n  add column if not exists priority text not null default 'normal'\n    check (priority in ('high','normal','low'));\n\n\n\n\n\ncreate policy \"admins can read notifications\" on admin_notifications\n  for select using (\n    exists (select 1 from profiles where id = auth.uid() and is_admin = true)\n  );\n\nalter publication supabase_realtime add table admin_notifications;"
+    ]
+  },
+  {
+    "version": "20260905160223",
+    "name": "cross_system_consistency_checks",
+    "statements": [
+      "alter table ad_platform_stats\n  add column if not exists leads integer default 0,\n  add column if not exists registrations integer default 0;\n\n\n\n\n\ncreate table if not exists consistency_checks (\n  id         uuid primary key default gen_random_uuid(),\n  check_type text not null check (check_type in ('billing', 'marketing', 'venture')),\n  status     text not null check (status in ('ok', 'discrepancy', 'error')),\n  summary    text not null,\n  details    jsonb not null default '{}',\n  checked_at timestamptz not null default now()\n);\nalter table consistency_checks enable row level security;\ncreate index if not exists consistency_checks_type_idx on consistency_checks(check_type, checked_at desc);"
+    ]
+  },
+  {
+    "version": "20260905171451",
+    "name": "ad_platform_stats_unique_constraint",
+    "statements": [
+      "create unique index if not exists ad_platform_stats_unique_row\n  on ad_platform_stats (platform, stat_date, campaign_id, adset_id, ad_id);"
+    ]
+  },
+  {
+    "version": "20260907022249",
+    "name": "move_vector_extension_out_of_public_schema",
+    "statements": [
+      "create schema if not exists extensions;\nalter extension vector set schema extensions;"
+    ]
+  },
+  {
+    "version": "20260907114948",
+    "name": "slp_notifications",
+    "statements": [
+      "create table slp_notifications (\n  id           uuid primary key default gen_random_uuid(),\n  slp_user_id  uuid not null references profiles(id) on delete cascade,\n  type         text not null,\n  title        text not null,\n  body         text,\n  link         text,\n  priority     text not null default 'normal',\n  read_at      timestamptz,\n  created_at   timestamptz not null default now()\n);\n\ncreate index idx_slp_notifications_recipient on slp_notifications(slp_user_id, read_at);\n\nalter table slp_notifications enable row level security;\n\ncreate policy \"clinicians read their own notifications\"\n  on slp_notifications for select\n  using (auth.uid() = slp_user_id);\n\ncreate policy \"clinicians update their own notifications\"\n  on slp_notifications for update\n  using (auth.uid() = slp_user_id);\n\nalter publication supabase_realtime add table slp_notifications;\n\n\ncreate or replace function notify_slp_new_message()\nreturns trigger\nlanguage plpgsql\nsecurity definer\nset search_path = public\nas $$\ndeclare\n  recipient_role text;\n  sender_name    text;\nbegin\n  select role into recipient_role from profiles where id = new.to_user_id;\n  if recipient_role in ('clinician', 'slp') then\n    select coalesce(display_name, email) into sender_name from profiles where id = new.from_user_id;\n    insert into slp_notifications (slp_user_id, type, title, body, link, priority)\n    values (\n      new.to_user_id,\n      'new_message',\n      'New message from ' || coalesce(sender_name, 'a patient'),\n      left(new.content, 140),\n      '/dashboard/messages',\n      'normal'\n    );\n  end if;\n  return new;\nend;\n$$;\n\ncreate trigger trg_notify_slp_new_message\n  after insert on slp_messages\n  for each row execute function notify_slp_new_message();\n\n\n\ncreate or replace function notify_slp_session_completed()\nreturns trigger\nlanguage plpgsql\nsecurity definer\nset search_path = public\nas $$\ndeclare\n  patient_name text;\n  assignment   record;\nbegin\n  select coalesce(display_name, email) into patient_name from profiles where id = new.user_id;\n  for assignment in\n    select slp_user_id from slp_assignments where patient_user_id = new.user_id\n  loop\n    insert into slp_notifications (slp_user_id, type, title, body, link, priority)\n    values (\n      assignment.slp_user_id,\n      'session_completed',\n      coalesce(patient_name, 'A patient') || ' completed a practice session',\n      'Stage ' || new.stage_id || ' \\xc2\\xb7 ' || round((new.duration_seconds / 60.0)::numeric, 1) || ' min \\xc2\\xb7 '\n        || coalesce(new.total_blocks_detected, 0) || ' blocks detected',\n      '/dashboard/clinician',\n      'normal'\n    );\n  end loop;\n  return new;\nend;\n$$;\n\ncreate trigger trg_notify_slp_session_completed\n  after insert on practice_sessions\n  for each row execute function notify_slp_session_completed();"
+    ]
+  },
+  {
+    "version": "20260907115059",
+    "name": "fix_slp_notification_separator_encoding",
+    "statements": [
+      "create or replace function notify_slp_session_completed()\nreturns trigger\nlanguage plpgsql\nsecurity definer\nset search_path = public\nas $$\ndeclare\n  patient_name text;\n  assignment   record;\nbegin\n  select coalesce(display_name, email) into patient_name from profiles where id = new.user_id;\n  for assignment in\n    select slp_user_id from slp_assignments where patient_user_id = new.user_id\n  loop\n    insert into slp_notifications (slp_user_id, type, title, body, link, priority)\n    values (\n      assignment.slp_user_id,\n      'session_completed',\n      coalesce(patient_name, 'A patient') || ' completed a practice session',\n      'Stage ' || new.stage_id || ' - ' || round((new.duration_seconds / 60.0)::numeric, 1) || ' min - '\n        || coalesce(new.total_blocks_detected, 0) || ' blocks detected',\n      '/dashboard/clinician',\n      'normal'\n    );\n  end loop;\n  return new;\nend;\n$$;"
+    ]
+  },
+  {
+    "version": "20260907122740",
+    "name": "explee_hot_leads",
+    "statements": [
+      "alter table crm_contacts\n  add column if not exists job_title      text,\n  add column if not exists company_domain text,\n  add column if not exists linkedin_url   text,\n  add column if not exists country        text,\n  add column if not exists phone          text,\n  add column if not exists why_hot        text,\n  add column if not exists became_hot_at  timestamptz,\n  add column if not exists explee_person_id text;\n\nalter table crm_contacts drop constraint crm_contacts_category_check;\nalter table crm_contacts add constraint crm_contacts_category_check\n  check (category in ('investor','grant','nhs_partner','press','affiliate','vendor','sales_lead','other'));\n\ncreate index if not exists crm_contacts_explee_became_hot_idx\n  on crm_contacts(became_hot_at) where source = 'explee';"
+    ]
+  },
+  {
+    "version": "20260907124234",
+    "name": "explee_outreach_sync",
+    "statements": [
+      "create table explee_campaigns (\n  id                     integer primary key,\n  project_id             integer not null,\n  name                   text not null,\n  status                 text,\n  status_reason          text,\n  daily_budget_usd       numeric,\n  emails_sent            integer not null default 0,\n  total_replies          integer not null default 0,\n  reply_rate_pct         numeric,\n  hot_leads              integer not null default 0,\n  spend_usd              numeric,\n  cost_per_lead_usd      numeric,\n  leads_pool_used        integer,\n  leads_pool_total       integer,\n  leads_pool_pending     integer,\n  collected_leads_total  integer,\n  cold_lost              integer,\n  manual_status_counts   jsonb,\n  synced_at              timestamptz not null default now()\n);\nalter table explee_campaigns enable row level security;\n\ncreate table explee_contacts (\n  id               uuid primary key default gen_random_uuid(),\n  campaign_id      integer not null references explee_campaigns(id) on delete cascade,\n  person_id        text not null,\n  email            text,\n  name             text,\n  latest_subject   text,\n  latest_sent_at   timestamptz,\n  latest_reply_at  timestamptz,\n  latest_intent    text,\n  sent_count       integer not null default 0,\n  reply_count      integer not null default 0,\n  crm_contact_id   uuid references crm_contacts(id) on delete set null,\n  synced_at        timestamptz not null default now(),\n  unique (campaign_id, person_id)\n);\nalter table explee_contacts enable row level security;\ncreate index explee_contacts_intent_idx on explee_contacts(latest_intent);\ncreate index explee_contacts_email_idx  on explee_contacts(email);\n\ncreate table explee_messages (\n  id            uuid primary key default gen_random_uuid(),\n  campaign_id   integer not null references explee_campaigns(id) on delete cascade,\n  person_id     text not null,\n  message_id    text,\n  type          text not null check (type in ('sent','reply')),\n  from_email    text,\n  to_email      text,\n  subject       text,\n  body_text     text,\n  intent        text,\n  status        text,\n  in_reply_to   text,\n  sent_at       timestamptz,\n  synced_at     timestamptz not null default now()\n);\nalter table explee_messages enable row level security;\ncreate unique index explee_messages_message_id_idx\n  on explee_messages(campaign_id, person_id, message_id) where message_id is not null;\ncreate index explee_messages_person_idx on explee_messages(campaign_id, person_id);\n\ncreate table explee_analytics_snapshots (\n  id                      uuid primary key default gen_random_uuid(),\n  project_id              integer not null,\n  total_emails_sent       integer not null,\n  total_replies           integer not null,\n  total_auto_replies      integer not null,\n  overall_reply_rate_pct  numeric not null,\n  total_hot_leads         integer not null,\n  total_spend_usd         numeric not null,\n  captured_at             timestamptz not null default now()\n);\nalter table explee_analytics_snapshots enable row level security;\ncreate index explee_analytics_snapshots_project_idx on explee_analytics_snapshots(project_id, captured_at desc);"
+    ]
+  },
+  {
+    "version": "20260907135004",
+    "name": "revoke_public_execute_on_slp_notification_triggers",
+    "statements": [
+      "revoke execute on function notify_slp_new_message() from anon, authenticated;\nrevoke execute on function notify_slp_session_completed() from anon, authenticated;"
+    ]
+  },
+  {
+    "version": "20260907135659",
+    "name": "ad_platform_stats_unique_key",
+    "statements": [
+      "alter table ad_platform_stats\n  add constraint ad_platform_stats_unique_key\n  unique (platform, stat_date, campaign_id, adset_id, ad_id);"
+    ]
+  },
+  {
+    "version": "20260907204327",
+    "name": "crm_contacts_add_clinician_lead_category",
+    "statements": [
+      "alter table crm_contacts drop constraint crm_contacts_category_check;\nalter table crm_contacts add constraint crm_contacts_category_check\n  check (category in ('investor','grant','nhs_partner','press','affiliate','vendor','sales_lead','clinician_lead','other'));"
+    ]
+  },
+  {
+    "version": "20260907204332",
+    "name": "drop_unused_slp_beta_applications",
+    "statements": [
+      "drop table if exists slp_beta_applications;"
+    ]
+  },
+  {
+    "version": "20260908120923",
+    "name": "admin_action_items",
+    "statements": [
+      "create type admin_action_item_status as enum ('open', 'done');\n\ncreate table admin_action_items (\n  id           uuid primary key default gen_random_uuid(),\n  title        text not null,\n  description  text,\n  category     text not null default 'general', \n  status       admin_action_item_status not null default 'open',\n  created_at   timestamptz not null default now(),\n  resolved_at  timestamptz,\n  resolved_by  text \n);\n\ncreate index admin_action_items_status_idx on admin_action_items (status, created_at desc);\n\nalter table admin_action_items enable row level security;\n\n\n\n\n\n\n\n\n\n\ninsert into admin_action_items (title, description, category) values\n  (\n    'Enable the ConvoAI add-on in Agora Console',\n    'The practice page''s AI avatar session fails to start with \"AI conversation not available\" \u2014 the Agora ConvoAI add-on isn''t enabled for this App ID. Console \u2192 the project matching AGORA_APP_ID \u2192 enable Conversational AI Engine. If already enabled, check AGORA_CONVOAI_BASE_URL matches the project''s actual region (US/EU/AP).',\n    'integration'\n  ),\n  (\n    'Enable Supabase leaked-password protection',\n    'Auth \u2192 Policies (or Auth settings) in the Supabase dashboard \u2014 a security toggle that checks new passwords against known-breach lists. Dashboard-only; no migration or API call can set it.',\n    'security'\n  ),\n  (\n    'Upgrade ElevenLabs billing plan',\n    'Current plan''s usage ceiling has been hit \u2014 needs a plan upgrade on ElevenLabs'' own billing page to lift the limit.',\n    'billing'\n  );"
+    ]
+  },
+  {
+    "version": "20260908231628",
+    "name": "deck_invite_variant",
+    "statements": [
+      "alter table deck_invites\n  add column if not exists variant text not null default 'detailed'\n  check (variant in ('detailed', 'simple'));"
+    ]
+  },
+  {
+    "version": "20260911142253",
+    "name": "crm_stage_auto_managed",
+    "statements": [
+      "alter table crm_contacts\n  add column if not exists stage_auto_managed boolean not null default true;\n\ncomment on column crm_contacts.stage_auto_managed is\n  'true while stage is kept in sync with Explee''s own outreach signals; set to false the moment a human manually changes stage via the CRM UI, and never touched by automation again.';"
+    ]
+  },
+  {
+    "version": "20260913124756",
+    "name": "explee_contact_enrichment",
+    "statements": [
+      "alter table explee_contacts\n  add column if not exists can_reply boolean,\n  add column if not exists reply_blocked_reason text,\n  add column if not exists needs_reply boolean not null default false,\n  add column if not exists explee_note text,\n  add column if not exists explee_note_updated_at timestamptz,\n  add column if not exists explee_note_updated_by text,\n  add column if not exists profile_synced_at timestamptz;\n\ncomment on column explee_contacts.needs_reply is\n  'True when this person is in Explee''s own tab=need_reply set for its campaign \u2014 a real reply awaiting a human answer, not a heuristic we derived ourselves. Recomputed every sync run from a dedicated per-campaign fetch.';\ncomment on column explee_contacts.can_reply is\n  'Whether POST .../reply is currently allowed for this contact (Explee''s compliance gate) \u2014 false once unsubscribed, or if they never replied at all.';\ncomment on column explee_contacts.explee_note is\n  'The team-shared free-text note Explee''s own AutoGTM inbox shows for this lead (GET/POST .../note) \u2014 distinct from crm_contacts.notes, which is Flowen''s own CRM note field.';\ncomment on column explee_contacts.profile_synced_at is\n  'When this row last had its LeadProfile (job title/company/LinkedIn/country/phone/note) fetched via the thread endpoint. Null means never \u2014 used to prioritise a bounded backfill batch each run rather than a one-off script, since normal syncing only re-fetches a thread when sent/reply activity actually changed.';\n\ncreate index if not exists explee_contacts_needs_reply_idx on explee_contacts (needs_reply) where needs_reply = true;\ncreate index if not exists explee_contacts_profile_synced_at_idx on explee_contacts (profile_synced_at) where profile_synced_at is null;"
+    ]
+  },
+  {
+    "version": "20260913133509",
+    "name": "explee_prospecting",
+    "statements": [
+      "create table if not exists explee_searches (\n  id               uuid primary key default gen_random_uuid(),\n  task_id          text unique not null,\n  status           text not null default 'pending' check (status in ('pending', 'completed', 'failed')),\n  people_filters   jsonb,\n  company_filters  jsonb,\n  max_contacts     integer not null,\n  preset           text not null default 'basic' check (preset in ('basic', 'premium')),\n  credits_charged  numeric,\n  error            text,\n  created_by       text,\n  created_at       timestamptz not null default now(),\n  completed_at     timestamptz\n);\n\ncreate table if not exists explee_prospects (\n  id                   uuid primary key default gen_random_uuid(),\n  search_id            uuid not null references explee_searches(id) on delete cascade,\n  first_name           text,\n  last_name            text,\n  title                text,\n  linkedin_url         text,\n  company_name         text,\n  company_domain       text,\n  email                text,\n  email_status         text,\n  imported_campaign_id integer,\n  imported_at          timestamptz,\n  created_at           timestamptz not null default now()\n);\n\ncreate index if not exists explee_prospects_search_id_idx on explee_prospects (search_id);\ncreate index if not exists explee_prospects_company_domain_idx on explee_prospects (company_domain);\n\ncreate table if not exists explee_campaign_imports (\n  id            uuid primary key default gen_random_uuid(),\n  task_id       text unique not null,\n  campaign_name text not null,\n  prospect_ids  uuid[] not null,\n  status        text not null default 'pending' check (status in ('pending', 'completed', 'failed')),\n  campaign_id   integer,\n  error         text,\n  created_by    text,\n  created_at    timestamptz not null default now(),\n  completed_at  timestamptz\n);\n\ncomment on table explee_searches is 'One row per find-and-enrich job run from /admin/prospecting \u2014 the filters used, Explee''s task_id, and how many credits it ended up costing.';\ncomment on table explee_prospects is 'Enriched people found by a search \u2014 only rows with a found email are ever stored, matching what find-and-enrich itself returns.';\ncomment on table explee_campaign_imports is 'One row per \"create an Explee campaign from selected prospects\" action \u2014 tracks the async import task until Explee reports the new campaign_id.';"
+    ]
+  },
+  {
+    "version": "20260913152620",
+    "name": "explee_dedup_lists",
+    "statements": [
+      "create table if not exists explee_dedup_lists (\n  id           text primary key,\n  kind         text not null check (kind in ('people', 'companies')),\n  source       text not null default 'crm_contacts',\n  total        integer not null,\n  invalid_count integer not null default 0,\n  created_by   text,\n  created_at   timestamptz not null default now()\n);\n\ncomment on table explee_dedup_lists is\n  'Immutable Explee dedup lists this app has created \u2014 the most recent kind=''people'' row is automatically passed as exclude_lists on every new prospecting search, so results already in the CRM are excluded and never charged.';"
+    ]
+  },
+  {
+    "version": "20260913152647",
+    "name": "explee_searches_excluded_total",
+    "statements": [
+      "alter table explee_searches add column if not exists excluded_total integer;\ncomment on column explee_searches.excluded_total is 'How many candidates were skipped because they matched the dedup list passed in exclude_lists \u2014 never enriched, never charged. Null when no dedup list was applied to this search.';"
+    ]
+  },
+  {
+    "version": "20260913193411",
+    "name": "deploy_log_changelog_items",
+    "statements": [
+      "alter table deploy_log add column if not exists changelog_items jsonb;\n\ncomment on column deploy_log.changelog_items is\n  'The actual parsed feat:/fix:/perf:/security:/policy: items from this deploy''s commit message \u2014 [{type, title, description}]. Null for deploys with no user-facing items (chore/docs/refactor/etc). Lets investor-update drafting (and anything else) describe real shipped work instead of just a count.';"
+    ]
+  },
+  {
+    "version": "20260914123434",
+    "name": "cal_com_bookings",
+    "statements": [
+      "create table if not exists cal_bookings (\n  id                uuid primary key default gen_random_uuid(),\n  uid               text unique not null,\n  trigger_event     text not null,\n  event_type_title  text,\n  organizer_email   text,\n  attendee_email    text,\n  attendee_name     text,\n  start_time        timestamptz,\n  end_time          timestamptz,\n  status            text,\n  crm_contact_id    uuid references crm_contacts(id) on delete set null,\n  raw_payload       jsonb,\n  created_at        timestamptz not null default now()\n);\n\ncreate index if not exists cal_bookings_attendee_email_idx on cal_bookings (attendee_email);\n\ncomment on table cal_bookings is\n  'Raw log of Cal.com webhook deliveries (currently BOOKING_CREATED only) \u2014 one row per booking, uid-deduplicated so a webhook retry never double-processes.';\n\nalter table admin_notifications drop constraint if exists admin_notifications_type_check;\nalter table admin_notifications add constraint admin_notifications_type_check\n  check (type = any (array['inbox_new', 'draft_pending', 'vendor_invoice', 'crm_new', 'system', 'booking_new']));"
+    ]
+  },
+  {
+    "version": "20260916134009",
+    "name": "xero_bookkeeping",
+    "statements": [
+      "create table if not exists xero_oauth_tokens (\n  id            text primary key default 'org',\n  tenant_id     text,          \n  tenant_name   text,\n  access_token  text not null,\n  refresh_token text,\n  expires_at    timestamptz,\n  scope         text,\n  created_at    timestamptz not null default now(),\n  updated_at    timestamptz not null default now()\n);\n\nalter table xero_oauth_tokens enable row level security;\ncomment on table xero_oauth_tokens is\n  'Single-row OAuth token for the connected Xero organisation, refreshed by getValidXeroAccessToken(). No RLS policies \u2014 service-role (adminDb) access only, same as gmail_oauth_tokens.';\n\ncreate table if not exists bookkeeping_drafts (\n  id                uuid primary key default gen_random_uuid(),\n  draft_type        text not null check (draft_type in (\n                       'stripe_sync', 'categorize', 'vat_reconciliation', 'expense_from_email'\n                     )),\n  status            text not null default 'pending' check (status in (\n                       'pending', 'approved', 'rejected', 'applied'\n                     )),\n  \n  \n  \n  source_ref        text,\n  title             text not null,\n  summary           text,\n  \n  \n  \n  \n  proposed_payload  jsonb not null,\n  confidence_pct    int,\n  model             text,\n  xero_result       jsonb,\n  reviewed_by       uuid references profiles(id),\n  reviewed_at       timestamptz,\n  applied_at        timestamptz,\n  created_at        timestamptz not null default now()\n);\n\ncreate index if not exists bookkeeping_drafts_status_idx on bookkeeping_drafts (status);\ncreate index if not exists bookkeeping_drafts_type_ref_idx on bookkeeping_drafts (draft_type, source_ref);\n\nalter table bookkeeping_drafts enable row level security;\ncomment on table bookkeeping_drafts is\n  'Proposed bookkeeping actions (Stripe->Xero sync, bank transaction categorisation, VAT/intercompany reconciliation, expense-from-email) awaiting admin approval. Mirrors ai_drafts: status starts pending, and only an explicit PATCH .../approve in /api/admin/bookkeeping/drafts is allowed to write to Xero.';"
+    ]
+  },
+  {
+    "version": "20260916183748",
+    "name": "r2_session_recordings",
+    "statements": [
+      "alter table practice_sessions\n  add column if not exists audio_storage_provider text not null default 'supabase';\n\nalter table practice_sessions\n  drop constraint if exists practice_sessions_audio_storage_provider_check;\n\nalter table practice_sessions\n  add constraint practice_sessions_audio_storage_provider_check\n  check (audio_storage_provider in ('supabase', 'r2'));\n\ncomment on column practice_sessions.audio_storage_provider is\n  'Which storage backend audio_storage_path lives in. Existing rows default to supabase (Supabase Storage session-recordings bucket); new uploads write r2 (Cloudflare R2) once STORAGE_R2_* env vars are configured. See src/lib/r2.ts.';"
+    ]
+  },
+  {
+    "version": "20260918004056",
+    "name": "enable_rls_missing_tables",
+    "statements": [
+      "alter table public.explee_searches enable row level security;\nalter table public.explee_prospects enable row level security;\nalter table public.explee_campaign_imports enable row level security;\nalter table public.explee_dedup_lists enable row level security;\nalter table public.cal_bookings enable row level security;"
+    ]
+  },
+  {
+    "version": "20260918004403",
+    "name": "revoke_direct_execute_slp_trigger_functions",
+    "statements": [
+      "revoke execute on function public.notify_slp_new_message() from anon, authenticated;\nrevoke execute on function public.notify_slp_session_completed() from anon, authenticated;"
+    ]
+  },
+  {
+    "version": "20260918004434",
+    "name": "revoke_public_execute_slp_trigger_functions",
+    "statements": [
+      "revoke execute on function public.notify_slp_new_message() from public;\nrevoke execute on function public.notify_slp_session_completed() from public;"
+    ]
+  },
+  {
+    "version": "20260924232920",
+    "name": "xero_multi_entity",
+    "statements": [
+      "alter table xero_oauth_tokens rename column id to entity;\nalter table xero_oauth_tokens alter column entity drop default;\nupdate xero_oauth_tokens set entity = 'group' where entity = 'org';\nalter table xero_oauth_tokens add constraint xero_oauth_tokens_entity_check\n  check (entity in ('group', 'ip', 'speech-technologies', 'labs'));\ncomment on table xero_oauth_tokens is\n  'One row per connected Flowen group company (entity = group/ip/speech-technologies/labs \u2014 see src/lib/flowen-entities.ts), refreshed by getValidXeroAccess(entity). No RLS policies \u2014 service-role (adminDb) access only, same as gmail_oauth_tokens.';\n\n\n\n\n\nalter table bookkeeping_drafts add column if not exists entity text not null default 'group'\n  check (entity in ('group', 'ip', 'speech-technologies', 'labs'));\nalter table bookkeeping_drafts alter column entity drop default;\ncreate index if not exists bookkeeping_drafts_entity_idx on bookkeeping_drafts (entity);\n\n\n\n\ndrop index if exists bookkeeping_drafts_type_ref_idx;\ncreate index if not exists bookkeeping_drafts_type_ref_entity_idx on bookkeeping_drafts (draft_type, source_ref, entity);"
+    ]
+  },
+  {
+    "version": "20260925022233",
+    "name": "dla_journal_draft_type",
+    "statements": [
+      "alter table bookkeeping_drafts drop constraint if exists bookkeeping_drafts_draft_type_check;\nalter table bookkeeping_drafts add constraint bookkeeping_drafts_draft_type_check\n  check (draft_type in ('stripe_sync', 'categorize', 'vat_reconciliation', 'expense_from_email', 'dla_journal'));"
+    ]
+  },
+  {
+    "version": "20260925185516",
+    "name": "share_capital_setoff_draft_type",
+    "statements": [
+      "alter table bookkeeping_drafts drop constraint if exists bookkeeping_drafts_draft_type_check;\nalter table bookkeeping_drafts add constraint bookkeeping_drafts_draft_type_check\n  check (draft_type in ('stripe_sync', 'categorize', 'vat_reconciliation', 'expense_from_email', 'dla_journal', 'share_capital_setoff'));"
+    ]
+  },
+  {
+    "version": "20260925190848",
+    "name": "audit_perf_fixes",
+    "statements": [
+      "drop index if exists public.ad_platform_stats_unique_row;\n\ndrop policy if exists \"admins can read notifications\" on public.admin_notifications;\ncreate policy \"admins can read notifications\" on public.admin_notifications\n  for select using (\n    exists (select 1 from profiles where profiles.id = (select auth.uid()) and profiles.is_admin = true)\n  );\n\ndrop policy if exists \"clinicians read their own notifications\" on public.slp_notifications;\ncreate policy \"clinicians read their own notifications\" on public.slp_notifications\n  for select using ((select auth.uid()) = slp_user_id);\n\ndrop policy if exists \"clinicians update their own notifications\" on public.slp_notifications;\ncreate policy \"clinicians update their own notifications\" on public.slp_notifications\n  for update using ((select auth.uid()) = slp_user_id);\n\ndrop policy if exists \"admin_all_google_analytics_stats\" on public.google_analytics_stats;\ncreate policy \"admin_all_google_analytics_stats\" on public.google_analytics_stats\n  for all using (\n    exists (select 1 from profiles where profiles.id = (select auth.uid()) and profiles.role = 'admin')\n  );"
+    ]
+  },
+  {
+    "version": "20260926004320",
+    "name": "session_recording_retention",
+    "statements": [
+      "alter table data_retention_policies alter column session_retention_days set default 90;\n\nupdate data_retention_policies\nset session_retention_days = 90, updated_at = now()\nwhere session_retention_days = 365;"
+    ]
+  },
+  {
+    "version": "20260926150422",
+    "name": "governance_registers",
+    "statements": [
+      "create table if not exists public.sub_processors (\n  id uuid primary key default gen_random_uuid(),\n  name text not null,\n  purpose text not null,\n  data_categories text not null,\n  location text not null,\n  safeguard text not null,\n  active boolean not null default true,\n  added_at timestamptz not null default now(),\n  updated_at timestamptz not null default now()\n);\nalter table public.sub_processors enable row level security;\n\ncomment on table public.sub_processors is\n  'The real, current list of sub-processors shown on /dpa and referenced in the privacy policy \u2014 admin-editable via /admin/sub-processors instead of hardcoded in page.tsx, so adding a new vendor (e.g. an AI provider) cannot silently go undisclosed again.';\n\n\n\ninsert into public.sub_processors (name, purpose, data_categories, location, safeguard) values\n  ('Supabase Inc.', 'Database, auth, storage (including session recordings)', 'All platform data', 'UK-GBR', 'SCCs + UK Addendum'),\n  ('Vercel Inc.', 'Hosting, edge functions', 'Request data, application logs', 'UK/EU', 'SCCs + UK Addendum'),\n  ('Agora Inc.', 'Real-time voice relay for AI conversation practice', 'Live audio, streamed in real time - not stored by Agora', 'US/EU', 'SCCs + UK Addendum'),\n  ('OpenAI, L.L.C.', 'AI language model for AI conversation practice', 'Speech transcribed from live audio, and text typed/spoken to the AI', 'US', 'SCCs + UK Addendum; OpenAI does not use API data to train its models'),\n  ('ElevenLabs Inc.', 'AI voice synthesis; voice cloning where a user opts in', 'Calibration recording (if a voice clone is created) and text to be spoken by the AI', 'US/EU', 'SCCs + UK Addendum. Users may delete their voice clone, and its underlying recording, at any time'),\n  ('Functional Software Inc. (Sentry)', 'Error monitoring (PHI masked)', 'Anonymised error logs', 'EU/US', 'SCCs + UK Addendum'),\n  ('Stripe Inc.', 'Payment processing', 'Payment data, email for receipt', 'US/EU', 'Independent controller; UK-US Data Bridge')\non conflict do nothing;\n\n\ncreate table if not exists public.insurance_policies (\n  id uuid primary key default gen_random_uuid(),\n  policy_type text not null,\n  provider text,\n  policy_number text,\n  entity text,\n  coverage_amount_pence bigint,\n  start_date date,\n  end_date date,\n  document_url text,\n  notes text,\n  created_at timestamptz not null default now(),\n  updated_at timestamptz not null default now()\n);\nalter table public.insurance_policies enable row level security;\n\ncomment on table public.insurance_policies is\n  'Insurance register \u2014 deliberately starts empty. No policy has ever existed in this codebase; this gives one a real home instead of the absence being invisible. NHS/institutional procurement will ask for professional indemnity and clinical negligence cover as standard due diligence before contracting.';\n\n\ncreate table if not exists public.safeguarding_concerns (\n  id uuid primary key default gen_random_uuid(),\n  raised_by text,\n  patient_user_id uuid references public.profiles(id) on delete set null,\n  category text not null default 'other',\n  description text not null,\n  status text not null default 'open',\n  escalated_to text,\n  resolution_notes text,\n  resolved_at timestamptz,\n  created_at timestamptz not null default now(),\n  updated_at timestamptz not null default now()\n);\nalter table public.safeguarding_concerns enable row level security;\n\ncomment on table public.safeguarding_concerns is\n  'Safeguarding concern log \u2014 the record a real safeguarding policy needs to point to. Distinct from hazard_log (DCB0129 clinical-software safety hazards) and gdpr_requests (data-subject rights): this is about a person''s welfare, not a system defect or a data request.';\n\n\nalter table public.compliance_items drop constraint if exists compliance_items_framework_check;\nalter table public.compliance_items add constraint compliance_items_framework_check\n  check (framework = any (array['dcb0129', 'dtac', 'dspt', 'mhra', 'wcag', 'insurance', 'safeguarding']));\n\ninsert into public.compliance_items (framework, item_code, status, notes) values\n  ('insurance', 'professional-indemnity', 'not_started', 'No professional indemnity insurance on file yet. Standard NHS/institutional procurement requirement \u2014 see /admin/insurance.'),\n  ('insurance', 'clinical-negligence', 'not_started', 'No clinical negligence insurance on file yet \u2014 see /admin/insurance.'),\n  ('safeguarding', 'policy-published', 'complete', 'Flowen-authored safeguarding policy published \u2014 see /legal.'),\n  ('safeguarding', 'concern-log-in-place', 'complete', 'Safeguarding concern log now available at /admin/safeguarding.')\non conflict do nothing;"
+    ]
+  },
+  {
+    "version": "20260926182314",
+    "name": "seis_eis_and_company_records",
+    "statements": [
+      "create table if not exists public.company_records (\n  id uuid primary key default gen_random_uuid(),\n  entity text not null check (entity in ('group', 'ip', 'labs', 'speech-technologies')),\n  record_type text not null check (record_type in (\n    'corporation_tax_utr', 'vat_number', 'paye_reference',\n    'companies_house_auth_code', 'other'\n  )),\n  value text not null,\n  issued_by text,\n  issued_date date,\n  notes text,\n  created_at timestamptz not null default now(),\n  updated_at timestamptz not null default now()\n);\nalter table public.company_records enable row level security;\n\ncomment on table public.company_records is\n  'General company identifiers (UTR, VAT number, PAYE reference, Companies House auth code) per Flowen group entity. Admin-editable at /admin/company-records.';\n\ninsert into public.company_records (entity, record_type, value, issued_by, issued_date, notes) values\n  ('group', 'corporation_tax_utr', '9599400120', 'HMRC', '2026-09-26', 'Tax office 623. From the CT41G letter HMRC sends automatically after Companies House notifies them of incorporation. Action still needed: tell HMRC within 3 months of starting business activity whether the company is trading or dormant \u2014 Group is the deliberately non-trading holding company (protects SEIS/EIS qualifying status), so this should very likely be registered as dormant/not-yet-trading, not active.')\non conflict do nothing;\n\ncreate table if not exists public.seis_eis_status (\n  id uuid primary key default gen_random_uuid(),\n  advance_assurance_status text not null default 'drafted'\n    check (advance_assurance_status in ('drafted', 'submitted', 'granted', 'declined')),\n  advance_assurance_submitted_at date,\n  advance_assurance_reference text,\n  consolidated_gross_assets_pence bigint,\n  total_fte numeric,\n  first_trading_date date,\n  prior_eis_vct_investment boolean,\n  prior_eis_vct_notes text,\n  seis1_filed boolean not null default false,\n  seis1_filed_at date,\n  notes text,\n  updated_at timestamptz not null default now()\n);\nalter table public.seis_eis_status enable row level security;\n\ncomment on table public.seis_eis_status is\n  'Live-tracked SEIS Advance Assurance status for Flowen Group Ltd, replacing the [FILL IN] placeholders in the static application letter (src/lib/ip-docs/content.tsx). Admin-editable at /admin/seis-eis.';\n\ninsert into public.seis_eis_status (advance_assurance_status, notes) values\n  ('drafted', 'Application letter drafted (src/lib/ip-docs/content.tsx) but not yet submitted to HMRC. Still needs: consolidated group gross assets, total FTE headcount, first commercial sale/trading date, confirmation of any prior EIS/VCT investment, and post-issue shareholding percentages before it can be submitted.')\non conflict do nothing;"
+    ]
+  },
+  {
+    "version": "20260929202036",
+    "name": "consent_records_and_conversion_milestones",
+    "statements": [
+      "create table if not exists public.consent_records (\n  id           uuid primary key default gen_random_uuid(),\n  anonymous_id text,\n  user_id      uuid,\n  decision     text not null check (decision in ('all', 'necessary')),\n  purposes     text[] not null default '{}',\n  user_agent   text,\n  created_at   timestamptz not null default now()\n);\n\ncreate index if not exists consent_records_anonymous_id_idx\n  on public.consent_records (anonymous_id, created_at desc);\ncreate index if not exists consent_records_user_id_idx\n  on public.consent_records (user_id, created_at desc);\n\nalter table public.consent_records enable row level security;\n\ncreate table if not exists public.conversion_milestones (\n  id          uuid primary key default gen_random_uuid(),\n  user_id     uuid not null,\n  milestone   text not null,\n  external_id text not null default '',\n  recorded_at timestamptz not null default now(),\n  unique (milestone, external_id)\n);\n\nalter table public.conversion_milestones enable row level security;\n\nalter table public.marketing_attribution\n  add column if not exists signup_event_id  uuid,\n  add column if not exists meta_last_error   text,\n  add column if not exists google_last_error text;"
+    ]
+  },
+  {
+    "version": "20260929203836",
+    "name": "consent_records_identity_check",
+    "statements": [
+      "alter table public.consent_records\n  add constraint consent_records_identity_check\n  check (anonymous_id is not null or user_id is not null);"
+    ]
+  }
+]

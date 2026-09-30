@@ -1,0 +1,327 @@
+[
+  {
+    "file": "20260729_audit_logs_and_webhook_idempotency.sql",
+    "table": "audit_logs",
+    "present": true
+  },
+  {
+    "file": "20260729_audit_logs_and_webhook_idempotency.sql",
+    "table": "processed_webhook_events",
+    "present": true
+  },
+  {
+    "file": "20260730_assets.sql",
+    "table": "asset_files",
+    "present": true
+  },
+  {
+    "file": "20260730_campaign_crm.sql",
+    "table": "campaign_milestones",
+    "present": true
+  },
+  {
+    "file": "20260730_campaign_crm.sql",
+    "table": "campaign_contacts",
+    "present": true
+  },
+  {
+    "file": "20260730_campaign_crm.sql",
+    "table": "campaign_press_links",
+    "present": true
+  },
+  {
+    "file": "20260730_cron.sql",
+    "table": "cron_runs",
+    "present": true
+  },
+  {
+    "file": "20260730_data_room.sql",
+    "table": "data_room_documents",
+    "present": true
+  },
+  {
+    "file": "20260730_data_room.sql",
+    "table": "data_room_invites",
+    "present": true
+  },
+  {
+    "file": "20260730_hazard_log.sql",
+    "table": "hazard_log",
+    "present": true
+  },
+  {
+    "file": "20260730_integrations.sql",
+    "table": "api_keys",
+    "present": true
+  },
+  {
+    "file": "20260730_staff.sql",
+    "table": "staff_members",
+    "present": true
+  },
+  {
+    "file": "20260730_staff.sql",
+    "table": "staff_invites",
+    "present": true
+  },
+  {
+    "file": "20260730_staff.sql",
+    "table": "handoff_notes",
+    "present": true
+  },
+  {
+    "file": "20260730_tickets.sql",
+    "table": "support_tickets",
+    "present": true
+  },
+  {
+    "file": "20260730_tickets.sql",
+    "table": "ticket_messages",
+    "present": true
+  },
+  {
+    "file": "20260730_tickets.sql",
+    "table": "gdpr_requests",
+    "present": true
+  },
+  {
+    "file": "20260730_tracking.sql",
+    "table": "tracking_providers",
+    "present": true
+  },
+  {
+    "file": "20260730_venture_compliance_pitch.sql",
+    "table": "investors",
+    "present": true
+  },
+  {
+    "file": "20260730_venture_compliance_pitch.sql",
+    "table": "venture_config",
+    "present": true
+  },
+  {
+    "file": "20260730_venture_compliance_pitch.sql",
+    "table": "compliance_items",
+    "present": true
+  },
+  {
+    "file": "20260730_venture_compliance_pitch.sql",
+    "table": "deck_invites",
+    "present": true
+  },
+  {
+    "file": "20260730_venture_compliance_pitch.sql",
+    "table": "deck_views",
+    "present": true
+  },
+  {
+    "file": "20260730_workflows.sql",
+    "table": "workflow_definitions",
+    "present": true
+  },
+  {
+    "file": "20260730_workflows.sql",
+    "table": "workflow_runs",
+    "present": true
+  },
+  {
+    "file": "20260731_alert_rules.sql",
+    "table": "alert_rules",
+    "present": true
+  },
+  {
+    "file": "20260731_alert_rules.sql",
+    "table": "alert_history",
+    "present": true
+  },
+  {
+    "file": "20260731_audit_log.sql",
+    "table": "audit_log",
+    "present": true
+  },
+  {
+    "file": "20260731_cap_table.sql",
+    "table": "cap_table_entries",
+    "present": true
+  },
+  {
+    "file": "20260731_feature_flags.sql",
+    "table": "feature_flags",
+    "present": true
+  },
+  {
+    "file": "20260731_grants.sql",
+    "table": "grants",
+    "present": true
+  },
+  {
+    "file": "20260731_investor_updates.sql",
+    "table": "investor_updates",
+    "present": true
+  },
+  {
+    "file": "20260731_ip_register.sql",
+    "table": "ip_assets",
+    "present": true
+  },
+  {
+    "file": "20260731_ip_register.sql",
+    "table": "ip_model_versions",
+    "present": true
+  },
+  {
+    "file": "20260731_nhs_pipeline.sql",
+    "table": "nhs_icb_contacts",
+    "present": true
+  },
+  {
+    "file": "20260731_nhs_pipeline.sql",
+    "table": "nhs_slp_signups",
+    "present": true
+  },
+  {
+    "file": "20260731_nhs_pipeline.sql",
+    "table": "nhs_block_pledges",
+    "present": true
+  },
+  {
+    "file": "20260731_notification_log.sql",
+    "table": "notification_log",
+    "present": true
+  },
+  {
+    "file": "20260731_roadmap.sql",
+    "table": "roadmap_milestones",
+    "present": true
+  },
+  {
+    "file": "20260731_slp_assignments.sql",
+    "table": "slp_assignments",
+    "present": true
+  },
+  {
+    "file": "20260731_slp_assignments.sql",
+    "table": "slp_session_notes",
+    "present": true
+  },
+  {
+    "file": "20260731_slp_messages.sql",
+    "table": "slp_messages",
+    "present": true
+  },
+  {
+    "file": "20260731_treatment_plans.sql",
+    "table": "treatment_plans",
+    "present": true
+  },
+  {
+    "file": "20260731_user_programme.sql",
+    "table": "user_programme",
+    "present": true
+  },
+  {
+    "file": "20260802_analytics_visitor_tracking.sql",
+    "table": "visitor_sessions",
+    "present": true
+  },
+  {
+    "file": "20260802_analytics_visitor_tracking.sql",
+    "table": "page_views",
+    "present": true
+  },
+  {
+    "file": "20260807_affiliate.sql",
+    "table": "affiliates",
+    "present": true
+  },
+  {
+    "file": "20260807_affiliate.sql",
+    "table": "affiliate_clicks",
+    "present": true
+  },
+  {
+    "file": "20260807_affiliate.sql",
+    "table": "affiliate_conversions",
+    "present": true
+  },
+  {
+    "file": "20260807_affiliate.sql",
+    "table": "affiliate_commissions",
+    "present": true
+  },
+  {
+    "file": "20260807_affiliate.sql",
+    "table": "affiliate_payouts",
+    "present": true
+  },
+  {
+    "file": "20260807_ip_readiness.sql",
+    "table": "ip_audit_items",
+    "present": true
+  },
+  {
+    "file": "20260807_ip_readiness.sql",
+    "table": "ip_funding_items",
+    "present": true
+  },
+  {
+    "file": "20260807_valuation.sql",
+    "table": "valuation_config",
+    "present": true
+  },
+  {
+    "file": "20260807_valuation.sql",
+    "table": "valuation_snapshots",
+    "present": true
+  },
+  {
+    "file": "20260811_stage_progressions.sql",
+    "table": "stage_progressions",
+    "present": true
+  },
+  {
+    "file": "20260820_deploy_log.sql",
+    "table": "deploy_log",
+    "present": true
+  },
+  {
+    "file": "20260821_daily_backups.sql",
+    "table": "backup_log",
+    "present": true
+  },
+  {
+    "file": "20260901_marketing_intelligence.sql",
+    "table": "ad_platform_stats",
+    "present": true
+  },
+  {
+    "file": "20260901_marketing_intelligence.sql",
+    "table": "social_platform_stats",
+    "present": true
+  },
+  {
+    "file": "20260901_marketing_intelligence.sql",
+    "table": "social_posts",
+    "present": true
+  },
+  {
+    "file": "20260901_marketing_intelligence.sql",
+    "table": "marketing_recommendations",
+    "present": true
+  },
+  {
+    "file": "20260901_marketing_intelligence.sql",
+    "table": "recommendation_actions",
+    "present": true
+  },
+  {
+    "file": "20260902_social_publish_queue.sql",
+    "table": "social_publish_queue",
+    "present": true
+  },
+  {
+    "file": "20260907_slp_notifications.sql",
+    "table": "slp_notifications",
+    "present": true
+  }
+]
