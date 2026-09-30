@@ -1,3 +1,4 @@
+import { CSMS_DRAFT, PMS_DRAFT, SAFETY_CASE_DRAFT } from '@/lib/clinical-safety-documents';
 import { assertAdmin } from '@/lib/admin/guard';
 import type { Metadata } from 'next';
 import { REGISTERED_OFFICE_ADDRESS } from '@/lib/flowen-entities';
@@ -535,127 +536,9 @@ Next review: 1 August 2027`,
     id: 'POL-006',
     title: 'Clinical Safety Management System (CSMS)',
     tag: 'CLINICAL SAFETY',
-    version: 'v1.0',
-    summary: 'DCB0129 Clinical Safety Standard — documented management system governing clinical risk identification, assessment, and control throughout the software lifecycle.',
-    content: `CLINICAL SAFETY MANAGEMENT SYSTEM (CSMS)
-${COMPANY} | Version 1.0 | Effective ${EFFECTIVE}
-DCB0129 Clinical Safety Standard — NHS England
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. PURPOSE AND SCOPE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-This Clinical Safety Management System (CSMS) establishes the framework by which Flowen Group Ltd manages clinical safety risk in the Flowen digital health platform throughout its lifecycle — from design and development through deployment, in-service operation, and decommissioning.
-
-Flowen is a digital wellness and fluency practice platform for adults with persistent stammering. This CSMS is established in accordance with NHS Digital DCB0129: Clinical Risk Management: its Application in the Manufacture of Health IT Systems (Edition 4.1).
-
-Scope: All versions of the Flowen platform (web application, APIs, ASR pipeline, AI analysis components) that process or generate information used by patients or clinicians.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2. CLINICAL SAFETY OFFICER (CSO)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Acting CSO: Howard Henry
-Title: Founder & CEO, Flowen Group Ltd
-Contact: ${EMAIL}
-Appointment date: 1 August 2026
-
-The CSO is responsible for:
-— Maintaining and implementing this CSMS
-— Ensuring all hazards are identified, logged, and assessed
-— Reviewing and approving the Clinical Safety Case
-— Ensuring clinical risk is managed to an acceptable level
-— Reporting to the Board on clinical safety matters
-
-CSO Qualifications: Howard Henry has lived experience of persistent stammering, has engaged extensively with the STAMMA clinical and user community, and has completed NHS-relevant clinical safety awareness training. A qualified external CSO (clinician with speech and language therapy background) will be engaged prior to full NHS clinical deployment.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-3. HAZARD IDENTIFICATION METHODOLOGY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Hazards are identified through the following methods:
-— Structured brainstorming with clinical and technical stakeholders
-— Review of incident reports and near-miss data from the in-service monitoring system
-— Review of published literature on digital health adverse events
-— User feedback and support ticket analysis
-— Review of analogous system hazard logs in the speech technology domain
-
-All identified hazards are recorded in the Hazard Log maintained at /admin/hazard-log.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-4. CLINICAL RISK ASSESSMENT METHODOLOGY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Each hazard is assessed using a 5×5 risk matrix (DCB0129 Annex C):
-
-SEVERITY SCALE (S):
-S1 — Insignificant: No injury or distress
-S2 — Minor: Minor distress, recoverable without intervention
-S3 — Moderate: Significant distress, may require professional intervention
-S4 — Major: Significant harm, professional intervention required
-S5 — Catastrophic: Death or permanent severe harm
-
-LIKELIHOOD SCALE (L):
-L1 — Rare: Conceivable but highly unlikely
-L2 — Unlikely: Would not be expected to occur
-L3 — Possible: May occur occasionally
-L4 — Likely: Will occur in many circumstances
-L5 — Almost Certain: Expected to occur frequently
-
-RISK SCORE: R = S × L (range 1–25)
-— Score 1–5: Low — acceptable, monitor
-— Score 6–12: Medium — mitigate, review annually
-— Score 13–19: High — immediate mitigation required
-— Score 20–25: Critical — unacceptable, must eliminate or withdraw
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-5. RISK ACCEPTABILITY CRITERIA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Residual risk is considered acceptable if:
-— All residual risk scores are Low (1–5) or Medium (6–12), AND
-— The CSO has approved the residual risk level, AND
-— No residual risk is High or Critical
-
-Risks remaining at Medium residual level are accepted only where:
-— No further reasonably practicable mitigation exists, AND
-— The benefit to users outweighs the residual risk, AND
-— The risk is explicitly documented and reviewed annually
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-6. CLINICAL SAFETY CASE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-A Clinical Safety Case is maintained throughout the product lifecycle:
-— Initial Safety Case: compiled prior to first deployment (see POL-012)
-— Safety Case Report: prepared for each procuring NHS organisation (DCB0129 Annex B)
-— Safety Case is reviewed and updated upon any material change to the system
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-7. IN-SERVICE MONITORING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-The following monitoring activities are in place:
-— Real-time session quality monitoring via admin command centre dashboard
-— ASR accuracy and disfluency score distribution analysis (weekly review)
-— Support ticket analysis for adverse events and near-misses (ongoing)
-— User wellbeing prompts with voluntary feedback after low-score sessions
-— PostHog event tracking for UX adverse signals (session abandonment, error patterns)
-— Quarterly clinical evidence review against published literature
-— Annual safety case review (next due: August 2027)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-8. REVIEW AND UPDATE TRIGGERS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-The CSMS and Hazard Log shall be reviewed and updated when:
-— A material change is made to system functionality that could introduce new hazards
-— A new clinical adverse event or near-miss is identified
-— New clinical evidence emerges that changes the risk profile
-— 12 months have elapsed since the last review
-— Requested by an NHS procuring organisation
-
-CSO: ${EMAIL} | Review: Annual (next due August 2027)`,
+    version: 'v1.1 draft',
+    summary: 'Evidence-backed preparation draft. Qualified CSO approval and management adoption are pending; not NHS release authorisation.',
+    content: CSMS_DRAFT,
   },
   {
     id: 'POL-007',
@@ -968,187 +851,17 @@ Owner: ${EMAIL} | Annual review required`,
     id: 'POL-011',
     title: 'Post-Market Surveillance Plan',
     tag: 'CLINICAL SAFETY',
-    version: 'v1.0',
-    summary: 'MHRA DCB0129 post-market surveillance — systematic plan for monitoring clinical safety, ASR performance, adverse events, and user wellbeing post-deployment.',
-    content: `POST-MARKET SURVEILLANCE PLAN
-${COMPANY} | Version 1.0 | Effective ${EFFECTIVE}
-MHRA SaMD PMS Requirements | DCB0129 In-Service Monitoring
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. PURPOSE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-This Post-Market Surveillance (PMS) Plan establishes the systematic activities by which Flowen Group Ltd monitors the performance and safety of the Flowen platform following deployment. It supports both DCB0129 in-service monitoring obligations and MHRA best-practice PMS requirements for wellness software.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2. SURVEILLANCE ACTIVITIES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-CONTINUOUS (automated, admin dashboard):
-— Session completion rate: percentage of started sessions completed
-— ASR confidence score distribution: weekly review for drift or bimodal distribution suggesting model degradation
-— Disfluency score trends: individual and cohort-level fluency trajectories
-— Error rates: application errors, API failures, session timeouts
-— Session abandonment points: where in the session flow users disengage
-
-WEEKLY:
-— Review admin command centre dashboard for anomalies
-— Triage new support tickets for adverse events or near-misses
-— Review PostHog session recordings flagged by error events
-
-MONTHLY:
-— Aggregate wellbeing signal analysis: review of optional post-session feedback
-— User retention and engagement trends: cohort analysis
-— Support ticket categorisation and volume trends
-
-QUARTERLY:
-— Clinical literature review: search PubMed/ASHA Wire for new evidence on digital health in stammering, ASR accuracy in dysfluent speech, adverse events in speech technology
-— Model performance validation: sample 50 random sessions, expert-review ASR transcripts for false positive/negative rates
-— Hazard log review: assess whether any new hazards have emerged
-— Bias monitoring: review disfluency detection rates stratified by available demographic signals (anonymised, aggregated)
-
-ANNUALLY:
-— Full Clinical Safety Case review (next due: August 2027)
-— MHRA SaMD classification and UKCA marking re-assessment
-— Equality Impact Assessment review
-— Sustainability Statement update
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-3. ADVERSE EVENT REPORTING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Definition: An adverse event is any incident where a user experiences harm, distress, or a worsened outcome that is plausibly related to use of the Flowen platform.
-
-Reporting channels:
-— In-app support ticket (primary route for users)
-— Direct email: ${EMAIL} (for clinician or professional reports)
-— SLT collaborator portal (for connected clinicians)
-
-Response procedure:
-1. Acknowledge within 24 hours
-2. Assess whether the event is related to the platform
-3. Document in the incident log
-4. Assess whether the hazard log needs updating
-5. Assess whether ICO notification is required (if personal data involved)
-6. Escalate to CSO if severity ≥ 3 on the DCB0129 severity scale
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-4. PERIODIC SUMMARY REPORT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-An annual PMS Summary Report will be produced covering:
-— Number of users and sessions in the period
-— Adverse events received and their resolution
-— ASR performance metrics (accuracy, false positive/negative rates)
-— Changes made to the system or hazard log in response to PMS findings
-— Outstanding risks and planned actions
-
-First report due: August 2027
-
-Owner: ${EMAIL} | Review: Annual`,
+    version: 'v1.1 draft',
+    summary: 'Evidence-backed preparation draft. Qualified CSO approval and management adoption are pending; not NHS release authorisation.',
+    content: PMS_DRAFT,
   },
   {
     id: 'POL-012',
     title: 'Clinical Safety Case (Initial)',
     tag: 'CLINICAL SAFETY',
-    version: 'v1.0',
-    summary: 'DCB0129 Initial Clinical Safety Case — structured argument demonstrating that Flowen is acceptably safe for deployment as a wellness and fluency practice platform.',
-    content: `CLINICAL SAFETY CASE — INITIAL
-${COMPANY} | Version 1.0 | Effective ${EFFECTIVE}
-DCB0129 Clinical Risk Management: its Application in the Manufacture of Health IT Systems
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. INTRODUCTION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-This document constitutes the Initial Clinical Safety Case for the Flowen platform as required by NHS England DCB0129 (Edition 4.1). It provides a structured safety argument demonstrating that Flowen is acceptably safe for deployment and use by adults with persistent stammering.
-
-Clinical Safety Officer: Howard Henry, ${EMAIL}
-Date of issue: ${EFFECTIVE}
-Version: 1.0 (Initial)
-Status: Active
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2. SYSTEM DESCRIPTION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Flowen is a cloud-based digital wellness platform providing real-time acoustic biofeedback and structured practice support for adults with persistent stammering. The platform uses Deepgram Nova-2 automated speech recognition for fluency analysis and Claude Haiku AI for session pattern summaries.
-
-Intended use: Self-directed fluency practice, between-appointment support, progress tracking
-Intended users: Adults (18+) with stammering; optionally supervised by Speech & Language Therapists
-Contraindications: Not intended for users under 18 without clinician supervision; not a substitute for clinical therapy
-Deployment environment: Consumer internet-connected devices (desktop, mobile browser)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-3. CLINICAL CONTEXT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Persistent developmental stammering affects approximately 1% of the UK adult population (~680,000 people). Evidence-based treatments include fluency shaping, stammering modification, and acceptance-based approaches. NHS speech and language therapy waiting times frequently exceed 12–18 months. Digital tools that enable structured practice between appointments or while waiting for NHS services represent a significant clinical and wellbeing benefit for this population.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-4. HAZARD SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Eight hazards have been identified, assessed, and documented in the Hazard Log (see /admin/hazard-log):
-
-H001 — ASR Unavailability: Residual risk LOW (score 2). Mitigated.
-H002 — False Positive Detection: Residual risk MEDIUM (score 6). Mitigated.
-H003 — False Negative Detection: Residual risk MEDIUM (score 6). Mitigated.
-H004 — Psychological Harm: Residual risk LOW (score 4). Mitigated.
-H005 — Clinical Boundary Confusion: Residual risk MEDIUM (score 8). Open — ongoing mitigation.
-H006 — Data Breach: Residual risk LOW (score 4). Mitigated.
-H007 — Device/Mic Failure: Residual risk LOW (score 4). Mitigated.
-H008 — Over-Reliance on Technology: Residual risk MEDIUM (score 6). Open — ongoing mitigation.
-
-No hazard has a residual risk score above 8 (medium). No High or Critical residual risks are present.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-5. SAFETY CLAIMS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-The following safety claims are made for the Flowen platform:
-
-CLAIM 1: Flowen does not make or imply diagnostic or therapeutic claims, and therefore cannot be misused as a substitute for clinical diagnosis or prescription.
-Evidence: Intended Purpose Statement (POL-010); marketing review completed; disclaimer messaging implemented throughout platform.
-
-CLAIM 2: Flowen provides transparent, confidence-scored biofeedback that users can review and override, minimising the risk of harm from AI misclassification.
-Evidence: Confidence threshold implementation; user override feature; hazard log H002 and H003 mitigations.
-
-CLAIM 3: Flowen incorporates user wellbeing safeguards including positive reframing, wellbeing check-ins, and signposting to professional support.
-Evidence: Wellbeing check-in feature; positive feedback UI design; STAMMA/Samaritans signposting; hazard log H004 and H005 mitigations.
-
-CLAIM 4: Flowen implements technical security measures that protect user health data from unauthorised access.
-Evidence: RLS policies; server-side service role key; TLS 1.3; audit logging; incident response procedure; hazard log H006 mitigation.
-
-CLAIM 5: Flowen is monitored continuously for clinical safety signals through an automated admin dashboard, quarterly clinical review, and annual safety case review.
-Evidence: Admin command centre; PMS Plan (POL-011); CSMS (POL-006); annual review schedule.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-6. SAFETY CONCLUSION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Having identified and assessed all foreseeable clinical hazards, implemented appropriate mitigations, and established ongoing monitoring:
-
-THE CLINICAL SAFETY OFFICER CONCLUDES that the Flowen platform is acceptably safe for deployment as a digital wellness and fluency practice tool for adults with persistent stammering, subject to the following conditions:
-
-1. The platform is deployed only with its documented intended purpose and no diagnostic or therapeutic claims
-2. The open hazards H005 and H008 remain under review; mitigations for H002 and H003 are marked implemented but retain medium residual risk and are reviewed quarterly
-3. The annual safety case review is completed by August 2027
-4. An external qualified CSO reviews and co-signs this safety case prior to NHS clinical deployment
-
-Signed: Howard Henry (Acting CSO) | ${EFFECTIVE}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-7. NEXT STEPS FOR FULL DCB0129 COMPLIANCE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-— Engage external qualified CSO (SLT background) for formal appointment
-— Prepare Clinical Safety Case Report (DCB0129 Annex B) for each NHS procuring organisation
-— Complete DTAC penetration test (CREST/NCSC CHECK provider)
-— Obtain Cyber Essentials Plus certification
-— Commission independent clinical safety review prior to NHS go-live
-
-Owner: ${EMAIL} | Review: Upon material system change or annually`,
+    version: 'v1.1 draft',
+    summary: 'Evidence-backed preparation draft. Qualified CSO approval and management adoption are pending; not NHS release authorisation.',
+    content: SAFETY_CASE_DRAFT,
   },
 
   {
@@ -1463,7 +1176,7 @@ export default async function PoliciesPage() {
               </pre>
               <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center gap-3">
                 <span className="text-[10px] font-mono text-slate-600">
-                  {doc.id} · {doc.version} · Effective {EFFECTIVE}
+                  {doc.id} · {doc.version} · {doc.version.includes('draft') ? 'Prepared 30 September 2026 - approval pending' : `Effective ${EFFECTIVE}`}
                 </span>
                 <span className="text-[10px] font-mono text-slate-700">|</span>
                 <span className="text-[10px] font-mono text-slate-600">Owner: {EMAIL}</span>
