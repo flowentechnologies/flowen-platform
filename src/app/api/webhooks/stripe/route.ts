@@ -340,7 +340,7 @@ async function handleInvoicePaymentSucceeded(
   // Verified paid conversion reporting (2026-09-29): the ONLY place a paid
   // purchase is reported to ad platforms. amount_paid comes from the signed
   // Stripe event (real collected GBP, not a plan price); exactly-once by
-  // invoice ID via conversion_milestones; consent-gated internally.
+  // invoice ID via per-destination delivery claims; consent-gated internally.
   // £0 trial invoices are ignored by reportPaidPurchase.
   if (invoice.livemode && invoice.id && (invoice.amount_paid ?? 0) > 0) {
     await reportPaidPurchase({
