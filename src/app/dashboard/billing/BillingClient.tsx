@@ -275,12 +275,8 @@ export function BillingClient({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Trial start — keyed on SERVER-verified state, not the return URL.
-  // `status` comes from the subscriptions table (written by the signed
-  // Stripe webhook), so this fires once per real trial and never from a
-  // replayed URL. Consent-gated inside pixel.ts; deduped per period in
-  // sessionStorage.
-
+  // Trial conversions now fire only from the verified checkout session on
+  // /dashboard/welcome, not an old trialing status on a later billing visit.
 
   return (
     <div className="space-y-4">
