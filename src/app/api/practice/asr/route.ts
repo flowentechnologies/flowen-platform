@@ -19,6 +19,8 @@
 
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/supabase/from-request';
+import { decodeWav, getAsrConfig } from '@/lib/asr/config';
+import { allowAsr } from '@/lib/asr/rate-limit';
 
 const MAX_B64_BYTES  = 24 * 1024 * 1024; // 24 MB base64
 const MIN_DURATION_S = 0.5;
@@ -38,6 +40,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ error: 'Invalid JSON object' }, { status: 400 });
   const { audio, durationSeconds } = body;
 
   if (
@@ -57,31 +60,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `durationSeconds must be between ${MIN_DURATION_S} and ${MAX_DURATION_S}` }, { status: 400 });
   }
 
+  if (!await allowAsr(user.id)) return NextResponse.json({ error: 'ASR rate limit reached' }, { status: 429 });
+  const config = getAsrConfig();
   // Decode base64 WAV → binary Buffer
-  let wavBuffer: Buffer;
-  try {
-    wavBuffer = Buffer.from(audio, 'base64');
-  } catch {
-    return NextResponse.json({ error: 'Invalid base64 audio' }, { status: 400 });
-  }
-
-  // Validate minimal WAV signature (RIFF header)
-  if (wavBuffer.length < 44 ||
-      wavBuffer.toString('ascii', 0, 4)  !== 'RIFF' ||
-      wavBuffer.toString('ascii', 8, 12) !== 'WAVE') {
-    return NextResponse.json({ error: 'audio must be a valid WAV file' }, { status: 400 });
-  }
+  const wavBuffer = decodeWav(audio);
+  if (!wavBuffer) return NextResponse.json({ error: 'Audio must be a valid mono PCM16 WAV' }, { status: 400 });
 
   // Build multipart/form-data for OpenAI Whisper
   // Node 18+ FormData / File are available in Next.js server context
   const wavBlob = new Blob([new Uint8Array(wavBuffer)], { type: 'audio/wav' });
   const formData = new FormData();
   formData.append('file',  new File([wavBlob], 'audio.wav', { type: 'audio/wav' }));
-  formData.append('model', 'whisper-1');
-  formData.append('language', 'en');
-  // Bias Whisper toward speech therapy vocabulary — common disfluency and
-  // articulation terms reduce hallucination on short pauses.
-  formData.append('prompt', 'The speaker is practising fluency shaping therapy: breathing, easy onset, light contacts, pausing, and conversational flow.');
+  formData.append('model', config.model);
+  formData.append('language', config.language);
+  if (config.prompt) formData.append('prompt', config.prompt);
 
   let transcript: string;
   try {
@@ -89,11 +81,11 @@ export async function POST(req: Request) {
       method:  'POST',
       headers: { Authorization: `Bearer ${openAiKey}` },
       body:    formData,
+      signal: AbortSignal.timeout(config.timeoutMs),
     });
 
     if (!whisperRes.ok) {
-      const err = await whisperRes.text().catch(() => whisperRes.status.toString());
-      console.error('[ASR] Whisper error:', err);
+      console.error('[ASR] Provider status:', whisperRes.status);
       return NextResponse.json({ error: 'Transcription failed' }, { status: 502 });
     }
 
