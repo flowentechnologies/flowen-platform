@@ -7,6 +7,6 @@ export function validAnnotations(value: unknown, duration: number): boolean {
   if (!Array.isArray(value) || value.length > 5000 || !Number.isFinite(duration) || duration <= 0) return false;
   return value.every(e => e && typeof e === 'object' &&
     ['BLOCK', 'PROLONG', 'REP_START', 'REP_END', 'INTERJ', 'FALSE_START'].includes(e.type) &&
-    Number.isFinite(e.ts_ms) && Number.isFinite(e.duration_ms) && e.ts_ms >= 0 && e.duration_ms >= 0 &&
-    e.ts_ms + e.duration_ms <= duration * 1000);
+    Number.isFinite(e.onset_ms) && Number.isFinite(e.duration_ms) && e.onset_ms >= 0 && e.duration_ms >= 0 &&
+    e.onset_ms + e.duration_ms <= duration * 1000);
 }
