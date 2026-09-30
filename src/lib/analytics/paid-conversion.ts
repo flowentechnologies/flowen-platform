@@ -36,10 +36,14 @@ export async function reportPaidPurchase(opts: {
   const { userId, invoiceId, amountPence, currency } = opts;
   if (!invoiceId || amountPence <= 0) return;
 
-  // Consent before the delivery claim. A denied decision never consumes a send.
-  if (!(await hasAdsConsent({ userId }))) return;
-
   const db = adminDb();
+  // Recover the trusted anonymous binding captured by the authenticated route.
+  // Banner consent may have happened before sign-in; latest decision under
+  // either identity governs, including a later anonymous revocation.
+  const { data: boundIdentity, error: bindingError } = await db.from('analytics_identities')
+    .select('anonymous_id').eq('user_id', userId).order('captured_at', { ascending: false }).limit(1).maybeSingle();
+  if (bindingError) throw new Error('Purchase consent binding lookup failed');
+  if (!(await hasAdsConsent({ userId, anonymousId: boundIdentity?.anonymous_id }))) return;
 
   // 3. Attribution context (click IDs) + the email hash for enhanced matching.
   const [{ data: attr, error: attrError }, { data: authData, error: authError }] = await Promise.all([
