@@ -5,6 +5,8 @@ import { recordMilestone } from '@/lib/analytics/milestones';
 import { adminDb } from '@/lib/supabase/admin';
 import { SESSION_STARTED_COOKIE, sessionStartedCookieOptions } from '@/lib/auth/session-policy';
 
+import { safeRedirectPath, isPasswordRecoveryPath } from '@/lib/auth/redirect-path';
+
 const VS_COOKIE = '__vs';
 
 const serviceDb = adminDb;
@@ -14,7 +16,8 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const rawNext = searchParams.get('next') ?? '/dashboard';
   // Only allow relative paths — prevent open redirect to external URLs
-  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard';
+  const recovery = isPasswordRecoveryPath(rawNext);
+  const next = recovery ? rawNext : safeRedirectPath(rawNext);
 
   if (code) {
     const cookieStore = request.cookies;
@@ -39,6 +42,12 @@ export async function GET(request: NextRequest) {
 
     const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error && session) {
+      // A recovery link establishes the session needed by updateUser().
+      // Do not turn it into a signup/login milestone or a role redirect.
+      if (recovery) {
+        response.cookies.set(SESSION_STARTED_COOKIE, String(Date.now()), sessionStartedCookieOptions());
+        return response;
+      }
       // Authoritative signup milestone (2026-09-29). recordMilestone inserts
       // once per user and returns the new row's id only on first insert, so
       // the signup conversion fires exactly once — repeated callbacks,
