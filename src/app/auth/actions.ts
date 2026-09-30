@@ -6,6 +6,8 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { SESSION_STARTED_COOKIE, sessionStartedCookieOptions } from "@/lib/auth/session-policy";
 
+import { safeRedirectPath } from "@/lib/auth/redirect-path";
+
 async function getSupabaseClient() {
   const cookieStore = await cookies();
 
@@ -33,6 +35,7 @@ async function getSupabaseClient() {
 
 export async function login(formData: FormData) {
   const supabase = await getSupabaseClient();
+  const next = safeRedirectPath(formData.get("next"));
 
   const data = {
     email: formData.get("email") as string,
@@ -42,7 +45,7 @@ export async function login(formData: FormData) {
   const { data: authData, error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
-    return redirect(`/auth/login?error=${encodeURIComponent(error.message)}`);
+    return redirect(`/auth/login?error=${encodeURIComponent(error.message)}&next=${encodeURIComponent(next)}`);
   }
 
   const [{ data: profile }, cookieStore] = await Promise.all([
@@ -64,8 +67,8 @@ export async function login(formData: FormData) {
 
   revalidatePath("/", "layout");
   if (profile?.is_admin) redirect("/admin");
-  else if (!profile?.onboarding_complete) redirect("/onboarding");
-  else redirect("/dashboard");
+  else if (!profile?.onboarding_complete) redirect(`/onboarding?next=${encodeURIComponent(next)}`);
+  else redirect(next);
 }
 
 export async function signup(formData: FormData) {
