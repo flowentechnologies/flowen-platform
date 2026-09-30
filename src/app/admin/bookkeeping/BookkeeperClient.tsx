@@ -48,6 +48,7 @@ export function BookkeeperClient() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | Draft['draft_type']>('all');
   const [edits, setEdits] = useState<Record<string, Record<string, string>>>({});
+  const [vendorDirty, setVendorDirty] = useState<Record<string, boolean>>({});
   const [saveFeedback, setSaveFeedback] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
   const [disconnectingEntity, setDisconnectingEntity] = useState<string | null>(null);
@@ -116,6 +117,7 @@ export function BookkeeperClient() {
       const data = await res.json();
       if (!res.ok) { setSaveFeedback(prev => ({ ...prev, [draft.id]: data.error ?? 'Could not save draft' })); return; }
       setDrafts(prev => prev.map(d => d.id === draft.id ? { ...d, ...data.draft } : d));
+      setVendorDirty(prev => ({ ...prev, [draft.id]: false }));
       setSaveFeedback(prev => ({ ...prev, [draft.id]: 'Saved. Still pending. Nothing posted to Xero.' }));
     } catch { setSaveFeedback(prev => ({ ...prev, [draft.id]: 'Could not reach the server' })); }
     finally { setBusyId(null); }
@@ -424,7 +426,7 @@ export function BookkeeperClient() {
                   <p>VAT review required: {String(draft.proposed_payload.vatNote || 'Accountant review pending')}</p>
                   <a className="underline text-emerald-600" target="_blank" rel="noopener noreferrer" href={String(draft.proposed_payload.evidenceUrl)}>Open evidence</a>
                   {draft.status === 'pending' && (
-                    <form onSubmit={e => saveVendorDraft(draft, e)} className="space-y-3 rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+                    <form onChange={() => { setVendorDirty(prev => ({ ...prev, [draft.id]: true })); setSaveFeedback(prev => ({ ...prev, [draft.id]: 'Unsaved changes. Save before approval.' })); }} onSubmit={e => saveVendorDraft(draft, e)} className="space-y-3 rounded-lg border border-slate-200 dark:border-slate-700 p-3">
                       <div className="grid gap-3 sm:grid-cols-2">
                         <label className="space-y-1">Expense account code
                           <input name="expenseAccountCode" aria-label={`Expense account code for ${draft.title}`} defaultValue={String(draft.proposed_payload.expenseAccountCode ?? '')} pattern="[0-9]{2,10}" inputMode="numeric" placeholder="Required before approval" className="block w-full rounded border p-2 text-slate-900" />
@@ -508,7 +510,7 @@ export function BookkeeperClient() {
                   Reject
                 </button>
                 <button
-                  disabled={busyId === draft.id || !entities?.find(e => e.slug === draft.entity)?.connected || (draft.draft_type === 'vendor_dla' && (!draft.proposed_payload.gbpAmount || !draft.proposed_payload.expenseAccountCode))}
+                  disabled={busyId === draft.id || !entities?.find(e => e.slug === draft.entity)?.connected || (draft.draft_type === 'vendor_dla' && (vendorDirty[draft.id] || !draft.proposed_payload.gbpAmount || !draft.proposed_payload.expenseAccountCode))}
                   onClick={() => act(draft, 'approve')}
                   className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
                 >
