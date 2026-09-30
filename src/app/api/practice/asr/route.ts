@@ -14,7 +14,7 @@
  *   - Max audio payload: 24 MB base64 (~18 MB binary, well within Whisper's 25 MB limit)
  *   - Min duration: 0.5 s  (avoid billing for empty frames)
  *   - Max duration: 30 s   (flush window on client is 15 s; 30 s gives headroom)
- *   - Rate limit: same Upstash limit applied per user (15 req/session via coach limiter)
+ *   - Rate limit: separate Upstash ASR budget (360 requests per user/hour); fails closed in Production if missing
  */
 
 import { NextResponse } from 'next/server';
