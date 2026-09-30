@@ -169,7 +169,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
               <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Real-time speech biofeedback (sub-80ms audio pipeline)</li>
               <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>3D avatar & viseme alignment</li>
               <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Personal fluency progress metrics</li>
-              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>NHS & Access to Work eligible</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Access to Work & DSA funding routes supported</li>
               <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Price locked — yours for life at this rate</li>
             </ul>
           </div>
