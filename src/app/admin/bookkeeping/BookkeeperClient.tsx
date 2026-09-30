@@ -48,6 +48,8 @@ export function BookkeeperClient() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | Draft['draft_type']>('all');
   const [edits, setEdits] = useState<Record<string, Record<string, string>>>({});
+  const [vendorDirty, setVendorDirty] = useState<Record<string, boolean>>({});
+  const [saveFeedback, setSaveFeedback] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
   const [disconnectingEntity, setDisconnectingEntity] = useState<string | null>(null);
   const [reconcilingDla, setReconcilingDla] = useState(false);
@@ -96,6 +98,29 @@ export function BookkeeperClient() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  async function saveVendorDraft(draft: Draft, e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fields = Object.fromEntries(new FormData(e.currentTarget));
+    setBusyId(draft.id);
+    setSaveFeedback(prev => ({ ...prev, [draft.id]: '' }));
+    try {
+      const res = await fetch('/api/admin/bookkeeping/drafts', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: draft.id, action: 'save', payload: {
+          expenseAccountCode: String(fields.expenseAccountCode).trim(),
+          gbpAmount: fields.gbpAmount ? Number(fields.gbpAmount) : null,
+          evidenceUrl: String(fields.evidenceUrl).trim(), vatNote: String(fields.vatNote).trim(),
+        } }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setSaveFeedback(prev => ({ ...prev, [draft.id]: data.error ?? 'Could not save draft' })); return; }
+      setDrafts(prev => prev.map(d => d.id === draft.id ? { ...d, ...data.draft } : d));
+      setVendorDirty(prev => ({ ...prev, [draft.id]: false }));
+      setSaveFeedback(prev => ({ ...prev, [draft.id]: 'Saved. Still pending. Nothing posted to Xero.' }));
+    } catch { setSaveFeedback(prev => ({ ...prev, [draft.id]: 'Could not reach the server' })); }
+    finally { setBusyId(null); }
   }
 
   async function disconnect(slug: string, name: string) {
@@ -400,7 +425,27 @@ export function BookkeeperClient() {
                   <p>Debit expense account {String(draft.proposed_payload.expenseAccountCode || 'NOT SET')} · credit DLA {String(draft.proposed_payload.dlaAccountCode)}. GBP journal amount: {draft.proposed_payload.gbpAmount == null ? 'NOT SET' : `£${Number(draft.proposed_payload.gbpAmount).toFixed(2)}`}.</p>
                   <p>VAT review required: {String(draft.proposed_payload.vatNote || 'Accountant review pending')}</p>
                   <a className="underline text-emerald-600" target="_blank" rel="noopener noreferrer" href={String(draft.proposed_payload.evidenceUrl)}>Open evidence</a>
-                  <p className="text-amber-600">Missing a GBP amount or valid expense account? Do not approve. Reject and recreate with verified details.</p>
+                  {draft.status === 'pending' && (
+                    <form onChange={() => { setVendorDirty(prev => ({ ...prev, [draft.id]: true })); setSaveFeedback(prev => ({ ...prev, [draft.id]: 'Unsaved changes. Save before approval.' })); }} onSubmit={e => saveVendorDraft(draft, e)} className="space-y-3 rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <label className="space-y-1">Expense account code
+                          <input name="expenseAccountCode" aria-label={`Expense account code for ${draft.title}`} defaultValue={String(draft.proposed_payload.expenseAccountCode ?? '')} pattern="[0-9]{2,10}" inputMode="numeric" placeholder="Required before approval" className="block w-full rounded border p-2 text-slate-900" />
+                        </label>
+                        <label className="space-y-1">Actual GBP card amount
+                          <input name="gbpAmount" aria-label={`Actual GBP card amount for ${draft.title}`} type="number" min="0.01" step="0.01" defaultValue={draft.proposed_payload.gbpAmount == null ? '' : String(draft.proposed_payload.gbpAmount)} readOnly={draft.proposed_payload.currency === 'GBP'} placeholder="Required before approval" className="block w-full rounded border p-2 text-slate-900" />
+                        </label>
+                        <label className="space-y-1 sm:col-span-2">Evidence URL
+                          <input name="evidenceUrl" aria-label={`Evidence URL for ${draft.title}`} type="url" required maxLength={2048} defaultValue={String(draft.proposed_payload.evidenceUrl ?? '')} className="block w-full rounded border p-2 text-slate-900" />
+                        </label>
+                        <label className="space-y-1 sm:col-span-2">VAT review note
+                          <textarea name="vatNote" aria-label={`VAT review note for ${draft.title}`} maxLength={500} defaultValue={String(draft.proposed_payload.vatNote ?? '')} className="block w-full rounded border p-2 text-slate-900" />
+                        </label>
+                      </div>
+                      <p className="text-amber-600">Save verified details first. Saving keeps this draft pending and does not post to Xero. Expense accounts are checked against the entity&apos;s chart on approval. VAT review remains required.</p>
+                      <button type="submit" disabled={busyId === draft.id} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 font-semibold disabled:opacity-50">Save draft</button>
+                      <p role="status" aria-live="polite">{saveFeedback[draft.id]}</p>
+                    </form>
+                  )}
                 </div>
               ) : draft.draft_type === 'share_capital_setoff' ? (
                 <div className="mb-4 text-xs">
@@ -465,7 +510,7 @@ export function BookkeeperClient() {
                   Reject
                 </button>
                 <button
-                  disabled={busyId === draft.id || !entities?.find(e => e.slug === draft.entity)?.connected || (draft.draft_type === 'vendor_dla' && (!draft.proposed_payload.gbpAmount || !draft.proposed_payload.expenseAccountCode))}
+                  disabled={busyId === draft.id || !entities?.find(e => e.slug === draft.entity)?.connected || (draft.draft_type === 'vendor_dla' && (vendorDirty[draft.id] || !draft.proposed_payload.gbpAmount || !draft.proposed_payload.expenseAccountCode))}
                   onClick={() => act(draft, 'approve')}
                   className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
                 >

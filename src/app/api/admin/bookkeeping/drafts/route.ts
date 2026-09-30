@@ -5,7 +5,7 @@
  * GET    — list proposed bookkeeping actions (default: status=pending).
  * PATCH  — the ONLY route in this codebase that can turn a bookkeeping
  *          draft into an actual Xero write. Requires an explicit admin
- *          action per draft: {id, action: 'approve' | 'reject', payload?}.
+ *          action per draft: {id, action: 'approve' | 'reject' | 'save', payload?}.
  *          'approve' dispatches to the right src/lib/xero.ts write function
  *          by draft_type — there is no confidence threshold that skips
  *          this, ever: every draft type requires manual approval here,
@@ -133,11 +133,11 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
 
   const body = await req.json() as {
     id?: string;
-    action?: 'approve' | 'reject';
+    action?: 'approve' | 'reject' | 'save';
     payload?: Record<string, unknown>; // optional edit before applying
   };
-  if (!body.id || !body.action) {
-    return NextResponse.json({ error: 'id and action are required' }, { status: 400 });
+  if (!body.id || !['approve', 'reject', 'save'].includes(body.action ?? '')) {
+    return NextResponse.json({ error: 'id and a valid action are required' }, { status: 400 });
   }
 
   const supabase = db();
@@ -153,6 +153,45 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: `Draft has an invalid entity: ${draft.entity}` }, { status: 500 });
   }
   const entity = draft.entity;
+
+  // Saving a pending vendor draft is separate from approval and never calls Xero.
+  if (body.action === 'save') {
+    if (draft.draft_type !== 'vendor_dla') {
+      return NextResponse.json({ error: 'Save is only supported for vendor DLA drafts' }, { status: 400 });
+    }
+    const edits = body.payload;
+    const allowed = new Set(['expenseAccountCode', 'gbpAmount', 'evidenceUrl', 'vatNote']);
+    if (!edits || typeof edits !== 'object' || Array.isArray(edits) ||
+        !Object.keys(edits).length || Object.keys(edits).some(key => !allowed.has(key))) {
+      return NextResponse.json({ error: 'Only expense account, GBP amount, evidence URL and VAT note may be edited' }, { status: 400 });
+    }
+    const payload = { ...draft.proposed_payload, ...edits } as VendorDlaPayload;
+    if (typeof payload.expenseAccountCode !== 'string' ||
+        (payload.expenseAccountCode !== '' && !/^\d{2,10}$/.test(payload.expenseAccountCode)) ||
+        (payload.gbpAmount !== null && (typeof payload.gbpAmount !== 'number' ||
+          !Number.isFinite(payload.gbpAmount) || payload.gbpAmount <= 0 ||
+          Math.abs(Math.round(payload.gbpAmount * 100) - payload.gbpAmount * 100) > 1e-7)) ||
+        (payload.currency === 'GBP' && payload.gbpAmount !== payload.amount) ||
+        typeof payload.vatNote !== 'string' || payload.vatNote.length > 500) {
+      return NextResponse.json({ error: 'Use a valid expense account code and positive GBP amount with at most two decimals; GBP sources must keep their source amount' }, { status: 400 });
+    }
+    try {
+      const url = new URL(payload.evidenceUrl);
+      if (typeof payload.evidenceUrl !== 'string' || payload.evidenceUrl.length > 2048 ||
+          url.protocol !== 'https:' || !url.hostname) throw new Error();
+    } catch { return NextResponse.json({ error: 'A valid HTTPS evidence URL is required' }, { status: 400 }); }
+
+    // Include the pending guard in the write so a reviewed draft cannot be edited.
+    const { data: saved, error: saveError } = await supabase.from('bookkeeping_drafts')
+      .update({ proposed_payload: payload })
+      .eq('id', body.id).eq('status', 'pending')
+      .select('id, status, proposed_payload').maybeSingle();
+    if (saveError) return NextResponse.json({ error: saveError.message }, { status: 500 });
+    if (!saved) return NextResponse.json({ error: 'Draft is no longer pending' }, { status: 409 });
+    await logAuditEvent({ action: 'bookkeeping.vendor_dla_draft_edited', actor_id: admin.id,
+      metadata: { draft_id: body.id, entity, fields: Object.keys(edits) } });
+    return NextResponse.json({ draft: saved });
+  }
 
   if (body.action === 'reject') {
     await supabase.from('bookkeeping_drafts').update({
