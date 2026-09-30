@@ -32,7 +32,7 @@ export default function ContactFormSection() {
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-white">Get in touch</h2>
           <p className="text-slate-400 mt-2 text-sm">
-            Questions, Access to Work enquiries, NHS commissioning, or just want to try Flowen — our team responds at{' '}
+            Questions, Access to Work enquiries, NHS commissioning, or just want to try Flowen — email{' '}
             <strong className="text-emerald-400">hello@flowen.digital</strong>.
           </p>
         </div>
