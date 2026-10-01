@@ -1,0 +1,672 @@
+[
+  {
+    "file": "src/components/home/HeroVideo.tsx",
+    "old": "Build fluency through",
+    "new": "Make time for"
+  },
+  {
+    "file": "src/components/home/HeroVideo.tsx",
+    "old": "daily practice",
+    "new": "speech practice"
+  },
+  {
+    "file": "src/components/home/HeroVideo.tsx",
+    "old": "Flowen listens as you speak and gives you instant feedback \u2014 showing you whether your speech onset was gentle or tense, and how to improve it. Built on the evidence-based techniques used in clinical speech therapy.",
+    "new": "Practise speech exercises with live visual feedback from your microphone. Review your sessions and build a practice routine at your own pace. Flowen does not diagnose, treat or cure stammering."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "650,000 adults in the UK stammer. Most wait over a year for NHS speech therapy.",
+    "new": "A place to practise between everyday conversations."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Stammering affects approximately 1% of adults worldwide. In the UK, NHS waiting lists for speech and language therapy routinely exceed 12 months \u2014 and most programmes offer only infrequent, brief sessions. Between appointments, there is almost nothing evidence-based to practice with. Flowen fills that gap: daily, structured practice with real-time feedback, available from day one.",
+    "new": "Flowen brings speech exercises, microphone-based feedback and session history into one browser-based practice space. Use it at your own pace. If you need assessment or treatment, speak to a qualified Speech and Language Therapist."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "{ value: '1%',  label: 'of adults stammer globally' }",
+    "new": "{ value: 'Practice', label: 'guided speech exercises' }"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "{ value: '70m', label: 'people affected worldwide' }",
+    "new": "{ value: 'Feedback', label: 'microphone-based visual cues' }"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "{ value: '12+', label: 'months average NHS SLT wait' }",
+    "new": "{ value: 'History', label: 'review completed sessions' }"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "{ value: '0',   label: 'regulated digital therapeutics on market before Flowen' }",
+    "new": "{ value: 'Web', label: 'use a supported browser' }"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Read the clinical rationale",
+    "new": "Explore speech practice"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "CLINICAL ENGINEERING",
+    "new": "HOW THE PRODUCT WORKS"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Built for Precision, Not Approximation",
+    "new": "Feedback while you practise"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Every layer of the Flowen stack is optimised for the sub-100ms round-trip required to deliver effective biofeedback during live speech.",
+    "new": "The browser analyses microphone audio to display live feedback. Timing and signal quality depend on your device, browser and environment; no end-to-end latency guarantee is published."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "We detect the exact moment you begin speaking so we can tell you immediately whether your onset was gentle or tense. Amplitude, fundamental frequency, and a jitter/shimmer-based vocal tension index are all measured and streamed in real time.",
+    "new": "Microphone audio drives visual cues based on acoustic features such as amplitude and pitch. These estimates support practice; they are not clinical measurements of vocal tension or a diagnosis."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "&lt;80ms latency",
+    "new": "Live visual cues"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Precision Viseme System",
+    "new": "Avatar demonstration"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "A 3D avatar mirrors your mouth movements in real time, matched to phoneme groups derived from acoustic analysis. Easy-onset overlays guide air flow, lip position, and laryngeal relaxation simultaneously.",
+    "new": "Explore animated mouth shapes in the avatar demonstration. During AI conversation, avatar motion is driven by the AI voice audio, not a clinical measurement of your mouth or larynx."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "ARKit visemes",
+    "new": "Animated mouth shapes"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "phoneme-matched",
+    "new": "Visual demonstration"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "DCB0129 Safety Framework",
+    "new": "Privacy and safety information"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Immutable consent audit ledger, GDPR Article 9 data erasure pipeline, and UK data residency enforce clinical governance at every layer. All voice biomarkers are processed on-device.",
+    "new": "Read how Flowen handles recordings, audio processing and account data. Some features send audio to service providers or store recordings. Clinical safety documents remain drafts; this is not a claim of NHS approval or certification."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": ">DCB0129</span>",
+    "new": ">Safety information</span>"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": ">UK GDPR Art.9</span>",
+    "new": ">Privacy policy</span>"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "{ label: 'Pipeline Latency', value: '<80ms' }",
+    "new": "{ label: 'Feedback', value: 'Live' }"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "{ label: 'Encryption',       value: 'AES-256' }",
+    "new": "{ label: 'Session History', value: 'In app' }"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "{ label: 'Data Residency',   value: 'UK-GBR' }",
+    "new": "{ label: 'Platform', value: 'Browser' }"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": ">36%</div>",
+    "new": ">At your pace</div>"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "of beta users have completed onboarding so far",
+    "new": "Build a routine without a promised outcome"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "For individuals, clinicians, and organisations \u2014 including Access to Work, NHS, and DSA funding pathways.",
+    "new": "Individual plans and organisational enquiries. External funding requires a separate decision by the relevant provider."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "From \u00a319.96/mo billed annually \u00b7 Price locked for early adopters.",
+    "new": "\u00a3239.52 billed annually, equivalent to \u00a319.96/month. Review the final price and terms at checkout."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Real-time speech biofeedback (sub-80ms audio pipeline)",
+    "new": "Live speech practice feedback"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Most Popular",
+    "new": "Individual Access"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "For Access to Work, DSA, and NHS-commissioned users.",
+    "new": "Indicative organisational rate, billed annually. Setup fees and agreed terms may apply."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "\u2713 Eligible for Access to Work, NHS &amp; DSA funding",
+    "new": "Funding approval is not guaranteed"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "\u2713 NHS Clinical Safety Standard (DCB0129) \u2014",
+    "new": "Clinical safety status \u2014"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "\u2713 Dedicated account manager &amp; block portal",
+    "new": "Contact us to discuss organisational access"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Your path to fluent speech",
+    "new": "Your practice routine"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "From sign-up to measurable progress \u2014 five steps, fully guided.",
+    "new": "Explore the account, practice and session-history tools. No improvement in fluency is guaranteed."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Sign up in under 60 seconds \u2014 no card required. Access is open; no waiting list.",
+    "new": "Create an account without a payment card. Three introductory practice sessions are included."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Choose your role \u2014 someone who stammers, clinician, researcher, or carer. Flowen personalises your programme from day one.",
+    "new": "Choose your role and enter your practice preferences during onboarding."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Work through 5 progressive practice stages with 10 rotating exercises each, built on evidence-based fluency techniques used in clinical speech therapy.",
+    "new": "Explore guided practice stages and exercises. The exercises are not a personalised clinical treatment plan."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Every session is logged. See fluency trends, session streaks, and stage completion in your personal analytics dashboard.",
+    "new": "Review saved session summaries, practice activity and stage completion in your dashboard. Automated scores are estimates, not validated clinical outcomes."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "SLT monitoring (Funded Access)",
+    "new": "Clinician tools"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "On the Funded Access tier, your SLT can review your session data remotely, adjust your programme, and track progress \u2014 all in-platform.",
+    "new": "The platform includes clinician interfaces for assigned accounts. Access requires an appropriate clinician relationship and account permissions; a subscription does not supply a therapist."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Sub-80ms acoustic processing with live laryngeal tension overlay",
+    "new": "Live acoustic feedback with estimated practice cues"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Fluency progress, session trends, and SLT remote monitoring (Funded Access)",
+    "new": "Session history and estimated practice metrics"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "3D avatar &amp; viseme alignment",
+    "new": "3D avatar demonstration"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Personal fluency progress metrics",
+    "new": "Session history and practice metrics"
+  },
+  {
+    "file": "src/app/page.tsx",
+    "old": "Fluency progress analytics",
+    "new": "Practice activity analytics"
+  },
+  {
+    "file": "src/app/about/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "About Flowen"
+  },
+  {
+    "file": "src/app/clinicians/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Flowen for clinicians"
+  },
+  {
+    "file": "src/app/nhs-framework/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "NHS and organisational enquiries"
+  },
+  {
+    "file": "src/app/whitepaper/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Technical overview"
+  },
+  {
+    "file": "src/app/security/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Security and safety information"
+  },
+  {
+    "file": "src/app/faq/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Frequently asked questions"
+  },
+  {
+    "file": "src/app/accessibility/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Accessibility"
+  },
+  {
+    "file": "src/app/media-kit/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Flowen media information"
+  },
+  {
+    "file": "src/app/api-docs/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Integration enquiries"
+  },
+  {
+    "file": "src/app/affiliates/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Affiliate enquiries"
+  },
+  {
+    "file": "src/app/resources/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Resources"
+  },
+  {
+    "file": "src/app/resources/easy-onset-techniques/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Speech practice exercises"
+  },
+  {
+    "file": "src/app/resources/biofeedback-evidence/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Evidence status"
+  },
+  {
+    "file": "src/app/resources/access-to-work/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Access to Work enquiries"
+  },
+  {
+    "file": "src/app/resources/dsa-guide/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Disabled Students' Allowance enquiries"
+  },
+  {
+    "file": "src/app/resources/nhs-procurement/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "NHS procurement enquiries"
+  },
+  {
+    "file": "src/app/training/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Product orientation"
+  },
+  {
+    "file": "src/app/training/clinicians/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Clinician orientation"
+  },
+  {
+    "file": "src/app/training/nhs/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Organisational orientation"
+  },
+  {
+    "file": "src/app/training/staff/page.tsx",
+    "old": "Full unsupported narrative replaced; see git diff for every removed claim",
+    "new": "Platform orientation"
+  },
+  {
+    "file": "src/components/MarketingFooter.tsx",
+    "old": "\u00a9 2026 Flowen Speech Technology Ltd. All rights reserved. Registered under UK GDPR &amp; DCB0129 Clinical Safety Governance.",
+    "new": "\u00a9 2026 Flowen Speech Technologies Ltd. All rights reserved."
+  },
+  {
+    "file": "src/components/MarketingFooter.tsx",
+    "old": ">DCB0129</span>",
+    "new": ">Safety information</span>"
+  },
+  {
+    "file": "src/components/MarketingFooter.tsx",
+    "old": ">UK GDPR</span>",
+    "new": ">Privacy</span>"
+  },
+  {
+    "file": "src/components/MarketingFooter.tsx",
+    "old": ">NHS</span>",
+    "new": ">Practice tools</span>"
+  },
+  {
+    "file": "src/components/MarketingFooter.tsx",
+    "old": "Real-time acoustic biofeedback for fluency practice \u2014 for individuals, clinicians, and funded programmes.",
+    "new": "Browser-based speech practice with live acoustic feedback."
+  },
+  {
+    "file": "src/components/MarketingFooter.tsx",
+    "old": "Clinical Evidence",
+    "new": "Evidence status"
+  },
+  {
+    "file": "src/components/MarketingNavbarClient.tsx",
+    "old": "loggedIn ? '/dashboard' : '/waitlist'",
+    "new": "loggedIn ? '/dashboard' : '/auth/signup'"
+  },
+  {
+    "file": "src/components/MarketingNavbarClient.tsx",
+    "old": "'Join Waitlist'",
+    "new": "'Get started free'"
+  },
+  {
+    "file": "src/components/home/ContactFormSection.tsx",
+    "old": "Questions, Access to Work enquiries, NHS commissioning, or just want to try Flowen \u2014 our team responds at",
+    "new": "Questions about practice, plans or organisational access? Contact"
+  },
+  {
+    "file": "src/app/how-it-works/page.tsx",
+    "old": "Join the waitlist and receive your personalised invitation link. Sign up takes under 60 seconds \u2014 no credit card required.",
+    "new": "Create an account and try three introductory practice sessions without a payment card."
+  },
+  {
+    "file": "src/app/how-it-works/page.tsx",
+    "old": "Tell us your role and goals. PWS, clinician, researcher or carer \u2014 Flowen personalises your experience from day one.",
+    "new": "Choose your role and practice preferences during onboarding."
+  },
+  {
+    "file": "src/app/how-it-works/page.tsx",
+    "old": "Work through 5 progressive therapy stages with 10 rotating exercises each. Built around evidence-based techniques: breath support, easy onset, light contacts, pausing, and conversational flow.",
+    "new": "Explore guided speech practice stages and exercises. They are not a personalised clinical treatment plan."
+  },
+  {
+    "file": "src/app/how-it-works/page.tsx",
+    "old": "Every session is logged. See your fluency trends, session streaks, and stage completion over time in your personal analytics dashboard.",
+    "new": "Review saved session summaries and practice activity. Automated scores are estimates, not validated clinical outcomes."
+  },
+  {
+    "file": "src/app/how-it-works/page.tsx",
+    "old": "Your assigned Speech & Language Therapist monitors your telemetry remotely, adjusts your programme, and reviews session data \u2014 all within the platform.",
+    "new": "Clinician interfaces are available to appropriately assigned accounts. A subscription does not include a therapist; access requires a clinical relationship and permissions."
+  },
+  {
+    "file": "src/app/how-it-works/page.tsx",
+    "old": "fluent speech",
+    "new": "speech practice"
+  },
+  {
+    "file": "src/app/how-it-works/page.tsx",
+    "old": "Flowen guides you through a structured, evidence-based programme \u2014 from\n          your first login to ongoing clinical support. Here is how it works.",
+    "new": "Explore the account, practice and session-history tools. No improvement in fluency is guaranteed."
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "Start free for 7 days. Real-time AI speech biofeedback for people who stutter. No card required. From \u00a319.96/mo for founding members.",
+    "new": "Three introductory sessions without a card. A separate seven-day subscription trial collects a card and bills automatically unless cancelled. Review pricing at checkout."
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "Founding Member Cohort \u2014 Early rate, price locked for life",
+    "new": "Founding Member Cohort - Review terms at checkout"
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "Try it free for 7 days.",
+    "new": "Try three practice sessions."
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "No card today",
+    "new": "Card collected for subscription trial"
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "NHS & DSA eligible",
+    "new": "Funding subject to approval"
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "DCB0129 compliant",
+    "new": "Safety documents are drafts"
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "DCB0129 Clinical Safety \u00b7 NHS DTAC Assessed",
+    "new": "Clinical assurance not claimed"
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "No card until you decide to stay.",
+    "new": "Card required for the subscription trial; billing starts automatically unless cancelled."
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "Everything above is included in the 7-day trial.",
+    "new": "Three introductory sessions are separate from the seven-day subscription trial."
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "Before your trial ends you have a before-vs-after picture: block rate trend, sessions completed, technique breakdown. You decide whether to continue with full data, not a hope.",
+    "new": "Review session activity and estimated practice metrics. No clinical improvement or validated before-and-after outcome is promised."
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "Waitlist Standard",
+    "new": "Introductory practice"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "Baseline early access allocation without ongoing subscription commitments.",
+    "new": "Three introductory practice sessions without a card. No subscription is started by account creation."
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "router.push('/waitlist')",
+    "new": "router.push('/auth/signup')"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "Join free waitlist",
+    "new": "Create free account"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "Early cohort \u00b7 Price locked for life when you join",
+    "new": "Early cohort - Review the subscription terms at checkout"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "Real-time speech biofeedback (sub-80ms audio pipeline)",
+    "new": "Live speech practice feedback"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "NHS & Access to Work eligible",
+    "new": "Funding requires separate approval"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "Price locked \u2014 yours for life at this rate",
+    "new": "Review your price and billing terms at checkout"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "Pledge Allocation",
+    "new": "Organisational enquiry"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "Sponsored Entry",
+    "new": "Organisational access"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "<span className=\"text-4xl font-extrabold text-white\">\u00a30</span>",
+    "new": "<span className=\"text-4xl font-extrabold text-white\">Enquire</span>"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": " via institution",
+    "new": " subject to agreement"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "Verify Eligibility",
+    "new": "Discuss access"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "No charge today \u00b7",
+    "new": "Card collected \u00b7 Automatic billing after trial unless cancelled \u00b7"
+  },
+  {
+    "file": "src/app/legal/page.tsx",
+    "old": "Our compliance with the NHS Digital DCB0129 Clinical Safety Standard for Health IT systems.",
+    "new": "Current draft clinical safety status; no completed compliance or NHS approval is claimed."
+  },
+  {
+    "file": "src/app/dpa/page.tsx",
+    "old": "Current measures include: AES-256-GCM encryption at rest; TLS 1.3 in transit; PostgreSQL row-level security; JWT authentication; no raw audio storage; PHI-masked error monitoring; UK data residency.",
+    "new": "The platform uses authentication and database access controls. Some features transmit audio or store recordings as described in the privacy policy. Encryption configuration, provider regions, transfer safeguards and operational controls must be verified in the agreed processing schedule; no UK-only processing or no-recording guarantee is made here."
+  },
+  {
+    "file": "src/app/dpa/page.tsx",
+    "old": "6.1 Personal Data shall be stored in UK data centres.",
+    "new": "6.1 Storage and processing locations must be documented and agreed in the processing schedule, including each enabled sub-processor. This public template is not evidence of UK-only storage or processing."
+  },
+  {
+    "file": "src/app/dpa/page.tsx",
+    "old": "{ label: 'Data Residency', value: 'UK-GBR' }",
+    "new": "{ label: 'Status', value: 'Template for review' }"
+  },
+  {
+    "file": "src/app/support/page.tsx",
+    "old": "No. Audio is processed on-device and is never uploaded, stored, or shared. Only anonymised acoustic metrics (disfluency counts, session duration) are saved to your account under strict clinical data governance.",
+    "new": "Some features transmit audio to service providers or store session recordings. Read the privacy policy for disclosed processing, retention and your choices."
+  },
+  {
+    "file": "src/app/support/page.tsx",
+    "old": "It is compliant with NHS DCB0129 clinical safety standards.",
+    "new": "Clinical safety documents are controlled drafts, not a claim of completed DCB0129 compliance."
+  },
+  {
+    "file": "src/app/support/page.tsx",
+    "old": "We typically respond within 24\u201348 hours on business days.",
+    "new": "Contact us with your question. No fixed support response time is guaranteed."
+  },
+  {
+    "file": "src/app/support/page.tsx",
+    "old": "Bugs &amp; outages: 4h &nbsp;\u00b7&nbsp; Billing: 8h &nbsp;\u00b7&nbsp; Technical &amp; clinical: 24h &nbsp;\u00b7&nbsp; General: 48h",
+    "new": "Response times depend on the issue and availability; this page does not offer a service-level guarantee."
+  },
+  {
+    "file": "src/app/waitlist/page.tsx",
+    "old": "Secure priority allocation for our neural speech fluency engine and clinical monitoring platform.",
+    "new": "Register your interest in product updates. You can also create an account to try the introductory practice sessions."
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "built to clinical safety standards for speech & language therapy",
+    "new": "clinical approval and NHS assessment require separate evidence"
+  },
+  {
+    "file": "src/app/dpa/page.tsx",
+    "old": "Flowen\n            Technologies Ltd",
+    "new": "Flowen Speech Technologies Ltd"
+  },
+  {
+    "file": "src/app/dpa/page.tsx",
+    "old": "Standard Data Processing Agreement (DPA) between Flowen Speech Technologies Ltd (Processor) and NHS trusts,",
+    "new": "Public DPA template for review between Flowen Speech Technologies Ltd (Processor) and organisations such as NHS trusts,"
+  },
+  {
+    "file": "src/app/dpa/page.tsx",
+    "old": "Effective 1 August 2026.",
+    "new": "Subject to a separately agreed and signed contract."
+  },
+  {
+    "file": "src/lib/email.ts",
+    "old": "Flowen Speech Technology Ltd",
+    "new": "Flowen Speech Technologies Ltd"
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "No card required \u00b7 Cancel any time \u00b7 Founding rate locks in when you subscribe",
+    "new": "Card required for subscription trial \u00b7 Automatic billing unless cancelled \u00b7 Review terms at checkout"
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "Your first session uses our real-time speech pipeline to measure disfluency events as you speak. No setup, no calibration required. You see your block-per-minute reading before the session ends.",
+    "new": "Use microphone-based feedback while you practise. Signal quality depends on device permissions, microphone and environment. Automated readings are estimates, not clinical measurements."
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "First session \u2014 real feedback, instantly",
+    "new": "First session - Explore live feedback"
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "The AI tracks your fluency across technique stages \u2014 breathing, easy onset, light contacts. Session by session, you can see which techniques move your numbers and which need more work.",
+    "new": "Review practice activity across the available exercise stages. Changes in automated scores do not establish clinical improvement."
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "NHS Speech Therapy",
+    "new": "Speech practice"
+  },
+  {
+    "file": "src/app/pricing/page.tsx",
+    "old": "Full access from day one.",
+    "new": "Review the features included in your selected plan."
+  },
+  {
+    "file": "src/app/dpa/page.tsx",
+    "old": "\u2014 Supabase Inc.: database infrastructure and authentication (UK-GBR data centres)",
+    "new": "\u2014 Supabase Inc.: database infrastructure and authentication (verify the configured project regions)"
+  },
+  {
+    "file": "src/app/dpa/page.tsx",
+    "old": "\u2014 Vercel Inc.: cloud hosting and edge functions (UK/EU regions)",
+    "new": "\u2014 Vercel Inc.: cloud hosting and functions (verify each enabled service region)"
+  },
+  {
+    "file": "src/app/dpa/page.tsx",
+    "old": "\u2014 Agora Inc.: real-time voice processing for AI speech coach sessions (live audio streamed in-session only; no persistent audio storage by Agora)",
+    "new": "\u2014 Agora Inc.: real-time voice processing for AI speech coach sessions (verify the configured processing, recording and retention settings)"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "3D avatar & viseme alignment",
+    "new": "3D avatar demonstration"
+  },
+  {
+    "file": "src/components/Pricing.tsx",
+    "old": "Personal fluency progress metrics",
+    "new": "Session history and practice metrics"
+  }
+]
