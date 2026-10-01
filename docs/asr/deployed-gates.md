@@ -1,3 +1,5 @@
+> 1 October update: Howard selected self-hosting, with no OpenAI service. The following is historical audit evidence. Superseding configuration/cost/merge gates: [self-hosted rollout](self-hosted-rollout.md). No OpenAI credential should be configured for transcription.
+
 # Deployed verification gates
 
 30 September 2026. PR85 remains draft; not merge-ready.
