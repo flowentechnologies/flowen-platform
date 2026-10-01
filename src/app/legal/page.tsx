@@ -28,7 +28,7 @@ const SECTIONS = [
     id: 'clinical-safety',
     title: 'DCB0129 Clinical Safety Statement',
     tag: 'CLINICAL GOVERNANCE',
-    summary: 'Our compliance with the NHS Digital DCB0129 Clinical Safety Standard for Health IT systems.',
+    summary: 'Current draft clinical safety status; no completed compliance or NHS approval is claimed.',
     content: MASTER_POLICIES.clinicalCompliance,
   },
   {
