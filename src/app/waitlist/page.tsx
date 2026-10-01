@@ -38,7 +38,7 @@ export default function WaitlistPage() {
           </span>
           <h1 className="text-4xl font-extrabold text-white tracking-tight">Join the Flowen Waitlist</h1>
           <p className="text-slate-400 text-sm max-w-lg mx-auto">
-            Secure priority allocation for our neural speech fluency engine and clinical monitoring platform.
+            Register your interest in product updates. You can also create an account to try the introductory practice sessions.
           </p>
         </div>
 
