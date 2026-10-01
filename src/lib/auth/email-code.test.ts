@@ -4,8 +4,8 @@ import { normalizeEmailCode, isValidEmailCode, parseVerifyCodeBody, isSameOrigin
 describe('email code', () => {
   it('strips spaces and dashes', () => expect(normalizeEmailCode(' 123 456 ')).toBe('123456'));
   it('normalises non-strings to empty', () => expect(normalizeEmailCode(undefined)).toBe(''));
-  it.each(['123456', '000000'])('accepts %s', c => expect(isValidEmailCode(c)).toBe(true));
-  it.each(['', '12345', '1234567', 'abcdef', '12 3456', '123456\n'])('rejects %j', c => expect(isValidEmailCode(c)).toBe(false));
+  it.each(['123456', '000000', '53701709', '1234567890'])('accepts %s', c => expect(isValidEmailCode(c)).toBe(true));
+  it.each(['', '12345', '12345678901', 'abcdef', '12 3456', '123456\n'])('rejects %j', c => expect(isValidEmailCode(c)).toBe(false));
 });
 
 describe('parseVerifyCodeBody', () => {
@@ -18,7 +18,7 @@ describe('parseVerifyCodeBody', () => {
     expect(parseVerifyCodeBody({ email: 'a@b.co', token: '123456', next: '/auth/login' })?.next).toBe('/dashboard');
     expect(parseVerifyCodeBody({ email: 'a@b.co', token: '123456' })?.next).toBe('/dashboard');
   });
-  it.each([null, 'x', {}, { email: 'nope', token: '123456' }, { email: 'a@b.co', token: '12' }, { email: 5, token: '123456' }])('rejects %j', b => {
+  it.each([null, 'x', {}, { email: 'nope', token: '123456' }, { email: 'a@b.co', token: '12' }, { email: 'a@b.co', token: '12345678901' }, { email: 5, token: '123456' }])('rejects %j', b => {
     expect(parseVerifyCodeBody(b)).toBeNull();
   });
 });
