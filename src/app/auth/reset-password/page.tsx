@@ -25,7 +25,11 @@ export default function ResetPasswordPage() {
     setLoading(false);
 
     if (error) setError(error.message);
-    else router.push('/auth/login?message=password_updated');
+    else {
+      await supabase.auth.signOut();
+      router.push('/auth/login?message=password_updated');
+      router.refresh();
+    }
   };
 
   return (

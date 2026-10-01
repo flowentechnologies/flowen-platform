@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import MarketingNavbar from '@/components/MarketingNavbarClient';
 import { createClient } from '@/lib/supabase/client';
 import { login } from '../actions';
+import { safeRedirectPath } from '@/lib/auth/redirect-path';
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -15,16 +16,14 @@ function LoginForm() {
   const prefillEmail = searchParams.get('email') ?? '';
   const isInvited = searchParams.get('invited') === '1';
   // Preserve ?next= so OAuth callback can return the user to the right page
-  const nextParam = (() => {
-    const raw = searchParams.get('next') ?? '';
-    return raw.startsWith('/') && !raw.startsWith('//') ? raw : '';
-  })();
+  const nextParam = safeRedirectPath(searchParams.get('next'), '');
   const [tab, setTab] = useState<'password' | 'magic'>(prefillEmail ? 'magic' : 'password');
   const [email, setEmail] = useState(prefillEmail);
   const [magicSent, setMagicSent] = useState(false);
   const [magicError, setMagicError] = useState<string | null>(null);
   const [magicLoading, setMagicLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [googleError, setGoogleError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -33,11 +32,12 @@ function LoginForm() {
     const callbackUrl = nextParam
       ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextParam)}`
       : `${window.location.origin}/auth/callback`;
-    await supabase.auth.signInWithOAuth({
+    setGoogleError(null);
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: callbackUrl },
     });
-    // Page redirects — no need to reset loading state
+    if (error) { setGoogleError(error.message); setGoogleLoading(false); }
   };
 
   const handlePasswordLogin = (e: React.FormEvent<HTMLFormElement>) => {
@@ -73,7 +73,7 @@ function LoginForm() {
       )}
       {urlError && (
         <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
-          {decodeURIComponent(urlError)}
+          {urlError}
         </div>
       )}
       {urlMessage === 'check_email' && (
@@ -96,6 +96,8 @@ function LoginForm() {
           Your session expired for security. Sign in again to continue.
         </div>
       )}
+
+      {googleError && <p role="alert" className="mb-4 text-xs text-red-300">{googleError}</p>}
 
       {/* Google OAuth */}
       <button
@@ -147,6 +149,7 @@ function LoginForm() {
 
       {tab === 'password' ? (
         <form onSubmit={handlePasswordLogin} className="space-y-4">
+          <input type="hidden" name="next" value={nextParam} />
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
               Email

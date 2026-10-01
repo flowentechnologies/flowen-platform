@@ -1,0 +1,2186 @@
+[
+  {
+    "route": "/",
+    "kind": "page",
+    "source": "src/app/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/about",
+    "kind": "page",
+    "source": "src/app/about/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/accessibility",
+    "kind": "page",
+    "source": "src/app/accessibility/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin",
+    "kind": "page",
+    "source": "src/app/admin/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/affiliate",
+    "kind": "page",
+    "source": "src/app/admin/affiliate/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/analytics",
+    "kind": "page",
+    "source": "src/app/admin/analytics/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/analytics/live",
+    "kind": "page",
+    "source": "src/app/admin/analytics/live/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/asr-engine",
+    "kind": "page",
+    "source": "src/app/admin/asr-engine/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/assets",
+    "kind": "page",
+    "source": "src/app/admin/assets/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/assets/meta-ads",
+    "kind": "page",
+    "source": "src/app/admin/assets/meta-ads/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/audit",
+    "kind": "page",
+    "source": "src/app/admin/audit/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/billing",
+    "kind": "page",
+    "source": "src/app/admin/billing/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/bookkeeping",
+    "kind": "page",
+    "source": "src/app/admin/bookkeeping/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/bookkeeping/overview",
+    "kind": "page",
+    "source": "src/app/admin/bookkeeping/overview/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/campaign",
+    "kind": "page",
+    "source": "src/app/admin/campaign/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/cap-table",
+    "kind": "page",
+    "source": "src/app/admin/cap-table/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/clinician-assignments",
+    "kind": "page",
+    "source": "src/app/admin/clinician-assignments/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/command-center",
+    "kind": "page",
+    "source": "src/app/admin/command-center/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/company-records",
+    "kind": "page",
+    "source": "src/app/admin/company-records/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/compliance",
+    "kind": "page",
+    "source": "src/app/admin/compliance/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/consistency",
+    "kind": "page",
+    "source": "src/app/admin/consistency/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/content",
+    "kind": "page",
+    "source": "src/app/admin/content/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/crm",
+    "kind": "page",
+    "source": "src/app/admin/crm/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/cron",
+    "kind": "page",
+    "source": "src/app/admin/cron/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/data-room",
+    "kind": "page",
+    "source": "src/app/admin/data-room/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/evidence",
+    "kind": "page",
+    "source": "src/app/admin/evidence/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/feature-flags",
+    "kind": "page",
+    "source": "src/app/admin/feature-flags/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/feedback",
+    "kind": "page",
+    "source": "src/app/admin/feedback/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/grants",
+    "kind": "page",
+    "source": "src/app/admin/grants/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/hazard-log",
+    "kind": "page",
+    "source": "src/app/admin/hazard-log/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/inbox",
+    "kind": "page",
+    "source": "src/app/admin/inbox/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/insurance",
+    "kind": "page",
+    "source": "src/app/admin/insurance/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/integrations",
+    "kind": "page",
+    "source": "src/app/admin/integrations/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/ip",
+    "kind": "page",
+    "source": "src/app/admin/ip/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/ip-docs",
+    "kind": "page",
+    "source": "src/app/admin/ip-docs/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/ip-docs/[slug]",
+    "kind": "page",
+    "source": "src/app/admin/ip-docs/[slug]/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/ip-readiness",
+    "kind": "page",
+    "source": "src/app/admin/ip-readiness/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/marketing",
+    "kind": "page",
+    "source": "src/app/admin/marketing/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/nhs",
+    "kind": "page",
+    "source": "src/app/admin/nhs/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/notifications",
+    "kind": "page",
+    "source": "src/app/admin/notifications/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/nps",
+    "kind": "page",
+    "source": "src/app/admin/nps/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/outreach",
+    "kind": "page",
+    "source": "src/app/admin/outreach/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/outreach/suppress-list",
+    "kind": "page",
+    "source": "src/app/admin/outreach/suppress-list/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/pitch-deck",
+    "kind": "page",
+    "source": "src/app/admin/pitch-deck/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/policies",
+    "kind": "page",
+    "source": "src/app/admin/policies/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/prospecting",
+    "kind": "page",
+    "source": "src/app/admin/prospecting/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/recordings",
+    "kind": "page",
+    "source": "src/app/admin/recordings/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/roadmap",
+    "kind": "page",
+    "source": "src/app/admin/roadmap/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/ropa",
+    "kind": "page",
+    "source": "src/app/admin/ropa/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/safeguarding",
+    "kind": "page",
+    "source": "src/app/admin/safeguarding/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/seis-eis",
+    "kind": "page",
+    "source": "src/app/admin/seis-eis/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/session-quality",
+    "kind": "page",
+    "source": "src/app/admin/session-quality/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/social",
+    "kind": "page",
+    "source": "src/app/admin/social/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/staff",
+    "kind": "page",
+    "source": "src/app/admin/staff/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/sub-processors",
+    "kind": "page",
+    "source": "src/app/admin/sub-processors/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/system",
+    "kind": "page",
+    "source": "src/app/admin/system/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/tickets",
+    "kind": "page",
+    "source": "src/app/admin/tickets/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/tickets/gdpr-requests",
+    "kind": "page",
+    "source": "src/app/admin/tickets/gdpr-requests/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/todo",
+    "kind": "page",
+    "source": "src/app/admin/todo/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/tracking",
+    "kind": "page",
+    "source": "src/app/admin/tracking/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/training-dataset",
+    "kind": "page",
+    "source": "src/app/admin/training-dataset/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/usage-costs",
+    "kind": "page",
+    "source": "src/app/admin/usage-costs/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/users",
+    "kind": "page",
+    "source": "src/app/admin/users/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/users/[id]",
+    "kind": "page",
+    "source": "src/app/admin/users/[id]/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/valuation",
+    "kind": "page",
+    "source": "src/app/admin/valuation/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/vendor-invoices",
+    "kind": "page",
+    "source": "src/app/admin/vendor-invoices/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/venture",
+    "kind": "page",
+    "source": "src/app/admin/venture/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/waitlist",
+    "kind": "page",
+    "source": "src/app/admin/waitlist/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/admin/workflows",
+    "kind": "page",
+    "source": "src/app/admin/workflows/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/affiliates",
+    "kind": "page",
+    "source": "src/app/affiliates/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/api-docs",
+    "kind": "page",
+    "source": "src/app/api-docs/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/api/admin/affiliate",
+    "kind": "api",
+    "source": "src/app/api/admin/affiliate/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/analytics",
+    "kind": "api",
+    "source": "src/app/api/admin/analytics/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/analytics/cohort",
+    "kind": "api",
+    "source": "src/app/api/admin/analytics/cohort/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/analytics/funnel",
+    "kind": "api",
+    "source": "src/app/api/admin/analytics/funnel/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/analytics/live",
+    "kind": "api",
+    "source": "src/app/api/admin/analytics/live/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/analytics/quality",
+    "kind": "api",
+    "source": "src/app/api/admin/analytics/quality/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/analytics/referral",
+    "kind": "api",
+    "source": "src/app/api/admin/analytics/referral/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/assets",
+    "kind": "api",
+    "source": "src/app/api/admin/assets/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/audit",
+    "kind": "api",
+    "source": "src/app/api/admin/audit/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/bell",
+    "kind": "api",
+    "source": "src/app/api/admin/bell/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/admin/billing",
+    "kind": "api",
+    "source": "src/app/api/admin/billing/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/bookkeeping/ask",
+    "kind": "api",
+    "source": "src/app/api/admin/bookkeeping/ask/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/bookkeeping/check-vendor-contacts",
+    "kind": "api",
+    "source": "src/app/api/admin/bookkeeping/check-vendor-contacts/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/bookkeeping/drafts",
+    "kind": "api",
+    "source": "src/app/api/admin/bookkeeping/drafts/route.ts",
+    "methods": [
+      "GET",
+      "POST",
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/admin/bookkeeping/overview",
+    "kind": "api",
+    "source": "src/app/api/admin/bookkeeping/overview/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/bookkeeping/reconcile-dla",
+    "kind": "api",
+    "source": "src/app/api/admin/bookkeeping/reconcile-dla/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/bookkeeping/reconcile-share-capital",
+    "kind": "api",
+    "source": "src/app/api/admin/bookkeeping/reconcile-share-capital/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/campaign",
+    "kind": "api",
+    "source": "src/app/api/admin/campaign/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/cap-table",
+    "kind": "api",
+    "source": "src/app/api/admin/cap-table/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/changelog",
+    "kind": "api",
+    "source": "src/app/api/admin/changelog/route.ts",
+    "methods": [
+      "POST",
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/clinician-assignments",
+    "kind": "api",
+    "source": "src/app/api/admin/clinician-assignments/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/command-center",
+    "kind": "api",
+    "source": "src/app/api/admin/command-center/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/company-records",
+    "kind": "api",
+    "source": "src/app/api/admin/company-records/route.ts",
+    "methods": [
+      "GET",
+      "POST",
+      "DELETE"
+    ]
+  },
+  {
+    "route": "/api/admin/compliance",
+    "kind": "api",
+    "source": "src/app/api/admin/compliance/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/compliance/upload",
+    "kind": "api",
+    "source": "src/app/api/admin/compliance/upload/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/consistency",
+    "kind": "api",
+    "source": "src/app/api/admin/consistency/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/content/broadcast",
+    "kind": "api",
+    "source": "src/app/api/admin/content/broadcast/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/crm",
+    "kind": "api",
+    "source": "src/app/api/admin/crm/route.ts",
+    "methods": [
+      "GET",
+      "POST",
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/admin/crm/[id]/activities",
+    "kind": "api",
+    "source": "src/app/api/admin/crm/[id]/activities/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/crm/explee-note",
+    "kind": "api",
+    "source": "src/app/api/admin/crm/explee-note/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/crm/explee-reply",
+    "kind": "api",
+    "source": "src/app/api/admin/crm/explee-reply/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/crm/overview",
+    "kind": "api",
+    "source": "src/app/api/admin/crm/overview/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/crm/scan",
+    "kind": "api",
+    "source": "src/app/api/admin/crm/scan/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/cron",
+    "kind": "api",
+    "source": "src/app/api/admin/cron/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/data-room",
+    "kind": "api",
+    "source": "src/app/api/admin/data-room/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/dataset",
+    "kind": "api",
+    "source": "src/app/api/admin/dataset/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/drafts",
+    "kind": "api",
+    "source": "src/app/api/admin/drafts/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/admin/evidence",
+    "kind": "api",
+    "source": "src/app/api/admin/evidence/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/explee-outreach",
+    "kind": "api",
+    "source": "src/app/api/admin/explee-outreach/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/feature-flags",
+    "kind": "api",
+    "source": "src/app/api/admin/feature-flags/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/feedback",
+    "kind": "api",
+    "source": "src/app/api/admin/feedback/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/gmail/callback",
+    "kind": "api",
+    "source": "src/app/api/admin/gmail/callback/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/gmail/connect",
+    "kind": "api",
+    "source": "src/app/api/admin/gmail/connect/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/gmail/message/[id]",
+    "kind": "api",
+    "source": "src/app/api/admin/gmail/message/[id]/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/gmail/search",
+    "kind": "api",
+    "source": "src/app/api/admin/gmail/search/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/gmail/sendas-status",
+    "kind": "api",
+    "source": "src/app/api/admin/gmail/sendas-status/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/grants",
+    "kind": "api",
+    "source": "src/app/api/admin/grants/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/grants/write",
+    "kind": "api",
+    "source": "src/app/api/admin/grants/write/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/hazard-log",
+    "kind": "api",
+    "source": "src/app/api/admin/hazard-log/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/inbox",
+    "kind": "api",
+    "source": "src/app/api/admin/inbox/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/admin/insurance",
+    "kind": "api",
+    "source": "src/app/api/admin/insurance/route.ts",
+    "methods": [
+      "GET",
+      "POST",
+      "DELETE"
+    ]
+  },
+  {
+    "route": "/api/admin/integrations",
+    "kind": "api",
+    "source": "src/app/api/admin/integrations/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/ip",
+    "kind": "api",
+    "source": "src/app/api/admin/ip/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/ip-readiness",
+    "kind": "api",
+    "source": "src/app/api/admin/ip-readiness/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/marketing",
+    "kind": "api",
+    "source": "src/app/api/admin/marketing/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/marketing/google-ads-diagnostic",
+    "kind": "api",
+    "source": "src/app/api/admin/marketing/google-ads-diagnostic/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/marketing/recommendations",
+    "kind": "api",
+    "source": "src/app/api/admin/marketing/recommendations/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/marketing/sync",
+    "kind": "api",
+    "source": "src/app/api/admin/marketing/sync/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/admin/marketing/sync/google-ads",
+    "kind": "api",
+    "source": "src/app/api/admin/marketing/sync/google-ads/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/admin/marketing/sync/google-analytics",
+    "kind": "api",
+    "source": "src/app/api/admin/marketing/sync/google-analytics/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/nhs",
+    "kind": "api",
+    "source": "src/app/api/admin/nhs/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/notifications",
+    "kind": "api",
+    "source": "src/app/api/admin/notifications/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/notifications/cron",
+    "kind": "api",
+    "source": "src/app/api/admin/notifications/cron/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/admin/nps",
+    "kind": "api",
+    "source": "src/app/api/admin/nps/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/outreach/autopilot",
+    "kind": "api",
+    "source": "src/app/api/admin/outreach/autopilot/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/admin/outreach/campaign-control",
+    "kind": "api",
+    "source": "src/app/api/admin/outreach/campaign-control/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/outreach/suppress-list",
+    "kind": "api",
+    "source": "src/app/api/admin/outreach/suppress-list/route.ts",
+    "methods": [
+      "GET",
+      "POST",
+      "DELETE"
+    ]
+  },
+  {
+    "route": "/api/admin/pitch-deck",
+    "kind": "api",
+    "source": "src/app/api/admin/pitch-deck/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/prospecting/dedup-list",
+    "kind": "api",
+    "source": "src/app/api/admin/prospecting/dedup-list/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/prospecting/import",
+    "kind": "api",
+    "source": "src/app/api/admin/prospecting/import/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/prospecting/import/[id]",
+    "kind": "api",
+    "source": "src/app/api/admin/prospecting/import/[id]/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/prospecting/search",
+    "kind": "api",
+    "source": "src/app/api/admin/prospecting/search/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/prospecting/search/[id]",
+    "kind": "api",
+    "source": "src/app/api/admin/prospecting/search/[id]/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/recordings",
+    "kind": "api",
+    "source": "src/app/api/admin/recordings/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/roadmap",
+    "kind": "api",
+    "source": "src/app/api/admin/roadmap/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/safeguarding",
+    "kind": "api",
+    "source": "src/app/api/admin/safeguarding/route.ts",
+    "methods": [
+      "GET",
+      "POST",
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/admin/seedance",
+    "kind": "api",
+    "source": "src/app/api/admin/seedance/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/seedance-region",
+    "kind": "api",
+    "source": "src/app/api/admin/seedance-region/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/seedance/[jobId]",
+    "kind": "api",
+    "source": "src/app/api/admin/seedance/[jobId]/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/seis-eis",
+    "kind": "api",
+    "source": "src/app/api/admin/seis-eis/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/admin/session-quality",
+    "kind": "api",
+    "source": "src/app/api/admin/session-quality/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/social",
+    "kind": "api",
+    "source": "src/app/api/admin/social/route.ts",
+    "methods": [
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/admin/social/meta/check-permissions",
+    "kind": "api",
+    "source": "src/app/api/admin/social/meta/check-permissions/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/social/pinterest/callback",
+    "kind": "api",
+    "source": "src/app/api/admin/social/pinterest/callback/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/social/pinterest/connect",
+    "kind": "api",
+    "source": "src/app/api/admin/social/pinterest/connect/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/staff",
+    "kind": "api",
+    "source": "src/app/api/admin/staff/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/stripe-mode",
+    "kind": "api",
+    "source": "src/app/api/admin/stripe-mode/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/sub-processors",
+    "kind": "api",
+    "source": "src/app/api/admin/sub-processors/route.ts",
+    "methods": [
+      "GET",
+      "POST",
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/admin/system",
+    "kind": "api",
+    "source": "src/app/api/admin/system/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/tickets",
+    "kind": "api",
+    "source": "src/app/api/admin/tickets/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/tickets/gdpr",
+    "kind": "api",
+    "source": "src/app/api/admin/tickets/gdpr/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/tracking",
+    "kind": "api",
+    "source": "src/app/api/admin/tracking/route.ts",
+    "methods": [
+      "GET",
+      "PUT"
+    ]
+  },
+  {
+    "route": "/api/admin/usage-costs",
+    "kind": "api",
+    "source": "src/app/api/admin/usage-costs/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/users",
+    "kind": "api",
+    "source": "src/app/api/admin/users/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/users/[id]",
+    "kind": "api",
+    "source": "src/app/api/admin/users/[id]/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/users/at-risk",
+    "kind": "api",
+    "source": "src/app/api/admin/users/at-risk/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/valuation",
+    "kind": "api",
+    "source": "src/app/api/admin/valuation/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/vendor-invoices",
+    "kind": "api",
+    "source": "src/app/api/admin/vendor-invoices/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/venture",
+    "kind": "api",
+    "source": "src/app/api/admin/venture/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/venture/investor-update",
+    "kind": "api",
+    "source": "src/app/api/admin/venture/investor-update/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/waitlist",
+    "kind": "api",
+    "source": "src/app/api/admin/waitlist/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/workflows",
+    "kind": "api",
+    "source": "src/app/api/admin/workflows/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/xero/accounts",
+    "kind": "api",
+    "source": "src/app/api/admin/xero/accounts/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/xero/callback",
+    "kind": "api",
+    "source": "src/app/api/admin/xero/callback/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/xero/connect",
+    "kind": "api",
+    "source": "src/app/api/admin/xero/connect/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/admin/xero/disconnect",
+    "kind": "api",
+    "source": "src/app/api/admin/xero/disconnect/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/admin/xero/status",
+    "kind": "api",
+    "source": "src/app/api/admin/xero/status/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/affiliate/apply",
+    "kind": "api",
+    "source": "src/app/api/affiliate/apply/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/affiliate/convert",
+    "kind": "api",
+    "source": "src/app/api/affiliate/convert/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/agora/convoai",
+    "kind": "api",
+    "source": "src/app/api/agora/convoai/route.ts",
+    "methods": [
+      "POST",
+      "DELETE"
+    ]
+  },
+  {
+    "route": "/api/agora/token",
+    "kind": "api",
+    "source": "src/app/api/agora/token/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/audit",
+    "kind": "api",
+    "source": "src/app/api/audit/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/billing/portal",
+    "kind": "api",
+    "source": "src/app/api/billing/portal/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/billing/status",
+    "kind": "api",
+    "source": "src/app/api/billing/status/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/clinician/bell",
+    "kind": "api",
+    "source": "src/app/api/clinician/bell/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ]
+  },
+  {
+    "route": "/api/clinician/patients",
+    "kind": "api",
+    "source": "src/app/api/clinician/patients/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/clinician/patients/[patientId]",
+    "kind": "api",
+    "source": "src/app/api/clinician/patients/[patientId]/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/clinician/patients/[patientId]/plan",
+    "kind": "api",
+    "source": "src/app/api/clinician/patients/[patientId]/plan/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/consent",
+    "kind": "api",
+    "source": "src/app/api/consent/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/cron/agora-agent-sweep",
+    "kind": "api",
+    "source": "src/app/api/cron/agora-agent-sweep/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/audit-archive",
+    "kind": "api",
+    "source": "src/app/api/cron/audit-archive/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/cron/backup",
+    "kind": "api",
+    "source": "src/app/api/cron/backup/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/bookkeeping-categorize",
+    "kind": "api",
+    "source": "src/app/api/cron/bookkeeping-categorize/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/bookkeeping-expense-from-email",
+    "kind": "api",
+    "source": "src/app/api/cron/bookkeeping-expense-from-email/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/bookkeeping-stripe-sync",
+    "kind": "api",
+    "source": "src/app/api/cron/bookkeeping-stripe-sync/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/consistency-check",
+    "kind": "api",
+    "source": "src/app/api/cron/consistency-check/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/data-retention",
+    "kind": "api",
+    "source": "src/app/api/cron/data-retention/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/cron/explee-hot-leads",
+    "kind": "api",
+    "source": "src/app/api/cron/explee-hot-leads/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/explee-outreach-sync",
+    "kind": "api",
+    "source": "src/app/api/cron/explee-outreach-sync/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/gdpr-sweep",
+    "kind": "api",
+    "source": "src/app/api/cron/gdpr-sweep/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/cron/gmail-sync",
+    "kind": "api",
+    "source": "src/app/api/cron/gmail-sync/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/pinterest-token-refresh",
+    "kind": "api",
+    "source": "src/app/api/cron/pinterest-token-refresh/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/practice-reminders",
+    "kind": "api",
+    "source": "src/app/api/cron/practice-reminders/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/slp-inactivity",
+    "kind": "api",
+    "source": "src/app/api/cron/slp-inactivity/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/social-publish",
+    "kind": "api",
+    "source": "src/app/api/cron/social-publish/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/social-stats-sync",
+    "kind": "api",
+    "source": "src/app/api/cron/social-stats-sync/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/subscription-sync",
+    "kind": "api",
+    "source": "src/app/api/cron/subscription-sync/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/cron/system-health",
+    "kind": "api",
+    "source": "src/app/api/cron/system-health/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/cron/trial-emails",
+    "kind": "api",
+    "source": "src/app/api/cron/trial-emails/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/weekly-digest",
+    "kind": "api",
+    "source": "src/app/api/cron/weekly-digest/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/cron/workflows",
+    "kind": "api",
+    "source": "src/app/api/cron/workflows/route.ts",
+    "methods": []
+  },
+  {
+    "route": "/api/dashboard/support",
+    "kind": "api",
+    "source": "src/app/api/dashboard/support/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/feedback",
+    "kind": "api",
+    "source": "src/app/api/feedback/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/identity/verify",
+    "kind": "api",
+    "source": "src/app/api/identity/verify/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/infra/error-boundary",
+    "kind": "api",
+    "source": "src/app/api/infra/error-boundary/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/kyc/postcode",
+    "kind": "api",
+    "source": "src/app/api/kyc/postcode/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/messages",
+    "kind": "api",
+    "source": "src/app/api/messages/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/messages/unread",
+    "kind": "api",
+    "source": "src/app/api/messages/unread/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/nps/submit",
+    "kind": "api",
+    "source": "src/app/api/nps/submit/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/pitch/[token]",
+    "kind": "api",
+    "source": "src/app/api/pitch/[token]/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/pitch/[token]/pdf",
+    "kind": "api",
+    "source": "src/app/api/pitch/[token]/pdf/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/portal/kyc-session",
+    "kind": "api",
+    "source": "src/app/api/portal/kyc-session/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/practice/asr",
+    "kind": "api",
+    "source": "src/app/api/practice/asr/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/practice/coach",
+    "kind": "api",
+    "source": "src/app/api/practice/coach/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/practice/sessions",
+    "kind": "api",
+    "source": "src/app/api/practice/sessions/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/practice/sessions/[id]/audio",
+    "kind": "api",
+    "source": "src/app/api/practice/sessions/[id]/audio/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/practice/sessions/[id]/recording",
+    "kind": "api",
+    "source": "src/app/api/practice/sessions/[id]/recording/route.ts",
+    "methods": [
+      "POST",
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/reports/my-progress",
+    "kind": "api",
+    "source": "src/app/api/reports/my-progress/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/reports/patient/[patientId]",
+    "kind": "api",
+    "source": "src/app/api/reports/patient/[patientId]/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/stripe/checkout",
+    "kind": "api",
+    "source": "src/app/api/stripe/checkout/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/telemetry",
+    "kind": "api",
+    "source": "src/app/api/telemetry/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/track/capi",
+    "kind": "api",
+    "source": "src/app/api/track/capi/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/track/pageview",
+    "kind": "api",
+    "source": "src/app/api/track/pageview/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/user/export",
+    "kind": "api",
+    "source": "src/app/api/user/export/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/user/notifications",
+    "kind": "api",
+    "source": "src/app/api/user/notifications/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/user/programme",
+    "kind": "api",
+    "source": "src/app/api/user/programme/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/user/social-follow",
+    "kind": "api",
+    "source": "src/app/api/user/social-follow/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/user/treatment-plan",
+    "kind": "api",
+    "source": "src/app/api/user/treatment-plan/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/api/voice/clone",
+    "kind": "api",
+    "source": "src/app/api/voice/clone/route.ts",
+    "methods": [
+      "POST",
+      "DELETE"
+    ]
+  },
+  {
+    "route": "/api/webhooks/cal-com",
+    "kind": "api",
+    "source": "src/app/api/webhooks/cal-com/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/webhooks/stripe",
+    "kind": "api",
+    "source": "src/app/api/webhooks/stripe/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/webhooks/track-meta",
+    "kind": "api",
+    "source": "src/app/api/webhooks/track-meta/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/webhooks/vercel-deploy",
+    "kind": "api",
+    "source": "src/app/api/webhooks/vercel-deploy/route.ts",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "route": "/api/ws-token",
+    "kind": "api",
+    "source": "src/app/api/ws-token/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/auth/callback",
+    "kind": "api",
+    "source": "src/app/auth/callback/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/auth/forgot-password",
+    "kind": "page",
+    "source": "src/app/auth/forgot-password/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/auth/login",
+    "kind": "page",
+    "source": "src/app/auth/login/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/auth/reset-password",
+    "kind": "page",
+    "source": "src/app/auth/reset-password/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/auth/signup",
+    "kind": "page",
+    "source": "src/app/auth/signup/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/blog",
+    "kind": "page",
+    "source": "src/app/blog/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/blog/[slug]",
+    "kind": "page",
+    "source": "src/app/blog/[slug]/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/blog/sitemap.xml",
+    "kind": "api",
+    "source": "src/app/blog/sitemap.xml/route.ts",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "route": "/blog/tag/[slug]",
+    "kind": "page",
+    "source": "src/app/blog/tag/[slug]/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/clinicians",
+    "kind": "page",
+    "source": "src/app/clinicians/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/coming-soon",
+    "kind": "page",
+    "source": "src/app/coming-soon/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/cookie-policy",
+    "kind": "page",
+    "source": "src/app/cookie-policy/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard",
+    "kind": "page",
+    "source": "src/app/dashboard/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/analytics",
+    "kind": "page",
+    "source": "src/app/dashboard/analytics/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/billing",
+    "kind": "page",
+    "source": "src/app/dashboard/billing/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/clinician",
+    "kind": "page",
+    "source": "src/app/dashboard/clinician/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/clinician/[patientId]",
+    "kind": "page",
+    "source": "src/app/dashboard/clinician/[patientId]/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/guide",
+    "kind": "page",
+    "source": "src/app/dashboard/guide/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/history",
+    "kind": "page",
+    "source": "src/app/dashboard/history/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/messages",
+    "kind": "page",
+    "source": "src/app/dashboard/messages/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/practice",
+    "kind": "page",
+    "source": "src/app/dashboard/practice/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/practice/micro",
+    "kind": "page",
+    "source": "src/app/dashboard/practice/micro/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/refer",
+    "kind": "page",
+    "source": "src/app/dashboard/refer/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/settings",
+    "kind": "page",
+    "source": "src/app/dashboard/settings/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/settings/voice",
+    "kind": "page",
+    "source": "src/app/dashboard/settings/voice/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/support",
+    "kind": "page",
+    "source": "src/app/dashboard/support/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/upgrade",
+    "kind": "page",
+    "source": "src/app/dashboard/upgrade/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dashboard/welcome",
+    "kind": "page",
+    "source": "src/app/dashboard/welcome/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/dpa",
+    "kind": "page",
+    "source": "src/app/dpa/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/faq",
+    "kind": "page",
+    "source": "src/app/faq/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/how-it-works",
+    "kind": "page",
+    "source": "src/app/how-it-works/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/invite/[token]",
+    "kind": "page",
+    "source": "src/app/invite/[token]/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/legal",
+    "kind": "page",
+    "source": "src/app/legal/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/media-kit",
+    "kind": "page",
+    "source": "src/app/media-kit/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/nhs-framework",
+    "kind": "page",
+    "source": "src/app/nhs-framework/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/nps",
+    "kind": "page",
+    "source": "src/app/nps/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/onboarding",
+    "kind": "page",
+    "source": "src/app/onboarding/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/portal/verify-identity",
+    "kind": "page",
+    "source": "src/app/portal/verify-identity/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/pricing",
+    "kind": "page",
+    "source": "src/app/pricing/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/resources",
+    "kind": "page",
+    "source": "src/app/resources/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/resources/access-to-work",
+    "kind": "page",
+    "source": "src/app/resources/access-to-work/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/resources/biofeedback-evidence",
+    "kind": "page",
+    "source": "src/app/resources/biofeedback-evidence/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/resources/dsa-guide",
+    "kind": "page",
+    "source": "src/app/resources/dsa-guide/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/resources/easy-onset-techniques",
+    "kind": "page",
+    "source": "src/app/resources/easy-onset-techniques/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/resources/nhs-procurement",
+    "kind": "page",
+    "source": "src/app/resources/nhs-procurement/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/security",
+    "kind": "page",
+    "source": "src/app/security/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/support",
+    "kind": "page",
+    "source": "src/app/support/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/telemetry",
+    "kind": "page",
+    "source": "src/app/telemetry/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/training",
+    "kind": "page",
+    "source": "src/app/training/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/training/clinicians",
+    "kind": "page",
+    "source": "src/app/training/clinicians/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/training/nhs",
+    "kind": "page",
+    "source": "src/app/training/nhs/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/training/staff",
+    "kind": "page",
+    "source": "src/app/training/staff/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/viseme",
+    "kind": "page",
+    "source": "src/app/viseme/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/waitlist",
+    "kind": "page",
+    "source": "src/app/waitlist/page.tsx",
+    "methods": []
+  },
+  {
+    "route": "/whitepaper",
+    "kind": "page",
+    "source": "src/app/whitepaper/page.tsx",
+    "methods": []
+  }
+]
