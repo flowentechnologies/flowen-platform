@@ -7,7 +7,7 @@ import MarketingNavbar from '@/components/MarketingNavbarClient';
 import { createClient } from '@/lib/supabase/client';
 import { login } from '../actions';
 import { safeRedirectPath } from '@/lib/auth/redirect-path';
-import { EMAIL_CODE_LENGTH, normalizeEmailCode, isValidEmailCode } from '@/lib/auth/email-code';
+import { EMAIL_CODE_MIN_LENGTH, EMAIL_CODE_MAX_LENGTH, normalizeEmailCode, isValidEmailCode } from '@/lib/auth/email-code';
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -74,7 +74,7 @@ function LoginForm() {
     if (codeLoading) return;
     const token = normalizeEmailCode(code);
     if (!isValidEmailCode(token)) {
-      setCodeError(`Enter the ${EMAIL_CODE_LENGTH}-digit code from your email.`);
+      setCodeError('Enter the code from your email.');
       return;
     }
     setCodeLoading(true);
@@ -227,7 +227,7 @@ function LoginForm() {
         magicSent ? (
           <form onSubmit={handleVerifyCode} className="space-y-4">
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 text-center">
-              We sent a sign-in email to <span className="font-semibold">{email}</span>. Click the link in it, or enter the {EMAIL_CODE_LENGTH}-digit code below.
+              We sent a sign-in email to <span className="font-semibold">{email}</span>. Click the link in it, or enter the code below.
             </div>
             {codeError && (
               <div role="alert" className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
@@ -236,7 +236,7 @@ function LoginForm() {
             )}
             <div>
               <label htmlFor="email-code" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                {EMAIL_CODE_LENGTH}-digit code
+                Code from your email
               </label>
               <input
                 id="email-code"
@@ -244,11 +244,11 @@ function LoginForm() {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 pattern="[0-9 ]*"
-                maxLength={EMAIL_CODE_LENGTH + 1}
+                maxLength={EMAIL_CODE_MAX_LENGTH + 2}
                 required
                 value={code}
                 onChange={e => setCode(e.target.value)}
-                placeholder="123456"
+                placeholder={'0'.repeat(EMAIL_CODE_MIN_LENGTH)}
                 className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-center text-xl tracking-[0.4em] font-mono"
               />
               <p className="text-[11px] text-slate-500 mt-2">
@@ -290,7 +290,7 @@ function LoginForm() {
                 className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
               />
               <p className="text-[11px] text-slate-500 mt-2">
-                We&apos;ll email you a sign-in link and a {EMAIL_CODE_LENGTH}-digit code. Use either one.
+                We&apos;ll email you a sign-in link and a code. Use either one.
               </p>
             </div>
             <button
