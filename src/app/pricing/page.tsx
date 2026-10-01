@@ -7,7 +7,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Pricing — Flowen Speech Platform',
-  description: 'Start free for 7 days. Real-time AI speech biofeedback for people who stutter. No card required. From £19.96/mo for founding members.',
+  description: 'Three introductory sessions without a card. A separate seven-day subscription trial collects a card and bills automatically unless cancelled. Review pricing at checkout.',
   alternates: {
     canonical: '/pricing',
   },
@@ -45,11 +45,11 @@ export default async function PricingPage({
           {/* Urgency eyebrow */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-400 text-xs font-semibold tracking-wide mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Founding Member Cohort — Early rate, price locked for life
+            Founding Member Cohort - Review terms at checkout
           </div>
 
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight mb-4" style={{ textWrap: 'balance' }}>
-            Try it free for 7 days.{' '}
+            Try three practice sessions.{' '}
             <span className="text-emerald-400">No card required.</span>
           </h1>
 
@@ -63,16 +63,16 @@ export default async function PricingPage({
               <span className="text-emerald-400">✓</span> 7-day free trial
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="text-emerald-400">✓</span> No card today
+              <span className="text-emerald-400">✓</span> Card collected for subscription trial
             </span>
             <span className="flex items-center gap-1.5">
               <span className="text-emerald-400">✓</span> Cancel any time
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="text-emerald-400">✓</span> NHS & DSA eligible
+              <span className="text-emerald-400">✓</span> Funding subject to approval
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="text-emerald-400">✓</span> DCB0129 compliant
+              <span className="text-emerald-400">✓</span> Safety documents are drafts
             </span>
           </div>
         </section>
@@ -93,14 +93,14 @@ export default async function PricingPage({
                 {
                   day: 'Day 1',
                   color: 'emerald',
-                  title: 'First session — real feedback, instantly',
-                  body: 'Your first session uses our real-time speech pipeline to measure disfluency events as you speak. No setup, no calibration required. You see your block-per-minute reading before the session ends.',
+                  title: 'First session - Explore live feedback',
+                  body: 'Use microphone-based feedback while you practise. Signal quality depends on device permissions, microphone and environment. Automated readings are estimates, not clinical measurements.',
                 },
                 {
                   day: 'Days 2–4',
                   color: 'sky',
                   title: 'Your patterns start to surface',
-                  body: 'The AI tracks your fluency across technique stages — breathing, easy onset, light contacts. Session by session, you can see which techniques move your numbers and which need more work.',
+                  body: 'Review practice activity across the available exercise stages. Changes in automated scores do not establish clinical improvement.',
                 },
                 {
                   day: 'Days 5–6',
@@ -112,7 +112,7 @@ export default async function PricingPage({
                   day: 'Day 7',
                   color: 'amber',
                   title: 'Your first progress report',
-                  body: 'Before your trial ends you have a before-vs-after picture: block rate trend, sessions completed, technique breakdown. You decide whether to continue with full data, not a hope.',
+                  body: 'Review session activity and estimated practice metrics. No clinical improvement or validated before-and-after outcome is promised.',
                 },
               ].map(({ day, color, title, body }) => (
                 <div key={day} className="flex gap-5 sm:gap-7">
@@ -200,7 +200,7 @@ export default async function PricingPage({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 12c0 6.628 5.373 12 12 12s12-5.372 12-12c0-2.049-.513-3.978-1.418-5.664L12 2.714z" />
               </svg>
               <p className="text-xs text-sky-300/80 leading-snug">
-                <strong className="text-sky-200">DCB0129 Clinical Safety · NHS DTAC Assessed</strong> — built to clinical safety standards for speech & language therapy
+                <strong className="text-sky-200">Clinical assurance not claimed</strong> — clinical approval and NHS assessment require separate evidence
               </p>
             </div>
           </div>
@@ -209,8 +209,8 @@ export default async function PricingPage({
         {/* ── Section bridge ── */}
         <div className="py-6 px-6 text-center">
           <p className="text-slate-400 text-sm">
-            Everything above is included in the 7-day trial.{' '}
-            <span className="text-slate-300 font-medium">No card until you decide to stay.</span>
+            Three introductory sessions are separate from the seven-day subscription trial.{' '}
+            <span className="text-slate-300 font-medium">Card required for the subscription trial; billing starts automatically unless cancelled.</span>
           </p>
         </div>
 
@@ -222,7 +222,7 @@ export default async function PricingPage({
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-slate-400 text-sm mb-6 uppercase tracking-widest font-semibold">Designed to work alongside</p>
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-slate-400 text-sm font-medium">
-              <span>NHS Speech Therapy</span>
+              <span>Speech practice</span>
               <span className="text-slate-700">·</span>
               <span>Access to Work</span>
               <span className="text-slate-700">·</span>
@@ -245,7 +245,7 @@ export default async function PricingPage({
               Ready to start? It takes 60 seconds.
             </h2>
             <p className="text-slate-400 mb-8">
-              7-day free trial. Full access from day one. No card until you decide to stay.
+              7-day free trial. Review the features included in your selected plan. Card required for the subscription trial; billing starts automatically unless cancelled.
             </p>
             <a
               href="/auth/signup"
@@ -253,7 +253,7 @@ export default async function PricingPage({
             >
               🚀 Start your free trial
             </a>
-            <p className="text-xs text-slate-400 mt-4">No card required · Cancel any time · Founding rate locks in when you subscribe</p>
+            <p className="text-xs text-slate-400 mt-4">Card required for subscription trial · Automatic billing unless cancelled · Review terms at checkout</p>
           </div>
         </section>
 
