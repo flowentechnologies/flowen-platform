@@ -17,7 +17,7 @@ function query(value: unknown) {
 }
 function dbWith(...responses: unknown[]) { const signed = vi.fn().mockResolvedValue({ data: { signedUrl: 'https://fixture.invalid/audio' }, error: null }); const db = { from: vi.fn(() => query(responses.shift())), storage: { from: vi.fn(() => ({ createSignedUrl: signed })) } }; mocks.db.mockReturnValue(db); return { db, signed }; }
 const req = (body: unknown) => new Request('https://flowen.digital/api/admin/dataset/sample', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-beforeEach(() => { vi.clearAllMocks(); mocks.admin.mockResolvedValue({ id: 'admin' }); mocks.user.mockResolvedValue({ id: 'user' }); mocks.limit.mockResolvedValue(true); vi.stubEnv('OPENAI_API_KEY', 'fixture'); });
+beforeEach(() => { vi.clearAllMocks(); mocks.admin.mockResolvedValue({ id: 'admin' }); mocks.user.mockResolvedValue({ id: 'user' }); mocks.limit.mockResolvedValue(true); vi.stubEnv('ASR_ENDPOINT_URL', 'https://fixture.modal.run/transcribe'); vi.stubEnv('ASR_ENDPOINT_KEY', 'x'.repeat(32)); });
 describe('admin dataset API', () => {
   it('requires admin before reading speech data', async () => { mocks.admin.mockResolvedValue(null); expect((await GET(new Request('https://flowen.digital/api/admin/dataset'))).status).toBe(401); expect((await samplePost(req({id, action:'playback'}))).status).toBe(401); expect(mocks.db).not.toHaveBeenCalled(); });
   it('rejects invalid paging and null request bodies', async () => { expect((await GET(new Request('https://flowen.digital/api/admin/dataset?page=NaN'))).status).toBe(400); expect((await samplePost(req(null))).status).toBe(400); });
