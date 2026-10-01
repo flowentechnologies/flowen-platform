@@ -4,7 +4,7 @@ import { finalizeSignIn } from '@/lib/auth/post-sign-in';
 import { isSameOrigin, parseVerifyCodeBody } from '@/lib/auth/email-code';
 
 /**
- * Verifies the 6-digit email code from a signInWithOtp email. The code is
+ * Verifies the numeric email code from a signInWithOtp email. The code is
  * checked against the email address, so unlike the magic link it does not
  * depend on the PKCE verifier stored in the browser that requested it - the
  * user can read the email in any app (Gmail in-app browser, another device)
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   try { body = await request.json(); } catch { body = null; }
   const input = parseVerifyCodeBody(body);
   if (!input) {
-    return NextResponse.json({ error: 'Enter the 6-digit code from your email.' }, { status: 400 });
+    return NextResponse.json({ error: 'Enter the code from your email.' }, { status: 400 });
   }
 
   const cookieStore = request.cookies;
