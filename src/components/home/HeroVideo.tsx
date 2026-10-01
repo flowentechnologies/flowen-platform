@@ -110,7 +110,7 @@ export default function HeroVideo() {
           style={{ paddingTop: '80px' }}
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-8 backdrop-blur-sm">
-            Sub-80ms Acoustic Biofeedback Engine
+            Live acoustic feedback
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight drop-shadow-2xl">
