@@ -1,14 +1,26 @@
 /** Deployment configuration for transcription only, never the acoustic loop. */
 export function getAsrConfig(env: Record<string, string | undefined> = process.env) {
+  const provider = env.ASR_PROVIDER || 'modal';
+  const endpoint = env.ASR_ENDPOINT_URL || '';
+  let validEndpoint = false;
+  try {
+    const u = new URL(endpoint);
+    const suffix = provider === 'modal' ? '.modal.run' : '.api.runpod.ai';
+    validEndpoint = ['modal', 'runpod'].includes(provider) && u.protocol === 'https:' &&
+      u.hostname.endsWith(suffix) && !u.username && !u.password && !u.search && !u.hash &&
+      (!u.port || u.port === '443');
+  } catch { /* Fail closed, never fall back to a different processor. */ }
+  const model = env.ASR_MODEL || 'large-v3-turbo';
   const language = env.ASR_LANGUAGE?.trim() || 'en';
-  const timeout = Number(env.ASR_TIMEOUT_MS || 20000);
+  const timeout = Number(env.ASR_TIMEOUT_MS || 25000);
+  const key = env.ASR_ENDPOINT_KEY || '';
   return {
-    model: 'whisper-1' as const,
+    provider, endpoint, model,
     language: /^[a-z]{2}$/.test(language) ? language : 'en',
-    timeoutMs: Number.isFinite(timeout) ? Math.min(30000, Math.max(1000, timeout)) : 20000,
-    // Do not inject coaching phrases into recognised speech.
+    timeoutMs: Number.isFinite(timeout) ? Math.min(30000, Math.max(1000, timeout)) : 25000,
     prompt: (env.ASR_VOCABULARY_PROMPT || '').trim().slice(0, 1000),
-    configured: Boolean(env.OPENAI_API_KEY),
+    configured: validEndpoint && ['large-v3-turbo', 'distil-large-v3'].includes(model) &&
+      (model !== 'distil-large-v3' || language === 'en') && key.length >= 32 && !/[\r\n]/.test(key),
   };
 }
 export function decodeWav(audio: unknown): Buffer | null {
