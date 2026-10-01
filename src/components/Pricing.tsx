@@ -115,13 +115,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
           >
             Annual
             <span className={`ml-1.5 text-[11px] font-normal ${cycle === 'yearly' ? 'text-slate-950/70' : 'text-slate-400'}`}>£19.96/mo</span>
-            <span className={`absolute -top-2 -right-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide ${
-              cycle === 'yearly'
-                ? 'bg-slate-950 text-emerald-400'
-                : 'bg-emerald-500 text-slate-950'
-            }`}>
-              Annual billing
-            </span>
+
           </button>
         </div>
       </div>
