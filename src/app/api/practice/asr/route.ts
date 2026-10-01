@@ -11,7 +11,7 @@
  * Response: { text: string }
  *
  * Security:
- *   - Max audio payload: 24 MB base64 (~18 MB binary, well within Whisper's 25 MB limit)
+ *   - Max audio payload: 24 MB base64 (~18 MB binary, decoded and bounded again by our worker)
  *   - Min duration: 0.5 s  (avoid billing for empty frames)
  *   - Max duration: 30 s   (flush window on client is 15 s; 30 s gives headroom)
  *   - Rate limit: separate Upstash ASR budget (360 requests per user/hour); fails closed in Production if missing
