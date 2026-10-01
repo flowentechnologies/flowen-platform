@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { createScrollVideoController, heroProgress } from '@/lib/hero/scroll-video';
 
 export default function HeroVideo() {
   const videoRef       = useRef<HTMLVideoElement>(null);
@@ -13,85 +14,67 @@ export default function HeroVideo() {
     const content = heroContentRef.current;
     if (!video || !hero) return;
 
-    // Autoplay immediately — first frame shows before any scroll.
-    // On first scroll we pause and take manual control of currentTime.
-    let scrubbing  = false;
-    let rafPending = false;
-    let targetTime = 0;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const controller = createScrollVideoController(video);
+    let frame: number | null = null;
+    let failed = false;
 
-    const startPlay = () => { video.play().catch(() => {}); };
-    if (video.readyState >= 3) {
-      startPlay();
-    } else {
-      video.addEventListener('canplay', startPlay, { once: true });
-    }
-
-    const applyFrame = () => {
-      rafPending = false;
-      if (video.readyState >= 2 && Math.abs(video.currentTime - targetTime) > 0.008) {
-        video.currentTime = targetTime;
-      }
-    };
-
-    const MAX_BLUR = 12; // px — ~30% blur feel at scroll progress 0
-
-    const onScroll = () => {
-      const heroScrollable = hero.offsetHeight - window.innerHeight;
-      const scrolled       = window.scrollY - hero.offsetTop;
-      const progress       = heroScrollable > 0
-        ? Math.max(0, Math.min(1, scrolled / heroScrollable))
-        : 0;
-
-      // Switch to scrub mode on first downward scroll
-      if (!scrubbing && window.scrollY > 0) {
-        scrubbing = true;
-        video.pause();
-      }
-
-      if (scrubbing) {
-        targetTime = progress * (video.duration || 0);
-        if (!rafPending) {
-          rafPending = true;
-          requestAnimationFrame(applyFrame);
-        }
-      }
-
-      // Blur: MAX_BLUR → 0 as user scrolls through the hero.
-      // Scale compensates for edge bleed so blurred pixels don't
-      // show the container background at the borders.
-      const blurPx = MAX_BLUR * (1 - progress);
-      const scale  = 1 + blurPx * 0.004; // ~1.048 at max blur → 1.0 at clear
-      video.style.filter    = blurPx > 0.05 ? `blur(${blurPx.toFixed(2)}px)` : '';
-      video.style.transform = `scale(${scale.toFixed(4)})`;
-
-      // Hero content: fade out and lift as user scrolls away
+    const render = () => {
+      frame = null;
+      const rect = hero.getBoundingClientRect();
+      const progress = heroProgress(rect.top, rect.height);
+      const still = reducedMotion.matches || failed;
+      // Text stays readable/in normal flow. Only the decorative background moves.
+      video.style.visibility = still ? 'hidden' : '';
       if (content) {
-        const opacity    = Math.max(0, 1 - progress * 2.2);
-        const translateY = progress * -70;
-        content.style.opacity   = String(opacity);
-        content.style.transform = `translateY(${translateY}px)`;
+        content.style.opacity = '1';
+        content.style.transform = '';
+      }
+      if (!still) {
+        const blur = 12 * (1 - progress);
+        video.style.filter = `blur(${blur.toFixed(2)}px)`;
+        video.style.transform = `scale(${(1 + blur * 0.004).toFixed(4)})`;
+        controller.update(progress);
       }
     };
-
-    // Apply initial blur state before any scroll event fires
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    return () => { window.removeEventListener('scroll', onScroll); };
+    const schedule = () => {
+      if (frame === null) frame = requestAnimationFrame(render);
+    };
+    const onError = () => { failed = true; schedule(); };
+    const resizeObserver = new ResizeObserver(schedule);
+    resizeObserver.observe(hero);
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    reducedMotion.addEventListener('change', schedule);
+    video.addEventListener('error', onError);
+    const source = video.querySelector('source');
+    source?.addEventListener('error', onError);
+    render();
+    return () => {
+      if (frame !== null) cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
+      controller.dispose();
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      reducedMotion.removeEventListener('change', schedule);
+      video.removeEventListener('error', onError);
+      source?.removeEventListener('error', onError);
+    };
   }, []);
 
   return (
-    <section ref={heroRef} id="hero" className="relative" style={{ height: '200vh' }}>
-      <div className="sticky top-0 h-screen overflow-hidden">
+    <section ref={heroRef} id="hero" className="relative">
+      <div className="relative overflow-hidden" style={{ minHeight: 'calc(100svh - 80px)' }}>
+        <div aria-hidden="true" className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/assets/videos/Flowen_Hero_poster.jpg')" }} />
 
-        {/* Scroll-scrubbed background video — autoplays to show first frame immediately,
-            switches to manual currentTime control on first scroll.
-            blur(12px) on load → clears to 0 as user scrolls through the hero. */}
+        {/* Paused decorative video: scroll selects frames, poster survives media failure. */}
         <video
           ref={videoRef}
           muted
+          aria-hidden="true"
+          tabIndex={-1}
           playsInline
-          preload="auto"
+          preload="metadata"
           poster="/assets/videos/Flowen_Hero_poster.jpg"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ filter: 'blur(12px)', transform: 'scale(1.048)' }}
@@ -103,11 +86,11 @@ export default function HeroVideo() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#06080F]/75 via-[#06080F]/20 to-[#06080F]/85 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#06080F]/50 via-transparent to-[#06080F]/50 pointer-events-none" />
 
-        {/* Hero content — fades and lifts as the user scrolls through the 200vh section */}
+        {/* Normal-flow content: never fades into an empty pinned viewport. */}
         <div
           ref={heroContentRef}
-          className="relative z-10 h-full flex flex-col items-center justify-center px-6 text-center"
-          style={{ paddingTop: '80px' }}
+          className="relative z-10 flex flex-col items-center justify-center px-6 py-12 text-center"
+          style={{ minHeight: 'calc(100svh - 80px)' }}
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-8 backdrop-blur-sm">
             Live acoustic feedback
