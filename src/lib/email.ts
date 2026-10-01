@@ -230,7 +230,7 @@ function wrap({ dept, category, preheader, body, unsubscribeHref }: WrapOpts): s
           <tr>
             <td style="padding:22px 4px 0;">
               <p style="margin:0;font-size:11px;color:#263548;line-height:1.9;font-family:${FONT};">
-                Flowen Speech Technology Ltd &middot; England &amp; Wales &middot; ${now}
+                Flowen Speech Technologies Ltd &middot; England &amp; Wales &middot; ${now}
                 &nbsp;&middot;&nbsp;
                 <a href="${SITE}/legal" style="color:#263548;text-decoration:none;">Privacy</a>
                 &nbsp;&middot;&nbsp;
