@@ -1,5 +1,6 @@
 {
   "regions": ["lhr1"],
+  "git": { "deploymentEnabled": { "review/agora-owner-binding": false } },
   "crons": [
     { "path": "/api/admin/notifications/cron", "schedule": "0 8 * * *" },
     { "path": "/api/cron/practice-reminders",  "schedule": "0 * * * *" },

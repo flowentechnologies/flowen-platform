@@ -11,6 +11,7 @@
 import { NextResponse } from 'next/server';
 import { RtcTokenBuilder, RtcRole } from 'agora-token';
 import { getUserFromRequest } from '@/lib/supabase/from-request';
+import { ownerChannel, AGENT_UID } from '@/lib/agora/ownership';
 
 const TOKEN_TTL_SECONDS = 3600; // 1 hour
 
@@ -19,11 +20,19 @@ export async function POST(req: Request) {
     const user = await getUserFromRequest(req);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json() as { uid?: number };
+    let body: { uid?: number };
+    try {
+      const parsed = await req.json();
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) ||
+          (parsed.uid !== undefined && (!Number.isInteger(parsed.uid) || parsed.uid < 0 || parsed.uid > 0xffffffff || parsed.uid === AGENT_UID))) throw new Error();
+      body = parsed;
+    } catch {
+      return NextResponse.json({ error: 'Invalid UID' }, { status: 400 });
+    }
     // Force channel to the caller's own deterministic ID — ignore any client-supplied
     // channel name to prevent an authenticated user from obtaining a token for another
     // user's session channel.
-    const channel = `flowen-${user.id.replace(/-/g, '').slice(0, 16)}`;
+    const channel = ownerChannel(user.id);
     const uid = body.uid ?? 0; // 0 = auto-assign
 
     const appId = process.env.AGORA_APP_ID;

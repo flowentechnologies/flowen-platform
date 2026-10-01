@@ -1,3 +1,4 @@
+import { ownerAgentName } from './ownership';
 /**
  * Builds the request body for Agora ConvoAI's POST /join endpoint.
  *
@@ -46,7 +47,7 @@ export interface BuildConvoAIJoinPayloadOptions {
 
 export function buildConvoAIJoinPayload(opts: BuildConvoAIJoinPayloadOptions) {
   return {
-    name: `flowen-agent-${opts.userId.slice(0, 8)}`,
+    name: ownerAgentName(opts.userId),
     properties: {
       channel:         opts.channel,
       token:           opts.token,
