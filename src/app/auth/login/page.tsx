@@ -7,6 +7,7 @@ import MarketingNavbar from '@/components/MarketingNavbarClient';
 import { createClient } from '@/lib/supabase/client';
 import { login } from '../actions';
 import { safeRedirectPath } from '@/lib/auth/redirect-path';
+import { EMAIL_CODE_MIN_LENGTH, EMAIL_CODE_MAX_LENGTH, normalizeEmailCode, isValidEmailCode } from '@/lib/auth/email-code';
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -22,6 +23,9 @@ function LoginForm() {
   const [magicSent, setMagicSent] = useState(false);
   const [magicError, setMagicError] = useState<string | null>(null);
   const [magicLoading, setMagicLoading] = useState(false);
+  const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [codeLoading, setCodeLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [googleError, setGoogleError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -51,6 +55,8 @@ function LoginForm() {
     if (magicLoading) return;
     setMagicLoading(true);
     setMagicError(null);
+    setCodeError(null);
+    setCode('');
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -59,6 +65,36 @@ function LoginForm() {
     setMagicLoading(false);
     if (error) setMagicError(error.message);
     else setMagicSent(true);
+  };
+
+  // Verified server-side against the email address, so it works even when the
+  // email was opened in a different app/browser (where the magic link cannot).
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (codeLoading) return;
+    const token = normalizeEmailCode(code);
+    if (!isValidEmailCode(token)) {
+      setCodeError('Enter the code from your email.');
+      return;
+    }
+    setCodeLoading(true);
+    setCodeError(null);
+    try {
+      const res = await fetch('/api/auth/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, token, next: nextParam }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && typeof data.redirectTo === 'string') {
+        window.location.assign(data.redirectTo);
+        return;
+      }
+      setCodeError(typeof data.error === 'string' ? data.error : 'Could not verify the code. Try again.');
+    } catch {
+      setCodeError('Network error. Check your connection and try again.');
+    }
+    setCodeLoading(false);
   };
 
   return (
@@ -188,41 +224,84 @@ function LoginForm() {
           </button>
         </form>
       ) : (
-        <form onSubmit={handleMagicLink} className="space-y-4">
-          {magicSent ? (
+        magicSent ? (
+          <form onSubmit={handleVerifyCode} className="space-y-4">
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 text-center">
-              Magic link sent — check your inbox and click the link to sign in.
+              We sent a sign-in email to <span className="font-semibold">{email}</span>. Click the link in it, or enter the code below.
             </div>
-          ) : (
-            <>
-              {magicError && (
-                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
-                  {magicError}
-                </div>
-              )}
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
-                />
+            {codeError && (
+              <div role="alert" className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
+                {codeError}
               </div>
-              <button
-                type="submit"
-                disabled={magicLoading}
-                className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
-              >
-                {magicLoading ? 'Sending…' : 'Send Magic Link'}
-              </button>
-            </>
-          )}
-        </form>
+            )}
+            <div>
+              <label htmlFor="email-code" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                Code from your email
+              </label>
+              <input
+                id="email-code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9 ]*"
+                maxLength={EMAIL_CODE_MAX_LENGTH + 2}
+                required
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                placeholder={'0'.repeat(EMAIL_CODE_MIN_LENGTH)}
+                className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-center text-xl tracking-[0.4em] font-mono"
+              />
+              <p className="text-[11px] text-slate-500 mt-2">
+                Opened the email in your mail app? Use the code here instead of the link.
+              </p>
+            </div>
+            <button
+              type="submit"
+              disabled={codeLoading}
+              className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+            >
+              {codeLoading ? 'Verifying…' : 'Verify code'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMagicSent(false); setCode(''); setCodeError(null); }}
+              className="w-full text-xs text-slate-400 hover:text-white"
+            >
+              Use a different email or send a new code
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleMagicLink} className="space-y-4">
+            {magicError && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
+                {magicError}
+              </div>
+            )}
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                Email
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                className="w-full px-4 py-3 rounded-xl bg-[#121624] border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+              />
+              <p className="text-[11px] text-slate-500 mt-2">
+                We&apos;ll email you a sign-in link and a code. Use either one.
+              </p>
+            </div>
+            <button
+              type="submit"
+              disabled={magicLoading}
+              className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+            >
+              {magicLoading ? 'Sending…' : 'Send Magic Link'}
+            </button>
+          </form>
+        )
       )}
 
           <p className="text-center text-xs text-slate-500 mt-6">
