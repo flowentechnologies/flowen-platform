@@ -1,0 +1,6 @@
+import MarketingNavbar from '@/components/MarketingNavbarClient';
+import MarketingFooter from '@/components/MarketingFooter';
+import Link from 'next/link';
+export default function PublicInfoPage({ title, intro, sections }: { title: string; intro: string; sections: { title: string; text: string; href?: string; link?: string }[] }) {
+  return <div className="min-h-screen bg-[#06080F] text-slate-100 flex flex-col"><MarketingNavbar /><main id="main-content" className="flex-1 w-full max-w-4xl mx-auto px-6 py-16"><p className="text-xs uppercase tracking-widest text-emerald-400 font-mono">Flowen</p><h1 className="text-4xl md:text-5xl font-bold mt-4 leading-tight">{title}</h1><p className="text-slate-300 text-lg mt-6 leading-relaxed max-w-3xl">{intro}</p><div className="space-y-5 mt-12">{sections.map(s => <section key={s.title} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-7"><h2 className="text-xl font-semibold text-white">{s.title}</h2><p className="text-slate-400 mt-3 leading-relaxed whitespace-pre-line">{s.text}</p>{s.href && <Link href={s.href} className="inline-block text-emerald-400 underline mt-4">{s.link ?? 'Read more'}</Link>}</section>)}</div></main><MarketingFooter /></div>;
+}

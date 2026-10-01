@@ -21,7 +21,7 @@ export default function MarketingFooter() {
               <span className="text-white font-bold text-lg group-hover:text-emerald-400 transition-colors">FLOWEN</span>
             </Link>
             <p className="text-slate-400 text-xs leading-relaxed mb-4">
-              Real-time acoustic biofeedback for fluency practice — for individuals, clinicians, and funded programmes.
+              Browser-based speech practice with live acoustic feedback.
             </p>
             <div className="flex items-center gap-3">
               <a href="https://www.instagram.com/flowenspeech" target="_blank" rel="noopener noreferrer" aria-label="Flowen on Instagram" className="text-slate-500 hover:text-emerald-400 transition-colors">
@@ -75,7 +75,7 @@ export default function MarketingFooter() {
             <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Research</h3>
             <ul className="space-y-2.5">
               <li><Link href="/whitepaper" className="text-sm text-slate-400 hover:text-emerald-400 transition-colors">White Paper</Link></li>
-              <li><Link href="/resources/biofeedback-evidence" className="text-sm text-slate-400 hover:text-emerald-400 transition-colors">Clinical Evidence</Link></li>
+              <li><Link href="/resources/biofeedback-evidence" className="text-sm text-slate-400 hover:text-emerald-400 transition-colors">Evidence status</Link></li>
               <li><Link href="/nhs-framework" className="text-sm text-slate-400 hover:text-emerald-400 transition-colors">NHS Framework</Link></li>
               <li><Link href="/how-it-works" className="text-sm text-slate-400 hover:text-emerald-400 transition-colors">How It Works</Link></li>
             </ul>
@@ -95,12 +95,12 @@ export default function MarketingFooter() {
 
         <div className="border-t border-slate-800/60 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-400 text-xs">
-            © 2026 Flowen Speech Technology Ltd. All rights reserved. Registered under UK GDPR &amp; DCB0129 Clinical Safety Governance.
+            © 2026 Flowen Speech Technologies Ltd. All rights reserved.
           </p>
           <div className="flex items-center gap-3">
-            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-400">DCB0129</span>
-            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-400">UK GDPR</span>
-            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-400">NHS</span>
+            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-400">Safety information</span>
+            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-400">Privacy</span>
+            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-xs text-slate-400">Practice tools</span>
           </div>
         </div>
       </div>

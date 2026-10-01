@@ -8,7 +8,7 @@ const STEPS = [
     number: '01',
     title: 'Create your account',
     description:
-      'Join the waitlist and receive your personalised invitation link. Sign up takes under 60 seconds — no credit card required.',
+      'Create an account and try three introductory practice sessions without a payment card.',
     screenshot: '/assets/screenshots/auth-signup.jpg',
     alt: 'Flowen sign-up screen',
   },
@@ -16,7 +16,7 @@ const STEPS = [
     number: '02',
     title: 'Set up your profile',
     description:
-      'Tell us your role and goals. PWS, clinician, researcher or carer — Flowen personalises your experience from day one.',
+      'Choose your role and practice preferences during onboarding.',
     screenshot: '/assets/screenshots/onboarding.jpg',
     alt: 'Flowen onboarding screen',
   },
@@ -24,7 +24,7 @@ const STEPS = [
     number: '03',
     title: 'Begin daily practice',
     description:
-      'Work through 5 progressive therapy stages with 10 rotating exercises each. Built around evidence-based techniques: breath support, easy onset, light contacts, pausing, and conversational flow.',
+      'Explore guided speech practice stages and exercises. They are not a personalised clinical treatment plan.',
     screenshot: '/assets/screenshots/dashboard-practice.jpg',
     alt: 'Flowen daily practice dashboard',
   },
@@ -32,7 +32,7 @@ const STEPS = [
     number: '04',
     title: 'Track your progress',
     description:
-      'Every session is logged. See your fluency trends, session streaks, and stage completion over time in your personal analytics dashboard.',
+      'Review saved session summaries and practice activity. Automated scores are estimates, not validated clinical outcomes.',
     screenshot: '/assets/screenshots/dashboard-analytics.jpg',
     alt: 'Flowen analytics dashboard',
   },
@@ -40,7 +40,7 @@ const STEPS = [
     number: '05',
     title: 'Clinical review',
     description:
-      'Your assigned Speech & Language Therapist monitors your telemetry remotely, adjusts your programme, and reviews session data — all within the platform.',
+      'Clinician interfaces are available to appropriately assigned accounts. A subscription does not include a therapist; access requires a clinical relationship and permissions.',
     screenshot: '/assets/screenshots/clinician.jpg',
     alt: 'Flowen clinician review interface',
   },
@@ -62,12 +62,11 @@ export default function HowItWorksPage() {
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6">
           Your journey to{' '}
           <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-            fluent speech
+            speech practice
           </span>
         </h1>
         <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          Flowen guides you through a structured, evidence-based programme — from
-          your first login to ongoing clinical support. Here is how it works.
+          Explore the account, practice and session-history tools. No improvement in fluency is guaranteed.
         </p>
       </section>
 

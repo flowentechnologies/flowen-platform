@@ -75,7 +75,7 @@ The Processor shall process Personal Data only on the documented instructions of
 The Processor shall ensure that all personnel authorised to process Personal Data are under appropriate confidentiality obligations, whether contractual or statutory.
 
 4.3 SECURITY
-The Processor shall implement and maintain appropriate technical and organisational measures to protect Personal Data against unauthorised or unlawful processing and against accidental loss, destruction, damage, alteration, or disclosure. Current measures include: AES-256-GCM encryption at rest; TLS 1.3 in transit; PostgreSQL row-level security; JWT authentication; no raw audio storage; PHI-masked error monitoring; UK data residency.
+The Processor shall implement and maintain appropriate technical and organisational measures to protect Personal Data against unauthorised or unlawful processing and against accidental loss, destruction, damage, alteration, or disclosure. The platform uses authentication and database access controls. Some features transmit audio or store recordings as described in the privacy policy. Encryption configuration, provider regions, transfer safeguards and operational controls must be verified in the agreed processing schedule; no UK-only processing or no-recording guarantee is made here.
 
 4.4 SUB-PROCESSORS
 The Processor is authorised to engage sub-processors to assist in delivering the Services, subject to the provisions of Clause 5 below.
@@ -98,9 +98,9 @@ The Processor shall provide the Controller with all information necessary to dem
     content: `5.1 CURRENT SUB-PROCESSORS
 The Controller consents to the engagement of the following sub-processors:
 
-— Supabase Inc.: database infrastructure and authentication (UK-GBR data centres)
-— Vercel Inc.: cloud hosting and edge functions (UK/EU regions)
-— Agora Inc.: real-time voice processing for AI speech coach sessions (live audio streamed in-session only; no persistent audio storage by Agora)
+— Supabase Inc.: database infrastructure and authentication (verify the configured project regions)
+— Vercel Inc.: cloud hosting and functions (verify each enabled service region)
+— Agora Inc.: real-time voice processing for AI speech coach sessions (verify the configured processing, recording and retention settings)
 — Functional Software Inc. (Sentry): anonymised error monitoring (PHI masking enabled)
 — Stripe Inc.: payment processing (operates as independent data controller for payment data)
 
@@ -115,7 +115,7 @@ The Processor shall impose equivalent data protection obligations on each sub-pr
   {
     number: '6',
     title: 'International Transfers',
-    content: `6.1 Personal Data shall be stored in UK data centres.
+    content: `6.1 Storage and processing locations must be documented and agreed in the processing schedule, including each enabled sub-processor. This public template is not evidence of UK-only storage or processing.
 
 6.2 Where processing by a sub-processor involves transfer to a country outside the UK, the Processor shall ensure an appropriate safeguard is in place as required by UK GDPR Chapter V, including: UK adequacy regulations, Standard Contractual Clauses (SCCs) with UK Addendum, or the UK International Data Transfer Agreement (IDTA).
 
@@ -133,7 +133,7 @@ The Processor shall impose equivalent data protection obligations on each sub-pr
   {
     number: '8',
     title: 'Clinical Safety',
-    content: `8.1 The Processor operates under the NHS DCB0129 Clinical Safety Standard. The Processor's Clinical Safety Case Report and Hazard Log are available to the Controller upon request.
+    content: `8.1 Clinical safety documents are controlled drafts. Signed review and approval require separate evidence; completed DCB0129 compliance is not claimed.
 
 8.2 The Controller's clinical staff must receive appropriate training before using the Platform in a clinical context. The Processor will provide training materials and, where agreed, remote training sessions.
 
@@ -191,15 +191,15 @@ export default async function DPAPage() {
           Data Processing Agreement
         </h1>
         <p className="text-slate-400 text-sm mt-3 leading-relaxed max-w-2xl">
-          Standard Data Processing Agreement (DPA) between Flowen Speech Technologies Ltd (Processor) and NHS trusts,
-          ICBs, private clinics, and institutional customers (Controller). Effective 1 August 2026.
+          Public DPA template for review between Flowen Speech Technologies Ltd (Processor) and organisations such as NHS trusts,
+          ICBs, private clinics, and institutional customers (Controller). Subject to a separately agreed and signed contract.
         </p>
 
         {/* Key facts */}
         <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Standard', value: 'UK GDPR Art. 28' },
-            { label: 'Data Residency', value: 'UK-GBR' },
+            { label: 'Status', value: 'Template for review' },
             { label: 'Breach Notice', value: '72 hours' },
             { label: 'Deletion', value: '30 days' },
           ].map(b => (
@@ -213,8 +213,7 @@ export default async function DPAPage() {
         {/* Preamble */}
         <div className="mt-10 bg-slate-900/50 border border-slate-800 rounded-xl p-6">
           <p className="text-slate-300 text-sm leading-relaxed">
-            This Data Processing Agreement (&quot;Agreement&quot;) supplements the commercial agreement between Flowen
-            Technologies Ltd and the Controller organisation. Where any inconsistency exists between this Agreement
+            This Data Processing Agreement (&quot;Agreement&quot;) supplements the commercial agreement between Flowen Speech Technologies Ltd and the Controller organisation. Where any inconsistency exists between this Agreement
             and the commercial agreement in respect of data protection obligations, this Agreement shall prevail.
           </p>
           <p className="text-slate-400 text-sm leading-relaxed mt-3">

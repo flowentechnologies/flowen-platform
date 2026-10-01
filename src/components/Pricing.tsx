@@ -71,7 +71,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
         return;
       }
 
-      window.location.href = body.url;
+      window.location.assign(body.url);
     } catch {
       setCheckoutError('Could not connect to checkout. Please try again.');
       setCheckoutLoading(false);
@@ -115,13 +115,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
           >
             Annual
             <span className={`ml-1.5 text-[11px] font-normal ${cycle === 'yearly' ? 'text-slate-950/70' : 'text-slate-400'}`}>£19.96/mo</span>
-            <span className={`absolute -top-2 -right-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide ${
-              cycle === 'yearly'
-                ? 'bg-slate-950 text-emerald-400'
-                : 'bg-emerald-500 text-slate-950'
-            }`}>
-              SAVE 44%
-            </span>
+
           </button>
         </div>
       </div>
@@ -132,17 +126,17 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
             <div className="inline-block px-3 py-1 bg-slate-800 text-slate-300 text-xs font-semibold tracking-wider uppercase rounded-full mb-4">
               Open Account
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">Waitlist Standard</h3>
+            <h3 className="text-2xl font-bold text-white mb-2">Introductory practice</h3>
             <div className="flex items-baseline gap-1 my-4">
-              <span className="text-4xl font-extrabold text-white">£0</span>
+              <span className="text-4xl font-extrabold text-white">Enquire</span>
             </div>
-            <p className="text-slate-400 text-sm mb-6">Baseline early access allocation without ongoing subscription commitments.</p>
+            <p className="text-slate-400 text-sm mb-6">Three introductory practice sessions without a card. No subscription is started by account creation.</p>
           </div>
           <button
-            onClick={() => router.push('/waitlist')}
+            onClick={() => router.push('/auth/signup')}
             className="w-full py-3.5 px-6 rounded-xl bg-slate-800 text-white font-semibold border border-slate-700 text-sm hover:bg-slate-700 transition-colors"
           >
-            Join free waitlist
+            Create free account
           </button>
         </div>
 
@@ -153,7 +147,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
           <div>
             <h3 className="text-2xl font-bold text-white mt-2 mb-1">Founding Member</h3>
             {/* Scarcity indicator */}
-            <p className="text-xs text-emerald-400/80 font-medium mb-3">Early cohort · Price locked for life when you join</p>
+            <p className="text-xs text-emerald-400/80 font-medium mb-3">Early cohort - Review the subscription terms at checkout</p>
             <div className="my-3">
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-extrabold text-white">£{currentFounding.monthlyEquivalent.toFixed(2)}</span>
@@ -166,11 +160,11 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
             </div>
             {/* Feature list */}
             <ul className="mt-4 space-y-2 text-sm text-slate-300">
-              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Real-time speech biofeedback (sub-80ms audio pipeline)</li>
-              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>3D avatar & viseme alignment</li>
-              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Personal fluency progress metrics</li>
-              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>NHS & Access to Work eligible</li>
-              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Price locked — yours for life at this rate</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Live speech practice feedback</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>3D avatar demonstration</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Session history and practice metrics</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Funding requires separate approval</li>
+              <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">✓</span>Review your price and billing terms at checkout</li>
             </ul>
           </div>
           {userTier === 'founding' ? (
@@ -195,7 +189,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
                 {checkoutLoading ? 'Redirecting to checkout…' : '🚀 Start 7-day free trial →'}
               </button>
               <p className="text-center text-xs text-slate-400 mt-2">
-                No charge today · {currentFounding.totalText} after trial · Cancel any time
+                Card collected · Automatic billing after trial unless cancelled · {currentFounding.totalText} after trial · Cancel any time
               </p>
             </>
           )}
@@ -209,19 +203,19 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
         <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 flex flex-col justify-between">
           <div>
             <div className="inline-block px-3 py-1 bg-sky-950 text-sky-400 text-xs font-semibold tracking-wider uppercase rounded-full mb-4">
-              Pledge Allocation
+              Organisational enquiry
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">Sponsored Entry</h3>
+            <h3 className="text-2xl font-bold text-white mb-2">Organisational access</h3>
             <div className="my-4">
-              <span className="text-4xl font-extrabold text-white">£0</span>
-              <span className="text-slate-400 text-xs font-medium"> via institution</span>
+              <span className="text-4xl font-extrabold text-white">Enquire</span>
+              <span className="text-slate-400 text-xs font-medium"> subject to agreement</span>
             </div>
           </div>
           <a
             href="mailto:hello@flowen.digital?subject=Sponsored%20Entry%20Eligibility"
             className="block w-full py-3.5 px-6 rounded-xl bg-slate-800 text-sky-300 font-semibold border border-slate-700 text-sm text-center hover:bg-slate-700 transition-colors"
           >
-            Verify Eligibility
+            Discuss access
           </a>
         </div>
       </div>

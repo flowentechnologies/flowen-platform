@@ -16,7 +16,7 @@ const FAQS = [
   },
   {
     q: 'Is my voice data stored or shared?',
-    a: 'No. Audio is processed on-device and is never uploaded, stored, or shared. Only anonymised acoustic metrics (disfluency counts, session duration) are saved to your account under strict clinical data governance.',
+    a: 'Some features transmit audio to service providers or store session recordings. Read the privacy policy for disclosed processing, retention and your choices.',
   },
   {
     q: 'How do I connect to my Speech and Language Therapist?',
@@ -81,7 +81,7 @@ export default function SupportPage() {
           </h1>
           <p className="text-slate-400 text-sm leading-relaxed max-w-xl">
             Find answers to common questions below, or get in touch directly.
-            We typically respond within 24–48 hours on business days.
+            Contact us with your question. No fixed support response time is guaranteed.
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export default function SupportPage() {
           </svg>
           <p className="text-slate-400 text-xs leading-relaxed">
             <span className="text-slate-300 font-medium">Response times:</span>{' '}
-            Bugs &amp; outages: 4h &nbsp;·&nbsp; Billing: 8h &nbsp;·&nbsp; Technical &amp; clinical: 24h &nbsp;·&nbsp; General: 48h
+            Response times depend on the issue and availability; this page does not offer a service-level guarantee.
             <span className="text-slate-400"> (Monday–Friday, UK business hours)</span>
           </p>
         </div>
@@ -149,7 +149,7 @@ export default function SupportPage() {
           <p className="text-sky-400 text-sm font-semibold mb-1">Clinical safety</p>
           <p className="text-slate-400 text-xs leading-relaxed">
             Flowen is an adjunct tool and does not replace professional speech and language therapy.
-            It is compliant with NHS DCB0129 clinical safety standards. For clinical emergencies or
+            Clinical safety documents are controlled drafts, not a claim of completed DCB0129 compliance. For clinical emergencies or
             urgent medical concerns, contact your healthcare provider or call 999.
             Full clinical safety documentation is available at{' '}
             <Link href="/legal" className="text-sky-400 hover:text-sky-300 underline">flowen.digital/legal</Link>.

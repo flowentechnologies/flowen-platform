@@ -2,40 +2,7 @@
 
 import { useState } from 'react';
 
-const FAQS = [
-  {
-    q: 'What happens after the 7-day free trial?',
-    a: "Nothing happens automatically until you confirm. At the end of your trial you'll be prompted to choose a billing plan. If you don't, your account simply reverts to the free waitlist tier — no charge, no surprise. We ask for card details at checkout so we can activate the trial instantly, but we won't take payment until you choose to continue.",
-  },
-  {
-    q: 'Can I really cancel any time?',
-    a: "Yes, unconditionally. Cancel from your dashboard in under 30 seconds — no phone calls, no retention chat, no questions. You keep access until the end of your current billing period. If you're on annual billing and cancel within 30 days, email us and we'll refund the unused months.",
-  },
-  {
-    q: 'What does the founding member price lock actually mean?',
-    a: "Once you subscribe as a founding member, your rate is fixed — permanently. We can increase prices for future subscribers, but your invoice will always show the rate you joined at. This is a contractual commitment, not a marketing promise. The rate lock survives plan upgrades and continues for as long as you remain subscribed.",
-  },
-  {
-    q: 'Is Flowen eligible for NHS, Access to Work, or DSA funding?',
-    a: "Yes. Flowen is designed to work alongside funded pathways. If you have an Access to Work award, your employer reimburses the cost. DSA-eligible students can claim Flowen as an assistive technology. For NHS-commissioned use, your clinician can refer directly via the institutional pathway — contact hello@flowen.digital. We provide invoices and receipts suitable for all three routes.",
-  },
-  {
-    q: 'How does the AI actually work?',
-    a: "Flowen captures your voice in real time, analyses acoustic patterns associated with fluency disruption — voice tension, block onset, prolongations, repetitions — through a sub-80ms audio pipeline, with pattern detection resolving within 300ms end-to-end. You practise targeted speech techniques with the AI responding as you speak. It's the equivalent of having a biofeedback instrument available 24/7, without a clinic visit.",
-  },
-  {
-    q: 'What devices does it work on?',
-    a: "Flowen works in any modern browser (Chrome, Safari, Firefox, Edge) on desktop or laptop. A native iOS app is in development under our Apple Developer membership. Android follows shortly after. A stable internet connection and a microphone are the only requirements.",
-  },
-  {
-    q: 'Is my voice data private?',
-    a: "Voice audio is processed in real time for biofeedback — it is not stored as a recording. We retain only derived acoustic metrics (fluency indices, tension scores) linked to your session, with full encryption at rest and in transit. You can request a complete data export or deletion at any time under GDPR / UK GDPR. See our Privacy Policy for full detail.",
-  },
-  {
-    q: 'Why is the founding member price so much lower?',
-    a: "Early subscribers carry more risk — the product is newer, the ecosystem is smaller. In exchange for joining before Flowen is widely known, you get a permanently lower rate and a direct line to shape the product. We're also in early-stage infrastructure scaling, so the founding cohort helps us grow sustainably. Once founding slots close, pricing moves to standard rates.",
-  },
-];
+const FAQS = [{"q": "What happens after the seven-day subscription trial?", "a": "Checkout collects a payment card. Unless you cancel, the subscription automatically bills at the price and interval shown at checkout when the trial ends. The three introductory practice sessions are a separate no-card offer."}, {"q": "How do I cancel?", "a": "Use the subscription controls in your dashboard. Review the cancellation and refund terms before subscribing. This page does not promise an automatic refund of unused annual months."}, {"q": "What is the founding price?", "a": "The displayed founding annual plan is \u00a3239.52 per year, equivalent to \u00a319.96 per month. Monthly and other intervals are shown separately. The final checkout price and agreed terms govern your subscription."}, {"q": "Is funding guaranteed?", "a": "No. Access to Work, DSA and NHS approval depends on the relevant provider and your circumstances. Get written approval before committing to a purchase."}, {"q": "What does feedback do?", "a": "It displays acoustic estimates while you practise. It is not a clinical diagnosis or a validated outcome measure. No fixed latency or improvement in fluency is guaranteed."}, {"q": "What about voice data?", "a": "Some features send audio to providers or store session recordings. Do not assume that audio never leaves your device or is never retained. Read the privacy policy for details."}];
 
 export default function PricingFAQ() {
   const [open, setOpen] = useState<number | null>(null);
