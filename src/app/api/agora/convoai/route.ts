@@ -18,6 +18,8 @@ import { buildConvoAIJoinPayload } from '@/lib/agora/convoai-payload';
 import { DEFAULT_CONVOAI_BASE_URL, buildConvoAIJoinUrl, buildConvoAILeaveUrl } from '@/lib/agora/convoai-urls';
 import { conflictingAgentId } from '@/lib/agora/convoai-conflict';
 import { getConvoAIHeaders } from '@/lib/agora/convoai-auth';
+import { RtcTokenBuilder, RtcRole } from 'agora-token';
+import { AGENT_UID, ownerChannel, agentBelongsToOwner, validAgentId } from '@/lib/agora/ownership';
 
 function adminDb() {
   return createAdmin(
@@ -49,13 +51,22 @@ export async function POST(req: Request) {
     const { user, voiceCloneId: storedVoiceCloneId } = await getUserAndProfile(req);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json() as {
-      channel: string;
-      token: string;
-      agentUid?: number;
-      systemPrompt?: string;
-      // voiceCloneId from client is ignored — we use the DB value to prevent spoofing
-    };
+    let body: Record<string, unknown>;
+    try {
+      const parsed = await req.json();
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error();
+      body = parsed;
+    } catch {
+      return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
+    }
+    const channel = ownerChannel(user.id);
+    if (body.channel !== undefined && body.channel !== channel) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    if ((body.agentUid !== undefined && body.agentUid !== AGENT_UID) ||
+        (body.systemPrompt !== undefined && typeof body.systemPrompt !== 'string')) {
+      return NextResponse.json({ error: 'Invalid agent configuration' }, { status: 400 });
+    }
 
     const appId = process.env.AGORA_APP_ID;
     // Agora ConvoAI REST API endpoint.
@@ -63,9 +74,16 @@ export async function POST(req: Request) {
     //   EU: https://api-eu.agora.io/api/conversational-ai-agent
     //   AP: https://api-ap.agora.io/api/conversational-ai-agent
     const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? DEFAULT_CONVOAI_BASE_URL;
-    if (!appId) return NextResponse.json({ error: 'Agora not configured' }, { status: 503 });
+    const appCert = process.env.AGORA_APP_CERTIFICATE;
+    if (!appId || !appCert) return NextResponse.json({ error: 'Agora not configured' }, { status: 503 });
 
-    const agentUid = body.agentUid ?? 9999;
+    const agentUid = AGENT_UID;
+    // Client RTC tokens belong to the user, not the agent. Mint an agent token
+    // scoped to the server-derived channel and fixed bot UID.
+    const expiresAt = Math.floor(Date.now() / 1000) + 3600;
+    const agentToken = RtcTokenBuilder.buildTokenWithUid(
+      appId, appCert, channel, agentUid, RtcRole.PUBLISHER, expiresAt, expiresAt,
+    );
 
     const defaultSystemPrompt = [
       'You are Flowen, a warm and encouraging AI speech therapy assistant.',
@@ -77,11 +95,11 @@ export async function POST(req: Request) {
 
     const payload = buildConvoAIJoinPayload({
       userId:       user.id,
-      channel:      body.channel,
-      token:        body.token,
+      channel,
+      token:        agentToken,
       agentUid,
       // Clamp to prevent token-bomb attacks; slice at a word boundary
-      systemPrompt: (body.systemPrompt ?? defaultSystemPrompt).slice(0, MAX_SYSTEM_PROMPT_CHARS),
+      systemPrompt: (typeof body.systemPrompt === 'string' ? body.systemPrompt : defaultSystemPrompt).slice(0, MAX_SYSTEM_PROMPT_CHARS),
       llmUrl:       process.env.AGORA_LLM_URL ?? 'https://api.openai.com/v1/chat/completions',
       llmApiKey:    process.env.OPENAI_API_KEY ?? '',
       voice: storedVoiceCloneId
@@ -94,6 +112,7 @@ export async function POST(req: Request) {
       method: 'POST',
       headers: getConvoAIHeaders(),
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(15000),
     });
     let data = await res.json() as { agent_id?: string; error?: string; message?: string; reason?: string };
 
@@ -115,12 +134,22 @@ export async function POST(req: Request) {
     for (let attempt = 0; attempt < 2; attempt++) {
       const staleAgentId = conflictingAgentId(res.status, data);
       if (!staleAgentId) break;
+      // A conflict response is not owner evidence. Do not stop anything until
+      // the provider confirms that ID is on this caller's exact channel.
+      let owned: boolean;
+      try {
+        owned = await agentBelongsToOwner(baseUrl, appId, user.id, staleAgentId, getConvoAIHeaders());
+      } catch {
+        return NextResponse.json({ error: 'Agent ownership verification unavailable' }, { status: 503 });
+      }
+      if (!owned) return NextResponse.json({ error: 'Agent conflict could not be verified' }, { status: 409 });
 
       console.warn(`[convoai] stale agent ${staleAgentId} blocking a new join — stopping it and retrying (attempt ${attempt + 1})`);
       await fetch(buildConvoAILeaveUrl(baseUrl, appId, staleAgentId), {
         method: 'DELETE',
         headers: getConvoAIHeaders(),
-      }).catch((err) => console.warn('[convoai] failed to stop stale agent (continuing to retry anyway):', err));
+        signal: AbortSignal.timeout(8000),
+      }).then((leave) => { if (!leave.ok) throw new Error('Verified agent stop failed'); });
 
       await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
 
@@ -128,6 +157,7 @@ export async function POST(req: Request) {
         method: 'POST',
         headers: getConvoAIHeaders(),
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15000),
       });
       data = await res.json() as typeof data;
     }
@@ -151,6 +181,9 @@ export async function POST(req: Request) {
       );
     }
 
+    if (!validAgentId(data.agent_id)) {
+      return NextResponse.json({ error: 'Invalid agent response' }, { status: 502 });
+    }
     return NextResponse.json({ agentId: data.agent_id, agentUid });
   } catch (err) {
     console.error('[agora/convoai] POST error:', err);
@@ -164,13 +197,18 @@ export async function DELETE(req: Request) {
     const user = await getUserFromRequest(req);
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json() as { agentId: string; channel?: string };
-
-    // Ownership check: the caller must supply their channel and it must match
-    // the deterministic channel derived from their user ID. This prevents an
-    // authenticated user from stopping another user's live AI session.
-    const expectedChannel = `flowen-${user.id.replace(/-/g, '').slice(0, 16)}`;
-    if (body.channel && body.channel !== expectedChannel) {
+    let body: Record<string, unknown>;
+    try {
+      const parsed = await req.json();
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error();
+      body = parsed;
+    } catch {
+      return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
+    }
+    if (!validAgentId(body.agentId)) {
+      return NextResponse.json({ error: 'Invalid agent ID' }, { status: 400 });
+    }
+    if (body.channel !== undefined && body.channel !== ownerChannel(user.id)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -178,11 +216,20 @@ export async function DELETE(req: Request) {
     if (!appId) return NextResponse.json({ error: 'Agora not configured' }, { status: 503 });
     const baseUrl = process.env.AGORA_CONVOAI_BASE_URL ?? DEFAULT_CONVOAI_BASE_URL;
 
+    let owned: boolean;
+    try {
+      owned = await agentBelongsToOwner(baseUrl, appId, user.id, body.agentId, getConvoAIHeaders());
+    } catch {
+      return NextResponse.json({ error: 'Agent ownership verification unavailable' }, { status: 503 });
+    }
+    if (!owned) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     const res = await fetch(
       buildConvoAILeaveUrl(baseUrl, appId, body.agentId),
       {
         method: 'DELETE',
         headers: getConvoAIHeaders(),
+        signal: AbortSignal.timeout(8000),
       },
     );
 
