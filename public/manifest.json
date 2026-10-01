@@ -1,7 +1,7 @@
 {
-  "name": "Flowen — Speech Fluency",
+  "name": "Flowen \u2014 Speech Fluency",
   "short_name": "Flowen",
-  "description": "Evidence-based fluency practice for people who stutter",
+  "description": "Browser-based speech practice with acoustic feedback",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#020817",
@@ -21,6 +21,8 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": ["health", "medical"],
+  "categories": [
+    "education"
+  ],
   "lang": "en-GB"
 }
