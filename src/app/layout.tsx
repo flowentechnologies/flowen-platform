@@ -18,15 +18,15 @@ import { adminDb as db } from '@/lib/supabase/admin';
 const FOUC_SCRIPT = `(function(){try{var t=localStorage.getItem('flowen-theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
 
 export const metadata: Metadata = {
-  title: 'Flowen — Retraining the Brain to Speak Freely',
-  description: 'AI Speech Coordination for School, Workplace & Daily Life. Sub-80ms real-time vocal retraining engine.',
+  title: 'Flowen | Speech practice',
+  description: 'Browser-based speech practice with guided exercises, live acoustic feedback and session history.',
   metadataBase: new URL('https://flowen.digital'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Flowen — AI Speech Coordination',
-    description: 'Every word gets there. Sub-80ms real-time vocal retraining and clinical supervision platform.',
+    title: 'Flowen | Speech practice',
+    description: 'Guided speech practice, live acoustic feedback and session history.',
     url: 'https://flowen.digital',
     siteName: 'Flowen',
     images: [
@@ -42,8 +42,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Flowen — AI Speech Coordination',
-    description: 'Every word gets there. Sub-150ms real-time vocal retraining.',
+    title: 'Flowen | Speech practice',
+    description: 'Guided speech practice, live acoustic feedback and session history.',
     images: ['/assets/images/flowen-hero-banner.jpg'],
   },
   icons: {
@@ -96,7 +96,7 @@ export default async function RootLayout({
           'name': 'Flowen',
           'url': 'https://flowen.digital',
           'logo': 'https://flowen.digital/icon.svg',
-          'description': 'Evidence-based AI speech fluency platform for people who stutter, powered by real-time vocal coordination technology.',
+          'description': 'Browser-based speech practice platform operated by Flowen Speech Technologies Ltd.',
           'sameAs': [],
           'contactPoint': {
             '@type': 'ContactPoint',
@@ -106,49 +106,13 @@ export default async function RootLayout({
         }} />
         <JsonLd data={{
           '@context': 'https://schema.org',
-          '@type': 'WebSite',
-          'name': 'Flowen',
-          'url': 'https://flowen.digital',
-          'potentialAction': {
-            '@type': 'SearchAction',
-            'target': {
-              '@type': 'EntryPoint',
-              'urlTemplate': 'https://flowen.digital/resources?q={search_term_string}',
-            },
-            'query-input': 'required name=search_term_string',
-          },
-        }} />
-        <JsonLd data={{
-          '@context': 'https://schema.org',
           '@type': 'SoftwareApplication',
           'name': 'Flowen',
-          'applicationCategory': 'HealthApplication',
-          'operatingSystem': 'Web, iOS, Android',
-          'description': 'AI-powered real-time speech fluency training for people who stutter. Clinical supervision platform with 3D avatar feedback.',
+          'applicationCategory': 'EducationalApplication',
+          'operatingSystem': 'Web',
+          'description': 'Browser-based speech practice with live acoustic feedback.',
           'url': 'https://flowen.digital',
-          'offers': [
-            {
-              '@type': 'Offer',
-              'name': 'Waitlist Standard',
-              'price': '0',
-              'priceCurrency': 'GBP',
-              'description': 'Free baseline early access allocation without ongoing subscription commitments.',
-            },
-            {
-              '@type': 'Offer',
-              'name': 'Founding Member',
-              'price': '19.96',
-              'priceCurrency': 'GBP',
-              'description': 'Founding member early access seat, price-locked with up to 50% discount on annual billing.',
-            },
-            {
-              '@type': 'Offer',
-              'name': 'Sponsored Entry',
-              'price': '0',
-              'priceCurrency': 'GBP',
-              'description': 'Institutionally-sponsored access for eligible NHS, Access to Work, or DSA beneficiaries.',
-            },
-          ],
+
         }} />
         <ThemeProvider>
           <PostHogProvider>
