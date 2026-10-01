@@ -114,14 +114,14 @@ export default function HeroVideo() {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight drop-shadow-2xl">
-            Build fluency through{' '}
+            Make time for{' '}
             <span className="bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">
-              daily practice
+              speech practice
             </span>
           </h1>
 
           <p className="mt-6 text-lg md:text-xl text-slate-200 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
-            Flowen listens as you speak and gives you instant feedback — showing you whether your speech onset was gentle or tense, and how to improve it. Built on the evidence-based techniques used in clinical speech therapy.
+            Practise speech exercises with live visual feedback from your microphone. Review your sessions and build a practice routine at your own pace. Flowen does not diagnose, treat or cure stammering.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
