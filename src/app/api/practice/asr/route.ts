@@ -2,7 +2,7 @@
  * POST /api/practice/asr
  *
  * Accepts a chunk of base64-encoded WAV audio (assembled by WavEncoder on
- * the mobile client) and returns an OpenAI Whisper transcript.
+ * the mobile client) and returns a self-hosted Whisper transcript.
  *
  * Auth: supports both cookie session (web) and Authorization: Bearer <token>
  * (mobile) via getUserFromRequest.
@@ -20,6 +20,7 @@
 import { NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/supabase/from-request';
 import { decodeWav, getAsrConfig } from '@/lib/asr/config';
+import { transcribe } from '@/lib/asr/provider';
 import { allowAsr } from '@/lib/asr/rate-limit';
 
 const MAX_B64_BYTES  = 24 * 1024 * 1024; // 24 MB base64
@@ -30,8 +31,8 @@ export async function POST(req: Request) {
   const user = await getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const openAiKey = process.env.OPENAI_API_KEY;
-  if (!openAiKey) return NextResponse.json({ error: 'ASR not configured' }, { status: 503 });
+  const config = getAsrConfig();
+  if (!config.configured) return NextResponse.json({ error: 'ASR not configured' }, { status: 503 });
 
   let body: { audio?: string; durationSeconds?: number };
   try {
@@ -61,39 +62,17 @@ export async function POST(req: Request) {
   }
 
   if (!await allowAsr(user.id)) return NextResponse.json({ error: 'ASR rate limit reached' }, { status: 429 });
-  const config = getAsrConfig();
   // Decode base64 WAV → binary Buffer
   const wavBuffer = decodeWav(audio);
   if (!wavBuffer) return NextResponse.json({ error: 'Audio must be a valid mono PCM16 WAV' }, { status: 400 });
 
-  // Build multipart/form-data for OpenAI Whisper
-  // Node 18+ FormData / File are available in Next.js server context
-  const wavBlob = new Blob([new Uint8Array(wavBuffer)], { type: 'audio/wav' });
-  const formData = new FormData();
-  formData.append('file',  new File([wavBlob], 'audio.wav', { type: 'audio/wav' }));
-  formData.append('model', config.model);
-  formData.append('language', config.language);
-  if (config.prompt) formData.append('prompt', config.prompt);
-
   let transcript: string;
   try {
-    const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method:  'POST',
-      headers: { Authorization: `Bearer ${openAiKey}` },
-      body:    formData,
-      signal: AbortSignal.timeout(config.timeoutMs),
-    });
-
-    if (!whisperRes.ok) {
-      console.error('[ASR] Provider status:', whisperRes.status);
-      return NextResponse.json({ error: 'Transcription failed' }, { status: 502 });
-    }
-
-    const json = await whisperRes.json() as { text?: string };
-    transcript = (json.text ?? '').trim();
-  } catch (e) {
-    console.error('[ASR] fetch error:', e);
-    return NextResponse.json({ error: 'Network error reaching ASR service' }, { status: 502 });
+    transcript = await transcribe(wavBuffer, config);
+  } catch {
+    // No exception bodies, URLs, credentials, audio or transcripts in logs.
+    console.error('[ASR] self-hosted provider failed');
+    return NextResponse.json({ error: 'Transcription failed' }, { status: 502 });
   }
 
   return NextResponse.json({ text: transcript });
