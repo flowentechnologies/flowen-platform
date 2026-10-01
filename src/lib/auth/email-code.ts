@@ -1,6 +1,8 @@
 import { safeRedirectPath } from '@/lib/auth/redirect-path';
 
-export const EMAIL_CODE_LENGTH = 6;
+/** Supabase allows 6-10 digits ("Email OTP Length" in Auth settings); accept the range so a settings change cannot lock users out. */
+export const EMAIL_CODE_MIN_LENGTH = 6;
+export const EMAIL_CODE_MAX_LENGTH = 10;
 
 /** Strip spaces and dashes users add when copying a code from an email. */
 export function normalizeEmailCode(value: unknown): string {
@@ -8,7 +10,7 @@ export function normalizeEmailCode(value: unknown): string {
 }
 
 export function isValidEmailCode(code: string): boolean {
-  return new RegExp(`^\\d{${EMAIL_CODE_LENGTH}}$`).test(code);
+  return new RegExp(`^\\d{${EMAIL_CODE_MIN_LENGTH},${EMAIL_CODE_MAX_LENGTH}}$`).test(code);
 }
 
 export type VerifyCodeInput = { email: string; token: string; next: string };
