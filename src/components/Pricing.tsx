@@ -120,7 +120,7 @@ export default function PricingSection({ initialCycle = 'yearly' }: { initialCyc
                 ? 'bg-slate-950 text-emerald-400'
                 : 'bg-emerald-500 text-slate-950'
             }`}>
-              SAVE 44%
+              Annual billing
             </span>
           </button>
         </div>
