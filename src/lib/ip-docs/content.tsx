@@ -565,6 +565,124 @@ export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => React
     </>
   ),
 
+  'intercompany-ip-licence-agreement': (
+    <>
+      <Warn>DRAFT TEMPLATE — REQUIRES REVIEW BY A QUALIFIED UK SOLICITOR AND TAX ADVISER BEFORE SIGNING. This template is provided for internal planning only and does not constitute legal or tax advice.</Warn>
+      <H>Intercompany Intellectual Property Licence Agreement</H>
+      <Note>
+        This agreement is the &quot;separate arm&apos;s-length IP Licence Agreement&quot; referred to in the Licence-Back
+        clause of the Founder IP Assignment Deed — see that document. It cannot be dated earlier than the Founder
+        deed&apos;s actual execution date: Flowen IP Ltd cannot license Background IP it does not yet legally own.
+        Confirm the Founder deed has been signed before this agreement is executed.
+      </Note>
+      <Note>
+        Licensor and Licensee are both wholly-owned subsidiaries of Flowen Group Ltd, and — as of this draft — share
+        the same sole director. This is a related-party transaction. Record a separate board minute for each company
+        confirming the terms were considered and approved on their own merits and are consistent with arm&apos;s-length
+        principles, notwithstanding common control. The royalty rate below must be genuinely arm&apos;s-length, not
+        nominal: Flowen IP Ltd&apos;s licence income is intended to rely on the self-created intangibles exemption
+        (ITA 2007 Sch 7B) for SEIS purposes, and HMRC may scrutinise a connected-party royalty that looks artificial.
+        [CONFIRM WITH ADVISER before executing.]
+      </Note>
+      <P><Bold>Parties</Bold></P>
+      <P>
+        (1) <Bold>Flowen IP Ltd</Bold>, a company registered in England and Wales under company number{' '}
+        {entityCompanyNumber('ip')}, whose registered office is at {REGISTERED_OFFICE_ADDRESS} (the{' '}
+        <Bold>&quot;Licensor&quot;</Bold>); and
+      </P>
+      <P>
+        (2) <Bold>Flowen Speech Technologies Ltd</Bold>, a company registered in England and Wales under company
+        number {entityCompanyNumber('speech-technologies')}, whose registered office is at{' '}
+        {REGISTERED_OFFICE_ADDRESS} (the <Bold>&quot;Licensee&quot;</Bold>),
+      </P>
+      <P>together the <Bold>&quot;Parties&quot;</Bold>, each a wholly-owned subsidiary of Flowen Group Ltd.</P>
+      <H>Background</H>
+      <P>
+        The Licensor holds all right, title, and interest in the Background IP (as defined in, and assigned to the
+        Licensor under, the Founder IP Assignment Deed), including the disfluency detection method, the
+        dual-waveform biofeedback visualisation method, the ASR model architecture, the platform software and its
+        git commit history, the flowen.digital domain and related domains, the Flowen and Vocali brand names and
+        marks, and any trademark filings relating to them.
+      </P>
+      <P>
+        The Licensee operates the Flowen speech fluency platform at flowen.digital and requires a licence to use the
+        Background IP for that purpose. Flowen Labs Ltd (company number {entityCompanyNumber('labs')}) may also
+        require a limited licence for research and development purposes, as set out below.
+      </P>
+      <H>Grant of Licence</H>
+      <P>
+        The Licensor grants the Licensee an exclusive (save as set out below), worldwide, royalty-bearing licence to
+        use, reproduce, modify, and commercially exploit the Background IP solely for the purpose of operating,
+        developing, marketing, and commercialising the Flowen platform, for the Term of this Agreement.
+      </P>
+      <UL>
+        <LI>The licence is exclusive as against all third parties, but not as against the Licensor itself</LI>
+        <LI>The Licensee may not sub-license the Background IP to any third party without the Licensor&apos;s prior written consent</LI>
+        <LI>
+          The Licensee may extend a limited, non-exclusive, non-commercial sub-licence to Flowen Labs Ltd for the
+          sole purpose of research and development on the Background IP — Flowen Labs Ltd may not commercialise,
+          publicly deploy, or further sub-license any output of that research without the Licensor&apos;s prior
+          written consent
+        </LI>
+        <LI>Nothing in this Agreement transfers ownership of the Background IP to the Licensee</LI>
+      </UL>
+      <H>Licence Fee / Royalty</H>
+      <P>
+        In consideration of the licence granted above, the Licensee shall pay the Licensor a royalty of{' '}
+        <Blank /> of the Licensee&apos;s <Blank /> (e.g. net revenue, gross revenue, or a fixed periodic fee — to be
+        confirmed with a tax adviser), payable <Blank />.
+      </P>
+      <Note>
+        [CONFIRM WITH ADVISER: the royalty basis and rate must be set at arm&apos;s length and documented (e.g. by
+        reference to comparable third-party licensing terms) to withstand HMRC scrutiny of a connected-party
+        transaction and to support the self-created intangibles exemption relied on in the SEIS Advance Assurance
+        application.]
+      </Note>
+      <H>Improvements and New IP</H>
+      <P>
+        Any new intellectual property created by the Licensee (or by Flowen Labs Ltd under its sub-licence) that
+        arises from, or constitutes a modification or improvement of, the Background IP shall be assigned to the
+        Licensor on creation, for no further consideration beyond that already provided for above. This preserves
+        the group&apos;s structure of ring-fencing all core IP in Flowen IP Ltd, separate from the trading
+        company&apos;s operational and product-liability risk.
+      </P>
+      <H>Term and Termination</H>
+      <P>
+        This Agreement commences on the date of execution and continues until terminated. The Licensor may terminate
+        this Agreement on <Blank /> written notice for the Licensee&apos;s uncured material breach, or immediately on
+        the Licensee&apos;s insolvency, liquidation, or cessation of business. Either party may terminate on{' '}
+        <Blank /> written notice if the Licensee ceases to be a wholly-owned subsidiary of Flowen Group Ltd.
+      </P>
+      <H>Warranties</H>
+      <P>
+        The Licensor warrants that, as at the date of this Agreement, it holds the Background IP free of any charge,
+        encumbrance, or third-party claim known to it, and that the Founder IP Assignment Deed has been validly
+        executed and delivered. The Licensee warrants that it will use the Background IP only within the scope of
+        the licence granted above.
+      </P>
+      <H>Confidentiality</H>
+      <P>
+        Each party shall keep confidential all non-public information of the other party obtained under or in
+        connection with this Agreement, and shall not disclose it to any third party except as required by law or
+        with the other party&apos;s prior written consent.
+      </P>
+      <H>Governing Law</H>
+      <P>This Agreement is governed by, and shall be construed in accordance with, the laws of England and Wales.</P>
+      <H>Execution</H>
+      <Note>
+        Because both companies currently share the same sole director, each signature block below should be
+        supported by that company&apos;s own board minute recording that the director considered the terms in that
+        company&apos;s own interest separately, notwithstanding the common directorship.
+      </Note>
+      <Field label="Signed for the Licensor" />
+      <Field label="Director, Flowen IP Ltd" />
+      <Field label="Date" />
+      <Field label="Signed for the Licensee" />
+      <Field label="Director, Flowen Speech Technologies Ltd" />
+      <Field label="Date" />
+    </>
+  ),
+
   'employment-ip-clause': (
     <>
       <Warn>DRAFT TEMPLATE — REQUIRES REVIEW BY A QUALIFIED UK EMPLOYMENT SOLICITOR. Ensure clauses comply with the Patents Act 1977 §39 (employee inventions) and UK copyright law before use.</Warn>

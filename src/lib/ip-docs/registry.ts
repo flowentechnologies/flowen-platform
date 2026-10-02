@@ -22,6 +22,7 @@ export const IP_DOCS: IpDocMeta[] = [
   { slug: 'seis-advance-assurance',        title: 'SEIS Advance Assurance Application — HMRC',      category: 'regulatory', type: 'regulatory-application',  status: 'draft', auditSlug: null, version: '1.0', date: 'August 2026' },
   // Contracts
   { slug: 'founder-ip-assignment-deed',    title: 'Founder IP Assignment Deed',                  category: 'contracts',     type: 'legal-template',   status: 'requires-legal-review', auditSlug: 'Founder IP Assignment Deed',               version: '1.0', date: 'August 2026' },
+  { slug: 'intercompany-ip-licence-agreement', title: 'Intercompany IP Licence Agreement — Flowen IP Ltd to Flowen Speech Technologies Ltd', category: 'contracts', type: 'legal-template', status: 'requires-legal-review', auditSlug: 'Intercompany IP Licence Agreement', version: '1.0', date: 'October 2026' },
   { slug: 'employment-ip-clause',          title: 'Employment Contracts — IP Clause Addendum',   category: 'contracts',     type: 'legal-template',   status: 'requires-legal-review', auditSlug: 'Employment Contracts — IP Clauses',        version: '1.0', date: 'August 2026' },
   { slug: 'adviser-ip-agreement',          title: 'Adviser / Consultant IP Agreement Template',  category: 'contracts',     type: 'legal-template',   status: 'requires-legal-review', auditSlug: 'Adviser / Advisor Agreements',             version: '1.0', date: 'August 2026' },
   // AI Models
