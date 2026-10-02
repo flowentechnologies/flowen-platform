@@ -98,12 +98,15 @@ The Processor shall provide the Controller with all information necessary to dem
     content: `5.1 CURRENT SUB-PROCESSORS
 The Controller consents to the engagement of the following sub-processors:
 
-— Supabase Inc.: database infrastructure and authentication (verify the configured project regions)
-— Vercel Inc.: cloud hosting and functions (verify each enabled service region)
-— Agora Inc.: real-time voice processing for AI speech coach sessions (verify the configured processing, recording and retention settings)
-— Functional Software Inc. (Sentry): anonymised error monitoring (PHI masking enabled)
+— Supabase Inc.: database infrastructure and authentication
+— Vercel Inc.: cloud hosting and functions
+— Agora Inc.: real-time voice processing for AI speech coach sessions
+— OpenAI, L.L.C.: AI language model for AI conversation practice
+— ElevenLabs Inc.: AI voice synthesis, and voice cloning if you opt in
+— Functional Software Inc. (Sentry): error monitoring
 — Stripe Inc.: payment processing (operates as independent data controller for payment data)
 
+Hosting and processing regions are set out in the processing schedule agreed with each Controller.
 A current, complete list of sub-processors is maintained at flowen.digital/dpa and updated upon any change.
 
 5.2 NEW SUB-PROCESSORS
