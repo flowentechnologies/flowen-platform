@@ -83,6 +83,7 @@ function buildInviteHtml(email: string, token: string): string {
     <p style="color:#475569;font-size:11px;margin-top:8px;">
       Or copy this link: <span style="color:#64748b;">${inviteUrl}</span>
     </p>
+    <p style="color:#475569;font-size:11px;margin-top:16px;">Flowen Speech Technologies Ltd</p>
   </div>
 </body>
 </html>`;
