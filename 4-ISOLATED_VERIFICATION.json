@@ -1,0 +1,29 @@
+{
+  "source_sha256": "5ee2b85cd353087eb2eb75aa29dd539a280c805d0597d3c3ecb63383910fb781",
+  "public_blocks_source": 840,
+  "public_blocks_restored": 840,
+  "missing": [],
+  "extra": [],
+  "changed": [],
+  "public_tables": 111,
+  "row_data_extracted": false,
+  "database_version": "17.6",
+  "normalization": [
+    "Sort DEFAULT ACL statements",
+    "Ignore pg_dump session SET default_tablespace/default_table_access_method"
+  ],
+  "schema_equivalent": true,
+  "fresh_rebuild_fingerprint": "0cb654fe658b9376cddfa9eaae689042",
+  "matching_existing_schema_noop": true,
+  "repeat_execution_passed": true,
+  "intentional_column_drift_rejected": true,
+  "active_local_count_after_patch": 51,
+  "unique_versions_after_patch": 51,
+  "archived_local_files": 89,
+  "archived_remote_records": 50,
+  "real_extensions": [
+    "pgvector 0.8.2",
+    "pgcrypto 1.3"
+  ],
+  "scope": "Schema only. No table rows exported or seed effects proved. Fingerprint covers definitions/RLS, not ACL drift. Full dump restore includes ACLs."
+}
