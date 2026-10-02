@@ -33,6 +33,8 @@ async function resolveTrialEvent(
       expand: ['line_items', 'line_items.data.price.product'],
     });
 
+    if (session.status !== 'complete' || session.mode !== 'subscription' || session.amount_total !== 0) return null;
+
     if (session.customer_details?.email?.toLowerCase() !== userEmail.toLowerCase()) {
       return null;
     }

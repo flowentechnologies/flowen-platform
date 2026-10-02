@@ -16,8 +16,7 @@
  *   GOOGLE_ADS_CUSTOMER_ID                  — operating CID (dashes OK)
  *   GOOGLE_ADS_CONVERSION_ACTION_ID         — signup conversion action
  *   GOOGLE_ADS_PURCHASE_CONVERSION_ACTION_ID — paid purchase action
- *                                             (falls back to the signup
- *                                             action if unset)
+ *                                             (no signup fallback)
  *   GOOGLE_ADS_LOGIN_CUSTOMER_ID            — optional MCC login CID
  *   OAuth: shared GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET /
  *   GOOGLE_REFRESH_TOKEN (same principal as the spend-sync route). The
@@ -88,7 +87,7 @@ export async function uploadClickConversion(c: ClickConversion): Promise<UploadR
   const devToken   = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
   const customerId = digitsOnly(process.env.GOOGLE_ADS_CUSTOMER_ID);
   const actionId   = c.orderId
-    ? (process.env.GOOGLE_ADS_PURCHASE_CONVERSION_ACTION_ID ?? process.env.GOOGLE_ADS_CONVERSION_ACTION_ID)
+    ? process.env.GOOGLE_ADS_PURCHASE_CONVERSION_ACTION_ID
     : process.env.GOOGLE_ADS_CONVERSION_ACTION_ID;
 
   if (!devToken || !customerId || !actionId) {

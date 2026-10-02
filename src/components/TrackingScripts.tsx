@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { captureGa4Identity } from '@/lib/analytics/ga4-client';
 
 export interface TrackingProvider {
   provider_key: string;
@@ -62,6 +64,7 @@ function injectProvider(p: TrackingProvider) {
 }
 
 export default function TrackingScripts({ providers }: { providers: TrackingProvider[] }) {
+  const pathname = usePathname();
   useEffect(() => {
     // Denied-by-default before anything injects — every page load, even
     // before the visitor has answered the banner.
@@ -74,7 +77,14 @@ export default function TrackingScripts({ providers }: { providers: TrackingProv
         if (!p.enabled || !p.head_html) return;
         if (!consented) return; // Fail closed even if a provider row is misconfigured.
         injectProvider(p);
+        if (p.provider_key === 'ga4') {
+          const id = p.head_html.match(/gtag\('config','(G-[A-Z0-9]+)'/)?.[1];
+          if (id) {
+            captureGa4Identity(id);
+          }
+        }
       });
+      if (consented) window.dispatchEvent(new Event('flowen:tracking:ready'));
     };
 
     fire();
@@ -86,7 +96,7 @@ export default function TrackingScripts({ providers }: { providers: TrackingProv
       window.removeEventListener('flowen:consent:granted', fire);
       window.removeEventListener('flowen:consent:revoked', revoke);
     };
-  }, [providers]);
+  }, [providers, pathname]);
 
   return null;
 }
