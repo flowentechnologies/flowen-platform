@@ -8,14 +8,14 @@ export const MASTER_POLICIES = {
 
   privacyPolicy: `
 PRIVACY POLICY & UK GDPR STATEMENT
-Last Updated: 1 August 2026
+Last Updated: 2 October 2026
 Effective Date: 1 August 2026
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. WHO WE ARE AND HOW TO CONTACT US
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Flowen Speech Technologies Ltd (company number ${entityCompanyNumber('speech-technologies')}), a company registered in England and Wales, part of the Flowen group of companies ("Flowen", "we", "us", "our"), operates the Flowen speech fluency platform, available at flowen.digital and associated subdomains (the "Platform").
+Flowen Speech Technologies Ltd (company number ${entityCompanyNumber('speech-technologies')}), a company registered in England and Wales, part of the Flowen group of companies ("Flowen", "we", "us", "our"), operates the Flowen speech fluency platform, available at flowen.digital and associated subdomains (the "Platform"). Flowen Speech Technologies Ltd is a wholly owned subsidiary of Flowen Group Limited (company number ${entityCompanyNumber('group')}).
 
 For the purposes of UK data protection law, Flowen Speech Technologies Ltd is the Data Controller.
 
@@ -39,7 +39,7 @@ IDENTITY & ACCOUNT DATA
 
 CLINICAL & HEALTH DATA (Special Category — Article 9 UK GDPR)
 — Speech fluency metrics: block frequency, blocks per minute (BPM), disfluency pattern data
-— Acoustic biomarkers: root mean square amplitude (RMS), long-term average spectrum (LTI), fundamental frequency
+— Acoustic biomarkers: root mean square amplitude (RMS), long-term average spectrum (LTAS), fundamental frequency
 — Therapy stage progression, session completion records, and programme adherence data
 — Treatment plans assigned by Speech & Language Pathologists (SLPs), including prescribed stages, session targets, and clinical goals
 — Self-reported fluency ratings and therapy notes
@@ -142,12 +142,12 @@ We do not sell your personal data. We share data only with the following categor
 SUPABASE INC.
 Role: Sub-processor (database and authentication infrastructure)
 Data: All Platform data
-Safeguard: UK-GBR data centres; Standard Contractual Clauses (SCCs) with UK Addendum
+Safeguard: Standard Contractual Clauses (SCCs) with UK Addendum
 
 VERCEL INC.
 Role: Sub-processor (cloud hosting and edge functions)
 Data: Request data, application logs
-Safeguard: UK/EU server regions selected; SCCs with UK Addendum
+Safeguard: SCCs with UK Addendum
 
 STRIPE INC.
 Role: Independent data controller (payment processing)
@@ -156,7 +156,7 @@ Safeguard: Stripe's own privacy policy governs their processing; they are PCI DS
 
 SENTRY (FUNCTIONAL SOFTWARE INC.)
 Role: Sub-processor (error monitoring)
-Data: Anonymised error logs (no PHI — PHI masking configured)
+Data: Error logs, and masked session replays if you choose Accept all
 Safeguard: SCCs; maskAllText and blockAllMedia enabled
 
 AGORA INC.
@@ -179,6 +179,9 @@ Role: Independent clinical professional
 Data: Your session data, fluency metrics, progress reports, and messages
 Basis: Your consent and the clinical contract between you and your SLP
 
+ANALYTICS AND ADVERTISING PROVIDERS
+If you choose Accept all in our cookie banner, PostHog, Google (Analytics, Tag Manager and Ads), Meta, Snapchat and LinkedIn may receive usage and conversion data. See our Cookie Policy for details and how to withdraw your choice.
+
 LEGAL AUTHORITIES
 Where required by law, court order, or to protect the rights and safety of our users, we may disclose data to law enforcement or regulatory authorities.
 
@@ -186,7 +189,7 @@ Where required by law, court order, or to protect the rights and safety of our u
 7. INTERNATIONAL TRANSFERS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-All personal data is stored in UK data centres. Where any processing involves transfer to a country outside the UK (e.g., sub-processor infrastructure), we ensure an appropriate safeguard is in place: UK adequacy regulations, Standard Contractual Clauses (SCCs) with UK Addendum, or the UK International Data Transfer Agreement (IDTA). Transfers to the US occur only where the recipient participates in the UK–US Data Bridge or equivalent safeguard.
+Some of our sub-processors process personal data outside the UK. Where any processing involves transfer to a country outside the UK (e.g., sub-processor infrastructure), we ensure an appropriate safeguard is in place: UK adequacy regulations, Standard Contractual Clauses (SCCs) with UK Addendum, or the UK International Data Transfer Agreement (IDTA). Transfers to the US occur only where the recipient participates in the UK–US Data Bridge or equivalent safeguard.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 8. RETENTION PERIODS
@@ -195,11 +198,11 @@ All personal data is stored in UK data centres. Where any processing involves tr
 DATA TYPE                          | RETENTION PERIOD
 ———————————————————————————————————|————————————————————————————————
 Account and profile data           | Duration of account + 30 days
-Speech biomarker session data      | 90 days (default; configurable)
+Raw session audio                  | 90 days
 Practice session metadata          | Duration of account + 90 days
-Clinical treatment plans           | Duration of clinical relationship + 7 years (NHS standard)
+Clinical treatment plans           | Duration of clinical relationship + 7 years
 Payment and invoice records        | 7 years (HMRC requirement)
-Consent audit log                  | Permanent (immutable audit record)
+Consent audit log                  | For as long as needed to evidence consent
 Erasure request records            | 7 years (legal compliance)
 Marketing consent records          | Until consent withdrawn + 3 years
 Error logs                         | 90 days
@@ -210,13 +213,10 @@ Following account closure or a valid erasure request, identifiable data is anony
 9. SECURITY MEASURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-— Encryption at rest: AES-256-GCM for all stored data
-— Encryption in transit: TLS 1.3 minimum; HSTS enforced
+— Overview: We use Supabase authentication, PostgreSQL row-level security, encryption in transit, and access controls limited to what each task needs. This is a description of our controls, not an independent audit or certification.
 — Row-level security: PostgreSQL RLS enforces strict per-user data isolation
 — Access controls: Principle of least privilege; service-role access only for privileged server operations
-— No raw audio storage: voice data never leaves your device
-— Staff training: All staff with data access complete annual data protection training
-— Penetration testing: Annual external vulnerability assessments
+— Raw audio: raw audio leaves your device only in the cases described in section 2: SLP session playback, AI conversation practice, optional voice cloning, and optional model improvement. Real-time fluency metrics are computed in your browser.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 10. YOUR RIGHTS UNDER UK GDPR
@@ -261,7 +261,7 @@ Website: ico.org.uk | Phone: 0303 123 1113 | Post: ICO, Wycliffe House, Water La
 11. CHILDREN'S DATA
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-The Platform is intended for users aged 16 and over. We do not knowingly collect data from children under 16 without verified parental or guardian consent. If you believe we have received data from a child under 16, please contact hello@flowen.digital immediately.
+The Platform is for users aged 16 and over. We do not knowingly collect data from anyone under 16. If you believe we have received data from a child under 16, please contact hello@flowen.digital immediately.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 12. UPDATES TO THIS POLICY
@@ -272,14 +272,14 @@ We may update this Privacy Policy periodically. Material changes will be communi
 
   termsOfService: `
 TERMS OF SERVICE
-Last Updated: 1 August 2026
+Last Updated: 2 October 2026
 Effective Date: 1 August 2026
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. AGREEMENT TO TERMS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-By accessing or using the Flowen Platform (flowen.digital and associated subdomains), creating an account, or purchasing a subscription, you ("User", "you") agree to be bound by these Terms of Service ("Terms") and our Privacy Policy. These Terms constitute a legally binding agreement between you and Flowen Speech Technologies Ltd (company number ${entityCompanyNumber('speech-technologies')}), part of the Flowen group of companies ("Flowen", "we", "us").
+By accessing or using the Flowen Platform (flowen.digital and associated subdomains), creating an account, or purchasing a subscription, you ("User", "you") agree to be bound by these Terms of Service ("Terms") and our Privacy Policy. These Terms constitute a legally binding agreement between you and Flowen Speech Technologies Ltd (company number ${entityCompanyNumber('speech-technologies')}), part of the Flowen group of companies ("Flowen", "we", "us"). Flowen Speech Technologies Ltd is a wholly owned subsidiary of Flowen Group Limited (company number ${entityCompanyNumber('group')}).
 
 If you are accessing the Platform on behalf of an organisation (e.g., an NHS trust, private clinic, or educational institution), you represent and warrant that you have authority to bind that organisation and that these Terms apply to that organisation.
 
@@ -293,7 +293,7 @@ WHAT FLOWEN IS
 Flowen is an AI-assisted speech fluency practice platform designed to support people who stammer in practising evidence-based speech management techniques, including diaphragmatic breathing, easy onset, light articulatory contacts, pausing, and phrasing. The Platform provides real-time biofeedback, structured practice programmes, and — where applicable — clinical oversight from assigned Speech & Language Pathologists (SLPs).
 
 IMPORTANT MEDICAL DISCLAIMER
-Flowen is NOT a medical device. Flowen does NOT provide medical diagnosis, clinical treatment, or licensed speech-language pathology services directly. The automated analysis and programme recommendations on the Platform are supportive tools and must not be relied upon as a substitute for professional clinical assessment.
+Flowen is designed as a speech practice tool. It is not intended to diagnose, treat or cure any condition. Flowen does not provide medical diagnosis, clinical treatment, or licensed speech-language pathology services directly. The automated analysis and programme recommendations on the Platform are supportive tools and must not be relied upon as a substitute for professional clinical assessment.
 
 If you have been assigned a clinical SLP through the Platform, your treatment relationship is with that clinician, not with Flowen Speech Technologies Ltd. Flowen provides the technical infrastructure for their clinical practice.
 
@@ -339,7 +339,7 @@ We will give at least 30 days' written notice of any price increases. You may ca
 
 Speech & Language Pathologists and other clinical professionals ("Clinicians") who use the Platform to support patients:
 
-— Must be registered with the Health and Care Professions Council (HCPC) or equivalent regulatory body and maintain that registration throughout their use of the Platform.
+— Must hold, and confirm that they hold, current registration with the Health and Care Professions Council (HCPC) or equivalent regulatory body, and maintain that registration throughout their use of the Platform.
 — Are responsible for their own clinical decision-making. Flowen provides a platform; it does not supervise or direct clinical practice.
 — Must obtain appropriate patient consent before assigning patients and accessing clinical data.
 — Must comply with their employer's and regulatory body's data protection, clinical governance, and confidentiality obligations.
@@ -380,7 +380,7 @@ Your account data and session data remain yours. You grant us a limited licence 
 8. THIRD-PARTY SERVICES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-The Platform integrates with third-party services including Stripe (payment processing) and Supabase (database infrastructure). Your use of these services may be subject to their own terms of service and privacy policies. We are not responsible for the acts or omissions of third-party service providers.
+The Platform integrates with third-party services including Stripe (payment processing), Supabase (database infrastructure) and the other providers listed in our Privacy Policy. Your use of these services may be subject to their own terms of service and privacy policies. We are not responsible for the acts or omissions of third-party service providers.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 9. DISCLAIMERS & WARRANTIES
@@ -404,13 +404,13 @@ TO THE FULLEST EXTENT PERMITTED BY ENGLISH LAW:
 
 (b) IN NO EVENT SHALL FLOWEN'S TOTAL AGGREGATE LIABILITY TO YOU FOR ALL CLAIMS ARISING OUT OF OR RELATING TO THESE TERMS OR THE PLATFORM EXCEED THE GREATER OF: (i) THE TOTAL AMOUNT PAID BY YOU TO FLOWEN IN THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE CLAIM; OR (ii) £100.
 
-Nothing in these Terms excludes or limits our liability for death or personal injury caused by negligence, fraudulent misrepresentation, or any other liability that cannot be excluded under English law.
+Nothing in these Terms excludes or limits our liability for death or personal injury caused by negligence, fraudulent misrepresentation, or any other liability that cannot be excluded under English law. Nothing in these Terms limits liability for breach of your statutory consumer rights.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 11. INDEMNIFICATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-You agree to indemnify, defend, and hold harmless Flowen Speech Technologies Ltd and its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or in any way connected with: (a) your access to or use of the Platform in violation of these Terms; (b) your breach of any representation or warranty in these Terms; or (c) your violation of any applicable law or the rights of any third party.
+If you use the Platform on behalf of an organisation, you agree to indemnify, defend, and hold harmless Flowen Speech Technologies Ltd and its officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or in any way connected with: (a) your access to or use of the Platform in violation of these Terms; (b) your breach of any representation or warranty in these Terms; or (c) your violation of any applicable law or the rights of any third party.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 12. TERM, SUSPENSION & TERMINATION
@@ -428,7 +428,7 @@ You may terminate your account at any time by emailing hello@flowen.digital. Sec
 
 These Terms are governed by the laws of England and Wales. Any dispute arising out of or in connection with these Terms shall be subject to the exclusive jurisdiction of the courts of England and Wales. Consumer users in Scotland or Northern Ireland retain the right to bring proceedings before the courts of their home jurisdiction.
 
-We are committed to resolving disputes informally. Before commencing legal proceedings, please contact hello@flowen.digital to seek resolution.
+We are committed to resolving disputes informally. Before commencing legal proceedings, please contact hello@flowen.digital to seek resolution. The informal process is described in our Governing Law & Dispute Resolution page.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 14. CHANGES TO THESE TERMS
@@ -453,14 +453,14 @@ Flowen is a speech practice tool. It does not replace clinical assessment, diagn
 
   safeguardingPolicy: `
 SAFEGUARDING POLICY
-Last Updated: 26 September 2026
+Last Updated: 2 October 2026
 Effective Date: 26 September 2026
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. PURPOSE AND SCOPE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Flowen Speech Technologies Ltd operates a digital speech-fluency platform used by people who stutter, including children and young people, and by the Speech & Language Pathologists (SLPs) who treat them. This policy sets out how Flowen protects the welfare of children and adults at risk who use the Platform, and what happens when a safeguarding concern arises through it.
+Flowen Speech Technologies Ltd operates a digital speech-fluency platform used by people who stutter, including young people aged 16 and over, and by the Speech & Language Pathologists (SLPs) who treat them. This policy sets out how Flowen protects the welfare of children and adults at risk who use the Platform, and what happens when a safeguarding concern arises through it.
 
 This policy applies to all Flowen staff, contractors, and directors with any access to user data or user-facing systems. It does not replace, and is not a substitute for, the safeguarding policy of the clinical organisation employing a user's assigned SLP — that organisation remains responsible for the clinical safeguarding duties owed to its own patients. Flowen's duty under this policy arises from its own, separate position: as the platform provider and data controller, Flowen may become aware of a safeguarding concern (through session content, messages, or a report from a user) that it has a responsibility to act on regardless of what any other organisation does.
 
@@ -471,7 +471,7 @@ This policy applies to all Flowen staff, contractors, and directors with any acc
 This policy is written with regard to:
 — Working Together to Safeguard Children 2023 (statutory guidance, England)
 — The Care Act 2014 (safeguarding adults at risk)
-— Keeping Children Safe in Education 2024, so far as it informs good practice for any platform used in an educational or NHS-adjacent setting
+— Keeping Children Safe in Education, so far as it informs good practice for any platform used in an educational or NHS-adjacent setting
 — UK GDPR Article 9(2)(b)/(c) and (h) as the lawful basis for processing special category data where necessary to protect a user's vital interests or for health/social care purposes
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -522,7 +522,7 @@ The Platform's AI conversational practice feature is a fluency-practice tool, no
 8. TRAINING AND REVIEW
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-All staff with access to user-facing systems receive an overview of this policy on onboarding. This policy is reviewed at least annually, or sooner following any safeguarding concern that identifies a gap in it.
+Any staff or contractors with access to user-facing systems will receive an overview of this policy on onboarding. This policy is reviewed at least annually, or sooner following any safeguarding concern that identifies a gap in it.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 9. CONTACT
@@ -533,7 +533,7 @@ To raise a safeguarding concern, or for any question about this policy: hello@fl
 
   governingLaw: `
 GOVERNING LAW & DISPUTE RESOLUTION
-Last Updated: 1 August 2026
+Last Updated: 2 October 2026
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 GOVERNING LAW
@@ -568,8 +568,8 @@ Nothing in these Terms affects your statutory rights as a consumer under English
 CONTACT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Flowen Speech Technologies Ltd
-London, United Kingdom
+Flowen Speech Technologies Ltd (company number ${entityCompanyNumber('speech-technologies')})
+${REGISTERED_OFFICE_ADDRESS}
 hello@flowen.digital
 flowen.digital
   `,
