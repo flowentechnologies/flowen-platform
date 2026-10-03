@@ -8,9 +8,8 @@ function baseOpts() {
     token: 'rtc-token',
     agentUid: 9999,
     systemPrompt: 'You are a helpful assistant.',
-    llmUrl: 'https://api.openai.com/v1/chat/completions',
-    llmApiKey: 'sk-test',
-    voice: { vendor: 'openai' as const, apiKey: 'sk-test' },
+    llm: { apiKey: 'gem-test-key' },
+    voice: { vendor: 'google' as const, credentials: '{"type":"service_account"}' },
   };
 }
 
@@ -18,14 +17,14 @@ describe('buildConvoAIJoinPayload', () => {
   it('puts the system prompt under system_messages, not messages — the actual bug: Agora\'s join schema has no `messages` field on llm, so the prompt was silently dropped before this fix', () => {
     const payload = buildConvoAIJoinPayload(baseOpts());
     expect(payload.properties.llm.system_messages).toEqual([
-      { role: 'system', content: 'You are a helpful assistant.' },
+      { role: 'user', parts: [{ text: 'You are a helpful assistant.' }] },
     ]);
     expect(payload.properties.llm).not.toHaveProperty('messages');
   });
 
   it('puts the model under llm.params.model, not llm.model — llm.model is not a real field in Agora\'s schema and was silently ignored', () => {
     const payload = buildConvoAIJoinPayload(baseOpts());
-    expect(payload.properties.llm.params.model).toBe('gpt-4o-mini');
+    expect(payload.properties.llm.params.model).toBe('gemini-2.5-flash');
     expect(payload.properties.llm).not.toHaveProperty('model');
   });
 
@@ -64,12 +63,37 @@ describe('buildConvoAIJoinPayload', () => {
     });
   });
 
-  it('falls back to OpenAI TTS (nova) when there is no voice clone', () => {
+  it('uses Google Chirp 3 HD TTS when there is no voice clone', () => {
     const payload = buildConvoAIJoinPayload(baseOpts());
     expect(payload.properties.tts).toEqual({
-      vendor: 'openai',
-      params: { api_key: 'sk-test', model: 'tts-1', voice: 'nova', speed: 1.0 },
+      vendor: 'google',
+      params: {
+        credentials: '{"type":"service_account"}',
+        VoiceSelectionParams: { name: 'en-US-Chirp3-HD-Charon' },
+        AudioConfig: { speaking_rate: 1.0, sample_rate_hertz: 24000 },
+      },
     });
+  });
+
+  it('uses Google Gemini through Agora: gemini style, key in the streamGenerateContent URL, no OpenAI endpoint', () => {
+    const payload = buildConvoAIJoinPayload(baseOpts());
+    expect(payload.properties.llm.style).toBe('gemini');
+    expect(payload.properties.llm.url).toBe(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=gem-test-key',
+    );
+    expect(JSON.stringify(payload)).not.toContain('api.openai.com');
+    expect(payload.properties.llm).not.toHaveProperty('api_key');
+  });
+
+  it('honours a model override and a custom Chirp voice', () => {
+    const payload = buildConvoAIJoinPayload({
+      ...baseOpts(),
+      llm: { apiKey: 'k', model: 'gemini-3.6-flash' },
+      voice: { vendor: 'google', credentials: '{}', voiceName: 'en-GB-Chirp3-HD-Aoede' },
+    });
+    expect(payload.properties.llm.params.model).toBe('gemini-3.6-flash');
+    expect(payload.properties.llm.url).toContain('/models/gemini-3.6-flash:');
+    expect((payload.properties.tts as { params: { VoiceSelectionParams: { name: string } } }).params.VoiceSelectionParams.name).toBe('en-GB-Chirp3-HD-Aoede');
   });
 
   it('remote_rtc_uids wildcard is an array, not a bare string — Agora requires the array form', () => {
