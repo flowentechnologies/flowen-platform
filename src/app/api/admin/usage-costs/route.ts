@@ -93,7 +93,7 @@ export const SERVICES = [
     monthlyGbp: 0,
     unit:       null,
     rate:       null,
-    note:       'Amount not retrievable. Not counted in totals.',
+    note:       'Evidenced from the Ads billing page: \u00a322.51 spend to date (Aug \u00a319.63; Sep invoice \u00a32.88 unpaid, under the \u00a350 threshold). Last payment \u00a34.63 on 20 Sep, next auto-payment 1 Nov. Not in fixed totals (spend varies).',
     url:        'https://ads.google.com',
   },
   {
@@ -169,7 +169,7 @@ export const SERVICES = [
     // Claude Haiku 4.5: input $0.80/M tokens, output $4/M tokens
     // Coaching prompt ≈ 800 input + 200 output tokens per session
     // Cost = (800×0.80 + 200×4) / 1_000_000 = £0.0016 @ 0.79
-    note:       'Claude API: usage-based. A small receipt (about $6) exists as an unposted draft; per-session figure is an estimate, not billing.',
+    note:       'Claude API: usage-based. One evidenced receipt: $6 API credit paid 28 Jul 2026. Per-session figure is an estimate, not billing.',
     url:        'https://anthropic.com',
   },
   {
