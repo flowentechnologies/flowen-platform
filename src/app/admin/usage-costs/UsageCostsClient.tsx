@@ -597,6 +597,9 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
           <p className="text-slate-400 text-sm mt-1">
             Real-time financial intelligence — revenue, operating costs, unit economics and per-user P&amp;L.
           </p>
+          <p className="text-[11px] font-mono text-amber-400/80 mt-1 max-w-2xl">
+            Revenue figures come from Stripe, in whichever mode the deployment's Stripe key is (test or live). Service costs use hard-coded rate estimates (fixed FX rate, assumed plan prices), not billed amounts, so treat cost and margin figures as estimates.
+          </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100/80 dark:bg-slate-800/60 border border-slate-700/60">
