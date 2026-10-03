@@ -3,7 +3,7 @@ import { requireAdmin } from '@/lib/admin/guard';
 import { adminDb } from '@/lib/supabase/admin';
 
 // ── Cost registry ─────────────────────────────────────────────────────────────
-// Fixed    = real subscription/plan prices (GBP, USD converted at 0.79)
+// Fixed    = evidenced charges only (invoices/statements); items with no billing found are 0 and noted
 // Variable = per-unit rates labelled as estimates in the UI
 // Freemium = free tier in normal use; rate shown for overage
 //
@@ -17,10 +17,10 @@ export const SERVICES = [
     icon:       '▲',
     category:   'Hosting & CI/CD',
     billing:    'fixed' as const,
-    monthlyGbp: 15.80,
+    monthlyGbp: 18.96,
     unit:       null,
     rate:       null,
-    note:       'Pro plan — $20/mo. Includes unlimited deploys, preview URLs, edge network.',
+    note:       'Evidenced invoices: $24/mo (GBP at 0.79, indicative). About $36/mo from 6 Oct 2026 (Speed Insights +$10 ex VAT). Billed, not necessarily paid: card declines seen.',
     url:        'https://vercel.com',
   },
   {
@@ -29,10 +29,10 @@ export const SERVICES = [
     icon:       '🗄',
     category:   'Database & Auth',
     billing:    'fixed' as const,
-    monthlyGbp: 19.75,
+    monthlyGbp: 0,
     unit:       null,
     rate:       null,
-    note:       'Pro plan — $25/mo. Covers Postgres DB, Auth, Storage, Edge Functions, Realtime.',
+    note:       'No billing found in the mailbox sweep. Plan price not evidenced, so not counted.',
     url:        'https://supabase.com',
   },
   {
@@ -41,10 +41,10 @@ export const SERVICES = [
     icon:       '🌐',
     category:   'Database & Auth',
     billing:    'fixed' as const,
-    monthlyGbp: 7.90,
+    monthlyGbp: 0,
     unit:       null,
     rate:       null,
-    note:       'Custom Domain add-on — $10/mo. Maps auth.flowen.digital to Supabase project.',
+    note:       'No billing found in the mailbox sweep. Not counted.',
     url:        'https://supabase.com/docs/guides/platform/custom-domains',
   },
   {
@@ -53,11 +53,72 @@ export const SERVICES = [
     icon:       '🌍',
     category:   'Hosting & CI/CD',
     billing:    'fixed' as const,
-    monthlyGbp: 1.25,
+    monthlyGbp: 0.32,
     unit:       null,
     rate:       null,
-    note:       'flowen.digital annual renewal — ~£15/yr (≈ £1.25/mo). DNS managed via Cloudflare.',
+    note:       'flowen.digital domain via Vercel: $4.79/yr evidenced (about £0.32/mo at 0.79).',
     url:        'https://cloudflare.com',
+  },
+  // ── Reconciled actuals (Oct 2026 mailbox + statement sweep) ───────────────
+  {
+    id:         'google-workspace',
+    name:       'Google Workspace',
+    icon:       'G',
+    category:   'Productivity',
+    billing:    'fixed' as const,
+    monthlyGbp: 13.99,
+    unit:       null,
+    rate:       null,
+    note:       'Evidenced at \u00a313.99/mo. Billed, not necessarily paid: card declines seen.',
+    url:        'https://workspace.google.com',
+  },
+  {
+    id:         'meta-ads',
+    name:       'Meta Ads',
+    icon:       'f',
+    category:   'Marketing',
+    billing:    'fixed' as const,
+    monthlyGbp: 27.91,
+    unit:       null,
+    rate:       null,
+    note:       'Ad spend: \u00a327.91 cash charged (about one month), \u00a31.23 further owed. Spend varies with campaigns.',
+    url:        'https://business.facebook.com',
+  },
+  {
+    id:         'google-ads',
+    name:       'Google Ads',
+    icon:       'G',
+    category:   'Marketing',
+    billing:    'freemium' as const,
+    monthlyGbp: 0,
+    unit:       null,
+    rate:       null,
+    note:       'Evidenced from the Ads billing page: \u00a322.51 spend to date (Aug \u00a319.63; Sep invoice \u00a32.88 unpaid, under the \u00a350 threshold). Last payment \u00a34.63 on 20 Sep, next auto-payment 1 Nov. Not in fixed totals (spend varies).',
+    url:        'https://ads.google.com',
+  },
+  {
+    id:         'bsq',
+    name:       'BSQ',
+    icon:       'B',
+    category:   'Professional services',
+    billing:    'freemium' as const,
+    monthlyGbp: 0,
+    unit:       null,
+    rate:       null,
+    note:       'Founder-stated \u00a3331.20/mo, not yet evidenced by an invoice. Not counted in totals.',
+    url:        '',
+  },
+  {
+    id:         'lawyerly',
+    name:       'Lawyerly',
+    icon:       'L',
+    category:   'Professional services',
+    billing:    'freemium' as const,
+    monthlyGbp: 0,
+    unit:       null,
+    rate:       null,
+    note:       'Founder-stated \u00a3379 + VAT per month, not yet evidenced by an invoice. Not counted in totals.',
+    url:        '',
   },
   {
     id:         'github',
@@ -80,7 +141,7 @@ export const SERVICES = [
     monthlyGbp: 0,
     unit:       'GB/mo',
     rate:       0.015,
-    note:       '10 GB free, then ~£0.015/GB. Used for training-data bucket (user audio uploads).',
+    note:       'No billing found. Storage figure is an estimate from usage, not billing.',
     url:        'https://cloudflare.com',
   },
   // ── AI & Speech ───────────────────────────────────────────────────────────
@@ -90,10 +151,10 @@ export const SERVICES = [
     icon:       '🤖',
     category:   'AI Development Tools',
     billing:    'fixed' as const,
-    monthlyGbp: 15.80,
+    monthlyGbp: 0,
     unit:       null,
     rate:       null,
-    note:       'Claude Pro plan — $20/mo. Used by admin for operations, content, code review, and platform development.',
+    note:       'No billing found in the mailbox sweep for this plan. Not counted.',
     url:        'https://claude.ai',
   },
   {
@@ -108,7 +169,7 @@ export const SERVICES = [
     // Claude Haiku 4.5: input $0.80/M tokens, output $4/M tokens
     // Coaching prompt ≈ 800 input + 200 output tokens per session
     // Cost = (800×0.80 + 200×4) / 1_000_000 = £0.0016 @ 0.79
-    note:       'Claude Haiku 4.5 API — coaching feedback after each session. ~£0.0016/session.',
+    note:       'Claude API: usage-based. One evidenced receipt: $6 API credit paid 28 Jul 2026. Per-session figure is an estimate, not billing.',
     url:        'https://anthropic.com',
   },
   {
@@ -125,7 +186,7 @@ export const SERVICES = [
     // TTS-1 (fallback when no voice clone): $15/1M chars @ ~150 chars/turn × 4 turns/min
     //   = $0.009/min = £0.0071/min (worst-case; ElevenLabs used when clone exists)
     // Blended avg assuming 50% clone usage: ~£0.0063/avatar-minute
-    note:       'GPT-4o-mini (ConvoAI LLM) + TTS-1 (fallback voice). ~£0.006/avatar-min.',
+    note:       'No billing found. Per-minute figure is an estimate from usage, not billing. Note OPENAI_API_KEY is not set in production.',
     url:        'https://platform.openai.com',
   },
   {
@@ -134,12 +195,12 @@ export const SERVICES = [
     icon:       '🎙',
     category:   'Voice Cloning & TTS',
     billing:    'fixed' as const,
-    monthlyGbp: 3.95,
+    monthlyGbp: 0,
     unit:       'char',
     rate:       0.00032,
     // Starter plan: $5/mo = 30k chars included; $0.40/1k chars above (£0.00032/char)
     // Includes Instant Voice Cloning. Turbo v2.5 model used for real-time avatar TTS.
-    note:       'Starter plan — $5/mo (30k chars). £0.00032/char above. IVC for personalised voice.',
+    note:       'No billing found in the mailbox sweep. Plan price not evidenced, so not counted. Per-character figure is an estimate.',
     url:        'https://elevenlabs.io',
   },
   {
@@ -153,7 +214,7 @@ export const SERVICES = [
     rate:       0.0079,
     // ConvoAI RTC: $10/1k minutes = $0.01/min = £0.0079/min
     // Includes bidirectional audio + AI agent orchestration.
-    note:       'ConvoAI RTC — $10/1k avatar-minutes (£0.008/min). Orchestrates LLM + TTS in real time.',
+    note:       'No billing found. Per-minute figure is an estimate from usage, not billing.',
     url:        'https://agora.io',
   },
   {
@@ -201,10 +262,10 @@ export const SERVICES = [
     icon:       '🍎',
     category:   'Mobile Distribution',
     billing:    'fixed' as const,
-    monthlyGbp: 6.52,
+    monthlyGbp: 0,
     unit:       null,
     rate:       null,
-    note:       '$99/year — required for iOS App Store distribution. Covers TestFlight, notarisation, and push certificates.',
+    note:       'No billing found in the mailbox sweep. Not counted.',
     url:        'https://developer.apple.com/programs/',
   },
   {
