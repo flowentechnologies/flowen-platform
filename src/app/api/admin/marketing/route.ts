@@ -57,12 +57,34 @@ export async function GET(req: NextRequest) {
 
 // ── Overview ──────────────────────────────────────────────────────────────────
 
+/**
+ * Paying customers = users with an active subscription who are not admin/founder
+ * or test accounts. Raw active subscription rows include the founder's own trial
+ * and test accounts, so counting them would invent a customer and a CAC.
+ */
+async function countPayingCustomers(client: ReturnType<typeof adminDb>): Promise<number> {
+  const { data: subs } = await client.from('subscriptions').select('user_id').eq('status', 'active');
+  const ids = [...new Set((subs ?? []).map((r: { user_id: string | null }) => r.user_id).filter((v): v is string => Boolean(v)))];
+  if (ids.length === 0) return 0;
+  const { data: profiles } = await client.from('profiles').select('id, is_admin').in('id', ids);
+  const admins = new Set((profiles ?? []).filter((p: { is_admin: boolean | null }) => p.is_admin).map((p: { id: string }) => p.id));
+  let paying = 0;
+  for (const id of ids) {
+    if (admins.has(id)) continue;
+    const { data } = await client.auth.admin.getUserById(id);
+    const email = (data?.user?.email ?? '').toLowerCase();
+    if (/(^|[^a-z])test|@example\.|@flowen\.digital$/.test(email)) continue;
+    paying++;
+  }
+  return paying;
+}
+
 async function overview(client: ReturnType<typeof adminDb>) {
   const now = new Date();
 
   const [
     waitlistRes, profilesRes, onboardedRes,
-    firstSessionRes, activeSubsRes, adStatsRes,
+    firstSessionRes, adStatsRes,
     visitorRes,
   ] = await Promise.all([
     client.from('waitlist_signups').select('*', { count: 'exact', head: true }),
@@ -70,7 +92,6 @@ async function overview(client: ReturnType<typeof adminDb>) {
     client.from('profiles').select('*', { count: 'exact', head: true }).eq('onboarding_complete', true),
     // users with ≥1 practice session (distinct)
     client.from('practice_sessions').select('user_id').limit(10000),
-    client.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     // ad spend totals (all time)
     client.from('ad_platform_stats').select('spend_pence, impressions, clicks, link_clicks, platform').limit(10000),
     // visitor sessions (proxy to "landing page visits")
@@ -80,7 +101,7 @@ async function overview(client: ReturnType<typeof adminDb>) {
   const waitlist  = waitlistRes.count   ?? 0;
   const accounts  = profilesRes.count   ?? 0;
   const onboarded = onboardedRes.count  ?? 0;
-  const paidUsers = activeSubsRes.count ?? 0;
+  const paidUsers = await countPayingCustomers(client);
   const landingVisits = visitorRes.count ?? 0;
 
   // Activated = distinct users with ≥1 session
@@ -102,7 +123,7 @@ async function overview(client: ReturnType<typeof adminDb>) {
     { stage: 'Onboarding Done',  count: onboarded,       note: 'onboarding_complete = true' },
     { stage: 'First Session',    count: activated,       note: 'distinct users with ≥1 practice session' },
     { stage: 'Activated',        count: activated,       note: 'same as first session' },
-    { stage: 'Paid',             count: paidUsers,       note: 'active Stripe subscriptions' },
+    { stage: 'Paid',             count: paidUsers,       note: 'active subscriptions excluding admin/founder and test accounts' },
   ];
 
   // CPA calculations — correctly labelled
@@ -152,13 +173,12 @@ async function overview(client: ReturnType<typeof adminDb>) {
 // ── Paid Media ────────────────────────────────────────────────────────────────
 
 async function paidMedia(client: ReturnType<typeof adminDb>) {
-  const [adRes, waitlistRes, activeSubRes, sessionRes] = await Promise.all([
+  const [adRes, waitlistRes, sessionRes] = await Promise.all([
     client.from('ad_platform_stats')
       .select('platform, stat_date, campaign_id, campaign_name, spend_pence, impressions, reach, clicks, link_clicks, ctr, cpc_pence, cpm_pence')
       .order('stat_date', { ascending: false })
       .limit(500),
     client.from('waitlist_signups').select('*', { count: 'exact', head: true }),
-    client.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     client.from('practice_sessions').select('user_id').limit(10000),
   ]);
 
@@ -170,7 +190,7 @@ async function paidMedia(client: ReturnType<typeof adminDb>) {
 
   const rows      = (adRes.data ?? []) as AdRow[];
   const waitlist  = waitlistRes.count ?? 0;
-  const paidUsers = activeSubRes.count ?? 0;
+  const paidUsers = await countPayingCustomers(client);
   const activated = new Set(((sessionRes.data ?? []) as { user_id: string }[]).map(r => r.user_id)).size;
 
   // Aggregate by platform
