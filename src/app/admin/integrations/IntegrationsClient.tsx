@@ -78,7 +78,8 @@ function StatusBadge({ status }: { status: IntegrationDef['status'] }) {
     missing:   'bg-slate-700/50 text-slate-400 border-slate-600/30',
     error:     'bg-red-500/10 text-red-400 border-red-500/30',
   }[status];
-  const label = { connected: 'Connected', missing: 'Missing', error: 'Error' }[status];
+  // 'connected' means credentials/env vars are present, not that a sync has succeeded.
+  const label = { connected: 'Configured', missing: 'Missing', error: 'Error' }[status];
   return (
     <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border ${cfg}`}>
       {label}
