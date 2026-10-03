@@ -202,12 +202,16 @@ export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => React
       <UL>
         <LI><Bold>iOS mobile application</Bold> — enables patients to complete evidence-based fluency shaping exercises
           (diaphragmatic breathing, soft contacts, prolonged speech) with real-time AI detection of blocks,
-          repetitions, and prolongations using a proprietary disfluency-aware automatic speech recognition model.</LI>
+          repetitions, and prolongations using Flowen&apos;s own disfluency detector. A purpose-trained speech
+          recognition model is planned (see the planned AI model below).</LI>
         <LI><Bold>Clinician web portal</Bold> — provides Speech and Language Therapists (SLTs) with caseload management,
           patient session data, treatment plan configuration, and inactivity alerts to support remote
           therapeutic oversight.</LI>
-        <LI><Bold>AI model</Bold> — a fine-tuned automatic speech recognition model trained on proprietary
-          disfluent speech datasets to detect and quantify stuttering events.</LI>
+        <LI><Bold>AI model (planned)</Bold> — a speech recognition model fine-tuned on a proprietary disfluent
+          speech dataset, to detect and quantify stuttering events more accurately. This model has not yet been
+          trained. The dataset is at an early stage and is being assembled from consenting users, and training is
+          planned once enough consented data has been collected. Until then the product relies on third-party speech
+          recognition for transcription, with Flowen&apos;s own detector identifying stuttering events.</LI>
       </UL>
       <P>
         The underlying software, models, and brand IP used in this trade are owned by another qualifying subsidiary,
