@@ -598,7 +598,7 @@ export default function UsageCostsClient({ initialData }: { initialData: UsageCo
             Real-time financial intelligence — revenue, operating costs, unit economics and per-user P&amp;L.
           </p>
           <p className="text-[11px] font-mono text-amber-400/80 mt-1 max-w-2xl">
-            Revenue figures come from Stripe, in whichever mode the deployment's Stripe key is (test or live). Service costs use hard-coded rate estimates (fixed FX rate, assumed plan prices), not billed amounts, so treat cost and margin figures as estimates.
+            Revenue figures come from Stripe, in whichever mode the deployment's Stripe key is (test or live). Fixed costs are taken from invoices, receipts and statements where we have them; services with no billing found show £0. Per-unit usage rates (AI, voice, storage) and the USD to GBP rate are estimates, not billed amounts, so treat variable cost and margin figures as estimates.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
