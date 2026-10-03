@@ -387,12 +387,12 @@ function ConsensusHero({ consensus, methods, kpis, onSnapshot }: {
       <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 tracking-widest">LIVE VALUATION</span>
+            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 tracking-widest">ILLUSTRATIVE SCENARIO</span>
             <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-slate-700 text-slate-400">{consensus.count}/{methods.length} METHODS ACTIVE</span>
-            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 animate-pulse">LIVE</span>
           </div>
           <h2 className="text-lg font-black text-slate-900 dark:text-white">Consensus Pre-Money Valuation</h2>
           <p className="text-xs text-slate-500 mt-0.5">Arithmetic mean of {consensus.count} active method outputs · {unlockedCount} methods unlocked</p>
+          <p className="text-[10px] font-mono text-amber-400/80 mt-1 max-w-xl">Scenario model: inputs (factors, exit values, projections, market sizes) are editable assumptions, not measured results. Not a valuation of Flowen.</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <button type="button" onClick={copyForInvestor}
