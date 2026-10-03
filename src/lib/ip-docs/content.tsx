@@ -758,12 +758,12 @@ export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => React
     <>
       <Note>DRAFT — REQUIRES COMPLETION. Fill in all data source entries below and verify licence status before marking complete.</Note>
       <H>AI Training Dataset IP Verification Report</H>
-      <P>This report documents all audio corpora and datasets used in training the Flowen disfluency ASR model, with licence status and IP risk assessment for each source.</P>
+      <P>This report documents all audio corpora and datasets held or intended for training a Flowen disfluency ASR model (none has been trained to date), with licence status and IP risk assessment for each source.</P>
       <H>Data Sources</H>
       <H3>1. Flowen Proprietary Corpus</H3>
       <UL>
         <LI><Bold>Source:</Bold> User-consented session recordings (opt-in)</LI>
-        <LI><Bold>Volume:</Bold> 100,000+ audio clips, approx. 800 hours</LI>
+        <LI><Bold>Volume:</Bold> 5 audio clips, about 282 seconds (October 2026); to be grown through the consented pipeline</LI>
         <LI><Bold>Licence:</Bold> Proprietary — owned by Flowen Group Ltd</LI>
         <LI><Bold>Consent basis:</Bold> Explicit GDPR Article 9(2)(a) consent at onboarding</LI>
         <LI><Bold>IP risk:</Bold> Low — internally generated, users waive IP claims in ToS §12</LI>
@@ -991,15 +991,15 @@ export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => React
       <H>Proprietary Disfluent Speech Dataset Catalogue</H>
       <P><Bold>Classification:</Bold> CONFIDENTIAL — TRADE SECRET &nbsp;·&nbsp; <Bold>Access:</Bold> Engineering &amp; Research only</P>
       <H>Overview</H>
-      <P>The Flowen Proprietary Disfluent Speech Corpus is a collection of audio recordings from consented users of the Flowen platform. It represents one of the largest labelled disfluent speech datasets in the UK, collected under GDPR-compliant consent and processed for machine learning use.</P>
-      <H>Corpus Statistics (August 2026)</H>
+      <P>The Flowen Proprietary Disfluent Speech Corpus is a collection of audio recordings from consented users of the Flowen platform. It is being assembled under GDPR-compliant consent for machine learning use and is currently very small (see statistics below).</P>
+      <H>Corpus Statistics (October 2026)</H>
       <UL>
-        <LI><Bold>Total clips:</Bold> 100,000+</LI>
-        <LI><Bold>Total duration:</Bold> ~800 hours</LI>
-        <LI><Bold>Speakers:</Bold> 1,200+ unique consented users</LI>
-        <LI><Bold>Languages:</Bold> English (UK) primary; Welsh and Scottish Gaelic subsets</LI>
-        <LI><Bold>Event types labelled:</Bold> Blocks, prolongations, part-word repetitions, whole-word repetitions, interjections</LI>
-        <LI><Bold>Labelling method:</Bold> Automated pipeline (Flowen ASR) + human expert review on 10% random sample</LI>
+        <LI><Bold>Total clips:</Bold> 5</LI>
+        <LI><Bold>Total duration:</Bold> about 282 seconds</LI>
+        <LI><Bold>Speakers:</Bold> 1 consented user</LI>
+        <LI><Bold>Languages:</Bold> English (UK)</LI>
+        <LI><Bold>Event types to be labelled:</Bold> Blocks, prolongations, part-word repetitions, whole-word repetitions, interjections (labelling not yet done at scale)</LI>
+        <LI><Bold>Labelling method:</Bold> Not yet established. No Flowen ASR model exists to automate labelling; human review is planned</LI>
       </UL>
       <H>IP Protection Measures</H>
       <UL>
@@ -1083,7 +1083,7 @@ export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => React
       <UL>
         <LI>Audio captured at 16 kHz, 16-bit PCM; preprocessed via log-Mel filterbank (80 bins, 25 ms frames, 10 ms hop)</LI>
         <LI>Proprietary disfluency tokenisation scheme: standard phoneme tokens augmented with BLOCK, PROLONG, REP_START, REP_END special tokens inserted by the labelling pipeline</LI>
-        <LI>Transformer encoder fine-tuned on Flowen proprietary disfluent speech corpus (100k+ clips) using the disfluency token scheme</LI>
+        <LI>Transformer encoder to be fine-tuned on the Flowen consented disfluent speech corpus once assembled (planned; no model has been trained yet) using the disfluency token scheme</LI>
         <LI>Per-phoneme duration z-score against speaker-adapted norms for prolongation detection threshold</LI>
         <LI>Pre-vocalic silence detector with 200 ms threshold for block detection</LI>
         <LI>N-gram token sequence matcher for repetition detection (minimum window: 3 tokens)</LI>
