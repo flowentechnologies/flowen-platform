@@ -667,15 +667,6 @@ export function RoadmapClient({ initialMilestones, serverNow }: { initialMilesto
     });
   }
 
-  function handleSeed() {
-    startTrans(async () => {
-      const res = await apiPost({ action: 'seed' });
-      if (res.error) { showToast(`Error: ${res.error}`, 'error'); return; }
-      if (res.milestones) setMilestones(res.milestones);
-      showToast('Roadmap seeded with example milestones', 'success');
-    });
-  }
-
   function handleCopy() {
     const text = buildSummary(milestones);
     navigator.clipboard.writeText(text).then(() => {
@@ -790,17 +781,9 @@ export function RoadmapClient({ initialMilestones, serverNow }: { initialMilesto
             Phase 2 NHS Pilot (ICB contracts, DSPT, 500 users), Phase 3 Scale (10 ICBs, Series A).
           </p>
           <p className="text-[11px] text-slate-600 font-mono mb-6">
-            Seed with Flowen&apos;s pre-built milestones or add your own.
+            Add your first milestone to get started.
           </p>
           <div className="flex justify-center gap-3">
-            <button
-              type="button"
-              onClick={handleSeed}
-              disabled={isPending}
-              className="px-5 py-2.5 text-sm font-mono font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white transition-colors disabled:opacity-40"
-            >
-              {isPending ? 'Seeding...' : 'Seed Example Roadmap'}
-            </button>
             <button
               type="button"
               onClick={() => setPanel({ mode: 'add' })}
