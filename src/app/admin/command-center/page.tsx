@@ -164,5 +164,20 @@ async function fetchData(): Promise<CCData> {
 export default async function CommandCenterPage() {
   await assertAdmin();
   const data = await fetchData();
-  return <CommandCentreClient initialData={data} />;
+  // Mirror the key selection in src/lib/stripe.ts; only the key prefix is inspected, never printed.
+  const isLive = process.env.NEXT_PUBLIC_STRIPE_ENV === 'live';
+  const stripeKey = (isLive
+    ? process.env.STRIPE_LIVE_SECRET_KEY || process.env.STRIPE_SECRET_KEY
+    : process.env.STRIPE_TEST_SECRET_KEY || process.env.STRIPE_SECRET_KEY) ?? '';
+  const stripeTestMode = !stripeKey.startsWith('sk_live_') && !stripeKey.startsWith('rk_live_');
+  return (
+    <>
+      {stripeTestMode && (
+        <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-xs font-mono text-amber-400">
+          STRIPE TEST MODE: MRR and subscription figures below come from Stripe test data (or an unconfigured key), not real customers.
+        </div>
+      )}
+      <CommandCentreClient initialData={data} />
+    </>
+  );
 }
