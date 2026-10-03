@@ -78,7 +78,8 @@ function StatusBadge({ status }: { status: IntegrationDef['status'] }) {
     missing:   'bg-slate-700/50 text-slate-400 border-slate-600/30',
     error:     'bg-red-500/10 text-red-400 border-red-500/30',
   }[status];
-  const label = { connected: 'Connected', missing: 'Missing', error: 'Error' }[status];
+  // 'connected' means credentials/env vars are present, not that a sync has succeeded.
+  const label = { connected: 'Configured', missing: 'Missing', error: 'Error' }[status];
   return (
     <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold border ${cfg}`}>
       {label}
@@ -191,13 +192,16 @@ function ServicesTab({ integrations }: { integrations: IntegrationDef[] }) {
           )}
 
           {/* Last success + detail */}
-          {(svc.lastSuccessAt || svc.detail) && (
+          {(svc.lastSuccessAt || svc.detail || SYNCED_SERVICES.includes(svc.name)) && (
             <div className="space-y-0.5">
               {svc.lastSuccessAt && (
                 <p className="text-[10px] font-mono text-slate-500">
                   Last success: <span className="text-slate-400">{fmtRelative(svc.lastSuccessAt)}</span>
                   <span className="text-slate-600"> · {fmtDate(svc.lastSuccessAt)}</span>
                 </p>
+              )}
+              {!svc.lastSuccessAt && SYNCED_SERVICES.includes(svc.name) && (
+                <p className="text-[10px] font-mono text-amber-500">Never synced (no successful run recorded)</p>
               )}
               {svc.detail && (
                 <p className="text-[10px] font-mono text-slate-500 break-words">{svc.detail}</p>
@@ -616,6 +620,9 @@ interface Props {
   webhookTypes:  Record<string, number>;
   totalWebhooks: number;
 }
+
+// Services whose last success comes from cron_runs; show 'Never synced' if none.
+const SYNCED_SERVICES = ['Google Ads', 'Meta Ads', 'Social Publishing', 'Gmail', 'Xero'];
 
 export function IntegrationsClient({
   integrations,
