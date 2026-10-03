@@ -192,13 +192,16 @@ function ServicesTab({ integrations }: { integrations: IntegrationDef[] }) {
           )}
 
           {/* Last success + detail */}
-          {(svc.lastSuccessAt || svc.detail) && (
+          {(svc.lastSuccessAt || svc.detail || SYNCED_SERVICES.includes(svc.name)) && (
             <div className="space-y-0.5">
               {svc.lastSuccessAt && (
                 <p className="text-[10px] font-mono text-slate-500">
                   Last success: <span className="text-slate-400">{fmtRelative(svc.lastSuccessAt)}</span>
                   <span className="text-slate-600"> · {fmtDate(svc.lastSuccessAt)}</span>
                 </p>
+              )}
+              {!svc.lastSuccessAt && SYNCED_SERVICES.includes(svc.name) && (
+                <p className="text-[10px] font-mono text-amber-500">Never synced (no successful run recorded)</p>
               )}
               {svc.detail && (
                 <p className="text-[10px] font-mono text-slate-500 break-words">{svc.detail}</p>
@@ -617,6 +620,9 @@ interface Props {
   webhookTypes:  Record<string, number>;
   totalWebhooks: number;
 }
+
+// Services whose last success comes from cron_runs; show 'Never synced' if none.
+const SYNCED_SERVICES = ['Google Ads', 'Meta Ads', 'Social Publishing', 'Gmail', 'Xero'];
 
 export function IntegrationsClient({
   integrations,
