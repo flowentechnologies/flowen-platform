@@ -5,7 +5,7 @@
  * server-side. Client calls this to start and stop AI agents.
  *
  * POST  { channel, token, agentUid, systemPrompt? }
- *   → Joins the channel with a ConvoAI agent (ASR → LLM → TTS)
+ *   → Joins the channel with a ConvoAI agent (ASR → Gemini LLM → TTS: Google Chirp 3 HD, or the user's ElevenLabs clone)
  *   → Returns { agentId }
  *
  * DELETE { agentId }
@@ -14,7 +14,7 @@
 import { NextResponse } from 'next/server';
 import { createClient as createAdmin } from '@supabase/supabase-js';
 import { getUserFromRequest } from '@/lib/supabase/from-request';
-import { buildConvoAIJoinPayload } from '@/lib/agora/convoai-payload';
+import { buildConvoAIJoinPayload, type ConvoAIVoiceConfig } from '@/lib/agora/convoai-payload';
 import { DEFAULT_CONVOAI_BASE_URL, buildConvoAIJoinUrl, buildConvoAILeaveUrl } from '@/lib/agora/convoai-urls';
 import { conflictingAgentId } from '@/lib/agora/convoai-conflict';
 import { getConvoAIHeaders } from '@/lib/agora/convoai-auth';
@@ -85,6 +85,22 @@ export async function POST(req: Request) {
       appId, appCert, channel, agentUid, RtcRole.PUBLISHER, expiresAt, expiresAt,
     );
 
+    // LLM: Google Gemini. Voice: the user's ElevenLabs clone when they have
+    // one, otherwise Google Chirp 3 HD. Missing config is reported plainly
+    // instead of sending Agora an empty key it would reject mid-session.
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) return NextResponse.json({ error: 'AI coach not configured (GEMINI_API_KEY missing)' }, { status: 503 });
+    let voice: ConvoAIVoiceConfig;
+    if (storedVoiceCloneId) {
+      const elKey = process.env.ELEVENLABS_API_KEY;
+      if (!elKey) return NextResponse.json({ error: 'AI coach voice not configured (ELEVENLABS_API_KEY missing)' }, { status: 503 });
+      voice = { vendor: 'elevenlabs', apiKey: elKey, voiceId: storedVoiceCloneId };
+    } else {
+      const credentials = process.env.GOOGLE_TTS_CREDENTIALS_JSON;
+      if (!credentials) return NextResponse.json({ error: 'AI coach voice not configured (GOOGLE_TTS_CREDENTIALS_JSON missing)' }, { status: 503 });
+      voice = { vendor: 'google', credentials, voiceName: process.env.GOOGLE_TTS_VOICE || undefined };
+    }
+
     const defaultSystemPrompt = [
       'You are Flowen, a warm and encouraging AI speech therapy assistant.',
       'You help people who stutter practise fluency techniques including easy onset,',
@@ -100,11 +116,8 @@ export async function POST(req: Request) {
       agentUid,
       // Clamp to prevent token-bomb attacks; slice at a word boundary
       systemPrompt: (typeof body.systemPrompt === 'string' ? body.systemPrompt : defaultSystemPrompt).slice(0, MAX_SYSTEM_PROMPT_CHARS),
-      llmUrl:       process.env.AGORA_LLM_URL ?? 'https://api.openai.com/v1/chat/completions',
-      llmApiKey:    process.env.OPENAI_API_KEY ?? '',
-      voice: storedVoiceCloneId
-        ? { vendor: 'elevenlabs', apiKey: process.env.ELEVENLABS_API_KEY ?? '', voiceId: storedVoiceCloneId }
-        : { vendor: 'openai', apiKey: process.env.OPENAI_API_KEY ?? '' },
+      llm:          { apiKey: geminiKey, model: process.env.GEMINI_MODEL || undefined },
+      voice:        voice,
     });
 
     const joinUrl = buildConvoAIJoinUrl(baseUrl, appId);

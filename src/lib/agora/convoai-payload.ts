@@ -22,16 +22,33 @@ import { ownerAgentName } from './ownership';
  * 'rtm'` — Agora's own docs are explicit both are required together for
  * agent-state/error events to fire — and a `greeting_message`, neither of
  * which existed before.
+ *
+ * LLM is Google Gemini via Agora's `style: 'gemini'` (Agora docs:
+ * conversational-ai/models/llm/gemini). The API key travels in the URL query
+ * string, as Agora's Gemini integration requires, and system messages use the
+ * `parts` shape instead of `content`.
+ *
+ * Default TTS is Google Chirp 3 HD (Agora vendor `google`, which takes a
+ * service-account credentials JSON string). ElevenLabs stays for users with a
+ * cloned voice.
  */
 
-export interface ConvoAIVoiceConfig {
-  vendor: 'elevenlabs' | 'openai';
-  apiKey: string;
-  // elevenlabs-only
-  voiceId?: string;
-  // openai-only
-  model?: string;
-  voice?: string;
+export type ConvoAIVoiceConfig =
+  | { vendor: 'elevenlabs'; apiKey: string; voiceId: string }
+  | {
+      vendor: 'google';
+      /** Google Cloud service-account credentials, as a JSON string. */
+      credentials: string;
+      /** e.g. en-US-Chirp3-HD-Charon. Defaults to DEFAULT_GOOGLE_VOICE. */
+      voiceName?: string;
+    };
+
+export const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
+export const DEFAULT_GOOGLE_VOICE = 'en-US-Chirp3-HD-Charon';
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+export function buildGeminiLlmUrl(model: string, apiKey: string): string {
+  return `${GEMINI_BASE}/${encodeURIComponent(model)}:streamGenerateContent?alt=sse&key=${encodeURIComponent(apiKey)}`;
 }
 
 export interface BuildConvoAIJoinPayloadOptions {
@@ -40,12 +57,12 @@ export interface BuildConvoAIJoinPayloadOptions {
   token: string;
   agentUid: number;
   systemPrompt: string;
-  llmUrl: string;
-  llmApiKey: string;
+  llm: { apiKey: string; model?: string };
   voice: ConvoAIVoiceConfig;
 }
 
 export function buildConvoAIJoinPayload(opts: BuildConvoAIJoinPayloadOptions) {
+  const model = opts.llm.model ?? DEFAULT_GEMINI_MODEL;
   return {
     name: ownerAgentName(opts.userId),
     properties: {
@@ -61,16 +78,17 @@ export function buildConvoAIJoinPayload(opts: BuildConvoAIJoinPayloadOptions) {
         language: 'en-US',
       },
       llm: {
-        url:     opts.llmUrl,
-        api_key: opts.llmApiKey,
+        url:     buildGeminiLlmUrl(model, opts.llm.apiKey),
+        style:   'gemini',
+        ignore_empty: true,
         max_history: 32,
         greeting_message: "Hi, I'm here whenever you're ready — just start talking and we'll practise together.",
         failure_message: "Sorry, I had trouble with that — let's try again.",
         system_messages: [
-          { role: 'system', content: opts.systemPrompt },
+          { role: 'user', parts: [{ text: opts.systemPrompt }] },
         ],
         params: {
-          model: 'gpt-4o-mini',
+          model,
         },
       },
       tts: opts.voice.vendor === 'elevenlabs'
@@ -86,12 +104,11 @@ export function buildConvoAIJoinPayload(opts: BuildConvoAIJoinPayloadOptions) {
             },
           }
         : {
-            vendor: 'openai',
+            vendor: 'google',
             params: {
-              api_key: opts.voice.apiKey,
-              model:   opts.voice.model ?? 'tts-1',
-              voice:   opts.voice.voice ?? 'nova',
-              speed:   1.0,
+              credentials: opts.voice.credentials,
+              VoiceSelectionParams: { name: opts.voice.voiceName ?? DEFAULT_GOOGLE_VOICE },
+              AudioConfig: { speaking_rate: 1.0, sample_rate_hertz: 24000 },
             },
           },
       parameters: {
