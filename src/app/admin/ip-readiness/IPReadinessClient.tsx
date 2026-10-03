@@ -651,7 +651,7 @@ function Tier1AuditTab({ items: initial, showToast }: {
       {grouped.length === 0 ? (
         <div className="py-16 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
           <p className="text-sm text-slate-600 font-mono">
-            {items.length === 0 ? 'No audit items yet — seed or add your first item' : 'No items match the current filter'}
+            {items.length === 0 ? 'No audit items yet — add your first item' : 'No items match the current filter'}
           </p>
         </div>
       ) : (
@@ -1023,7 +1023,7 @@ function Tier2FundingTab({ items: initial, showToast }: {
       {grouped.length === 0 ? (
         <div className="py-16 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
           <p className="text-sm text-slate-600 font-mono">
-            {items.length === 0 ? 'No funding programmes yet — seed or add your first one' : 'No programmes match the current filter'}
+            {items.length === 0 ? 'No funding programmes yet — add your first one' : 'No programmes match the current filter'}
           </p>
         </div>
       ) : (
@@ -1063,28 +1063,16 @@ interface Props {
 }
 
 export default function IPReadinessClient({ initialAuditItems, initialFundingItems }: Props) {
-  const [auditItems,   setAuditItems]   = useState<AuditItem[]>(initialAuditItems);
-  const [fundingItems, setFundingItems] = useState<FundingItem[]>(initialFundingItems);
+  const [auditItems] = useState<AuditItem[]>(initialAuditItems);
+  const [fundingItems] = useState<FundingItem[]>(initialFundingItems);
   const [tab, setTab] = useState<MainTab>('tier1');
   const [toast, setToast] = useState<{ message: string; kind: 'success' | 'error' } | null>(null);
-  const [seeding, setSeeding] = useState(false);
 
   function showToast(message: string, kind: 'success' | 'error') {
     setToast({ message, kind });
     setTimeout(() => setToast(null), 3000);
   }
 
-  async function handleSeed() {
-    setSeeding(true);
-    const res = await apiPost({ action: 'seed' });
-    setSeeding(false);
-    if (res.error) { showToast(`Error: ${res.error}`, 'error'); return; }
-    setAuditItems(res.auditItems ?? []);
-    setFundingItems(res.fundingItems ?? []);
-    showToast('Seeded with recommended audit items and funding programmes', 'success');
-  }
-
-  const isEmpty = auditItems.length === 0 && fundingItems.length === 0;
 
   return (
     <div className="space-y-6">
@@ -1097,16 +1085,6 @@ export default function IPReadinessClient({ initialAuditItems, initialFundingIte
       <div className="flex flex-wrap items-center justify-between gap-3">
         <TabBar active={tab} onChange={setTab} />
 
-        {isEmpty && (
-          <button
-            type="button"
-            onClick={handleSeed}
-            disabled={seeding}
-            className="px-4 py-2 text-sm font-mono font-bold rounded-xl border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 transition-colors disabled:opacity-40"
-          >
-            {seeding ? 'Seeding…' : '⚡ Seed recommended items'}
-          </button>
-        )}
       </div>
 
       {/* Tab content */}
