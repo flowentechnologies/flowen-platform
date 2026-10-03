@@ -151,10 +151,10 @@ export const SERVICES = [
     icon:       '🤖',
     category:   'AI Development Tools',
     billing:    'fixed' as const,
-    monthlyGbp: 0,
+    monthlyGbp: 20,
     unit:       null,
     rate:       null,
-    note:       'No billing found in the mailbox sweep for this plan. Not counted.',
+    note:       'Apple subscription, personal Apple account, \u00a320.00/mo incl VAT. Evidenced from Apple receipts (28 Jul, 30 Aug, 2 Oct 2026); entity unassigned.',
     url:        'https://claude.ai',
   },
   {
