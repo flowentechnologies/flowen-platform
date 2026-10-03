@@ -643,7 +643,6 @@ export default function AffiliateClient({ initialAffiliates, initialPayouts, ini
   const [filterStatus, setFilterStatus] = useState<AffiliateStatus | 'all'>('all');
   const [filterTier,   setFilterTier]   = useState<AffiliateTier | 'all'>('all');
   const [search,       setSearch]       = useState('');
-  const [seeding,      setSeeding]      = useState(false);
   const [toast, setToast] = useState<{ msg: string; kind: 'ok' | 'err' } | null>(null);
   const [, startT] = useTransition();
 
@@ -656,15 +655,6 @@ export default function AffiliateClient({ initialAffiliates, initialPayouts, ini
     const res = await fetch('/api/admin/affiliate');
     const data = await res.json() as { affiliates: AffiliateWithStats[]; payouts: AffiliatePayout[]; summary: Summary };
     if (data.affiliates) { setAffiliates(data.affiliates); setPayouts(data.payouts); setSummary(data.summary); }
-  }
-
-  async function handleSeed() {
-    if (!confirm('Seed with example affiliates? (SLT, SEND school, stammer blog)')) return;
-    setSeeding(true);
-    await api({ action: 'seed' });
-    await reload();
-    setSeeding(false);
-    showToast('Example affiliates seeded', 'ok');
   }
 
   function handleSaveAffiliate(a: AffiliateWithStats) {
@@ -796,10 +786,6 @@ export default function AffiliateClient({ initialAffiliates, initialPayouts, ini
                   <button type="button" onClick={() => { setEditTarget(undefined); setShowModal(true); }}
                     className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-sm font-bold transition-colors">
                     Add first affiliate
-                  </button>
-                  <button type="button" onClick={handleSeed} disabled={seeding}
-                    className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-bold transition-colors disabled:opacity-50">
-                    {seeding ? 'Seeding…' : '⚡ Seed examples'}
                   </button>
                 </div>
               )}
