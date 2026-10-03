@@ -42,17 +42,17 @@ export default async function ValuationPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Live Valuation</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Valuation Scenarios</h1>
           <p className="text-slate-400 text-sm mt-1.5 max-w-xl">
-            Multi-method consensus valuation with milestone unlock gates — investor-ready pre-money range computed in real time
+            Multi-method scenario model with milestone unlock gates. An illustrative range, not a valuation of Flowen: only the KPI inputs (MRR, users, waitlist) are read from the database, everything else is an editable assumption.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 self-start">
           <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
             7 METHODS
           </span>
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 animate-pulse">
-            LIVE KPIs
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-500/10 text-slate-400 border border-slate-500/30">
+            KPI INPUTS FROM DB
           </span>
           <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
             CONFIDENTIAL
