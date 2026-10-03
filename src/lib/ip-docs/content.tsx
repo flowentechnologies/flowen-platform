@@ -731,7 +731,7 @@ export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => React
     <>
       <Note>INTERNAL DOCUMENT — ACTION REQUIRED. This brief sets out the IP assignment steps needed before any investor term sheet. Estimated completion: 4–6 weeks with a patent attorney.</Note>
       <H>ASR Model IP Assignment — Action Brief</H>
-      <P><Bold>Background:</Bold> The Flowen ASR model (disfluency-detecting speech recognition transformer) was developed by the founding team prior to and during early company formation. Ownership must be formally transferred from each founder to the company via a signed Deed of Assignment.</P>
+      <P><Bold>Background:</Bold> The Flowen disfluency detector and the design of the planned Flowen ASR model (a disfluency-detecting speech recognition transformer) were developed by the founding team prior to and during early company formation. No ASR model has been trained yet. Ownership of the detector, the model design and any future trained model must be formally transferred from each founder to the company via a signed Deed of Assignment.</P>
       <H>Scope of IP to Assign</H>
       <UL>
         <LI>Model architecture design and selection decisions</LI>
@@ -743,7 +743,7 @@ export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => React
       </UL>
       <H>Founders Requiring Assignment</H>
       <UL>
-        <LI>Howard Henry — founder; contributions: model architecture, training pipeline, disfluency tokenisation</LI>
+        <LI>Howard Henry — founder; contributions: model architecture design, disfluency tokenisation, training pipeline (in development)</LI>
       </UL>
       <H>Action Steps</H>
       <UL>
@@ -858,7 +858,7 @@ export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => React
       <H>Purpose</H>
       <P>This policy establishes how Flowen Group Ltd records, versions, and audits all production and experimental AI model artefacts. The goal is to ensure reproducibility, support investor IP due diligence, and enable clinical safety auditing under DCB0129.</P>
       <H>Scope</H>
-      <P>Applies to all ML model weights, tokenisers, configuration files, training scripts, evaluation benchmarks, and ONNX/WASM exports associated with the Flowen ASR disfluency detection pipeline.</P>
+      <P>Applies to all ML model weights, tokenisers, configuration files, training scripts, evaluation benchmarks, and ONNX/WASM exports associated with the Flowen ASR disfluency detection pipeline, including any model trained in future (none has been trained yet).</P>
       <H>Version Naming</H>
       <P>All model versions follow the schema <code className="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">flowen-asr-vMAJOR.MINOR.PATCH</code>. Production deployments use <Bold>MAJOR.MINOR</Bold>; patch increments cover weight-only hotfixes without architecture changes.</P>
       <H>Registry Requirements</H>
@@ -937,13 +937,13 @@ export const CONTENT: Record<string, ReactNode | ((live: IpDocLiveData) => React
       <H>Flowen Trade Secret Protection Policy</H>
       <P><Bold>Version:</Bold> 1.0 &nbsp;·&nbsp; <Bold>Owner:</Bold> CEO &nbsp;·&nbsp; <Bold>Effective:</Bold> August 2026</P>
       <H>1. Purpose</H>
-      <P>This policy sets out how Flowen Group Ltd identifies, protects, and enforces its trade secrets. The primary trade secrets are the disfluency detection algorithm, ASR model architecture and weights, proprietary training corpus, and commercially sensitive business information.</P>
+      <P>This policy sets out how Flowen Group Ltd identifies, protects, and enforces its trade secrets. The primary trade secrets are the disfluency detection algorithm, ASR model architecture and, once trained, its weights, the proprietary training corpus (being assembled), and commercially sensitive business information.</P>
       <H>2. What Constitutes a Trade Secret</H>
       <P>Under the Trade Secrets (Enforcement, etc.) Regulations 2018 (implementing EU Directive 2016/943 into UK law — retained post-Brexit), a trade secret is information that: (a) is secret; (b) has commercial value because it is secret; and (c) has been subject to reasonable steps to keep it secret. Flowen designates the following as trade secrets:</P>
       <UL>
         <LI>The disfluency tokenisation and classification algorithm (specific threshold values, feature engineering methods)</LI>
         <LI>Model weights, architecture hyperparameters, and training procedures for the Flowen ASR system</LI>
-        <LI>The proprietary disfluent speech corpus and associated metadata</LI>
+        <LI>The proprietary disfluent speech corpus (being assembled from consented users) and associated metadata</LI>
         <LI>Customer lists, pricing models, and commercial agreements</LI>
       </UL>
       <H>3. Protection Measures</H>
