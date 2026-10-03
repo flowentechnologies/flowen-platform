@@ -60,11 +60,11 @@ const STATUSES = [
 const STATUS_MAP = Object.fromEntries(STATUSES.map(s => [s.id, s]));
 
 const EMPTY_STATE_SUGGESTIONS = [
-  { name: 'Disfluent ASR Engine v1.0', asset_type: 'ai_model' as IPAssetType, status: 'unregistered', jurisdiction: 'Global', description: 'Proprietary fine-tuned ASR model for disfluency detection and biofeedback' },
+  { name: 'Disfluent ASR Engine (planned)', asset_type: 'ai_model' as IPAssetType, status: 'unregistered', jurisdiction: 'Global', description: 'Planned disfluency-detection ASR model. No model has been trained yet' },
   { name: 'FLOWEN', asset_type: 'trademark' as IPAssetType, status: 'pending', jurisdiction: 'UK', description: 'Brand name trademark' },
   { name: '"Every word gets there." tagline', asset_type: 'trademark' as IPAssetType, status: 'unregistered', jurisdiction: 'UK', description: 'Registered tagline / slogan' },
   { name: 'Flowen dual-waveform logo', asset_type: 'trademark' as IPAssetType, status: 'unregistered', jurisdiction: 'UK', description: 'Distinctive dual-waveform gradient logomark' },
-  { name: 'Disfluent Speech Training Dataset (100k+ clips)', asset_type: 'dataset' as IPAssetType, status: 'unregistered', jurisdiction: 'Global', description: 'Proprietary corpus of 100k+ labelled disfluent audio clips' },
+  { name: 'Disfluent Speech Training Dataset', asset_type: 'dataset' as IPAssetType, status: 'unregistered', jurisdiction: 'Global', description: 'Consented disfluent audio clips, currently 5 clips (282 s) as of October 2026, growing' },
   { name: 'flowen.digital', asset_type: 'domain' as IPAssetType, status: 'registered', jurisdiction: 'Global', description: 'Primary web domain' },
   { name: 'flowen.app', asset_type: 'domain' as IPAssetType, status: 'registered', jurisdiction: 'Global', description: 'App sub-domain' },
 ];
@@ -991,7 +991,7 @@ function ModelRegistryTab({ versions: initial }: { versions: ModelVersion[] }) {
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Disfluent ASR Engine — Version Registry</h2>
-        <p className="text-sm text-slate-500 mt-0.5">Proprietary fine-tuned speech model for disfluency detection and biofeedback</p>
+        <p className="text-sm text-slate-500 mt-0.5">Planned speech model for disfluency detection and biofeedback. No model has been trained yet</p>
       </div>
 
       {/* Production card */}
